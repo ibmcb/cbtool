@@ -32,7 +32,7 @@ from uuid import uuid5, NAMESPACE_DNS
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException, get_boostrap_command, selectively_print_message
+from lib.auxiliary.data_ops import str2dic, dic2str, get_boostrap_command, selectively_print_message, DataOpsException
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
@@ -86,7 +86,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not self.expid :                
                     _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
                     self.expid = _time_attr_list["experiment_id"]
-                    _expid = self.expid
+
+                _expid = self.expid
                     
                 _cld_name = cld_attr_lst["name"]
 
@@ -203,6 +204,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
                     cbdebug(_msg, True)
                     cld_attr_lst["vm_defaults"]["userdata"] = "true"
+
+#                if str(cld_attr_lst["vm_defaults"]["vpn_only"]).lower() == "true" and \
+#                str(cld_attr_lst["vm_defaults"]["userdata_post_boot"]).lower() == "false" :
+
+#                    _msg = " The attribute \"VPN_ONLY\" in Global Object "
+#                    _msg += "[VM_DEFAULTS] is set to \"True\". "                    
+#                    _msg += "Will set the attribute \"USERDATA_POST_BOOT\" in the" 
+#                    _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
+#                    cbdebug(_msg, True)
+#                    cld_attr_lst["vm_defaults"]["userdata_post_boot"] = "true"
     
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
@@ -238,6 +249,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _aux = str2dic(cld_attr_lst["vm_templates"][_vm_role])
                     _aux["imageid1"] = cld_attr_lst["vm_defaults"]["image_prefix"].strip() + _aux["imageid1"] + cld_attr_lst["vm_defaults"]["image_suffix"].strip()
                     cld_attr_lst["vm_templates"][_vm_role] = dic2str(_aux)
+
+                self.create_image_build_map(cld_attr_lst)
                     
                 for _vmc_entry in _initial_vmcs :
                     _cld_conn = _cld_ops_class(self.pid, None, None)
@@ -251,7 +264,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                       cld_attr_lst["vm_defaults"], \
                                                                       cld_attr_lst["vmc_defaults"])
 
-                    if _x_status == 1 or str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
+                    if _x_status == 1 and str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
                         cld_attr_lst["walkthrough"] = "true"
                 
                 cld_attr_lst["vmc_defaults"]["walkthrough"] = cld_attr_lst["walkthrough"]
@@ -671,6 +684,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         for _obj_uuid in _obj_list :
                             _obj_attr_list = self.osci.get_object(cld_attr_list["name"], _object_typ, False, _obj_uuid, False)
                             _x_attr_list = {}
+                            if "name" not in _obj_attr_list :
+                                continue
                             if BaseObjectOperations.default_cloud is not None :
                                 _parameters = _obj_attr_list["name"] + " true"
                             else :
@@ -2123,14 +2138,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if not "submitter" in obj_attr_list :
                         if _obj_type == "VM" :
                             if obj_attr_list["prov_cloud_ip"] == obj_attr_list["run_cloud_ip"] :
-                                _ip = "IP address " + obj_attr_list["cloud_ip"]
+                                _ip = "IP address " + obj_attr_list["cloud_ip"] + " (port " + str(obj_attr_list["prov_cloud_port"]) + ")"
                             else :
-                                _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " and " + obj_attr_list["run_cloud_ip"] 
+                                _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " (port " + str(obj_attr_list["prov_cloud_port"]) + ")"+ " and " + obj_attr_list["run_cloud_ip"] 
                         else :
                             _ip = "IP address " + obj_attr_list["cloud_ip"]
 
+                        if _ip.count('-') :
+                            _ip = _ip.split('-')[0]
+                        
                         _msg += " It is ssh-accessible at the " + _ip
-                        _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
+                        _msg += " (hostname is " + obj_attr_list["cloud_hostname"] + ")."
                                                 
                     obj_attr_list["tracking"] = "Attach: success." 
 
@@ -2234,7 +2252,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
                                       priv_key = obj_attr_list["identity"], \
-                                      config_file = _config_file)
+                                      config_file = _config_file,
+                                      connection_timeout = 120)
 
         try :
             
@@ -2264,14 +2283,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += ": " + _ssh_cmd_log + " \"" + _cmd + "\"..."
                 cbdebug(_msg, selectively_print_message("check_ssh", obj_attr_list))
                 _proc_man.retriable_run_os_command(_cmd, \
-                                                   obj_attr_list["prov_cloud_ip"], \
+                                                   obj_attr_list["uuid"], \
                                                    _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["check_ssh"], \
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True,
                                                    tell_me_if_stderr_contains = False, \
-                                                   port = obj_attr_list["prov_cloud_port"])
+                                                   port = obj_attr_list["prov_cloud_port"], \
+                                                   osci = self.osci, \
+                                                   get_hostname_using_key = "prov_cloud_ip" \
+                                                   )
 
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
@@ -2305,14 +2327,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
 
                 _proc_man.retriable_run_os_command(_bcmd, \
-                                                   obj_attr_list["prov_cloud_ip"], \
+                                                   obj_attr_list["uuid"], \
                                                    _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True, \
                                                    tell_me_if_stderr_contains = "Connection reset by peer", \
-                                                   port = obj_attr_list["prov_cloud_port"])
+                                                   port = obj_attr_list["prov_cloud_port"], \
+                                                   osci = self.osci, \
+                                                   get_hostname_using_key = "prov_cloud_ip")
 
             _msg = "Bootstrapped " + obj_attr_list["log_string"]
             cbdebug(_msg)
@@ -2337,7 +2361,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
                 _rcmd += " --exclude-from "
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
-                _rcmd += "--delete --no-o --no-g --inplace -O " 
+                _rcmd += "--delete --no-o --no-g --inplace --rsync-path='sudo rsync' -O " 
                 _rcmd += obj_attr_list["base_dir"] + "/* " 
                 _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" 
                 _rcmd += obj_attr_list["remote_dir_name"] + '/'
@@ -2361,7 +2385,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 obj_attr_list["last_known_state"] = "sent copy of code tree"
 
             _time_mark_ift = int(time())
-            _delay = _time_mark_ift - obj_attr_list["time_mark_aux"]
+
+            if "time_mark_aux" in obj_attr_list :
+                _delay = _time_mark_ift - obj_attr_list["time_mark_aux"]
+            else :
+                _delay = -1
+
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
             obj_attr_list["mgt_005_file_transfer"] = _delay
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
@@ -2380,28 +2409,42 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], \
                                                                                   obj_attr_list["login"])
 
-                _msg = "Performing generic VM post_boot configuration on " + obj_attr_list["log_string"] 
-                _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
+
+                if str(obj_attr_list["prepare_workload_names"]).lower() != "none" \
+                and str(obj_attr_list["prepare_image_name"]).lower() != "none" :
+                    _msg = "Performing workload (" + obj_attr_list["prepare_workload_names"] 
+                    _msg += ") image build operation on " + obj_attr_list["log_string"]
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
+                else :
+                    _msg = "Performing generic instance post_boot configuration on " + obj_attr_list["log_string"] 
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
                 cbdebug(_msg, selectively_print_message("run_generic_scripts", obj_attr_list))
 
                 _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
-                
-                _status, _xfmsg, _object = \
-                _proc_man.run_os_command(_cmd, obj_attr_list["prov_cloud_ip"], \
-                                         obj_attr_list["run_generic_scripts"], \
-                                         obj_attr_list["debug_remote_commands"], \
-                                         True, \
-                                         tell_me_if_stderr_contains = "Connection reset by peer", \
-                                         port = obj_attr_list["prov_cloud_port"])                    
+
+                _status, _result_stdout, _result_stderr = \
+                        _proc_man.retriable_run_os_command(_cmd, obj_attr_list["uuid"], \
+                                                           really_execute = obj_attr_list["run_generic_scripts"], \
+                                                           debug_cmd = obj_attr_list["debug_remote_commands"], \
+                                                           total_attempts = int(obj_attr_list["update_attempts"]),\
+                                                           retry_interval = int(obj_attr_list["update_frequency"]), \
+                                                           raise_exception_on_error = True, \
+                                                           tell_me_if_stderr_contains = "Connection reset by peer", \
+                                                           port = obj_attr_list["prov_cloud_port"], \
+                                                           osci = self.osci, \
+                                                           get_hostname_using_key = "prov_cloud_ip"  \
+                                                           )                   
 
                 _time_mark_ipbc = int(time())
-                _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]
-                             
+                if "time_mark_aux" in obj_attr_list :
+                    _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]
+                else :
+                    _delay = -1
+
                 if _status :
                     _fmsg = "Failure while executing generic VM "
                     _fmsg += "post_boot configuration on "
                     _fmsg += obj_attr_list["name"] + '.\n'
-#                            _fmsg += _xfmsg
                 else :
 
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
@@ -2413,9 +2456,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                       "generic post-boot script executed")                    
                     obj_attr_list["last_known_state"] = "generic post-boot script executed"
 
-                _msg = "Performed generic VM post_boot configuration on " + obj_attr_list["log_string"] 
-                _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
-                cbdebug(_msg)
+                if str(obj_attr_list["prepare_workload_names"]).lower() != "none" \
+                and str(obj_attr_list["prepare_image_name"]).lower() != "none" :
+                    _msg = "Performed workload image build operation on " + obj_attr_list["log_string"]
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "."
+                    _msg += "You can now capture this image with \"vmcapture youngest "
+                    _msg += obj_attr_list["image_prefix"].strip() + obj_attr_list["prepare_image_name"]
+                    _msg += obj_attr_list["image_suffix"].strip() + "\" on the CLI\n"
+                    cbdebug(_msg)
+                    print '\n' + _msg                    
+                else :
+                    _msg = "Performed generic VM post_boot configuration on " + obj_attr_list["log_string"] 
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
+                    cbdebug(_msg)
                      
             else :                
                 _status = 0
@@ -4971,6 +5024,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
+        first_stop = False
         _ai_state = True
         _prev_load_level = 0
         _prev_load_duration = 0
@@ -4978,19 +5032,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
         
-        _mode = _initial_ai_attr_list["mode"]
         _check_frequency = float(_initial_ai_attr_list["update_frequency"])
 
         while _ai_state :
 
-            if _mode == "controllable" :
-                _ai_state = self.osci.get_object_state(cloud_name, "AI", object_uuid)
-                _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
-                _mode = _ai_attr_list["mode"]
-                _check_frequency = float(_ai_attr_list["update_frequency"])
-            else :
-                _ai_state = "attached"
-                _ai_attr_list = _initial_ai_attr_list
+            # We should always be talking to from redis, regardless
+            # whether or not we have a scalable mode or controllable mode.
+            # Without it, we cannot accurately update large scale tests when
+            # running on multiple clouds at the same time.
+
+            _ai_state = self.osci.get_object_state(cloud_name, "AI", object_uuid)
+            _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
+            _check_frequency = float(_ai_attr_list["update_frequency"])
 
             _sla_runtime_targets = ''
             for _key in _ai_attr_list :
@@ -5001,6 +5054,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _sla_runtime_targets = _sla_runtime_targets[:-1]
 
             if _ai_state and _ai_state == "attached" :
+                if not first_stop and str(_ai_attr_list["pause_after_attached"]).lower() == "true" :
+                    self.osci.set_object_state(cloud_name, "AI", object_uuid, "stopped")
+                    sleep(_check_frequency)
+                    first_stop = True
+                    cbdebug("Attach complete. Pausing myself")
+                    continue
+
                 _load = self.get_load(cloud_name, _ai_attr_list, False, \
                                       _prev_load_level, _prev_load_duration, \
                                       _prev_load_id)
@@ -5010,24 +5070,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _prev_load_duration = _ai_attr_list["current_load_duration"]
                     _prev_load_id = _ai_attr_list["current_load_id"]
 
-                if _mode == "controllable" :
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_load_level", \
-                                                 _ai_attr_list["current_load_level"]) 
-                        
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_load_duration", \
-                                                 _ai_attr_list["current_load_duration"])
-    
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_load_id", \
-                                                 _ai_attr_list["current_load_id"])
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_load_level", \
+                                             _ai_attr_list["current_load_level"]) 
+                    
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_load_duration", \
+                                             _ai_attr_list["current_load_duration"])
+
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_load_id", \
+                                             _ai_attr_list["current_load_id"])
  
                 _msg = "Preparing to execute AI reset"
                 cbdebug(_msg)
@@ -5045,12 +5104,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     # If we fail, sleep a little and retry
                     sleep(_check_frequency * 2)
 
-                if _mode == "controllable" :
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_reset_status", \
-                                                 _reset_status) 
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_reset_status", \
+                                             _reset_status) 
 
                 if not _reset_status and _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] :
                     _cmd = "~/" + _ai_attr_list["start"] + ' '
@@ -5080,6 +5138,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         #waitpid(-1, 0)
                         _proc_h.wait()
+
+                    if str(_ai_attr_list["pause_after_run"]).lower() == "true" :
+                        cbdebug("Run complete. Pausing myself")
+                        self.osci.set_object_state(cloud_name, "AI", object_uuid, "stopped")
                 else :
                     # Will have to create something here later, probably using
                     # pubsub

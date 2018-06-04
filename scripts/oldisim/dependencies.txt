@@ -1,8 +1,6 @@
 ### START - Dependency installation order ###
-git-order = 82
-gcc-order = 83
-perl-order = 84
-unixbench-order = 85
+scons-order = 82
+oldisim-order = 83
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -12,24 +10,18 @@ unixbench-order = 85
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-gcc-install = pm
-git-install = pm
-perl-install = pm
-unixbench-install = git
+scons-install = pm
+oldisim-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-git-configure = gcc -v
-git-configure = git --version
-perl-configure = perl -v -e 'require Time::HiRes'
-unixbench-configure = ls -la ~/byte-unixbench/UnixBench/Run
+scons-configure = scons --version | grep "engine: v" | awk '{ print $2 }' | sed 's/v//g' | cut -d '.' -f 1,2,3
+oldisim-configure = ls ~/oldisim/
 ### END - Tests ###
 
 ### START - Dependency versions ###
-gcc-ver = ANY
-git-ver = ANY
-perl-ver = 5.10
-unixbench-ver = ANY
+scons-ver = 1.0
+oldisim-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###

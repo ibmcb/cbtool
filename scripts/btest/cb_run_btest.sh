@@ -64,7 +64,7 @@ lat=`grep "Total:" ${RUN_OUTPUT_FILE} | grep -v ms | cut -d " " -f 8`
 
 ~/cb_report_app_metrics.py \
 throughput:${tp}:tps \
-latency:${lat}:msec \
+latency:${lat}:usec \
 $(common_metrics)    
     
 unset_load_gen

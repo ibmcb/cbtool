@@ -19,27 +19,30 @@ CATEGORY = synthetic
 PROFILES = default
 REFERENCE = https://github.com/axboe/fio
 LICENSE = GPL_v2
-REPORTED_METRICS = latency, throughput, write_latency, write_throughput, read_latency, read_troughput, errors, completion_time, quiescent_time
+REPORTED_METRICS = latency, throughput, write_latency, write_throughput, read_latency, read_troughput, errors, completion_time, quiescent_time, write_iops, write_bw, write_latmin, write_latmax, write_latmean, write_latstddev, read_iops, read_bw, read_latmin, read_latmax, read_latmean, read_latstddev
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION =Deploys a single instance and runs the "fio" synthetic (disk I/O)\n
 DESCRIPTION +=benchmark.\n
 DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
-DESCRIPTION +=  - LOAD_LEVEL meaning: number of random IO (read or write) jobs.\n 
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of jobs running in parallel, currently only 1 is supported.\n
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when a specific\n
 DESCRIPTION +=    number of I/O operations is reached.\n
 FIO_SETUP1 = cb_start_fio.sh
 START = cb_run_fio.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
+FIO_ENGINE = sync
+FIO_BS = 64k
+FIO_DIRECT= 1
+FIO_IOKIND = randread
+# File size to test in MB
+FIO_FILE_SIZE = 128
 FIO_DATA_DIR = /fiotest
 FIO_DATA_FSTYP = ext4
-FIO_DATA_VOLUME = NONE
-FIO_BS = 64k
-FIO_FILE_SIZE = 128m
-FIO_RATE_IOPS = 100
-FIO_ENGINE = sync
-FIO_DIRECT= 1
+FIO_RUNTIME = 60
+FIO_IODEPTH = 8
+FIO_SYNC = 0
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

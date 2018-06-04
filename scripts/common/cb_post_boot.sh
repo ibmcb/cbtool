@@ -54,6 +54,7 @@ then
     syslog_netcat "Starting (AI) Object store..."
     start_redis ${osportnumber}
     syslog_netcat "Local (AI) Object store started"
+    setup_rclocal_restarts
 fi
 
 refresh_hosts_file
@@ -74,5 +75,4 @@ else
 fi
 
 syslog_netcat "Ended generic VM post_boot configuration - OK"
-exit 0
 exit 0

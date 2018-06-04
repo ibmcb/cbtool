@@ -10,7 +10,7 @@ specjbb-order = 82
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-oraclejava-install = man
+java-install = pm
 specjbb-install = man
 ### END - Dependency-specific installation method ###
 

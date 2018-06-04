@@ -189,20 +189,27 @@ class MongodbMgdConn :
             
             if len(self.password) > 2 and self.password.lower() != "false" :
                 try :
+                    _auth_cmd = "mongo -u \"<YOUR ADMIN\" -p \"<YOUR ADMINPASS>\" "
+                    _auth_cmd += "--authenticationDatabase \"admin\" --eval "
+                    _auth_cmd += "\"db.createUser({user: '" + self.username 
+                    _auth_cmd += "', pwd: '" + self.password + "', roles: [ { role:"
+                    _auth_cmd += " 'readWrite', db: 'metrics' } ]})\" " 
+                    _auth_cmd += self.host + ":" + str(self.port) + '/' + self.database
+                    
                     self.mongodb_conn[self.database].authenticate(self.username, self.password, mechanism='MONGODB-CR')
-                
+
                 except PymongoException, errmsg :
                     _msg = "Unable to authenticate against the database \"" + self.database
                     _msg += "\":" + str(errmsg) + ". \nPlease create the user there (i.e., directly on "
-                    _msg += self.host + ") using the following command:\n"               
-                    _msg += "mongo localhost/" + self.database + " --eval \"db.addUser({user: '" + self.username  + "', pwd:'" + self.password + "', roles:['readWrite']})\""                
+                    _msg += self.host + ") using the following command:\n"                    
+                    _msg += _auth_cmd
                     raise self.MetricStoreMgdConnException(_msg, 2)
     
                 except Exception, e:
                     _msg = "Unable to authenticate against the database \"" + self.database
                     _msg += "\":" + str(e) + ". \nPlease create the user there (i.e., directly on "
                     _msg += self.host + ") using the following command:\n"               
-                    _msg += "mongo localhost/" + self.database + " --eval \"db.addUser({user: '" + self.username  + "', pwd:'" + self.password + "', roles:['readWrite']})\""                
+                    _msg += _auth_cmd
                     raise self.MetricStoreMgdConnException(_msg, 2)
 
     @trace

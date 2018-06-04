@@ -2,26 +2,36 @@
 EC2_ACCESS = need_to_be_configured_by_user 
 EC2_SECURITY_GROUP = need_to_be_configured_by_user 
 EC2_CREDENTIALS = need_to_be_configured_by_user 
-EC2_KEY_NAME = cbtool_rsa 
+EC2_KEY_NAME = cbtool_rsa
 EC2_INITIAL_VMCS = need_to_be_configured_by_user 
 EC2_SSH_KEY_NAME = cbtool_rsa
 EC2_LOGIN = need_to_be_configured_by_user
+EC2_NETNAME = private
 
 # PEBCAK documentation for the Wizard and CLI
 EC2_ACCESS_DOC = Please enter the AWS access key id used with the Amazon API.\nThe key is a long, boring hash string.
 EC2_ACCESS_DEFAULT = ABCDEFGHIJKLMNOPQRSTUVWXYZ 
+
 EC2_SECURITY_GROUP_DOC = Please enter the name of the security\ngroup associated with your Amazon VMs.\nThis needs to be setup with any use of Amazon before running the tool.
 EC2_SECURITY_GROUP_DEFAULT = some_security_group
+
 EC2_CREDENTIALS_DOC = Please enter the AWS secret key used with the Amazon API.\nThis value is another long boring hash string.
 EC2_CREDENTIALS_DEFAULT = XXXXX/YYYYYYYYY/ZZZ/AAAAAAAAAAAAAAA/B
+
 EC2_KEY_NAME_DOC = Please enter the name of the SSH key created in\nthe AWS service for logging as root to your Amazon VMs. 
 EC2_KEY_NAME_DEFAULT = some_amazon_root_ssh_key_name
+
 EC2_LOGIN_DOC = $LOGIN_DOC
 EC2_LOGIN_DEFAULT = klabuser
+
 EC2_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 EC2_SSH_KEY_NAME_DEFAULT = path_to_some_private_ssh_key_location
+
 EC2_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
 EC2_INITIAL_VMCS_DEFAULT = us-east-1,us-west-1
+
+EC2_NETNAME_DOC = Use the public or private network for benchmark traffic. For more complex networks, refer to the documentation.
+EC2_NETNAME_DEFAULT = private
 
 [SPACE : EC2_CLOUDCONFIG ]
 SSH_KEY_NAME = $EC2_SSH_KEY_NAME
@@ -58,7 +68,7 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 # Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
 #CHECK_BOOT_COMPLETE = wait_for_0
-NETNAME = private
+NETNAME = $EC2_NETNAME
 TENANT = default
 SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
@@ -67,6 +77,13 @@ DISABLE_TIMESYNC = $False
 CLOUD_VV_INSTANCE = None
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
+CLOUD_VV_TYPE = standard
+CLOUD_RV_TYPE = standard
+# By default, do not specify provisioned iops limit
+CLOUD_VV_IOPS = 0
+CLOUD_RV_IOPS = 0
+# Size of the root volume. Maximum ratio of 50:1 is permitted between IOPS and volume size
+CLOUD_RV = 0
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
@@ -89,65 +106,67 @@ LOGIN = $EC2_LOGIN
 SSH_KEY_NAME = $EC2_SSH_KEY_NAME
 
 [VM_TEMPLATES : EC2_CLOUDCONFIG ]
+ACMEAIR = size:t2.medium, imageid1: cb_acmeair
+APACHE = size:t2.medium, imageid1:cb_wrk
+BONNIE = size:t2.medium, imageid1:cb_bonnie
+BTEST = size:t2.medium, imageid1:cb_btest
+CASSANDRA = size:t2.medium, imageid1:cb_ycsb
 CHECK = size:m3.medium, imageid1:to_replace
 CLIENT_IBM_DAYTRADER = size:t2.micro, imageid1:cb_daytrader
 CLIENT_OPEN_DAYTRADER = size:t2.micro, imageid1:cb_open_daytrader
-DRIVER_DAYTRADER = size:t2.medium, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:t2.medium, imageid1:cb_tradelite
-DRIVER_TRADELITE = size:t2.medium, imageid1:cb_tradelite
-MYSQL = size:t2.medium, lb_size:t2.large, imageid1:cb_open_daytrader
-GERONIMO = size:t2.medium, imageid1:cb_open_daytrader
+CLIENT_WINDOWS = size:t2.medium, imageid1:cb_windows
+CN_HPC = size:t2.medium, imageid1:cb_hpcc
+COREMARK = size:t2.micro, imageid1:cb_coremark
 DB2 = size:t2.medium, lb_size:t2.large, imageid1:cb_daytrader
-WAS = size:t2.medium, imageid1:cb_daytrader
+DDGEN = size:t2.medium, imageid1:cb_hpcc
+DRIVER_COREMARK = size:t2.micro, imageid1:cb_coremark
+DRIVER_DAYTRADER = size:t2.medium, imageid1:cb_daytrader
+DRIVER_FILEBENCH = size:t2.medium, imageid1:cb_filebench
+DRIVER_FIO = size:t2.medium, imageid1:cb_fio
 DRIVER_HADOOP = size:t2.micro, imageid1:cb_hadoop
-HADOOPMASTER = size:t2.large, imageid1:cb_hadoop
-HADOOPSLAVE = size:t2.medium, imageid1:cb_hadoop
+DRIVER_NETPERF = size:t2.micro, imageid1:cb_netperf
+DRIVER_TRADELITE = size:t2.medium, imageid1:cb_tradelite
+FEN_HPC = size:t2.medium, imageid1:cb_hpcc
+FILEBENCH = size:m3.medium, imageid1:cb_filebench
+FIO = size:t2.medium, imageid1:cb_fio
+GERONIMO = size:t2.medium, imageid1:cb_open_daytrader
 GIRAPHMASTER = size:t2.large, imageid1:cb_giraph
 GIRAPHSLAVE = size:t2.medium, imageid1:cb_giraph
-DRIVER_NETPERF = size:t2.micro, imageid1:cb_netperf
-NETCLIENT = size:t2.medium, imageid1:cb_netperf
-NETSERVER = size:t2.micro, imageid1:cb_netperf
+HADOOPMASTER = size:t2.large, imageid1:cb_hadoop
+HADOOPSLAVE = size:t2.medium, imageid1:cb_hadoop
 IPERFCLIENT = size:m3.medium, imageid1:cb_iperf
 IPERFSERVER = size:m3.medium, imageid1:cb_iperf
-NUTTCPCLIENT = size:m3.medium, imageid1:cb_nuttcp
-NUTTCPSERVER = size:m3.medium, imageid1:cb_nuttcp
-XPINGSENDER = size:m3.medium, imageid1:cb_xping
-XPINGRECEIVER = size:m3.medium, imageid1:cb_xping
-DRIVER_COREMARK = size:t2.micro, imageid1:cb_coremark
-COREMARK = size:t2.micro, imageid1:cb_coremark
-CLIENT_WINDOWS = size:t2.medium, imageid1:cb_windows
-WINDOWS = size:t2.medium, imageid1:cb_windows
-DRIVER_FILEBENCH = size:t2.medium, imageid1:cb_filebench
-FILEBENCH = size:m3.medium, imageid1:cb_filebench
-DRIVER_FIO = size:t2.medium, imageid1:cb_fio
-FIO = size:t2.medium, imageid1:cb_fio
-BTEST = size:t2.medium, imageid1:cb_btest
-POSTMARK = size:t2.medium, imageid1:cb_postmark
-TINYVM = size:t1.micro, imageid1:cb_nullworkload
-YATINYVM = size:t1.micro, imageid1:cb_nullworkload
-FEN_HPC = size:t2.medium, imageid1:cb_hpcc
-CN_HPC = size:t2.medium, imageid1:cb_hpcc
-LINPACK = size:t2.medium, imageid1:cb_linpack
-PARBOIL = size:t2.medium, imageid1:cb_parboil
-DDGEN = size:t2.medium, imageid1:cb_hpcc
-SPECJBB = size:t2.medium, imageid1:cb_specjbb
 LB = size:t2.medium, imageid1:cb_nullworkload
-MONGOS = size:t2.large, imageid1:cb_ycsb
+LIBERTY = size:t2.medium, imageid1:cb_acmeair
+LINPACK = size:t2.medium, imageid1:cb_linpack
+MEMTIER = size:t2.medium, imageid1:cb_memtier
 MONGO_CFG_SERVER = size:m3.medium, imageid1:cb_ycsb
 MONGODB = size:t2.medium, imageid1:cb_ycsb
-CASSANDRA = size:t2.medium, imageid1:cb_ycsb
-SEED = size:t2.medium, imageid1:cb_ycsb
-REDIS = size:t2.medium, imageid1:cb_ycsb
-YCSB = size:t2.medium, imageid1:cb_ycsb
-UNIXBENCH = size:m3.medium, imageid1:cb_unixbench
-BONNIE = size:t2.medium, imageid1:cb_bonnie
-WRK = size:t2.medium, imageid1:cb_wrk
-APACHE = size:t2.medium, imageid1:cb_wrk
-SCIMARK = size:t2.micro, imageid1:cb_scimark
+MONGOS = size:t2.large, imageid1:cb_ycsb
 MULTICHASE = size:t2.micro, imageid1:cb_multichase
-MEMTIER = size:t2.medium, imageid1:cb_memtier
-SYSBENCH = size:t2.medium, imageid1:cb_sysbench
-OLDISIMLB = size:t2.micro, imageid1:cb_oldisim
-OLDISIMROOT = size:t2.micro, imageid1:cb_oldisim
-OLDISIMLEAF = size:t2.micro, imageid1:cb_oldisim
+MYSQL = size:t2.medium, lb_size:t2.large, imageid1:cb_open_daytrader
+NETCLIENT = size:t2.medium, imageid1:cb_netperf
+NETSERVER = size:t2.micro, imageid1:cb_netperf
+NUTTCPCLIENT = size:m3.medium, imageid1:cb_nuttcp
+NUTTCPSERVER = size:m3.medium, imageid1:cb_nuttcp
 OLDISIMDRIVER = size:t2.micro, imageid1:cb_oldisim
+OLDISIMLB = size:t2.micro, imageid1:cb_oldisim
+OLDISIMLEAF = size:t2.micro, imageid1:cb_oldisim
+OLDISIMROOT = size:t2.micro, imageid1:cb_oldisim
+PARBOIL = size:t2.medium, imageid1:cb_parboil
+POSTMARK = size:t2.medium, imageid1:cb_postmark
+REDIS = size:t2.medium, imageid1:cb_ycsb
+SCIMARK = size:t2.micro, imageid1:cb_scimark
+SEED = size:t2.medium, imageid1:cb_ycsb
+SPECJBB = size:t2.medium, imageid1:cb_specjbb
+SYSBENCH = size:t2.medium, imageid1:cb_sysbench
+TINYVM = size:t1.micro, imageid1:cb_nullworkload
+UNIXBENCH = size:m3.medium, imageid1:cb_unixbench
+WAS = size:t2.medium, imageid1:cb_daytrader
+WINDOWS = size:t2.medium, imageid1:cb_windows
+WRK = size:t2.medium, imageid1:cb_wrk
+XPINGRECEIVER = size:m3.medium, imageid1:cb_xping
+XPINGSENDER = size:m3.medium, imageid1:cb_xping
+YATINYVM = size:t1.micro, imageid1:cb_nullworkload
+YCSB = size:t2.medium, imageid1:cb_ycsb

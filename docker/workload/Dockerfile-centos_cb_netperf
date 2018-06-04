@@ -2,7 +2,7 @@ FROM REPLACE_NULLWORKLOAD_CENTOS
 
 # netperf-install-pm
 RUN yum install -y lksctp-tools
-RUN rpm -Uh --replacefiles http://ftp5.gwdg.de/pub/opensuse/repositories/benchmark/openSUSE_Factory/x86_64/netperf-2.7.0-8.24.x86_64.rpm
+RUN rpm -Uh --replacefiles http://ftp5.gwdg.de/pub/opensuse/repositories/benchmark/openSUSE_Factory/x86_64/netperf-2.7.0-8.34.x86_64.rpm
 # netperf-install-pm
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

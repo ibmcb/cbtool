@@ -27,13 +27,15 @@ from random import randint
 from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 from boto.ec2 import regions
 from boto import exception as AWSException 
+from boto.ec2.blockdevicemapping import BlockDeviceType, BlockDeviceMapping
+
 
 class Ec2Cmds(CommonCloudFunctions) :
     '''
@@ -239,11 +241,12 @@ class Ec2Cmds(CommonCloudFunctions) :
                     for _instance in _reservation.instances :
                         if "Name" in _instance.tags :
                             if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and _instance.state == u'running' :
+                                cbdebug("Terminating instance: " + _instance.tags[u'Name'], True)
                                 _instance.terminate()
                                 _running_instances = True
                 sleep(int(obj_attr_list["update_frequency"]))
 
-            sleep(int(obj_attr_list["update_frequency"])*5)
+            sleep(int(obj_attr_list["update_frequency"]) * 5)
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
 
@@ -252,9 +255,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             if len(_volumes) :
                 for unattachedvol in _volumes :
                     if "Name" in unattachedvol.tags and unattachedvol.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
-                        _msg = unattachedvol.id + ' ' + unattachedvol.status
-                        _msg += "... was deleted"
-                        cbdebug(_msg)
+                        cbdebug("Terminating volume: " + unattachedvol.tags[u'Name'], True)
                         unattachedvol.delete()
                     else:
                         _msg = unattachedvol.id + ' ' + unattachedvol.status
@@ -298,8 +299,8 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
 
-            obj_attr_list["cloud_hostname"] = _hostname
-            obj_attr_list["cloud_ip"] = gethostbyname(_hostname)
+            obj_attr_list["cloud_hostname"] = _hostname + "_" + obj_attr_list["name"]
+            obj_attr_list["cloud_ip"] = gethostbyname(_hostname) + "_" + obj_attr_list["name"]
             obj_attr_list["arrival"] = int(time())
 
             if str(obj_attr_list["discover_hosts"]).lower() == "true" :
@@ -406,6 +407,30 @@ class Ec2Cmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        for _key_pair in self.ec2conn.get_all_key_pairs() :
+            registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+            #self.ec2conn.delete_key_pair(key_name)
+            
+        return True
+
+    @trace
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        for _security_group in self.ec2conn.get_all_security_groups() :
+            registered_security_groups.append(_security_group.name)
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -425,21 +450,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
-            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
-                assert(self.get_attr_from_pending(obj_attr_list))
-
-                if "cloud_init_vpn" not in obj_attr_list :
-                    cbdebug("Instance VPN address not yet available.")
-                    return False
-                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
-                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
+            if obj_attr_list["prov_netname"] == "private" :
+                obj_attr_list["prov_cloud_ip"] = _private_ip_address
             else :
-                if obj_attr_list["prov_netname"] == "private" :
-                    obj_attr_list["prov_cloud_ip"] = _private_ip_address
-                else :
-                    obj_attr_list["prov_cloud_ip"]  = _public_ip_address
+                obj_attr_list["prov_cloud_ip"]  = _public_ip_address
 
             return True
+        
         except :
             return False
 
@@ -483,6 +500,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
                 if len(_instance) :    
                     _volume=_instance[0]
+                    return _volume
                 else :
                     return False
                     
@@ -560,28 +578,27 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 return True
 
-    @trace
-    def vm_placement(self, obj_attr_list) :
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+        self.ec2conn.import_key_pair(key_name, key_type + ' ' + key_contents)
 
-            _status = 0
+        return True
 
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-            
-        finally :
-            if _status :
-                _msg = "VM placement failed: " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                return True
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        
+        if len(imageid) > 4 :
+            if imageid[0:4] == "ami-" :
+                if is_number(imageid[5:], True) :
+                    return True
+                    
+        return False
 
     def is_vm_running(self, obj_attr_list):
         '''
@@ -633,6 +650,29 @@ class Ec2Cmds(CommonCloudFunctions) :
             return False
 
     @trace
+    def vm_placement(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
+
+    @trace
     def vvcreate(self, obj_attr_list) :
         '''
         TBD
@@ -644,7 +684,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vv_instance"] = False
 
             if "cloud_vv_type" not in obj_attr_list :
-                obj_attr_list["cloud_vv_type"] = "EBS"
+                obj_attr_list["cloud_vv_type"] = "standard"
             
             if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
 
@@ -656,7 +696,17 @@ class Ec2Cmds(CommonCloudFunctions) :
                 else :
                     _location = obj_attr_list["vmc_name"] + 'a'
                     
-                obj_attr_list["cloud_vv_instance"] = self.ec2conn.create_volume(obj_attr_list["cloud_vv"], _location)
+                if obj_attr_list["cloud_vv_iops"] != "0":
+                    obj_attr_list["cloud_vv_instance"] = self.ec2conn.create_volume(
+                            int(obj_attr_list["cloud_vv"]),
+                            _location,
+                            volume_type = obj_attr_list["cloud_vv_type"],
+                            iops = obj_attr_list["cloud_vv_iops"])
+                else:
+                    obj_attr_list["cloud_vv_instance"] = self.ec2conn.create_volume(
+                            int(obj_attr_list["cloud_vv"]),
+                            _location,
+                            volume_type = obj_attr_list["cloud_vv_type"])
 
                 sleep(int(obj_attr_list["update_frequency"]))
 
@@ -714,7 +764,9 @@ class Ec2Cmds(CommonCloudFunctions) :
                         _status = _instance.status
     
                         if _status == 'available' :
+                            cbdebug("Deleting...", True)
                             _instance.delete()                 
+                            cbdebug("Deleted.", True)
                             _volume_detached = True
     
                         else :
@@ -725,9 +777,10 @@ class Ec2Cmds(CommonCloudFunctions) :
                             _msg += "is still \"" + _status + "\". "
                             _msg += "Will wait " + str(_wait)
                             _msg += " seconds and try again."
-                            cbdebug(_msg)
+                            cbdebug(_msg, True)
     
                             sleep(_wait)
+                            _instance = self.get_instances(obj_attr_list, "vv", identifier)
                             _curr_tries += 1                           
     
             if _curr_tries > _max_tries  :
@@ -794,7 +847,6 @@ class Ec2Cmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -807,12 +859,39 @@ class Ec2Cmds(CommonCloudFunctions) :
             # We need the instance placemente information before creating the actual volume
             #self.vvcreate(obj_attr_list)
 
+            if "cloud_rv_type" not in obj_attr_list :
+                obj_attr_list["cloud_rv_type"] = "standard"
+
+            _bdm = BlockDeviceMapping()
+            '''
+            Options:
+            gp2 (== ssd)
+            io1 (also ssd)
+            st1 (not sure)
+            sc1 (cold?)
+            standard (spinners)
+            '''
+
+            if obj_attr_list["cloud_rv_iops"] == "0":
+                _iops = None
+            else:
+                _iops = obj_attr_list["cloud_rv_iops"]
+
+            if "cloud_rv" in obj_attr_list and obj_attr_list["cloud_rv"] != "0":
+                _size = obj_attr_list["cloud_rv"]
+            else:
+                _size = None
+
+            _bdm['/dev/sda1'] = BlockDeviceType(volume_type = obj_attr_list["cloud_rv_type"], delete_on_termination=True, iops=_iops, size=_size)
+
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
-            
+
+            self.pre_vmcreate_process(obj_attr_list)
             _reservation = self.ec2conn.run_instances(image_id = obj_attr_list["boot_volume_imageid1"], \
                                                       instance_type = obj_attr_list["size"], \
                                                       key_name = obj_attr_list["key_name"], \
                                                       user_data = self.populate_cloudconfig(obj_attr_list),
+                                                      block_device_map = _bdm,
                                                       security_groups = _security_groups)
 
             if _reservation :

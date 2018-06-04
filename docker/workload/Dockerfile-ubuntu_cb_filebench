@@ -4,8 +4,8 @@ FROM REPLACE_NULLWORKLOAD_UBUNTU
 RUN apt-get update
 RUN apt-get install -y libaio1 bison flex gawk
 RUN wget -N -q -P /home/REPLACE_USERNAME https://github.com/filebench/filebench/releases/download/1.5-alpha3/filebench-1.5-alpha3.tar.gz
-RUN cd /home/REPLACE_USERNAME; tar -xzf filebench-*.tar.gz
-RUN cd /home/REPLACE_USERNAME/filebench*; ./configure; make; make install
+RUN cd /home/REPLACE_USERNAME; sudo tar -xzf filebench-*.tar.gz
+RUN sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/filebench*; cd /home/REPLACE_USERNAME/filebench*; ./configure; make; make install
 # filebench-install-man
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

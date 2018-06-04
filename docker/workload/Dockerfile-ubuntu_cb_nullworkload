@@ -32,7 +32,7 @@ RUN apt-get install -y ntp ntpdate
 # ntp-install-pm
 
 # git-install-pm
-RUN apt-get install -y git bc
+RUN apt-get install -y git
 # git-install-pm
 
 # wget-install-pm
@@ -51,6 +51,10 @@ RUN apt-get install -y gcc
 # make-install-pm
 RUN apt-get install -y make
 # make-install-pm
+
+# bc-install-pm
+RUN apt-get install -y bc
+# bc-install-pm
 
 # sshpass-install-pm
 RUN apt-get install -y sshpass
@@ -170,6 +174,10 @@ RUN pip install --upgrade markup
 RUN pip install --upgrade pyyaml
 # pyyaml-install-pip 
 
+# jq-install-pm
+RUN apt-get install -y jq
+# jq-install-pm
+
 # ruamelyaml-install-pip
 RUN pip install --upgrade ruamel.yaml
 # ruamelyaml-install-pip
@@ -181,6 +189,7 @@ RUN apt-get install -y iptables
 
 # sshd-install-pm
 RUN apt-get install -y openssh-server
+RUN sudo bash -c "echo 'UseDNS no' >> /etc/ssh/sshd_config"
 RUN sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config
 RUN sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
 # sshd-install-pm 

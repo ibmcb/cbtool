@@ -18,13 +18,14 @@ hibench-install = git
 
 ### START - Tests ###
 java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-hadoop-configure = if [[ -z $JAVA_HOME ]]; then ls ~/hadoop-2.3.0/bin/hadoop; else ~/hadoop-2.3.0/bin/hadoop version | head -n 1 | cut -d ' ' -f 2; fi
+#hadoop-configure = if [[ -z $JAVA_HOME ]]; then ls ~/hadoop-2.3.0/bin/hadoop; else ~/hadoop-2.3.0/bin/hadoop version | head -n 1 | cut -d ' ' -f 2; fi
+hadoop-configure = /tmp/get_hadoop
 hibench-configure = ls -la ~/HiBench
 ### END - Tests ###
 
 ### START - Dependency versions ###
 java-ver = 1.6
-hadoop-ver = ANY
+hadoop-ver = 1.0
 hibench-ver = ANY
 ### END - Dependency versions ###
 

@@ -34,7 +34,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -490,6 +490,27 @@ class PcmCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        registered_key_pairs[key_name] = key_fingerprint + "-NA"
+
+        return True
+
+
+    @trace
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        registered_security_groups.append(security_group_name)              
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -651,6 +672,26 @@ class PcmCmds(CommonCloudFunctions) :
             else :
                 return True
 
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if len(imageid) == 64 and is_number(imageid, True) :
+            return True
+
+        if len(imageid) == 12 and is_number(imageid, True) :
+            return True
+        
+        return False
+
     @trace
     def is_vm_running(self, obj_attr_list):
         '''
@@ -801,47 +842,38 @@ class PcmCmds(CommonCloudFunctions) :
             self.vm_placement(obj_attr_list)
             _cpu, _memory = obj_attr_list["size"].split('-')
 
-            if "userdata" not in obj_attr_list :
-                obj_attr_list["userdata"] = "auto"
-                
-            if obj_attr_list["userdata"] != "none" :
-                obj_attr_list["config_drive"] = True
-            else :
-                obj_attr_list["config_drive"] = False                
-
             obj_attr_list["last_known_state"] = "about to send create request"
 
+            _mark_a = time()
             self.get_images(obj_attr_list)
+            self.annotate_time_breakdown(obj_attr_list, "get_image_time", _mark_a)
+                        
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
+
             self.vvcreate(obj_attr_list)
+
+            obj_attr_list["config_drive"] = True
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
-            _mark1 = int(time())
-            
+            self.pre_vmcreate_process(obj_attr_list)
+
+            _mark_a = time()            
             _config = {"name": obj_attr_list["cloud_vm_name"], \
                        "source": { "type": "image", "fingerprint": obj_attr_list["boot_volume_imageid1"] }}
 
             _instance = self.lxdconn[obj_attr_list["host_cloud_ip"]].containers.create(_config, wait=True)
-
-            _mark2 = int(time())
+            self.annotate_time_breakdown(obj_attr_list, "container_creation_time", _mark_a)
             
-            obj_attr_list["pcm_003_create_container_time"] = _mark2 - _mark1
+            _instance.config["user.user-data"] = self.populate_cloudconfig(obj_attr_list)
 
-            _instance.config["user.user-data"] = "#cloud-config\nssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
-
+            _mark_a = time()            
             _instance.save(wait=True)
-            
-            _mark3 = int(time())
+            self.annotate_time_breakdown(obj_attr_list, "container_update_time", _mark_a)
 
-            obj_attr_list["pcm_004_update_container_time"] = _mark3 - _mark2
-
+            _mark_a = time()
             _instance.start()
-            
-            _mark4 = int(time())
-            
-            obj_attr_list["pcm_005_start_container_time"] = _mark4 - _mark3
+            self.annotate_time_breakdown(obj_attr_list, "container_start_time", _mark_a)
                                     
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid(obj_attr_list["cloud_vm_name"])
 
@@ -849,18 +881,16 @@ class PcmCmds(CommonCloudFunctions) :
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-            obj_attr_list["pcm_005_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
-
+            _mark_a = time()
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 self.configure_port_mapping(obj_attr_list, "setup")
+            self.annotate_time_breakdown(obj_attr_list, "container_port_mapping_time", _mark_a)
 
-            _mark5 = int(time())
+            if str(obj_attr_list["ports_base"]).lower() != "false" :
+                if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22" :
+                    obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
 
-            obj_attr_list["pcm_006_instance_port_mapping_time"] = _mark5 - _time_mark_prc
-
-            self.wait_for_instance_boot(obj_attr_list, _mark5)
-
-            obj_attr_list["pcm_007_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]
+            self.wait_for_instance_boot(obj_attr_list, time())
             
             obj_attr_list["arrival"] = int(time())
 
@@ -917,25 +947,23 @@ class PcmCmds(CommonCloudFunctions) :
             if "host_cloud_ip" in obj_attr_list :
                 _host_ip = obj_attr_list["host_cloud_ip"]
     
-                _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
-    
+                _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
+                                               obj_attr_list["cloud_vm_name"])
+
                 if _instance :
                     self.common_messages("VM", obj_attr_list, "destroying", 0, '')
-                                        
-                    if  _instance.status == "Running" :                    
-                        _instance.stop()
-
-                    _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
-        
-                    if _instance :
-                        if  _instance.status == "Running" :                    
-                            _instance.stop()
-    
-                    _instance.delete()
     
                     while _instance and _curr_tries < _max_tries :
-                        _instance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"])
+                        
+                        _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
+                                                       obj_attr_list["cloud_vm_name"])
+
+                        if _instance :
+                            if  _instance.status == "Running" :                    
+                                _instance.stop()
+                            else :
+                                _instance.delete()
+
                         sleep(_wait)
                         _curr_tries += 1
     

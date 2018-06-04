@@ -12,7 +12,7 @@ MAIN_USERNAME = $USER_AUTO
 # "credentials" directory, bogus_id_rsa and bogus_id_rsa.pub
 MAIN_SSH_KEY_NAME = bogus_id_rsa
 # This is the username created inside the VMs
-MAIN_LOGIN = klabuser
+MAIN_LOGIN = cbuser
 # Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
@@ -31,8 +31,9 @@ CLOUDOPTION_MYDO = cldattach do, vmcattach all
 CLOUDOPTION_MYPDM = cldattach pdm, vmcattach all
 CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
 CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
+CLOUDOPTION_MYAS = cldattach os, vmcattach all
 
-# Now, Specify the individual parameters for each cloud
+# START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
 # Smart Cloud Provisioning (SCP) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYSIMCLOUD]
@@ -98,7 +99,7 @@ GCE_LOGIN = cbuser                                         # The username that l
 # DigitalOcean (DO) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN]
 DO_INITIAL_VMCS = tor1:sut                                                                       # VMC == DO data center (we don't have availability zones yet)
-DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1,another_token:arbitrarytag2  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
+DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1;another_token:arbitrarytag2  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
 DO_SSH_KEY_NAME = cbtool_rsa                                                                     # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
 DO_KEY_NAME = key_name_from_digitialocean.com                                                    # Comma-separated list of IDs (or names) of your DO ssh keys
 DO_LOGIN = root                                                                                  # The username that logins on the VMs
@@ -117,6 +118,15 @@ PCM_ACCESS = https://<address>:8443,https://<address>:8443 # A comma-separated l
 PCM_NETNAME = lxdbr0                                       # The name of an already existing network on LXD
 PCM_LOGIN = cbuser                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+# Azure Service Manager (AS) requires the following parameters (via LibCloud)
+[USER-DEFINED : CLOUDOPTION_MYAS ]
+AS_CREDENTIALS = arbitrarytag1:subscription_id1+certificate_path1,arbitrarytag2:subscription_id2+certificate_path2   # The subscription id is obtained from the Azure portal. The certificate is generated locally and uploaded through the portal,
+AS_INITIAL_VMCS = Central____US:sut                                                                                  # Use four consecutives underscores (____) to indicate a space in the name
+AS_NETNAME = public                                                                                                  # Currently not used
+AS_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+AS_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+AS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
+#-------------------------------------------------------------------------------
 [USER-DEFINED : CLOUDOPTION_MYKUB ]
 KUB_INITIAL_VMCS = world                                 # This really does not matter, could be anything
 KUB_CREDENTIALS = NOTUSED                                # Currently not used
@@ -124,6 +134,7 @@ KUB_ACCESS = ~/.kube/config                              # The full path to the 
 KUB_NETNAME = NOTUSED                                    # Currently not used
 KUB_LOGIN = root                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+# END: Specify the individual parameters for each cloud
 
 [OBJECTSTORE]
 USAGE = shared

@@ -432,7 +432,11 @@ my_ip_addr=`get_my_vm_attribute cloud_ip`
 function get_attached_volumes {
     # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
     # So, we need a beefier regex.
-    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | sed "s/\([a-z]*[0-9]\+\|[0-9]\+\)$//g")
+    ROOT_PARTITION=$(sudo mount | grep "/ " | cut -d ' ' -f 1)
+    ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.*[0-9]\)[a-z]\+[0-9]\+$/\1/g")
+    if [ ${ROOT_PARTITION} == ${ROOT_VOLUME} ] ; then
+        ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.\)[0-9]\+$/\1/g")
+    fi
     SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
     if [[ -z ${SWAP_VOLUME} ]]
     then
@@ -1395,7 +1399,7 @@ function execute_load_generator {
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
 
-    run_limit=`decrement_my_ai_attribute run_limit`
+    run_limit=`get_my_ai_attribute run_limit`
 
     if [[ -f /tmp/quiescent_time_start ]]
     then
@@ -1405,7 +1409,7 @@ function execute_load_generator {
         echo $DIFF > /tmp/quiescent_time        
     fi
     
-    if [[ ${run_limit} -ge 0 ]]
+    if [[ ${run_limit} -gt 0 ]]
     then
         syslog_netcat "This AI will execute the load_generating process ${run_limit} more times (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)" 
         syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE} (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
@@ -1428,6 +1432,7 @@ function execute_load_generator {
             LOAD_GENERATOR_END=$(date +%s)
             APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))            
         fi
+        run_limit=`decrement_my_ai_attribute run_limit`
     else
         LOAD_GENERATOR_START=$(date +%s)        
         syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
@@ -1633,6 +1638,18 @@ function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
 
+function setup_rclocal_restarts {
+    if [ x"$(grep cb_start_load_manager.sh /etc/rc.local)" == x ] ; then
+        echo "cb_start_load_manager.sh is missing from /etc/rc.local"
+        cat /etc/rc.local | grep -v "exit 0" > /tmp/rc.local
+        chmod +x /tmp/rc.local
+		echo "su $(whoami) -c \"$dir/cb_start_load_manager.sh\"" >> /tmp/rc.local
+        echo "exit 0" >> /tmp/rc.local
+        mv -f /tmp/rc.local /etc/rc.local
+        
+    fi
+}
+
 function automount_data_dirs {
     #    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
     #    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
@@ -1644,6 +1661,7 @@ function automount_data_dirs {
     then
         syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
         sudo mkdir -p $ROLE_DATA_DIR
+        sudo chown -R ${my_login_username}:${my_login_username} $ROLE_DATA_DIR
     fi
             
     if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
@@ -1664,6 +1682,7 @@ function automount_data_dirs {
         then         
             mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH}    
         fi
+        run_limit=`decrement_my_ai_attribute run_limit`
     else
         if [[ $(get_attached_volumes) != "NONE" ]]
         then

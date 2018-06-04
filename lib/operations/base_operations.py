@@ -38,7 +38,7 @@ from subprocess import Popen, PIPE
 
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
-from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_valid_temp_attr_list, selective_dict_update, create_user_data_contents, create_restart_script, DataOpsException
+from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_valid_temp_attr_list, selective_dict_update, create_restart_script, DataOpsException
 from lib.remote.network_functions import Nethashget 
 from lib.remote.ssh_ops import repeated_ssh
 from lib.remote.process_management import ProcessManagement
@@ -49,7 +49,7 @@ class BaseObjectOperations :
     TBD
     '''
     default_cloud = None
-    proc_man_os_command = ProcessManagement()
+    proc_man_os_command = ProcessManagement(connection_timeout = 120)
 
     @trace
     def __init__ (self, osci, msci, attached_clouds = []) :
@@ -1133,47 +1133,95 @@ class BaseObjectOperations :
                     if _obj_type == "AI" :
                         obj_attr_list["vms"] = ''
                         obj_attr_list["build"] = False
-                        obj_attr_list["override_imageid1"] = False 
+                        obj_attr_list["override_imageid1"] = False
+                                                
+                        obj_attr_list["type"].replace("build->","build:")
+
                         if obj_attr_list["type"].count("build:") :
                             obj_attr_list["build"] = True
                             _x, _override_image, _actual_type = obj_attr_list["type"].split(':')
                             obj_attr_list["type"] = _actual_type
-                            obj_attr_list["override_imageid1"] = _override_image 
-                                                    
+                            obj_attr_list["override_imageid1"] = _override_image
+                            
                     if _obj_type == "VM" :
                                                 
                         self.pre_populate_host_info(obj_attr_list)
-                        
+
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
 
                         obj_attr_list["cloud_init_bootstrap"] = False
                         obj_attr_list["cloud_init_rsync"] = False
+                        
+                        obj_attr_list["role"].replace("check->","check:")
 
                         _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                              "GLOBAL", False, \
                                                              "vm_templates", False)
 
-                        if obj_attr_list["role"].count("check:") :
-                            _role_tmp = obj_attr_list["role"].replace("check:",'')
+                        if str(obj_attr_list["build"]).lower() == "true" :
+                            _role_tmp = "check:" + obj_attr_list["imageid1"] + ':' + obj_attr_list["login"] + ':' + obj_attr_list["type"] + ":build"
+                        else :
+                            _role_tmp = obj_attr_list["role"]
+                            if obj_attr_list["role"].count("check:") :
+                                obj_attr_list["role"] = "check"
+
+                        _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] 
+                        _generic_boot_cmd += "/scripts/common/cb_post_boot.sh"
+                        
+                        if _role_tmp.count("check:") :
+                            _role_tmp = _role_tmp.replace("check:",'')
+                            
+                            obj_attr_list["run_generic_scripts"] = "false"
+                                                        
                             if _role_tmp.count(':') == 1 :                                
                                 obj_attr_list["imageid1"], obj_attr_list["login"] = _role_tmp.split(':')
                                 obj_attr_list["check_ssh"] = "true"                                
                                 obj_attr_list["transfer_files"] = "false"
-                            elif _role_tmp.count(':') == 2 :                                
-                                obj_attr_list["imageid1"], obj_attr_list["login"], obj_attr_list["prepare_workload"] = _role_tmp.split(':')
+                            elif _role_tmp.count(':') >= 2 :
                                 obj_attr_list["check_ssh"] = "true"                                
-                                obj_attr_list["transfer_files"] = "true"                                
+                                obj_attr_list["transfer_files"] = "true"
+
+                                if _role_tmp.count(':') == 2 :                                                  
+                                    obj_attr_list["imageid1"], obj_attr_list["login"], obj_attr_list["prepare_workload"] = _role_tmp.split(':')
+
+                                if _role_tmp.count(':') == 3 : 
+                                    obj_attr_list["imageid1"], obj_attr_list["login"], obj_attr_list["prepare_workload"], x = _role_tmp.split(':')
+                                    obj_attr_list["run_generic_scripts"] = "true"
+
+                                _build_maps = self.osci.get_object(obj_attr_list["cloud_name"],\
+                                                                  "GLOBAL", False, "build", \
+                                                                  False)
+                                                                
+                                _type2imgid = str2dic(_build_maps["type2imgid"])
+                                _imgid2types = str2dic(_build_maps["imgid2types"])
+
+                                obj_attr_list["prepare_image_name"] = _type2imgid[obj_attr_list["prepare_workload"]]
+                                obj_attr_list["prepare_workload_names"] = _imgid2types[obj_attr_list["prepare_image_name"]]
+                                if not obj_attr_list["prepare_workload_names"].count("nullworkload") :
+                                    obj_attr_list["prepare_workload_names"] = "nullworkload+" + obj_attr_list["prepare_workload_names"]
+                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload_names"].replace('+',',')
+
+                                _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] + "/pre_install.sh; "
+                                _generic_boot_cmd += "~/" + obj_attr_list["remote_dir_name"] + "/install --role workload"
+                                _generic_boot_cmd += " --wks " + obj_attr_list["prepare_workload_names"]
+
+                                if _role_tmp.count(':') == 3 :  
+                                    _generic_boot_cmd += " --addr bypass"
+                                    _generic_boot_cmd += " --filestore " + obj_attr_list["filestore_host"] + '-' + obj_attr_list["filestore_port"] + '-' + obj_attr_list["filestore_username"] 
+                                    _generic_boot_cmd += " --syslogh " + obj_attr_list["logstore_host"]
+                                    _generic_boot_cmd += " --syslogr " + obj_attr_list["logstore_protocol"]
+                                    _generic_boot_cmd += " --syslogp " + obj_attr_list["logstore_port"] 
+                                    _generic_boot_cmd += " --syslogf 21 --logdest syslog "
+
                             else :
                                 obj_attr_list["imageid1"] = _role_tmp
                                 obj_attr_list["check_ssh"] = "false"
                                 obj_attr_list["check_boot_complete"] = "wait_for_0"
                                 obj_attr_list["transfer_files"] = "false"
-                                
-                            obj_attr_list["role"] = "check"
-                            obj_attr_list["run_generic_scripts"] = "false"
 
+                        obj_attr_list["generic_post_boot_command"] = _generic_boot_cmd  
                         obj_attr_list["boot_volume_imageid1"] = "NA"
 
                         if obj_attr_list["role"] not in _vm_templates :
@@ -1199,9 +1247,13 @@ class BaseObjectOperations :
                             del obj_attr_list["login"]
 
                         obj_attr_list.update(_vm_template_attr_list)
-                                                
+
+                        if str(obj_attr_list["userdata_post_boot"]).lower() == "true" \
+                        or str(obj_attr_list["userdata_ssh"]).lower() == "true" :
+                            obj_attr_list["userdata"] = "true"
+
                         if str(obj_attr_list["userdata"]).lower() == "true" :
-                            obj_attr_list["userdata"] = create_user_data_contents(obj_attr_list, self.osci)
+                            True
                         elif str(obj_attr_list["userdata"]).lower() == "false" :
                             True
                         else :
@@ -1507,8 +1559,18 @@ class BaseObjectOperations :
         obj_attr_list["logstore_protocol"] = _log_store["protocol"]
         
         obj_attr_list["objectstore_host"] = self.osci.host
-        obj_attr_list["objectstore_port"] = self.osci.port 
+        obj_attr_list["objectstore_port"] = self.osci.port
+        obj_attr_list["objectstore_dbid"] = self.osci.dbid
+        obj_attr_list["objectstore_timeout"] = self.osci.timout
+                
         obj_attr_list["objectstore_protocol"] = "TCP"         
+
+        if obj_attr_list["login"] != "root" :
+            obj_attr_list["remote_dir_home"] = "/home/" + obj_attr_list["login"]
+        else :
+            obj_attr_list["remote_dir_home"] = "/root"
+    
+        obj_attr_list["remote_dir_path"] = obj_attr_list["remote_dir_home"] + '/' + obj_attr_list["remote_dir_name"]
 
         return True
 
@@ -2033,6 +2095,9 @@ class BaseObjectOperations :
         if "access" in obj_attr_list :
             _extra_parms += ",access=" + obj_attr_list["access"]
 
+        if "build" in obj_attr_list :
+            _extra_parms += ",build=" + str(obj_attr_list["build"]).lower()
+
         if str(obj_attr_list["override_imageid1"]).lower() != "false" :
             _extra_parms += ",imageid1=" + obj_attr_list["override_imageid1"]
 
@@ -2388,7 +2453,7 @@ class BaseObjectOperations :
             _vm_hns = []
             _vm_pns = []
             _vm_roles = []
-            _vm_ip_addrs = []
+            _vm_uuids = []
             _vm_logins = []
             _vm_passwds = []
             _vm_priv_keys = []
@@ -2423,11 +2488,12 @@ class BaseObjectOperations :
                 _vm_hns.append(_obj_attr_list["cloud_hostname"])
                 
                 _vm_roles.append(_obj_attr_list["role"])
+                _vm_uuids.append(_vm_uuid)
                 if operation != "reset" :
-                    _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
-                    _vm_pns.append(_obj_attr_list["prov_cloud_port"])                    
+                    _which_key = "prov_cloud_ip"
+                    _vm_pns.append(_obj_attr_list["prov_cloud_port"])
                 else :
-                    _vm_ip_addrs.append(_obj_attr_list["run_cloud_ip"])
+                    _which_key = "run_cloud_ip"
                     _vm_pns.append(_obj_attr_list["run_cloud_port"])
                                         
                 _vm_logins.append(_obj_attr_list["login"])
@@ -2494,15 +2560,17 @@ class BaseObjectOperations :
                 if _actual_attempts > 0 :
                     _post_boot_start = int(time())
                     _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
-                                                                        _vm_ip_addrs, \
+                                                                        _vm_uuids, \
                                                                         _vm_pns, \
                                                                         _actual_attempts, \
                                                                         int(_ai_attr_list["update_frequency"]), \
                                                                         _ai_attr_list["execute_parallelism"], \
-                                                                        _obj_attr_list["run_generic_scripts"], \
-                                                                        _obj_attr_list["debug_remote_commands"], \
-                                                                        "0", \
-                                                                        _smallest_remaining_time)
+                                                                        really_execute = _obj_attr_list["run_generic_scripts"], \
+                                                                        debug_cmd = _obj_attr_list["debug_remote_commands"], \
+                                                                        step = "0", \
+                                                                        remaining_time = _smallest_remaining_time, \
+                                                                        osci = self.osci, \
+                                                                        get_hostname_using_key = _which_key)
                     sleep(float(_ai_attr_list["post_generic_scripts_delay"]))                    
                     _post_boot_spent_time = int(time()) - _post_boot_start
                 else :
@@ -2660,7 +2728,7 @@ class BaseObjectOperations :
                     if _actual_attempts > 0 :
                         _application_start = int(time())                        
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
-                                                                            _vm_ip_addrs, \
+                                                                            _vm_uuids, \
                                                                             _vm_pns, \
                                                                             _actual_attempts, \
                                                                             int(_ai_attr_list["update_frequency"]), \
@@ -2668,7 +2736,9 @@ class BaseObjectOperations :
                                                                             _ai_attr_list["run_application_scripts"], 
                                                                             _ai_attr_list["debug_remote_commands"],
                                                                             _num, \
-                                                                            _smallest_remaining_time)
+                                                                            _smallest_remaining_time, \
+                                                                            osci = self.osci, \
+                                                                            get_hostname_using_key = _which_key)
                         
                         sleep(float(_ai_attr_list["post_application_scripts_delay"]))
                         _application_spent_time = int(time()) - _application_start                        
@@ -3921,18 +3991,18 @@ class BaseObjectOperations :
                                 _msg += " by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>:nullworkload\""
                                 _msg += " on the CLI.\n"
                             else :
-                                _msg = "\n\n A copy of the code was transferred to "
-                                _msg += obj_attr_list["name"] + ". On another terminal"
-                                _msg += ", execute \"cd " + obj_attr_list["base_dir"]
-                                _msg += "; ./cbssh " + obj_attr_list["name"] + "\""
-                                _msg += " to login on the VM. Once there, execute"
-                                _msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
-                                _msg +=  "; ./pre_install.sh && ./install -r workload --wks nullworkload\" "
-                                _msg += "to automatically configure a new instance."
-                                _msg += "\nOnce done, execute \"vmcapture youngest " 
-                                _msg += obj_attr_list["image_prefix"] + "cb_nullworkload"
-                                _msg += obj_attr_list["image_suffix"] + "\" on the CLI\n"
-            
+                                if obj_attr_list["run_generic_scripts"] == "false" :
+                                    _msg = "\n\n A copy of the code was transferred to "
+                                    _msg += obj_attr_list["name"] + ". On another terminal"
+                                    _msg += ", execute \"cd " + obj_attr_list["base_dir"]
+                                    _msg += "; ./cbssh " + obj_attr_list["name"] + "\""
+                                    _msg += " to login on the VM. Once there, execute"
+                                    _msg += " \"" + obj_attr_list["generic_post_boot_command"] + "\" "
+                                    _msg += "to automatically configure a new instance."
+                                    _msg += "\nOnce done, execute \"vmcapture youngest "
+                                    _msg += obj_attr_list["image_prefix"].strip() + obj_attr_list["prepare_image_name"]
+                                    _msg += obj_attr_list["image_suffix"].strip() + "\" on the CLI\n"
+
                     if _obj_type == "VM" and obj_attr_list["role"] == "tinyvm" :
                         _msg = "\n\n You have sucessfully deployed your first fully configured"
                         _msg += " instance, with the role \"tinyvm\". Now lets try deploy "
@@ -3945,8 +4015,8 @@ class BaseObjectOperations :
                         _msg += " samples, this means that the initial configuration is complete.\n"
                         _msg += "Restart the tool with \"cb --soft_reset\". \nTo configure instances"
                         _msg += " for the deployment of other workloads, just execute "
-                        _msg += "\"vmattach check:cb_nullworkload:<USERNAME FOR LOGIN>:<WORKLOAD TYPE OF YOUR CHOICE>\""
-                        _msg += ", followed \"vmcapture youngest <IMAGE_NAME_DEFINED_ON_THE_WORKLOAD_ROLES>\""
+                        _msg += "\"vmattach check:cb_nullworkload:<USERNAME FOR LOGIN>:<WORKLOAD TYPE OF YOUR CHOICE>:build\""
+                        _msg += ", and follow the instructions on the CLI.\""
         
                 if operation == "capture" :
                     if obj_attr_list["captured_image_name"] == "cb_nullworkload" :
@@ -3956,6 +4026,93 @@ class BaseObjectOperations :
                         _msg += " with \"vmattach tinyvm\". on the CLI\n"                
         
         return _msg
+
+    @trace
+    def create_image_build_map(self, cld_attr_list) :
+        '''
+        TBD
+        '''
+        # The problem here is, some roles NAMES are repeated across multiple
+        # different AI types. For instance the role "redis" exists in "MEMTIER"
+        # and "REDIS_YCSB".
+
+        # First we create a type x role table
+        _type2role = {}
+        for _entry in cld_attr_list["ai_templates"] :
+            if _entry.count("_sut") :
+                _type = _entry.replace("_sut",'')
+                if _type not in _type2role :
+                    _type2role[_type] = []
+                    
+                for _role in cld_attr_list["ai_templates"][_entry].split("->") :
+                    
+                    if _role.count("_x_") :
+                        _role = _role.split("_x_")[1]
+                        
+                    if _role not in _type2role[_type] :
+                        _type2role[_type].append(_role)
+
+        # Then we create a role x type table
+        _role2type = {}
+        for _role in cld_attr_list["vm_templates"].keys() :
+            for _entry in cld_attr_list["ai_templates"] :
+                if _entry.count("_sut") :
+                    _type = _entry.replace("_sut",'')
+                    
+                    if _role not in _role2type :
+                        _role2type[_role] = []
+                        
+                    if cld_attr_list["ai_templates"][_entry].count(_role) :
+                        _role2type[_role].append(_type)
+
+        # The trick part 1 : we create a list of role names which are NOT shared
+        # across different AI types
+        _roles_used = []
+        for _role in _role2type :
+            if len(_role2type[_role]) == 1 :
+                _roles_used.append(_role)
+
+        # Now we can carefully construct a type x image id
+        _type2imgid = {}
+        for _type in _type2role :
+            
+            # First we deal with the roles names which are NOT shared across AI types.
+            # If a role is part of the listed roles for that AI type, we just
+            # get the imageid directly from "vm_templates"
+            for _role in _roles_used :
+                _role_attr = str2dic(cld_attr_list["vm_templates"][_role])
+                if _role in _type2role[_type] :
+                    _type2imgid[_type] = _role_attr["imageid1"]
+
+            # And now, we take care of role names which are repeated across different
+            # AI types by taking the role name directly from the type x role table,
+            # and then translating the role to an image id (from "vm_templates").
+            if _type not in _type2imgid :
+                for _role in _type2role[_type] :
+                    if _role in cld_attr_list["vm_templates"] :
+                        _role_attr = str2dic(cld_attr_list["vm_templates"][_role])                    
+                        _type2imgid[_type] = _role_attr["imageid1"]
+
+
+        # We can finally build our imgid x types table.
+        _imgid2types = {}
+        for _type in _type2imgid.keys() :
+            _imgid = _type2imgid[_type]
+            if _imgid not in _imgid2types :
+                _imgid2types[_imgid] = []
+            if _type not in _imgid2types[_imgid] :
+                _imgid2types[_imgid].append(_type)
+
+        # Preparing the table (dictionary) for storage in the Objects Store
+        # as a string
+        for _img in _imgid2types :
+            _imgid2types[_img] = '+'.join(_imgid2types[_img])
+
+        cld_attr_list["build"] = {}
+        cld_attr_list["build"]["type2imgid"] = dic2str(_type2imgid)
+        cld_attr_list["build"]["imgid2types"] = dic2str(_imgid2types)
+                
+        return True
     
     @trace
     def background_execute(self, parameters, command) :

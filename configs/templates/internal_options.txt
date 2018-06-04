@@ -53,7 +53,7 @@ GLOBAL_OBJECT_LIST = setup,logstore,metricstore,filestore,dash_defaults,mon_defa
 GLOBAL_OBJECT_LIST += vpn,space,time,vmc_defaults,vm_defaults,ai_defaults,
 GLOBAL_OBJECT_LIST += aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,
 GLOBAL_OBJECT_LIST += ai_templates,aidrs_templates,vmcrs_templates,fi_templates,
-GLOBAL_OBJECT_LIST += firs_templates,query,admission_control,api_defaults,gui_defaults
+GLOBAL_OBJECT_LIST += firs_templates,query,admission_control,api_defaults,gui_defaults,build
 
 [SPACE]
 BASE_DIR = $MAIN_BASE_DIR
@@ -131,7 +131,7 @@ DETACH_PARALLELISM = 20
 DISCOVER_HOSTS = $False
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
-FORCE_WALKTHROUGH = $False
+FORCE_WALKTHROUGH = $True
 ADDITIONAL_DISCOVERY = $EMPTY
 # Choose from VMCs in a pool in a round-robin manner.
 ROUND_ROBIN = $True
@@ -177,8 +177,10 @@ ALTERNATIVE_REMOTE_MTU_DEFAULT = 1200
 EXPECTED_MTU = 1500
 ALTERNATIVE_REMOTE_MTU_INTERFACE = default
 USERDATA = $False
+USERDATA_POST_BOOT = $False
+USERDATA_SSH = $False
 USE_VPN_IP = $False
-VPN_ONLY = $False
+#VPN_ONLY = $False
 USE_FLOATING_IP = $False
 USE_JUMPHOST = $False
 CREATE_JUMPHOST = $False
@@ -200,6 +202,9 @@ JUMPHOST_LOGIN = auto
 JUMPHOST_NETNAMES = all
 TIME_BREAKDOWN_STEP = 1
 ABORT_AFTER_SSH_UPLOAD_FAILURE = $True
+PREPARE_WORKLOAD = None
+PREPARE_WORKLOAD_NAMES = None
+PREPARE_IMAGE_NAME = None
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -240,6 +245,12 @@ RUNSTATE_PARALLELISM = 5
 EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
 EXECUTE_JSON_FILENAME_PREFIX = cb
 VM_ATTACH_ACTION = $Empty
+# This allows the tester to set the AI state to 'stopped' after each run
+# So that they can change the parameters of the test
+PAUSE_AFTER_RUN = $False
+# This allows the tester to prevent the load manager from doing anything
+# upon initial startup
+PAUSE_AFTER_ATTACHED = $False
 
 [AIDRS_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -363,7 +374,7 @@ HS_ID2 = uuid, name
 #CPU_M += cpu_user, cpu_system, cpu_wio, cpu_intr, cpu_sintr, cpu_nice
 CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle,
 CPU_M += cpu_user, cpu_system, cpu_wio, cpu_nice, cpu_steal, cpu_guest, cpu_gnice
-MEM_M = mem_total, mem_free, mem_cached, mem_buffers, mem_shared
+MEM_M = mem_total, mem_free, mem_cached, mem_buffers, mem_anonpages
 SWAP_M = swap_total, swap_free, swap_procs_running, swap_in_flight, 
 SWAP_M += swap_procs_blocked, swap_KB_read, swap_ios_read, swap_KB_write, swap_ios_write
 NET_M = pkts_in, bytes_in, pkts_out, bytes_out
@@ -431,8 +442,9 @@ PORT = 7070
 USERNAME = $MAIN_USERNAME
 PROTOCOL = TCP
 HOSTNAME = $MANAGER_IP
-PARAMETERS = $EMPTY
+PARAMETERS = $Empty
 REMOTE = $False
+FILE_IDENTIFIER = $Empty
 
 [GUI_DEFAULTS]
 PORT = 8080
