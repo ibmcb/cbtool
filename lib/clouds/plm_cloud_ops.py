@@ -89,7 +89,7 @@ class PlmCmds(CommonCloudFunctions) :
                         
 
             for _endpoint in access.split(',') :
-                _endpoint_name, _endpoint_ip = hostname2ip(_endpoint.split('//')[1].split(':')[0], True)
+                _endpoint, _endpoint_name, _endpoint_ip= self.parse_endpoint(_endpoint, "qemu+tcp", False)
                 
                 if _endpoint_ip not in self.lvirtconn :
                     self.lvirtconn[_endpoint_ip] = open(_endpoint + "/system")
