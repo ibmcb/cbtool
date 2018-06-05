@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="new server">
+
+    <!-- Enable features -->
+    <featureManager>
+         <feature>jaxrs-2.0</feature>
+         <feature>managedBeans-1.0</feature>
+         <feature>cdi-1.2</feature>
+         <feature>websocket-1.1</feature>         
+    </featureManager>
+
+    <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                  host="*"
+                  httpPort="REPLACE_ACMEAIR_HTTP_PORT"
+                  httpsPort="REPLACE_ACMEAIR_HTTPS_PORT" />
+
+    <application name="acmeair-monolithic" context-root="/" type="war" location="REPLACE_ACMEAIR_APP"></application>
+    <webContainer deferServletLoad="false"/>
+    <jndiEntry jndiName="com/acmeair/repository/type" value="mongo"/>
+
+</server>
