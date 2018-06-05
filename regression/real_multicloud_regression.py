@@ -220,7 +220,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["plm"] = "xenial"        
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
-        _model_to_imguuid["do"] = "21669205"        
+        _model_to_imguuid["do"] = "cloudbench-nullworkload-on-1604.051818-1"        
         _model_to_imguuid["slr"] = "1836627"        
         _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
         _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB"
@@ -892,7 +892,7 @@ def main() :
         _results_row[0] = _results_row[0].center(22, ' ')
 
         if _results_row[1] == "NA" :
-            _results_row[1] = _results_row[1].center(52,' ')
+            _results_row[1] = _results_row[1].center(51,' ')
 
         if _results_row[2] == "NA" :
             _results_row[2] = _results_row[2].center(51,' ')
