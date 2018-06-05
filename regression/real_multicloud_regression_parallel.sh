@@ -103,23 +103,23 @@ do
     adapter=$(echo $adapter | sed 's/osl/os/g')
     actual_adapter=$(echo $adapter | cut -d ',' -f 1)
     
-	sudo tmux kill-session -t cb${actual_user} > /dev/null 2>&1
-	sudo rm /tmp/${actual_adapter}_real_multicloud_regression_test.txt > /dev/null 2>&1
-	sudo rm /tmp/${actual_adapter}_real_cloud_regression_ecode.txt    > /dev/null 2>&1
-	sudo tmux new -d -s cb${actual_user}
-	sudo tmux send-keys -t cb${actual_user} "sudo chown -R cb${actual_user}:cb${actual_user} /home/cb${actual_user}" Enter	
-	sudo tmux send-keys -t cb${actual_user} "su - cb${actual_user}" Enter
-	sudo tmux send-keys -t cb${actual_user} "cd ~/$CB_ACTUAL_DIR" Enter
-	sudo tmux send-keys -t cb${actual_user} "~/cbsync.sh" Enter
-	sudo tmux send-keys -t cb${actual_user} "time ./regression/real_multicloud_regression.py configs/softlayer_ris ${adapter} ${CB_TEST_LEVEL} private noheader" Enter
-	
+    sudo tmux kill-session -t cb${actual_user} > /dev/null 2>&1
+    sudo rm /tmp/${actual_adapter}_real_multicloud_regression_test.txt > /dev/null 2>&1
+    sudo rm /tmp/${actual_adapter}_real_cloud_regression_ecode.txt    > /dev/null 2>&1
+    sudo tmux new -d -s cb${actual_user}
+    sudo tmux send-keys -t cb${actual_user} "sudo chown -R cb${actual_user}:cb${actual_user} /home/cb${actual_user}" Enter    
+    sudo tmux send-keys -t cb${actual_user} "su - cb${actual_user}" Enter
+    sudo tmux send-keys -t cb${actual_user} "cd ~/$CB_ACTUAL_DIR" Enter
+    sudo tmux send-keys -t cb${actual_user} "~/cbsync.sh" Enter
+    sudo tmux send-keys -t cb${actual_user} "time ./regression/real_multicloud_regression.py configs/softlayer_ris ${adapter} ${CB_TEST_LEVEL} private noheader" Enter
+    
     alist=$adapter' '$alist
 done
 
 alist=$(echo $alist | sed 's/,/ /g' | sed -e $'s/ /\\\n/g' | sort | sed ':a;N;$!ba;s/\n/ /g')
 acount=$(echo $alist | wc -w)
 ecodes=$(sudo ls /tmp/*_real_multicloud_regression_ecode.txt 2>&1 | grep -v 'cannot access' | wc -l)
-
+    
 echo "Will wait until $acount tests ($alist) are completed"
 while [[ "$ecodes" -lt "$acount" ]]
 do
@@ -130,8 +130,8 @@ do
     sudo ls /tmp/*_real_multicloud_regression_test.txt > /dev/null 2>&1
     if [[ $? -eq 0 ]]
     then
-	sudo cat /tmp/a0_real_multicloud_regression_test.txt        
-    for fn in $(ls /tmp/*_real_multicloud_regression_test.txt | grep -v a0_)
+        sudo cat /tmp/a0_real_multicloud_regression_test.txt        
+        for fn in $(ls /tmp/*_real_multicloud_regression_test.txt | grep -v a0_)
         do 
             cat $fn | tail -1
         done
