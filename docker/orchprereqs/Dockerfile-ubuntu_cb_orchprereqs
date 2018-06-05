@@ -280,14 +280,6 @@ RUN pip install --upgrade pykube
 RUN apt-get install -y r-base-core
 # R-install-pm
 
-# bc-install-pm
-RUN apt-get install -y bc
-# bc-install-pm
-
-# jq-install-pm
-RUN apt-get install -y jq
-# jq-install-pm
-
 USER REPLACE_USERNAME
 # gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
