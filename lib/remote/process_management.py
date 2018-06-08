@@ -34,6 +34,9 @@ class ProcessManagement :
     '''
     TBD
     '''
+
+    allocated_ports = []
+
     @trace
     def __init__(self, hostname = "127.0.0.1", port = "22", username = None, \
                  cloud_name = None, priv_key = None, config_file = None, \
@@ -452,9 +455,10 @@ class ProcessManagement :
         '''
         _port = int(starting_port)
         _pid, _username = self.get_pid_from_port(_port, protocol)
-        while _pid :
+        while _pid or _port in ProcessManagement.allocated_ports :
             _port += 1
             _pid, _username = self.get_pid_from_port(_port, protocol)
+        ProcessManagement.allocated_ports.append(_port)
         return str(_port)
 
     @trace
@@ -532,12 +536,12 @@ class ProcessManagement :
             # Same comment
             sleep(3)
 
-        _pid = self.get_pid_from_cmdline(cmdline if not search_keywords else search_keywords)
+        _pidlist = self.get_pid_from_cmdline(cmdline if not search_keywords else search_keywords)
 
         _msg = "A process with the command line \"" + cmdline + "\" (pid "
-        _msg += str(_pid) + ") was started succesfully."
+        _msg += str(_pidlist) + ") was started succesfully."
         cbdebug(_msg)
-        return [ _pid ]
+        return _pidlist
 
     @trace
     def kill_process(self, cmdline, kill_options = False, port = False) :
