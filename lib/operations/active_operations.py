@@ -2423,7 +2423,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
 
                 _status, _result_stdout, _result_stderr = \
-                        _proc_man.retriable_run_os_command(_cmd, obj_attr_list["uuid"], \
+                        _proc_man.retriable_run_os_command(obj_attr_list["generic_post_boot_command"], obj_attr_list["uuid"], \
                                                            really_execute = obj_attr_list["run_generic_scripts"], \
                                                            debug_cmd = obj_attr_list["debug_remote_commands"], \
                                                            total_attempts = int(obj_attr_list["update_attempts"]),\

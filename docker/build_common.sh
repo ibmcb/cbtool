@@ -8,7 +8,7 @@ if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
 
-CB_REPO=cloudbench-docker-local.artifactory.swg-devops.com
+CB_REPO=ibmcb
 CB_WKS="ALL"
 CB_RSYNC_ADDR=$(sudo ifconfig docker0 | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')
 for pi in $(sudo netstat -puntel | grep rsync | grep tcp[[:space:]] | awk '{ print $9 }' | sed 's^/rsync^^g')
@@ -16,7 +16,7 @@ do
     if [[ $(echo $(sudo ps aux | grep $pi | grep -c $(whoami)_rsync.conf)) -ne 0 ]]
     then
         CB_RSYNC_PORT=$(sudo netstat -puntel | grep $pi | awk '{ print $4 }' | cut -d ':' -f 2)
-	break
+    break
     fi
 done
 CB_RSYNC=$CB_RSYNC_ADDR:${CB_RSYNC_PORT}/$(whoami)_cb
@@ -31,7 +31,7 @@ CB_USERNAME="cbuser"
 CB_MYUSERNAME=$(whoami)
 CB_MYUID=$(id -u $(whoami))
 CB_MYGID=$(id -g $(whoami))
-CB_BRANCH="master"
+CB_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 CB_USAGE="Usage: $0 [-r <repository>] [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [-b branch] [--verbose] [--push] [--psall]"
 
 function cb_docker_build {
@@ -361,8 +361,8 @@ function cb_push_images {
     if [[ -z $4 ]]
     then
         CB_BRANCH=""
-	else
-		CB_BRANCH=":"$CB_BRANCH 
+    else
+        CB_BRANCH=":"$CB_BRANCH 
     fi
             
     if [[ $CB_IMGTYPE == "orchestrator" ]]
@@ -378,6 +378,12 @@ function cb_push_images {
     echo "##### Pushing all images to Docker repository"
     for IMG in $(docker images | grep ${CB_REPOSITORY} | $CB_IMG_GREP_CMD | awk '{ print $1 }')
     do
+        if [[ $CB_BRANCH != ""  ]]
+        then
+            CMD="docker tag ${IMG}${CB_BRANCH} ${IMG}:latest"
+            echo "########## Tagging image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
+            $CMD            
+        fi
         echo $IMG | grep coremark
         NOT_COREMARK=$?
         echo $IMG | grep linpack
@@ -392,11 +398,21 @@ function cb_push_images {
         NOT_RUBIS=$?
         echo $IMG | grep rubbos
         NOT_RUBBOS=$?
-        if [[ $NOT_COREMARK -eq 1 && $NOT_LINPACK -eq 1 && $NOT_PARBOIL -eq 1 && $NOT_SPEC -eq 1 && $NOT_CAFFE -eq 1 && $NOT_RUBIS -eq 1 && $NOT_RUBBOS -eq 1 || $CB_PUSHALL -eq 1 ]]
+        echo $IMG | grep acmeair
+        NOT_ACMEAIR=$?
+        echo $IMG | grep spark
+        NOT_SPARK=$?  
+        if [[ $NOT_COREMARK -eq 1 && $NOT_LINPACK -eq 1 && $NOT_PARBOIL -eq 1 && $NOT_SPEC -eq 1 && $NOT_CAFFE -eq 1 && $NOT_RUBIS -eq 1 && $NOT_RUBBOS -eq 1 && $NOT_ACMEAIR -eq 1 && $NOT_SPARK -eq 1 || $CB_PUSHALL -eq 1 ]]
         then
             CMD="docker push ${IMG}${CB_BRANCH}"
             echo "########## Pushing image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
             $CMD
+            if [[ $CB_BRANCH != ""  ]]
+            then
+                CMD="docker push ${IMG}:latest"
+                echo "########## Pushing image ${IMG}:latest by executing the command \"$CMD\" ..."             
+                $CMD            
+            fi            
         fi
     done
     echo "##### Images to Docker repository"    

@@ -89,7 +89,7 @@ class PlmCmds(CommonCloudFunctions) :
                         
 
             for _endpoint in access.split(',') :
-                _endpoint_name, _endpoint_ip = hostname2ip(_endpoint.split('//')[1].split(':')[0], True)
+                _endpoint, _endpoint_name, _endpoint_ip= self.parse_endpoint(_endpoint, "qemu+tcp", False)
                 
                 if _endpoint_ip not in self.lvirtconn :
                     self.lvirtconn[_endpoint_ip] = open(_endpoint + "/system")
@@ -133,7 +133,7 @@ class PlmCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults['poolname'])
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using lxc CLI)"
@@ -198,7 +198,7 @@ class PlmCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates) :
+    def check_images(self, vmc_name, vm_templates, poolname) :
         '''
         TBD
         '''
@@ -210,9 +210,9 @@ class PlmCmds(CommonCloudFunctions) :
             _map_name_to_id = {}
             _map_id_to_name = {}
 
-            for _storage_pool in self.lvirtconn[_endpoint].listStoragePools() :
-                _storage_pool_handle = self.lvirtconn[_endpoint].storagePoolLookupByName(_storage_pool)          
-                _registered_image_list = _storage_pool_handle.listVolumes()
+#            for _storage_pool in self.lvirtconn[_endpoint].listStoragePools() :
+            _storage_pool_handle = self.lvirtconn[_endpoint].storagePoolLookupByName(poolname)          
+            _registered_image_list = _storage_pool_handle.listVolumes()
                 
             _registered_imageid_list = []
                 

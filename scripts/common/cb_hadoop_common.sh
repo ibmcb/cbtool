@@ -31,6 +31,17 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_java_home
 
+DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
+eval DFS_NAME_DIR=${DFS_NAME_DIR}
+syslog_netcat "Local directory for Hadoop namenode is ${DFS_NAME_DIR}"
+export DFS_NAME_DIR=$DFS_NAME_DIR
+
+#DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
+DFS_DATA_DIR=`get_my_vm_attribute_with_default data_dir /tmp/cbhadoopdata`
+eval DFS_DATA_DIR=${DFS_DATA_DIR}
+syslog_netcat "Local directory for Hadoop datanode is ${DFS_DATA_DIR}"
+export DFS_DATA_DIR=$DFS_DATA_DIR
+
 if [[ -z ${HADOOP_HOME} ]]
 then
     HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-2.6.0`
@@ -287,7 +298,7 @@ then
 else
     HADOOP_BIN_DIR=${HADOOP_HOME}/bin
 fi
-    
+
 if [[ $(echo $my_type | grep -c giraph) -ne 0 ]]
 then
     hadoop_master_ip=`get_ips_from_role giraphmaster`
@@ -379,16 +390,14 @@ function create_master_and_slaves_files {
        syslog_netcat "Error creating $HADOOP_CONF_DIR/masters - NOK"
        exit 1
     fi
-            
+    
     echo "${slave_ips}" > $HADOOP_CONF_DIR/slaves
     if [[ $? -ne 0 ]]
     then
        syslog_netcat "Error creating $HADOOP_CONF_DIR/slaves - NOK"
        exit 1
     fi
-
     syslog_netcat "...masters, slaves files updated."
-    
 }
 export -f create_master_and_slaves_files
 
@@ -612,15 +621,10 @@ function update_hadoop_config_files {
     then
         sudo sed -i -e "s/HADOOP_JOBTRACKER_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/yarn-site.xml
     fi
-    
-    TEMP_DFS_NAME_DIR=`echo ${DFS_NAME_DIR} | sed -e "s/\//-__-__/g"`
-    TEMP_DFS_DATA_DIR=`echo ${DFS_DATA_DIR} | sed -e "s/\//-__-__/g"`
-    
-    sudo sed -i -e "s/DFS_NAME_DIR/${TEMP_DFS_NAME_DIR}/g" $HADOOP_CONF_DIR/hdfs-site.xml
-    sudo sed -i -e "s/DFS_DATA_DIR/${TEMP_DFS_DATA_DIR}/g" $HADOOP_CONF_DIR/hdfs-site.xml
-    
-    sudo sed -i -e "s/-__-__/\//g" $HADOOP_CONF_DIR/hdfs-site.xml
-    
+
+    sudo sed -i -e "s^DFS_NAME_DIR^${DFS_NAME_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
+    sudo sed -i -e "s^DFS_DATA_DIR^${DFS_DATA_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
+
     syslog_netcat "Placeholders updated."    
 }
 export -f update_hadoop_config_files
@@ -823,7 +827,6 @@ function start_master_hadooop_services {
 
     if [[ ${hadoop_use_yarn} -eq 1 ]]
         then
-                                	
             syslog_netcat "...Formatting Namenode..."
             $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
@@ -857,7 +860,7 @@ function start_master_hadooop_services {
                 dfs_name_dir_owner=$(whoami)
                 sudo chown -R $(whoami) ${DFS_NAME_DIR}
             fi
-            
+    
             sudo -E -u ${dfs_name_dir_owner} $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
             then

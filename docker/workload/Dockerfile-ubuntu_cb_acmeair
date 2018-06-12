@@ -8,7 +8,7 @@ RUN /home/REPLACE_USERNAME/ibm-java-x86_64-sdk-8.0-5.5.bin -i silent -f /home/RE
 # ibm-java-install-man
 
 # maven-install-pm
-RUN apt-get install -y maven ant
+RUN apt-get update; apt-get install -y maven ant
 # maven-install-pm
 
 # gradle-install-pm
@@ -18,9 +18,10 @@ RUN apt-get install -y gradle unzip
 # acmeair-install-man
 #RUN cd /home/REPLACE_USERNAME; git clone https://github.com/acmeair/acmeair.git
 #RUN cd /home/REPLACE_USERNAME; git clone https://github.com/blueperf/acmeair.git; export JAVA_HOME=/opt/ibm/java-x86_64-80/jre; cd acmeair; gradle build
-RUN cd /home/REPLACE_USERNAME; git clone https://github.com/blueperf/acmeair -b simple --single-branch; 
-RUN echo "loader.timeout=180" > /home/REPLACE_USERNAME/acmeair/src/main/resources/loader.properties; echo "loader.numCustomers=200" >> /home/REPLACE_USERNAME/acmeair/src/main/resources/loader.properties 
-RUN export JAVA_HOME=/opt/ibm/java-x86_64-80/jre; cd /home/REPLACE_USERNAME/acmeair; mvn clean package 
+#RUN cd /home/REPLACE_USERNAME; git clone https://github.com/blueperf/acmeair -b simple --single-branch; 
+RUN cd /home/REPLACE_USERNAME; git clone https://github.com/blueperf/acmeair-monolithic-java.git;
+RUN echo "loader.timeout=180" > /home/REPLACE_USERNAME/acmeair-monolithic-java/src/main/resources/loader.properties; echo "loader.numCustomers=200" >> /home/REPLACE_USERNAME/acmeair-monolithic-java/src/main/resources/loader.properties 
+RUN export JAVA_HOME=/opt/ibm/java-x86_64-80/jre; cd /home/REPLACE_USERNAME/acmeair-monolithic-java; mvn clean package 
 RUN sudo mkdir -p /root/.m2/; sudo rsync -az /root/.m2/ /home/REPLACE_USERNAME/
 #RUN mv /root/.gradle/ /home/REPLACE_USERNAME/
 # acmeair-install-man
@@ -50,7 +51,7 @@ RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
 
 # mongo-driver-java-install-man
 #RUN mkdir -p /opt/ibm/wlp/usr/shared/resources/mongodb; cd /opt/ibm/wlp/usr/shared/resources/mongodb; wget -N -q http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.12.2/mongo-java-driver-2.12.2.jar
-RUN mkdir -p /opt/ibm/wlp/usr/shared/resources/mongodb; sudo cp -f $(find /home/REPLACE_USERNAME/acmeair | grep mongo-java-driver-.*.jar) /opt/ibm/wlp/usr/shared/resources/mongodb/
+RUN mkdir -p /opt/ibm/wlp/usr/shared/resources/mongodb; sudo cp -f $(find /home/REPLACE_USERNAME/acmeair-monolithic-java | grep mongo-java-driver-.*.jar) /opt/ibm/wlp/usr/shared/resources/mongodb/
 # mongo-driver-java-install-man
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

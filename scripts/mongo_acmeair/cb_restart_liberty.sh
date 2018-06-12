@@ -29,7 +29,7 @@ if [[ $? -ne 0 ]]
 then
 #    ACMEAIR_APP=$(find $ACMEAIR_PATH | grep acmeair-webapp-.*war | head -n 1)
 	cp ~/mileage.csv $ACMEAIR_PATH/src/main/resources/mileage.csv
-	cd ~/acmeair
+	cd $ACMEAIR_PATH
 	mvn clean package
 	ACMEAIR_APP=$(find $ACMEAIR_PATH | grep acmeair-java-.*war | head -n 1)	
 	cd ~
@@ -69,8 +69,8 @@ sudo sed -i "s^REPLACE_ACMEAIR_HTTPS_PORT^$ACMEAIR_HTTPS_PORT^g" $WLP_SERVERDIR/
 export MONGO_MANUAL=true
 export MONGO_HOST=$mongos_ip
 export MONGO_PORT=27017
-export MONGO_USER=
-export MONGO_PASSWORD=
+#export MONGO_USER=
+#export MONGO_PASSWORD=
 
 sudo ps aux | grep -v grep | grep acmeair > /dev/null 2>&1
 if [[ $? -ne 0 ]]

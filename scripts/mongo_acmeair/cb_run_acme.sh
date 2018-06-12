@@ -19,7 +19,7 @@ then
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
 
-	NUM_CUSTOMERS=`get_my_ai_attribute_with_default num_customers 1000`
+    NUM_CUSTOMERS=`get_my_ai_attribute_with_default num_customers 1000`
 
     START_GENERATION=$(get_time)
                                                 
@@ -40,7 +40,7 @@ then
         ERROR=$?
     fi
     END_GENERATION=$(get_time)
-    update_app_errors $ERROR        
+    update_app_errors $ERROR
 
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     update_app_datagentime ${DATA_GENERATION_TIME}
@@ -51,6 +51,11 @@ fi
 
 ACMEAIR_DRIVER_RAMPUP_TIME=`get_my_ai_attribute_with_default acmeair_driver_rampup_time 10`
 
+if [[ -f $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/AcmeAir.jmx.original ]]
+then
+    cp $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/AcmeAir.jmx $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/AcmeAir.jmx.original
+fi
+
 sed -i "s^<stringProp name=\"ThreadGroup.num_threads\">.*</stringProp>^<stringProp name=\"ThreadGroup.num_threads\">$LOAD_LEVEL</stringProp>^g" $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/AcmeAir.jmx
 sed -i "s^<stringProp name=\"ThreadGroup.duration\">.*</stringProp>^<stringProp name=\"ThreadGroup.duration\">$LOAD_DURATION</stringProp>^g" $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/AcmeAir.jmx
 sed -i "s^<stringProp name=\"HTTPSampler.port\">.\+</stringProp>^<stringProp name=\"HTTPSampler.port\">$ACMEAIR_HTTP_PORT</stringProp>^" $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/AcmeAir.jmx
@@ -59,6 +64,20 @@ sed -i "s^<stringProp name=\"ThreadGroup.ramp_time\">.*</stringProp>^<stringProp
 sed -i "s^              <stringProp name=\"Argument.value\">/acmeair-webapp</stringProp>^              <stringProp name=\"Argument.value\">/</stringProp>^" $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/AcmeAir.jmx
 
 echo "$liberty_ip" > $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/hosts.csv
+
+if [[ -f $ACMEAIR_PATH/AcmeAir-v5.jmx.original ]]
+then
+    cp $ACMEAIR_PATH/AcmeAir-v5.jmx $ACMEAIR_PATH/AcmeAir-v5.jmx.original
+fi
+
+sed -i "s^<stringProp name=\"ThreadGroup.num_threads\">.*</stringProp>^<stringProp name=\"ThreadGroup.num_threads\">$LOAD_LEVEL</stringProp>^g" $ACMEAIR_PATH/AcmeAir-v5.jmx
+sed -i "s^<stringProp name=\"ThreadGroup.duration\">.*</stringProp>^<stringProp name=\"ThreadGroup.duration\">$LOAD_DURATION</stringProp>^g" $ACMEAIR_PATH/AcmeAir-v5.jmx
+sed -i "s^<stringProp name=\"HTTPSampler.port\">.\+</stringProp>^<stringProp name=\"HTTPSampler.port\">$ACMEAIR_HTTP_PORT</stringProp>^" $ACMEAIR_PATH/AcmeAir-v5.jmx
+sed -i "s^<stringProp name=\"maximumValue\">.*</stringProp>^<stringProp name=\"maximumValue\">$NUM_CUSTOMERS</stringProp>^g" $ACMEAIR_PATH/AcmeAir-v5.jmx
+sed -i "s^<stringProp name=\"ThreadGroup.ramp_time\">.*</stringProp>^<stringProp name=\"ThreadGroup.ramp_time\">$ACMEAIR_DRIVER_RAMPUP_TIME</stringProp>^g" $ACMEAIR_PATH/AcmeAir-v5.jmx
+sed -i "s^              <stringProp name=\"Argument.value\">/acmeair-webapp</stringProp>^              <stringProp name=\"Argument.value\">/</stringProp>^" $ACMEAIR_PATH/AcmeAir-v5.jmx
+
+echo "$liberty_ip" > $ACMEAIR_PATH/hosts.csv
 
 cd $ACMEAIR_DRIVER_PATH/acmeair-jmeter/scripts/
 

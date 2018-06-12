@@ -42,7 +42,7 @@ MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
 START = cb_run_acme.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-# ACMEAIR_PATH = ~/acmeair
+# ACMEAIR_PATH = ~/acmeair-monolithic-java
 # ACMEAIR_PROPERTIES = ~/acmeair.properties
 # ACMEAIR_DRIVER_PATH = ~/acmeair-driver
 # ACMEAIR_DRIVER_RAMPUP_TIME = 10

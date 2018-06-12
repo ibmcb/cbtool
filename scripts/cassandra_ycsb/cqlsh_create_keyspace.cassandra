@@ -1,3 +1,4 @@
+consistency all;
 create keyspace ycsb
     WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': REPLF };
 USE ycsb;

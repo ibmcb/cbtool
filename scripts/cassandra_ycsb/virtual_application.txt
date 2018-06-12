@@ -60,12 +60,15 @@ SEED_DATA_DIR = /dbstore
 SEED_DATA_FSTYP = ext4
 YSCB_DATA_DIR = /dbstore
 YCSB_DATA_FSTYP = ext4
+#YCSB_PROFILE = cassandra2-cql
+YCSB_PROFILE = cassandra-10
 OPERATION_COUNT = 10000
 INPUT_RECORDS = 10000
 RECORD_SIZE = 2.35
 DATABASE_SIZE_VERSUS_MEMORY = 0.5
 REPLICATION_FACTOR = 3
 LOAD_THREADS = 8
+DROP_KEYSPACE = 1
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

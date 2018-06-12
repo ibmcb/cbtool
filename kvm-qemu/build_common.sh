@@ -114,7 +114,7 @@ function create_workload_images {
                 CB_KVMQEMU_BIMG_FN=cb_nullworkload_${_CB_DISTRO}
             fi
             cp -f $CB_KVMQEMU_BIMG_FN cb_${_CB_WKS}_${_CB_DISTRO}
-            CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cloudbench/install -r workload --wks ${_CB_WKS} --filestore $CB_RSYNC"
+            CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cbtool/install -r workload --wks ${_CB_WKS} --filestore $CB_RSYNC"
             echo "####### Creating workload image \"cb_${_CB_WKS}_${_CB_DISTRO}\" by executing the command \"$CMD\""
             sudo virt-customize -m 4096 -a cb_${_CB_WKS}_${_CB_DISTRO} $CB_VERB --run-command "$CMD"
             COUT=$?
@@ -156,7 +156,7 @@ function create_orchestrator_images {
     do
 
         cp -f cb_base_${_CB_DISTRO} cb_orchestrator_${_CB_DISTRO}
-        CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cloudbench/install -r orchestrator"
+        CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cbtool/install -r orchestrator"
         echo "####### Creating orchestrator image \"cb_orchestrator_${_CB_DISTRO}\" by executing the command \"$CMD\""
         sudo virt-customize -a cb_orchestrator_${_CB_DISTRO} $CB_VERB --run-command "$CMD"
         COUT=$?

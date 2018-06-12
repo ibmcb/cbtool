@@ -35,7 +35,7 @@ set_java_home
 
 MY_IP=$my_ip_addr
 
-ACMEAIR_PATH=$(get_my_ai_attribute_with_default acmeair_path ~/acmeair)
+ACMEAIR_PATH=$(get_my_ai_attribute_with_default acmeair_path ~/acmeair-monolithic-java)
 eval ACMEAIR_PATH=${ACMEAIR_PATH}
 
 ACMEAIR_DRIVER_PATH=$(get_my_ai_attribute_with_default acmeair_driver_path ~/acmeair-driver)
@@ -82,7 +82,7 @@ then
         MONGODB_EXECUTABLE=$(which mongod)
     fi
     
-    sudo ls /etc/mongodb.conf
+    sudo ls /etc/mongodb.conf > /dev/null 2>&1
     if [[ $? -eq 0 ]]
     then
         MONGODB_CONF_FILE=/etc/mongodb.conf

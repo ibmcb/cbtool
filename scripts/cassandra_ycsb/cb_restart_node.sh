@@ -115,6 +115,8 @@ sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" ${CASSANDRA_CONF_P
 sudo sed -i "s/rpc_address:.*$/rpc_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/start_rpc:.*$/start_rpc: true/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/write_request_timeout_in_ms:.*$/write_request_timeout_in_ms: 20000/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/auto_snapshot:.*$/auto_snapshot: false/g" ${CASSANDRA_CONF_PATH}
 #sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
 
 #
@@ -145,7 +147,8 @@ then
 
     if [[ $THRIFTAPIUP -eq 1 ]]
     then
-        syslog_netcat "Cassandra service running on seed ${FIRST_SEED}"    	
+        syslog_netcat "Cassandra service running on seed ${FIRST_SEED}"
+        get_cassandra_cli 1
         check_cassandra_cluster_state ${FIRST_SEED} 10 20
         STATUS=$?
         if [[  $STATUS -eq 0 ]]

@@ -1,5 +1,7 @@
 install sudo,rsync,python2.7,git,wget,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop
 
+run-command apt-get install -y --allow-downgrades python=2.7.11-1 python-minimal=2.7.11-1 libpython-stdlib=2.7.11-1 python2.7-dev=2.7.11-7ubuntu1 python2.7=2.7.11-7ubuntu1 python2.7-minimal=2.7.11-7ubuntu1 libpython2.7-stdlib=2.7.11-7ubuntu1 libpython2.7-minimal=2.7.11-7ubuntu1 libpython2.7-dev=2.7.11-7ubuntu1 libpython2.7=2.7.11-7ubuntu1
+
 run-command ln -s /usr/bin/python2.7 /usr/bin/python; /bin/true
 edit /etc/default/grub:s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"biosdevname=0 net.ifnames=0\"/
 run-command update-grub
@@ -76,7 +78,7 @@ run-command chmod 644 /home/REPLACE_USERNAME/.ssh/authorized_keys; chown -R REPL
 run-command chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
 
 run-command cd /home/REPLACE_USERNAME; git clone https://github.com/ibmcb/cbtool.git
-run-command cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH
+run-command cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH; mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party
 
 edit /etc/cloud/cloud.cfg:s/name: ubuntu/name: REPLACE_USERNAME/
 edit /etc/cloud/cloud.cfg:s/lock_passwd: True/lock_passwd: False/

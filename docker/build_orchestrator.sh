@@ -100,7 +100,6 @@ do
         shift
 done
 
-rsync -az $CB_DOCKER_BASE_DIR/../configs/templates/_gen.txt $CB_DOCKER_BASE_DIR/orchprereqs/
 rsync -az $CB_DOCKER_BASE_DIR/../configs/cloud_definitions.txt $CB_DOCKER_BASE_DIR/orchprereqs/
 
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE

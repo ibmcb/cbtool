@@ -205,7 +205,8 @@ RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
 
 USER REPLACE_USERNAME
 WORKDIR /home/REPLACE_USERNAME/
-RUN GIT_TRACE=1; GIT_CURL_VERBOSE=1 git clone --verbose http://github.com/ibmcb/cbtool.git
+#RUN GIT_TRACE=1; GIT_CURL_VERBOSE=1 git clone --verbose http://github.com/ibmcb/cbtool.git
+RUN git clone https://github.com/ibmcb/cbtool.git; cd cbtool; git checkout REPLACE_BRANCH
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party
 
 # gmetad-python-install-git
