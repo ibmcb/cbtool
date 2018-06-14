@@ -72,11 +72,12 @@ class PdmCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
                         
             for _endpoint in access.split(',') :
-                
-                _endpoint_name, _endpoint_ip = hostname2ip(_endpoint.split('//')[1].split(':')[0], True)                
+
+                _endpoint, _endpoint_name, _endpoint_ip= self.parse_endpoint(_endpoint, "tcp", "2375")
                 
                 if _endpoint_ip not in self.dockconn :
                     self.dockconn[_endpoint_ip] = docker.Client(base_url = _endpoint, timeout = 180)
+
                 _host_info = self.dockconn[_endpoint_ip].info()
                 
                 if not _host_info["SystemStatus"] :
@@ -85,7 +86,6 @@ class PdmCmds(CommonCloudFunctions) :
                     _x = _endpoint.replace("tcp://",'').split(':')
                     self.swarm_ip = _x[0]
                     self.swarm_port = _x[1]
-
 
             if generate_rc :
                 if self.swarm_ip :                       

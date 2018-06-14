@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -38,7 +37,7 @@ from random import randint
 
 from lib.auxiliary.data_ops import str2dic, dic2str, value_suffix, get_boostrap_command, DataOpsException
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.remote.network_functions import Nethashget
+from lib.remote.network_functions import Nethashget, hostname2ip
 from lib.stores.redis_datastore_adapter import RedisMgdConn
 from lib.remote.process_management import ProcessManagement
 from lib.remote.ssh_ops import get_ssh_key
@@ -153,7 +152,25 @@ class CommonCloudFunctions:
             _host_list.append((_host_attr_list["name"], _uuid))
         
         return _host_list 
-        
+
+    @trace
+    def parse_endpoint(self, endpoint, protocol, port_number) :
+        '''
+        TBD
+        '''
+        if not endpoint.count("//") :
+            endpoint = protocol + "://" + endpoint
+            
+        if not endpoint.split("//")[1].count(':') :
+            if port_number :
+                endpoint += ':' + port_number
+
+        _endpoint_ip_port = endpoint.split('//')[1]
+
+        _endpoint_name, _endpoint_ip = hostname2ip(_endpoint_ip_port.split(':')[0], True)                
+                
+        return endpoint, _endpoint_name, _endpoint_ip
+                    
     @trace
     def wait_for_instance_ready(self, obj_attr_list, time_mark_prs) :
         '''

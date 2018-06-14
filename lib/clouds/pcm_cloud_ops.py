@@ -79,7 +79,7 @@ class PcmCmds(CommonCloudFunctions) :
             self.ssl_cert = extra_parms["ssl_cert"]
 
             for _endpoint in access.split(',') :
-                _endpoint_name, _endpoint_ip = hostname2ip(_endpoint.split('//')[1].split(':')[0], True)
+                _endpoint, _endpoint_name, _endpoint_ip= self.parse_endpoint(_endpoint, "https", "8443")
 
                 if _endpoint_ip not in self.lxdconn :
                     self.lxdconn[_endpoint_ip] = Client(endpoint = _endpoint, cert = (self.ssl_cert, self.ssl_key), verify = False)

@@ -9,7 +9,7 @@ PLM_POOLNAME = default
 
 # PEBCAK documentation for the Wizard and CLI
 PLM_ACCESS_DOC = Please enter the comma-separated list of URLs that should be use to remotely interact with multiple Libvirt(d) hosts\nThis is usually in the form of qem+tcp://<address1>,qemu+tcp://<address2>
-PLM_ACCESS_DEFAULT = qem+tcp://<address1>
+PLM_ACCESS_DEFAULT = qemu+tcp://<address1>
 PLM_LOGIN_DOC = $LOGIN_DOC
 PLM_LOGIN_DEFAULT = klabuser
 PLM_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
@@ -79,7 +79,7 @@ IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
 
 [AI_DEFAULTS : PLM_CLOUDCONFIG]
-ATTACH_PARALLELISM = 5
+ATTACH_PARALLELISM = 10
 CAPTURE_SUPPORTED = $False
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $True
