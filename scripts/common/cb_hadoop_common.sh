@@ -104,12 +104,13 @@ then
         echo "export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}" >> ~/.bashrc
     fi
 fi            
-    
+
 export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
 
 if [[ -z ${HADOOP_EXECUTABLE} ]]
 then
-    HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name hadoop.cmd | grep -v templates | sed 's/.cmd//g' | tail -1)
+#    HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name hadoop.cmd | grep -v templates | sed 's/.cmd//g' | tail -1)
+    HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name rcc | grep -v templates | sed 's/rcc/hadoop/g' | tail -1)
     syslog_netcat "HADOOP_EXECUTABLE not defined on the environment. Assuming \"$HADOOP_EXECUTABLE\" as the executable"
 fi
 
@@ -299,7 +300,7 @@ function create_master_and_slaves_files {
     echo "${slave_ips}" > $HADOOP_CONF_DIR/slaves
     if [[ $? -ne 0 ]]
     then
-       syslog_netcat "Error creating $HADOOP_CONF_DIR/slavess - NOK"
+       syslog_netcat "Error creating $HADOOP_CONF_DIR/slaves - NOK"
        exit 1
     fi
     syslog_netcat "...masters, slaves files updated."
@@ -733,6 +734,8 @@ export -f create_mapreduce_history
     
 function start_master_hadooop_services {
     syslog_netcat "Starting Hadoop Master services..."
+    DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
+
     if [[ ${hadoop_use_yarn} -eq 1 ]]
         then
             syslog_netcat "...Formatting Namenode..."
@@ -759,8 +762,6 @@ function start_master_hadooop_services {
             # Default Hadoop permissions require hadoop superuser to format namenode
             #  Attempt to identify superuser, with default value of hdfs
 
-            DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`        
-            
             set -- `sudo ls -l ${DFS_NAME_DIR}`
             dfs_name_dir_owner=$5
     
@@ -777,7 +778,7 @@ function start_master_hadooop_services {
                 syslog_netcat "Error when formatting namenode (on $DFS_NAME_DIR) as user ${dfs_name_dir_owner} - NOK"
                 exit 1
             fi
-    
+
             syslog_netcat "...Namenode formatted."
     
             syslog_netcat "...Starting primary Namenode service..."
