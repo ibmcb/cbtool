@@ -76,7 +76,7 @@ run-command chmod 644 /home/REPLACE_USERNAME/.ssh/authorized_keys; chown -R REPL
 run-command chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
 
 run-command cd /home/REPLACE_USERNAME; git clone https://github.com/ibmcb/cbtool.git
-run-command cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH
+run-command cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH; mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party
 
 edit /etc/cloud/cloud.cfg:s/name: ubuntu/name: REPLACE_USERNAME/
 edit /etc/cloud/cloud.cfg:s/lock_passwd: True/lock_passwd: False/

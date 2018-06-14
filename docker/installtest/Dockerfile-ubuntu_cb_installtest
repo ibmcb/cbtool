@@ -21,8 +21,10 @@ RUN useradd -ms /bin/bash REPLACE_USERNAME
 #EXPOSE $API_PORT
 #EXPOSE $VPN_PORT
 
+RUN apt-get update
 RUN apt-get install -y sudo
-RUN apt-get install -y git bc
+RUN apt-get install -y git 
+RUN apt-get install -y bc
 
 USER REPLACE_USERNAME
 WORKDIR /home/REPLACE_USERNAME/
