@@ -1905,12 +1905,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if _obj_type == "VMC" :
                         _status, _fmsg = _cld_conn.vmcregister(obj_attr_list)
                         _vmcregister = True
-
-                        _proc_man = ProcessManagement(username = obj_attr_list["username"], cloud_name = obj_attr_list["cloud_name"])
-                        _gmetad_pid = _proc_man.get_pid_from_cmdline("gmetad.py")
-                        if len(_gmetad_pid) :
-                            cbdebug("Killing the running Host OS performance monitor (gmetad.py)......", True)
-                            _proc_man.kill_process("gmetad.py")
     
                     elif _obj_type == "VM" :
                         self.osci.pending_object_set(_cloud_name, _obj_type, \
@@ -3062,12 +3056,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if _obj_type == "VMC" :
                     self.pre_detach_vmc(obj_attr_list)
                     _status, _msg = _cld_conn.vmcunregister(obj_attr_list)
-
-                    _proc_man = ProcessManagement(username = obj_attr_list["username"], cloud_name = obj_attr_list["cloud_name"])
-                    _gmetad_pid = _proc_man.get_pid_from_cmdline("gmetad.py")
-                    if len(_gmetad_pid) :
-                        cbdebug("Killing the running Host OS performance monitor (gmetad.py)......", True)
-                        _proc_man.kill_process("gmetad.py")
 
                 elif _obj_type == "VM" :
                     self.pre_detach_vm(obj_attr_list)
