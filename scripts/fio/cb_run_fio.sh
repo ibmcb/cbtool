@@ -42,7 +42,7 @@ sed -i "s^FIO_SYNC^$FIO_SYNC^g" ~/*.fiojob
 sudo mkdir -p $FIO_DATA_DIR
 
 # for the randread and read tests, we want to create the test file only once
-if test "$FIO_IOKIND" = "randread" -o "$FIO_IOKIND" = "read"; then
+if test "$FIO_IOKIND" = "randread" -o "$FIO_IOKIND" = "read" -o "$FIO_IOKIND" = "randrw"; then
 	if ! test -e $FIO_DATA_DIR/$FIO_IOKIND; then
 		syslog_netcat "Creating FIO data file $FIO_DATA_DIR/$FIO_IOKIND"
 		sudo rm -rf $FIO_DATA_DIR/*

@@ -951,6 +951,11 @@ class GceCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_rv_type"] = "pd-standard"
             _root_type = "zones/" + obj_attr_list["vmc_name"] + "/diskTypes/" + obj_attr_list["cloud_rv_type"]
 
+            if "cloud_rv" in obj_attr_list and obj_attr_list["cloud_rv"] != "0":
+                _rv_size = obj_attr_list["cloud_rv"]
+            else:
+                _rv_size = None
+
             _config = {
                 'name': obj_attr_list["cloud_vm_name"],
                 'machineType': _machine_type,
@@ -963,6 +968,7 @@ class GceCmds(CommonCloudFunctions) :
                         'initializeParams': {
                             'sourceImage': _source_disk_image,
                             'diskType' : _root_type,
+                            'diskSizeGb': _rv_size,
                         }
                     }
                 ],
