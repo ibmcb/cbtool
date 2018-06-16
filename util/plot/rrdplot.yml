@@ -1,0 +1,243 @@
+---
+# The file contains four top level structures:
+#
+# 1) unit_groups:
+#
+#   Define units of metrics.
+#
+#   Units are organized in groups. Units in the same unit group can be
+#   converted into each other. This is needed when plotting metric data
+#   in unit different from the one in which it was generated.
+#
+#   The structure is a dictionary, with each item defining a unit group.
+#   Item key is unit group name, item value is a dictionary containing
+#   one item for each unit in the group. Item key is unit name, item value
+#   is a value that represents the unit when doing unit conversion.
+#
+# 2) metrics:
+#
+#   Define the metrics to be imported RRDTool database.
+
+#   The structure is a list. Each item in the list defines a metric.
+#   It's a dictionary containing three keys: name, type, and unit.
+#
+#   Name is the metric's name. It should match the metric name in CSV
+#   file or Mongodb.
+#
+#   Type is the data source type that RRDTool will set when importing
+#   the metric's data into RRDTool database. In most case it will be
+#   either GAUGE or DCOUNTER. GAUGE means the metric data value changes
+#   at random and RRDTool will save it as it. DCOUNTER means the metric
+#   data value incrent continuaously, like a counter, and RRDTool will
+#   save its per-second rate in database. For more details please refer
+#   to https://oss.oetiker.ch/rrdtool/doc/rrdcreate.en.html.
+#
+#   Unit is the unit of the metric. It should be a value defined in
+#   unit_groups. If a metric's unit is not specified, it defaults to
+#   None. This is useful for CPU usage metrics because their value has
+#   no unit.
+#
+# 3) colors:
+#
+#   Define colors to be used plot metric data.
+#
+#   The structure is a dictionary, with each item defining a color.
+#   Item key is color name, item value is its value in "#RRGGBB" format.
+#
+# 4) graphs:
+#
+#   Define the graphs to be plotted.
+#
+#   The structure is a dictionary, with each item defining a graph.
+#   Item key is the graph's name, item value is the graph's attribute.
+#
+#   A graph has a lot of attriabues: title, y-axis attributes(e.g, label,
+#   min/max value, etc.), metrics to be plotted, and how to plot them.
+#   All these attributes are used to generate rrdtool graph command
+#   arguments. For more details please refer to
+#   https://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html.
+#
+#   All graph's attributes except metric list are optional and default
+#   to None (or False) if they are not defined. If graph title is set,
+#   it will be appended with node name when generating the graph.
+#
+#   Metric list is the most important attribute of a graph. Each item
+#   in the list describes a metric to be plotted in the graph. It's a
+#   dictionary containing five keys: name, name_in_graph, unit_in_graph,
+#   color, and transparency.
+#
+#   Name is the metric's name. It should be a value defined in metrics
+#   section.
+#
+#   Name_in_graph is the name to be displayed in the graph.
+#
+#   Unit_in_graph is the unit to be used when plotting the metric data.
+#   It and the metric's origianl unit should be in same unit group.
+#   Otherwise the tool don't know how to convert into it.
+#
+#   Color is the color to draw the metric data in the graph. It should be
+#   a value defined in colors section.
+#
+#   Transparency is a value defining alpha channel value of the color.
+#   Its maximum value is 1, meaning full opacity. Its minimum value is
+#   0, meaning full transparency (that is, being completely invisible).
+#   Value in between are semi-transparent. This is needed when displaying
+#   multiples metrics in graph in non-stack way.
+#
+#   Name and color are required, others are optional. If name_in_graph
+#   is not specified, it defaults to the metric's name. If unit_in_graph
+#   is not specified, it defaults to the metric's unit. If transparency
+#   is not specified, it defaults to 1 (that is, full opacity).
+#
+# NOTES:
+#
+# 1) Keys and values in this YAML file are case sensitive. This is to
+# differentiate 'b' (bit) and 'B' (Byte). There are no metrics using bit
+# for now, but just in case user might need it in future. So please make
+# sure to get it right when you input unit names and metric names.
+#
+# 2) The file is validated in two steps. The first step is syntax check.
+# This is done by using a JSON schema defined in Config class. The second
+# step is a semantic check. This is done in initialize(), which
+# instantiates objects based on the content of the config file.
+#
+
+unit_groups:
+  bytes:
+    Byte: 1
+    KB: 1024
+    MB: 1048576
+    GB: 1073741824
+  bytes per second:
+    Byte/s: 1
+    KB/s: 1024
+    MB/s: 1048576
+    GB/s: 1073741824
+
+metrics:
+  - name: cpu_idle
+    type: GAUGE
+  - name: cpu_wio
+    type: GAUGE
+  - name: cpu_system
+    type: GAUGE
+  - name: cpu_user
+    type: GAUGE
+  - name: mem_total
+    type: GAUGE
+    unit: KB
+  - name: mem_free
+    type: GAUGE
+    unit: KB
+  - name: mem_buffers
+    type: GAUGE
+    unit: KB
+  - name: mem_cached
+    type: GAUGE
+    unit: KB
+  - name: mem_anonpages
+    type: GAUGE
+    unit: Byte
+  - name: bytes_in
+    type: GAUGE
+    unit: Byte/s
+  - name: bytes_out
+    type: GAUGE
+    unit: Byte/s
+  # ds_KB_read and ds_KB_write are generated by diskstats.py in CBTOOL.
+  # Unlike bytes_in and bytes_out, which are calculated as rates during
+  # measuring interval, ds_KB_read and ds_KB_write are calculated as
+  # incremental counters. So we define their type as DCOUNTER, and RRDtool
+  # will convert their values to per second rates automatically when they
+  # are imported. For that reason, their unit is KB/s, instead of KB.
+  - name: ds_KB_read
+    type: DCOUNTER
+    unit: KB/s
+  - name: ds_KB_write
+    type: DCOUNTER
+    unit: KB/s
+
+colors:
+  white: "#ffffd7"
+  yellow: "#ffffcc"
+  red: "#dc322f"
+  green: "#859900"
+  blue: "#268bd2"
+
+graphs:
+  cpu:
+    title: CPU Usage
+    metrics:
+      - name: cpu_idle
+        name_in_graph: idle
+        color: green
+      - name: cpu_wio
+        name_in_graph: iowait
+        color: yellow
+      - name: cpu_system
+        name_in_graph: sys
+        color: blue
+      - name: cpu_user
+        name_in_graph: user
+        color: red
+    stack: True
+    y-axis:
+      label: Percentage
+      min_value: 0
+      max_value: 100
+      rigid: True
+  memory:
+    title: Memory Usage
+    metrics:
+      - name: mem_free
+        name_in_graph: free
+        unit_in_graph: Byte
+        color: green
+      - name: mem_buffers
+        name_in_graph: buffers
+        unit_in_graph: Byte
+        color: yellow
+      - name: mem_cached
+        name_in_graph: cached
+        unit_in_graph: Byte
+        color: blue
+      - name: mem_anonpages
+        name_in_graph: anonpages
+        unit_in_graph: Byte
+        color: red
+    y-axis:
+      label: Bytes
+      min_value: 0
+    stack: True
+  diskio:
+    title: Disk I/O
+    metrics:
+      - name: ds_KB_read
+        name_in_graph: read
+        unit_in_graph: Byte/s
+        color: green
+        transparency: 0.5
+      - name: ds_KB_write
+        name_in_graph: write
+        unit_in_graph: Byte/s
+        color: blue
+        transparency: 0.5
+    y-axis:
+      label: Bytes per Second
+      min_value: 0
+  netio:
+    title: Network I/O
+    metrics:
+      - name: bytes_in
+        name_in_graph: ingress
+        unit_in_graph: Byte/s
+        color: green
+        transparency: 0.5
+      - name: bytes_out
+        name_in_graph: outgress
+        unit_in_graph: Byte/s
+        color: blue
+        transparency: 0.5
+    y-axis:
+      label: Bytes per Second
+      min_value: 0

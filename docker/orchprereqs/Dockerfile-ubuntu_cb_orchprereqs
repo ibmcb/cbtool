@@ -323,6 +323,26 @@ WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/d3.git
 # d3-install-git
 
+# rrdtool-install-pm
+RUN apt-get install -y rrdtool
+# rrdtool-install-pm
+
+# python-rrdtool-install-pm
+RUN apt-get install -y python-rrdtool
+# python-rrdtool-install-pm
+
+# python-dateutil-install-pip
+RUN pip install --upgrade python-dateutil
+# python-dateutil-install-pip
+
+# python-pillow-install-pip
+RUN pip install --upgrade Pillow
+# python-pillow-install-pip
+
+# python-jsonschema-install-pip
+RUN pip install --upgrade jsonschema
+# python-jsonschema-install-pip
+
 WORKDIR /home/REPLACE_USERNAME
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/lib/clouds/
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/configs/templates/
