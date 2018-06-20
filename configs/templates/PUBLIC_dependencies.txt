@@ -129,6 +129,11 @@ ruamelyaml-order = 67
 jq-order = 68
 urllib3-order = 69
 httplib2shim-order = 70
+rrdtool-order = 71
+python-rrdtool-order = 72
+python-dateutil-order = 73
+python-pillow-order = 74
+python-jsonschema-order = 75
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -212,6 +217,11 @@ ruamelyaml-install = pip
 jq-install = pm
 urllib3-install = pip
 httplib2shim-install = pip
+rrdtool-install = pm
+python-rrdtool-install = pm
+python-dateutil-install = pip
+python-pillow-install = pip
+python-jsonschema-install = pip
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -288,6 +298,11 @@ ruamelyaml-configure = python -c "import ruamel.yaml; print ruamel.yaml.__versio
 jq-configure = jq --version | grep jq
 urllib3-configure = python -c "import urllib3; print urllib3.__version__"
 httplib2shim-configure = python -c "import httplib2shim"
+rrdtool-configure = rrdtool
+python-rrdtool-configure = python -c "import rrdtool; print rrdtool.__version__"
+python-dateutil-configure = python -c "import dateutil; print dateutil.__version__"
+python-pillow-configure = python -c "import PIL; print PIL.__version__"
+python-jsonschema-configure = python -c "import jsonschema; print jsonschema.__version__"
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -364,6 +379,11 @@ ruamelyaml-ver = ANY
 jq-ver = ANY
 urllib3-ver = 1.0
 httplib2shim = ANY
+rrdtool-ver = ANY
+python-rrdtool-ver = ANY
+python-dateutil-ver = ANY
+python-pillow-ver = ANY
+python-jsonschema-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency tags ###
@@ -440,6 +460,11 @@ ruamelyaml-tag = orchestrator
 jq-tag = base
 urllib3-tag = gce,all
 httplib2shim-tag = gce,all
+rrdtool-tag = base
+python-rrdtool-tag = base
+python-dateutil-tag = base
+python-pillow-tag = base
+python-jsonschema-tag = base
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
