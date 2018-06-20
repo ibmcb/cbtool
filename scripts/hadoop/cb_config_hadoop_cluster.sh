@@ -40,15 +40,6 @@ syslog_netcat "Hadoop home directory is ${HADOOP_HOME}"
 syslog_netcat "Hadoop version is $hadoop_version_string"
 syslog_netcat "Hadoop configuration directory is ${HADOOP_CONF_DIR}"
 
-DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
-eval DFS_NAME_DIR=${DFS_NAME_DIR}
-syslog_netcat "Local directory for Hadoop namenode is ${DFS_NAME_DIR}"
-
-DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
-eval DFS_DATA_DIR=${DFS_DATA_DIR}
-syslog_netcat "Local directory for Hadoop datanode is ${DFS_NAME_DIR}"
-
-mount_filesystem_on_volume $DFS_NAME_DIR ext4 ${my_login_username}
 
 if [[ ${hadoop_use_yarn} -eq 1 ]]
 then
