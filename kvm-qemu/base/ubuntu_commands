@@ -1,4 +1,8 @@
-install sudo,rsync,python2.7,git,wget,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop
+install sudo,rsync,python2.7,git,wget,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop,libyaml-0-2
+
+run-command apt-get install -y --allow-downgrades python=2.7.11-1 python-minimal=2.7.11-1 libpython-stdlib=2.7.11-1 python2.7-dev=2.7.11-7ubuntu1 python2.7=2.7.11-7ubuntu1 python2.7-minimal=2.7.11-7ubuntu1 libpython2.7-stdlib=2.7.11-7ubuntu1 libpython2.7-minimal=2.7.11-7ubuntu1 libpython2.7-dev=2.7.11-7ubuntu1 libpython2.7=2.7.11-7ubuntu1
+
+run-command sudo pip install requests==2.12
 
 run-command ln -s /usr/bin/python2.7 /usr/bin/python; /bin/true
 edit /etc/default/grub:s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"biosdevname=0 net.ifnames=0\"/
@@ -7,11 +11,15 @@ root-password password:temp4now
 edit /etc/ssh/sshd_config:s/PermitRootLogin without-password/PermitRootLogin yes/
 upload REPLACE_PATH/base/extra_nic.cfg:/etc/network/interfaces.d/extra_nic.cfg
 upload REPLACE_PATH/base/fixdefaultgw.sh:/usr/local/bin/fixdefaultgw.sh
-upload REPLACE_PATH/base/getmyips.sh:/usr/local/bin/getmyips
 upload REPLACE_PATH/base/fixdefaultgw.service:/etc/systemd/system/fixdefaultgw.service
+upload REPLACE_PATH/base/getmyips.sh:/usr/local/bin/getmyips
+upload REPLACE_PATH/base/configfw.sh:/usr/local/bin/configfw
+upload REPLACE_PATH/base/gucn.sh:/usr/local/bin/gucn
 
 chmod 0755:/usr/local/bin/fixdefaultgw.sh
 chmod 0755:/usr/local/bin/getmyips
+chmod 0755:/usr/local/bin/configfw
+chmod 0755:/usr/local/bin/gucn
 
 run-command systemctl enable fixdefaultgw
 
