@@ -31,6 +31,17 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_java_home
 
+DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
+eval DFS_NAME_DIR=${DFS_NAME_DIR}
+syslog_netcat "Local directory for Hadoop namenode is ${DFS_NAME_DIR}"
+export DFS_NAME_DIR=$DFS_NAME_DIR
+
+#DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
+DFS_DATA_DIR=`get_my_vm_attribute_with_default data_dir /tmp/cbhadoopdata`
+eval DFS_DATA_DIR=${DFS_DATA_DIR}
+syslog_netcat "Local directory for Hadoop datanode is ${DFS_DATA_DIR}"
+export DFS_DATA_DIR=$DFS_DATA_DIR
+
 if [[ -z ${HADOOP_HOME} ]]
 then
     HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-2.6.0`
@@ -180,6 +191,85 @@ fi
 
 export ZOOKEPER_HOME=${ZOOKEPER_HOME}
 
+if [[ $my_type == "spark" ]]
+then
+    
+    if [[ -z ${SPARK_HOME} ]]
+    then
+        SPARK_HOME=`get_my_ai_attribute_with_default spark_home ~/spark-2.2.1-bin-hadoop2.7`
+        eval SPARK_HOME=${SPARK_HOME}
+        syslog_netcat "SPARK_HOME not defined on the environment. Value obtained from CB's Object Store was \"$SPARK_HOME\""
+    else
+        syslog_netcat "SPARK_HOME already defined on the environment (\"$SPARK_HOME\")" 
+    fi
+    
+    if [[ ! -d ${SPARK_HOME} ]]
+    then
+        syslog_netcat "The value specified in the AI attribute SPARK_HOME (\"$SPARK_HOME\") points to a non-existing directory."     
+        for SPARK_CPATH in ~ /usr/local
+        do
+            syslog_netcat "Searching ${SPARK_CPATH} for a spark dir."
+            if [[ $(sudo ls $SPARK_CPATH | grep -v tar | grep -v "\.sh" | grep -v tgz | grep -v spark-perf | grep -v spark-bench | grep -c spark) -ne 0 ]]
+            then
+                eval SPARK_CPATH=${SPARK_CPATH}
+                syslog_netcat "Directory \"${SPARK_CPATH}\" found."
+                SPARK_HOME=$(sudo ls ${SPARK_CPATH} | grep -v tar | grep -v "\.sh" | grep -v tgz | grep -v spark-perf | grep -v spark-bench | grep spark | sort -r | head -n1)
+                eval SPARK_HOME="$SPARK_CPATH/${SPARK_HOME}"
+                if [[ -d $SPARK_HOME ]]
+                then
+                    syslog_netcat "SPARK_HOME determined to be \"${SPARK_HOME}\""
+                    break
+                fi
+            fi
+        done
+            
+        if [[ ! -d $SPARK_HOME ]]
+        then
+            syslog_netcat "Unable to find a directory with a Spark installation - NOK"
+            exit 1
+        fi
+    fi
+    
+    if [[ -f ~/.bashrc ]]
+    then
+        is_spark_home_export=`grep -c "SPARK_HOME=${SPARK_HOME}" ~/.bashrc`
+        if [[ $is_spark_home_export -eq 0 ]]
+        then
+            syslog_netcat "Adding SPARK_HOME ($SPARK_HOME) to bashrc"
+            echo "export SPARK_HOME=${SPARK_HOME}" >> ~/.bashrc
+            echo "export PATH=\$PATH:$SPARK_HOME/bin" >> ~/.bashrc
+        fi
+    fi
+
+    if [[ -z ${SPARK_CONF_DIR} ]]
+    then
+        SPARK_CONF_DIR=$(find $SPARK_HOME -name spark-defaults.conf.template | grep -v src | grep -v share | grep -v templates | sed 's/spark-defaults.conf.template//g' | tail -1)
+        syslog_netcat "SPARK_CONF_DIR not defined on the environment. Assuming \"$SPARK_CONF_DIR\" as the directory"
+    fi
+
+    if [[ ! -d $SPARK_CONF_DIR ]]
+    then
+        syslog_netcat "Error. The detected SPARK_CONF_DIR ($SPARK_CONF_DIR) is not a directory - NOK"
+        exit 1
+    fi
+  
+    if [[ -f ~/.bashrc ]]
+    then
+        is_spark_conf_export=`grep -c "SPARK_CONF_DIR=${SPARK_CONF_DIR}" ~/.bashrc`
+        if [[ $is_spark_conf_export -eq 0 ]]
+        then
+            syslog_netcat "Adding SPARK_CONF_DIR ($SPARK_CONF_DIR) to bashrc"
+            echo "export SPARK_CONF_DIR=${SPARK_CONF_DIR}" >> ~/.bashrc
+        fi
+    fi            
+    
+    export SPARK_CONF_DIR=${SPARK_CONF_DIR}
+
+fi
+
+export SPARK_HOME=${SPARK_HOME}
+syslog_netcat "SPARK_HOME was determined to be $SPARK_HOME"   
+
 if [[ -z ${HIBENCH_HOME} ]]
 then
     HIBENCH_HOME=`get_my_ai_attribute_with_default hibench_home ~/HiBench`
@@ -214,11 +304,15 @@ then
     hadoop_master_ip=`get_ips_from_role giraphmaster`
 
     slave_ips=`get_ips_from_role giraphslave`
+elif [[ $(echo $my_type | grep -c spark) -ne 0 ]]
+then
+    hadoop_master_ip=`get_ips_from_role sparkmaster`
+    spark_master_ip=`get_ips_from_role sparkmaster`
+    slave_ips=`get_ips_from_role sparkslave`
 else
     hadoop_master_ip=`get_ips_from_role hadoopmaster`
 
     slave_ips=`get_ips_from_role hadoopslave`
-
 fi
 
 slave_ips_csv=$(echo ${slave_ips} | sed ':a;N;$!ba;s/\n/,/g')
@@ -527,15 +621,10 @@ function update_hadoop_config_files {
     then
         sudo sed -i -e "s/HADOOP_JOBTRACKER_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/yarn-site.xml
     fi
-    
-    TEMP_DFS_NAME_DIR=`echo ${DFS_NAME_DIR} | sed -e "s/\//-__-__/g"`
-    TEMP_DFS_DATA_DIR=`echo ${DFS_DATA_DIR} | sed -e "s/\//-__-__/g"`
-    
-    sudo sed -i -e "s/DFS_NAME_DIR/${TEMP_DFS_NAME_DIR}/g" $HADOOP_CONF_DIR/hdfs-site.xml
-    sudo sed -i -e "s/DFS_DATA_DIR/${TEMP_DFS_DATA_DIR}/g" $HADOOP_CONF_DIR/hdfs-site.xml
-    
-    sudo sed -i -e "s/-__-__/\//g" $HADOOP_CONF_DIR/hdfs-site.xml
-    
+
+    sudo sed -i -e "s^DFS_NAME_DIR^${DFS_NAME_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
+    sudo sed -i -e "s^DFS_DATA_DIR^${DFS_DATA_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
+
     syslog_netcat "Placeholders updated."    
 }
 export -f update_hadoop_config_files
@@ -642,7 +731,7 @@ function check_hadoop_cluster_state {
         QUICK_CHECK=0
     fi
     
-    if [[ x"$my_role" == x"hadoopmaster" || x"$my_role" == x"giraphmaster" ]] 
+    if [[ x"$my_role" == x"hadoopmaster" || x"$my_role" == x"giraphmaster" || x"$my_role" == x"sparkmaster" ]] 
     then
         syslog_netcat "Waiting for all Datanodes to become available..."
     
