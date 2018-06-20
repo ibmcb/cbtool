@@ -40,6 +40,7 @@ RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
 LOAD_THREADS=`get_my_ai_attribute_with_default load_threads 8`
+DROP_KEYSPACE=`get_my_ai_attribute_with_default drop_keyspace 1`
 
 if [[ ${READ_RATIO} != "workloaddefault" ]]
 then
@@ -82,58 +83,23 @@ sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload
 
 source ~/cb_barrier.sh start
 
-FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+get_cassandra_cli 0
+ERROR=$?
 
-which cassandra-cli
-if [[ $? -eq 0 ]]
+if [[ ${GENERATE_DATA} == "true" && $ERROR -eq 0 ]]
 then
-    CCLIN=cassandra-cli
-    CCLI="$CCLIN -h ${FIRST_SEED}"
-    CTBN=usertable
-    YCSB_PROFILE=cassandra-10
-else
-    CCLIN=cqlsh
-    CCLI="$CCLIN ${FIRST_SEED}"
-    CTBN=ycsb
-	YCSB_PROFILE=cassandra2-cql
-fi
 
-if [[ ${GENERATE_DATA} == "true" ]]
-then
-    
-    $CCLI -f ${CCLIN}_list_keyspace.cassandra
-         
-    ERROR=$?
-
-    if [[ $ERROR -eq 0 ]]
+    if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -eq 0 ]]
     then
-        if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -ne 0 ]]
+        syslog_netcat "Creating keyspace \"$CTBN\" in Cassandra by executing $CCLIN (file ${CCLIN}_create_keyspace.cassandra) against seed node ${FIRST_SEED}"
+        $CCLI -f ${CCLIN}_create_keyspace.cassandra
+        ERROR=$?
+        
+        if [[ $ERROR -ne 0 ]]
         then
-            syslog_netcat "Dropping keyspace \"$CTBN\" in Cassandra by executing $CCLIN against seed node ${FIRST_SEED}"
-            $CCLI -f ${CCLIN}_remove_keyspace.cassandra
-            if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -eq 0 ]]
-            then            
-                syslog_netcat "Keyspace \"$CTBN\" in Cassandra was successfully deleted"
-            else
-                syslog_netcat "Error while deleting keyspace \"$CTBN\" in Cassandra"
-                update_app_errors 1
-            fi
-        else
-            syslog_netcat "Keyspace \"$CTBN\" not present in Cassandra. Bypassing keyspace deletion"
+            syslog_netcat "Error while attempting to create \"usertable\" in Cassandra"        
+            update_app_errors $ERROR
         fi
-    else
-        syslog_netcat "Error while contacting Cassandra through $CCLIN"
-        update_app_errors $ERROR
-    fi
-
-    syslog_netcat "Creating keyspace \"$CTBN\" in Cassandra by executing $CCLIN against seed node ${FIRST_SEED}"
-    $CCLI -f ${CCLIN}_create_keyspace.cassandra
-    ERROR=$?
-    
-    if [[ $ERROR -ne 0 ]]
-    then
-        syslog_netcat "Error while attempting to create \"usertable\" in Cassandra"        
-        update_app_errors $ERROR
     fi
     syslog_netcat "Number of records to be inserted : $RECORDS"
 
@@ -160,16 +126,25 @@ then
         ERROR=$?    
     fi
     END_GENERATION=$(get_time)
-    update_app_errors $ERROR        
+    update_app_errors $ERROR
 
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     update_app_datagentime ${DATA_GENERATION_TIME}
     update_app_datagensize ${RECORDS}
-else
-    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the Cassandra YCSB load profile \"${LOAD_PROFILE}\""     
+
+elif [[ ${GENERATE_DATA} == "true" && $ERROR -eq 1 ]]
+    update_app_errors $ERROR
+    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\", but there was an error while attempting to contact Cassandra through seed node ${FIRST_SEED}"
+then
+    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the Cassandra YCSB load profile \"${LOAD_PROFILE}\""
 fi
 
-CMDLINE="sudo $YCSB_PATH/bin/ycsb run $YCSB_PROFILE -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
+if [[ ${ERROR} -eq 0 ]]
+then
+    CMDLINE="sudo $YCSB_PATH/bin/ycsb run $YCSB_PROFILE -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
+else 
+    CMDLINE="/bin/false"
+fi
 
 log_output_command=$(get_my_ai_attribute log_output_command)
 log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
@@ -193,5 +168,22 @@ else
 fi
 
 unset_load_gen
+
+if [[ ${GENERATE_DATA} == "true" && $DROP_KEYSPACE -eq 1 ]]
+then
+
+    if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -ne 0 ]]
+    then
+        syslog_netcat "Dropping keyspace \"$CTBN\" in Cassandra by executing $CCLIN (file ${CCLIN}_remove_keyspace.cassandra) against seed node ${FIRST_SEED}"
+        $CCLI -f ${CCLIN}_remove_keyspace.cassandra
+        if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -eq 0 ]]
+        then
+            syslog_netcat "Keyspace \"$CTBN\" in Cassandra was successfully deleted"
+        else
+            syslog_netcat "Error while deleting keyspace \"$CTBN\" in Cassandra"
+            update_app_errors 1
+        fi
+    fi
+fi
 
 exit 0
