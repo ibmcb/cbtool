@@ -27,9 +27,6 @@ else
     GENERATE_DATA=`get_my_ai_attribute_with_default regenerate_data true`
 fi
 
-DATA_HDFS=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
-export DATA_HDFS
-
 LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor "10000"`
 NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
 NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
