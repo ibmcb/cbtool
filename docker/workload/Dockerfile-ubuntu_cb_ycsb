@@ -6,6 +6,8 @@ RUN add-apt-repository -y ppa:openjdk-r/ppa
 RUN apt-get update; apt-get install -y openjdk-7-jre-headless
 # java-install-pm
 
+RUN apt-get install -y --allow-downgrades python=2.7.11-1 python-minimal=2.7.11-1 libpython-stdlib=2.7.11-1 python2.7-dev=2.7.11-7ubuntu1 python2.7=2.7.11-7ubuntu1 python2.7-minimal=2.7.11-7ubuntu1 libpython2.7-stdlib=2.7.11-7ubuntu1 libpython2.7-minimal=2.7.11-7ubuntu1 libpython2.7-dev=2.7.11-7ubuntu1 libpython2.7=2.7.11-7ubuntu1
+
 # cassandra-install-man
 RUN wget -N -q -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb
 #RUN wget -N -q -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.2.3_all.deb

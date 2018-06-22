@@ -430,19 +430,32 @@ my_cloud_model=`get_my_vm_attribute model`
 my_ip_addr=`get_my_vm_attribute cloud_ip`
 
 function get_attached_volumes {
-    # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
-    # So, we need a beefier regex.
-    ROOT_PARTITION=$(sudo mount | grep "/ " | cut -d ' ' -f 1)
-    ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.*[0-9]\)[a-z]\+[0-9]\+$/\1/g")
-    if [ ${ROOT_PARTITION} == ${ROOT_VOLUME} ] ; then
-        ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.\)[0-9]\+$/\1/g")
-    fi
-    SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
-    if [[ -z ${SWAP_VOLUME} ]]
+    
+    check_container
+    
+    if [[ $IS_CONTAINER -eq 0 ]]
     then
-        SWAP_VOLUME="NONE"
+        # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
+        # So, we need a beefier regex.
+        ROOT_PARTITION=$(sudo mount | grep "/ " | cut -d ' ' -f 1)
+        ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.*[0-9]\)[a-z]\+[0-9]\+$/\1/g")
+        
+        if [[ ${ROOT_PARTITION} == ${ROOT_VOLUME} ]] 
+        then
+            ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.\)[0-9]\+$/\1/g")
+        fi
+        
+        SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
+        if [[ -z ${SWAP_VOLUME} ]]
+        then
+            SWAP_VOLUME="NONE"
+        fi
+        
+        VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
+    else
+        VOLUME_LIST=$(sudo mount | grep /mnt/cbvol | awk '{ print $3 }')
     fi
-    VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
+    
     if [[ -z ${VOLUME_LIST} ]]
     then
         VOLUME_LIST="NONE"
@@ -460,6 +473,49 @@ function check_filesystem {
     fi
 }
 export -f check_filesystem
+
+function change_directory_ownership {
+    CHOWN_USER=$1
+    CHOWN_GROUP=$2
+    CHOWN_DIR=$3
+
+    ACTUAL_CHOWN_DIR="/"$(echo "${CHOWN_DIR}" | cut -d '/' -f 2)    
+
+    CMD="sudo chown -R ${CHOWN_USER}:${CHOWN_GROUP} ${ACTUAL_CHOWN_DIR}"
+    syslog_netcat "Changing ownership of ${CHOWN_DIR} with command \"$CMD\""
+            
+    $CMD
+}
+export -f change_directory_ownership
+
+function link_directory_to_volume {
+    MOUNTPOINT_DIR=$1
+    MOUNTPOINT_OWNER=$2
+    VOLUME=$3
+
+    if [[ -z $VOLUME ]]
+    then
+        VOLUME=$(get_attached_volumes)
+    else
+        if [[ $(sudo mount | grep -c $VOLUME) -eq 0 ]]
+        then
+            VOLUME="NONE"
+        fi
+    fi        
+
+    if [[ $VOLUME != "NONE" ]]
+    then
+        change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $VOLUME
+        sudo ln -s $MOUNTPOINT_DIR $VOLUME
+        change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
+    fi
+    
+    if [[ -d $MOUNTPOINT_DIR ]]
+    then
+        change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
+    fi
+}
+export -f link_directory_to_volume
 
 function mount_filesystem_on_volume {
     MOUNTPOINT_DIR=$1
@@ -494,8 +550,8 @@ function mount_filesystem_on_volume {
     then
         MOUNTPOINT_OWER=${my_login_username}
     fi
-    
-    sudo chown -R ${MOUNTPOINT_OWNER}:${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
+
+    change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
         
     if [[ $VOLUME != "NONE" ]]
     then
@@ -517,12 +573,15 @@ function mount_filesystem_on_volume {
             then
                 syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
                 exit 1
+            else
+                syslog_netcat "$FILESYS_TYPE filesystem on volume $VOLUME successfully made accessible through mountpoint ${MOUNTPOINT_DIR}"
             fi
         else
             syslog_netcat "${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME is already setup!"            
         fi
         
-        sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+        change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
+
     fi
     return 0
 }
@@ -562,7 +621,7 @@ function mount_filesystem_on_memory {
     
     sudo mkdir -p $MOUNTPOINT_DIR
 
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+    change_directory_ownership ${MOUNTPOINT_OWER} ${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
                     
     if [[ $FILESYS_TYPE == "tmpfs" ]]
     then
@@ -588,7 +647,7 @@ function mount_filesystem_on_memory {
         fi    
     fi
 
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+    change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
 
     return 0
 }
@@ -599,6 +658,7 @@ function mount_remote_filesystem {
     FILESYS_TYPE=$2
     FILESERVER_IP=$3
     FILESERVER_PATH=$4
+    MOUNTPOINT_OWNER=$5
     
     if [[ -z $MOUNTPOINT_DIR ]]
     then
@@ -614,7 +674,7 @@ function mount_remote_filesystem {
                         
     sudo mkdir -p $MOUNTPOINT_DIR
 
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+    change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
             
     if [[ $FILESYS_TYPE == "nfs" ]]
     then
@@ -1654,44 +1714,52 @@ function automount_data_dirs {
     #    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
     #    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
 
+    check_container
+
     ROLE_DATA_DIR=$(get_my_vm_attribute_with_default data_dir none)
     ROLE_DATA_FSTYP=$(get_my_vm_attribute_with_default data_fstyp local)
 
     if [[ $ROLE_DATA_DIR != "none" ]]
     then
-        syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
-        sudo mkdir -p $ROLE_DATA_DIR
-        sudo chown -R ${my_login_username}:${my_login_username} $ROLE_DATA_DIR
-    fi
-            
-    if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
-    then
-
-        #        ROLE_DATA_SIZE=$(get_my_ai_attribute_with_default ${my_role}_data_size 256m)
-        DATA_SIZE=$(get_my_vm_attribute_with_default data_size 256m)
-        mount_filesystem_on_memory ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${ROLE_DATA_SIZE} ${my_login_username}
         
-    elif [[ $ROLE_DATA_FSTYP == "nfs" ]]
-    then
-        
-        #        ROLE_DATA_FILESERVER_IP=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_ip none)
-        #        ROLE_DATA_FILESERVER_PATH=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_path none)
-        DATA_FILESERVER_IP=$(get_my_vm_attribute_with_default data_fileserver_ip none)
-        DATA_FILESERVER_PATH=$(get_my_vm_attribute_with_default data_fileserver_path none)        
-        if [[ $ROLE_DATA_FILESERVER_IP != "none" && $ROLE_DATA_FILESERVER_PATH != "none" ]]
-        then         
-            mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH}    
+        if [[ $IS_CONTAINER -eq 0 ]]
+        then        
+            syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
+            sudo mkdir -p $ROLE_DATA_DIR
+            change_directory_ownership ${my_login_username} ${my_login_username} $ROLE_DATA_DIR
         fi
-        run_limit=`decrement_my_ai_attribute run_limit`
-    else
-        if [[ $(get_attached_volumes) != "NONE" ]]
+        
+        if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
         then
-            mount_filesystem_on_volume ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${my_login_username}
+    
+            #        ROLE_DATA_SIZE=$(get_my_ai_attribute_with_default ${my_role}_data_size 256m)
+            DATA_SIZE=$(get_my_vm_attribute_with_default data_size 256m)
+            mount_filesystem_on_memory ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${ROLE_DATA_SIZE} ${my_login_username}
+            
+        elif [[ $ROLE_DATA_FSTYP == "nfs" ]]
+        then
+            
+            #        ROLE_DATA_FILESERVER_IP=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_ip none)
+            #        ROLE_DATA_FILESERVER_PATH=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_path none)
+            DATA_FILESERVER_IP=$(get_my_vm_attribute_with_default data_fileserver_ip none)
+            DATA_FILESERVER_PATH=$(get_my_vm_attribute_with_default data_fileserver_path none)        
+            if [[ $ROLE_DATA_FILESERVER_IP != "none" && $ROLE_DATA_FILESERVER_PATH != "none" ]]
+            then         
+                mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH} ${my_login_username}
+            fi
+            #        run_limit=`decrement_my_ai_attribute run_limit`
+        else
+            if [[ $IS_CONTAINER -eq 0 ]]
+            then
+                mount_filesystem_on_volume ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${my_login_username}
+            else
+                link_directory_to_volume $ROLE_DATA_DIR ${my_login_username}
+            fi
         fi
     fi
 }
 export -f automount_data_dirs
-
+    
 function haproxy_setup {
     LOAD_BALANCER_PORTS=$1
     LOAD_BALANCER_BACKEND_SERVERS=$2

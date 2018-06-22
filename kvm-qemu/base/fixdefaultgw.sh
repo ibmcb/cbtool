@@ -3,6 +3,15 @@ NR_VNICS=$(ip addr | grep -v lo | grep -v virbr | grep -v docker | grep -v tun |
 
 if [[ $NR_VNICS -gt 1 ]]
 then
+    
+    grep -nri eth0 /etc/network/interfaces*
+    if [[ $? -ne 0 ]]
+    then
+        echo "auto eth0" >> /etc/network/interfaces
+        echo "iface eth0 inet dhcp" >> /etc/network/interfaces
+        ifup eth0
+    fi    
+            
     PRIVATE_IP=$(ip -o addr list | grep -v virbr | grep -v docker | grep -v tun | grep -v inet6 | grep inet | awk '{ print $2,$3,$4 }' | grep -E 'inet (192\.168|10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.|90\.90\.)' | awk '{ print $3 }' | cut -d '/' -f 1 | head -n 1)
     PRIVATE_IF=$(ip -o addr | grep $PRIVATE_IP | awk '{ print $2 }')
     PUBLIC_IP=$(ip -o addr list | grep -v virbr | grep -v docker | grep -v tun | grep -v 127.0.0.1 | grep -v $PRIVATE_IP | grep -v inet6 | grep inet | awk '{ print $2,$3,$4 }' | awk '{ print $3 }' | cut -d '/' -f 1 | head -n 1)
@@ -38,6 +47,12 @@ then
     else
         echo "Default GW ($DEFAULT_GW) was already accessible through the PUBLIC interface ($PUBLIC_IF)" >> /tmp/fixdefaultgw
     fi
+    
+    if [[ -f /usr/local/bin/configfw ]]
+    then
+        /usr/local/bin/configfw
+    fi
+      
 else
     echo "Single VNIC. Nothing to be done" >> /tmp/fixdefaultgw    
 fi
