@@ -44,6 +44,8 @@ MY_IP=$my_ip_addr
 YCSB_PATH=$(get_my_ai_attribute_with_default ycsb_path ~/YCSB)
 eval YCSB_PATH=${YCSB_PATH}
 
+YCSB_PROFILE=`get_my_ai_attribute_with_default ycsb_profile cassandra-10`
+
 if [[ $BACKEND_TYPE == "cassandra" ]]
 then 
     CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstore)
@@ -232,7 +234,7 @@ function lazy_collection {
 
     echo $(date +%s) > /tmp/quiescent_time_start
 
-	syslog_netcat "RUN COMPLETE: ${LIDMSG}"    
+    syslog_netcat "RUN COMPLETE: ${LIDMSG}"    
     
     if [[ $BACKEND_TYPE == "cassandra" ]]
     then
@@ -265,7 +267,49 @@ function lazy_collection {
         
     syslog_netcat "Exit code for \"~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS\" is $?"    
 }
+
+function get_cassandra_cli {
+
+    local=$1
     
+    if [[ $local -eq 1 ]]
+    then
+        ACTUAL_NODE=$MY_IP
+    else
+        ACTUAL_NODE=$(echo $seed_ips_csv | cut -d ',' -f 1)
+    fi
+    
+    if [[ $YCSB_PROFILE == "cassandra2-cql" ]]
+    then
+        cqlsh ${ACTUAL_NODE} -f cqlsh_list_keyspace.cassandra > /dev/null 2>&1
+        if [[ $? -eq 0 ]]
+        then
+            export CCLIN=cqlsh
+            export CCLI="$CCLIN ${ACTUAL_NODE}"
+            export CTBN=ycsb
+            syslog_netcat "Successfully contacted Cassandra with command \"$CCLI -f ${CCLIN}_list_keyspace.cassandra\" through node ${ACTUAL_NODE}"
+            return 0
+        else
+            syslog_netcat "Failed while attempting to contact Cassandra with command \"$CCLI -f ${CCLIN}_list_keyspace.cassandra\" through node ${ACTUAL_NODE}"            
+            return 1
+        fi
+    else
+        cassandra-cli -h ${ACTUAL_NODE} -f cassandra-cli_list_keyspace.cassandra > /dev/null 2>&1
+        if [[ $? -eq 0 ]]
+        then    
+            export CCLIN=cassandra-cli
+            export CCLI="$CCLIN -h ${ACTUAL_NODE}"
+            export CTBN=usertable
+            syslog_netcat "Successfully contacted Cassandra with command \"$CCLI -f ${CCLIN}_list_keyspace.cassandra\" through node ${ACTUAL_NODE}"
+            return 0
+        else
+            syslog_netcat "Failed while attempting to contact Cassandra with command \"$CCLI -f ${CCLIN}_list_keyspace.cassandra\" through node ${ACTUAL_NODE}"            
+            return 1     
+        fi
+    fi
+}    
+export -f get_cassandra_cli
+           
 function check_cassandra_cluster_state {
 
     syslog_netcat "Waiting for all nodes to become available..."
@@ -275,10 +319,13 @@ function check_cassandra_cluster_state {
     INTERVAL=$3
 
     counter=0
-    
+    get_cassandra_cli $(sudo ifconfig -a | grep -c ${NODETOOLHN}[[:space:]])
+
+    has_system_keyspace=$($CCLI -f ${CCLIN}_list_keyspace.cassandra | sed 's/system_traces//g' | grep -c [[:space:]]system)
+
     NODETOOLAUTH="-u cassandra -pw cassandra" 
-                
-    while [[ $NODES_REGISTERED -ne $total_nodes && "$counter" -le "$ATTEMPTS" ]]
+           
+    while [[ ($NODES_REGISTERED -ne $total_nodes || $has_system_keyspace -ne 1) && "$counter" -le "$ATTEMPTS" ]]
     do
         NODES_REGISTERED=0    
         syslog_netcat "Obtaining the node list for this Cassandra cluster by running \"nodetool $NODETOOLAUTH -h ${NODETOOLHN} status\"..."            
@@ -292,10 +339,14 @@ function check_cassandra_cluster_state {
 
         syslog_netcat "Nodes registered on the cluster: $NODES_REGISTERED out of $total_nodes"        
         counter="$(( $counter + 1 ))"
+        
+        syslog_netcat "Make sure that Keyspace \"system\" is present"
+        has_system_keyspace=$($CCLI -f ${CCLIN}_list_keyspace.cassandra | sed 's/system_traces//g' | grep -c [[:space:]]system) 
+        
         sleep $INTERVAL
     done
-    
-    if [[ $counter -gt $ATTEMPTS ]]
+
+    if [[ $counter -gt $ATTEMPTS || $has_system_keyspace -eq 0 ]]
     then
         return 1
     else
@@ -303,6 +354,18 @@ function check_cassandra_cluster_state {
     fi
 }
 export -f check_cassandra_cluster_state
+
+function show_cassandra_cluster_schema {
+
+    if [[ -z ${1} ]]
+    then
+        NODETOOLHN=${MY_IP}
+    else
+        NODETOOLHN=$1
+    fi
+    nodetool $NODETOOLAUTH -h ${NODETOOLHN} describecluster
+}
+export -f show_cassandra_cluster_schema
 
 function eager_collection {
     CMDLINE=$1
@@ -451,7 +514,7 @@ function eager_collection {
     LOAD_GENERATOR_END=$(date +%s)
     update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
 
-	syslog_netcat "RUN COMPLETE: ${LIDMSG}"
+    syslog_netcat "RUN COMPLETE: ${LIDMSG}"
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 

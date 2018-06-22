@@ -99,6 +99,8 @@ sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/rpc_address:.*$/rpc_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/start_rpc:.*$/start_rpc: true/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/write_request_timeout_in_ms:.*$/write_request_timeout_in_ms: 20000/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/auto_snapshot:.*$/auto_snapshot: false/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
 #sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}    
 if [[ -d ${SEED_DATA_DIR} ]]
@@ -113,12 +115,13 @@ sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
 FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
 syslog_netcat "Performing a quick check from ${SHORT_HOSTNAME} in order to decide on Cassandra restart" 
-check_cassandra_cluster_state ${FIRST_SEED} 1 1
 
+check_cassandra_cluster_state ${MY_IP} 1 1
 STATUS=$?
+
 if [[ $STATUS -ne 0 ]]
 then 
-    syslog_netcat "The exit code of \"check_cassandra_cluster_state ${FIRST_SEED} 1 1\" was $STATUS. Starting Cassandra service on this seed..." 
+    syslog_netcat "The exit code of \"check_cassandra_cluster_state ${MY_IP} 1 1\" was $STATUS. Starting Cassandra service on this seed..." 
     service_restart_enable cassandra
 
     # Give all the Java services time to start
@@ -128,8 +131,8 @@ then
 
     if [[ ${STATUS} -eq 0 ]]
     then
-        syslog_netcat "Cassandra service running on seed ${FIRST_SEED}"
-        check_cassandra_cluster_state ${FIRST_SEED} 10 20
+        syslog_netcat "Cassandra service running on seed ${MY_IP}"
+        check_cassandra_cluster_state ${MY_IP} 10 20
         STATUS=$?
         if [[  $STATUS -eq 0 ]]
         then 

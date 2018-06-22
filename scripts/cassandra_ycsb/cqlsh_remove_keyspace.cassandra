@@ -1,2 +1,3 @@
+consistency all;
 drop keyspace ycsb;
 exit;
