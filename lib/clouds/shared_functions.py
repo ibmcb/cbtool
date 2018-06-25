@@ -1654,7 +1654,7 @@ packages:"""
     
         return True
 
-    @trace    
+    @trace
     def vmdestroy_repeat(self, obj_attr_list) :
         '''
         We need to ensure that for any clouds which set DETACH_ATTEMPTS = -1 or > 1 that
