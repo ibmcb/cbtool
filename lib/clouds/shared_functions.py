@@ -1653,7 +1653,50 @@ packages:"""
             obj_attr_list["key_name"] = None
     
         return True
-    
+
+    @trace    
+    def vmdestroy_repeat(self, obj_attr_list) :
+        '''
+        We need to ensure that for any clouds which set DETACH_ATTEMPTS = -1 or > 1 that
+        we try agressively to delete that resource before returning, or else we may be
+        causing the user more money than they intended to spend.
+        '''
+
+        _fails_left = 0 # A really dumb unit testing mechanism. Has no effect at zero.
+        _wait = int(obj_attr_list["update_frequency"])
+        _max_detach_tries = int(obj_attr_list["detach_attempts"])
+        _finished = False
+
+        _status, _fmsg = self.vmdestroy(obj_attr_list)
+
+        cbdebug(obj_attr_list["name"] + ": Starting with: " + str(_max_detach_tries))
+
+        while not _finished and (_max_detach_tries > 0 or _max_detach_tries == -1) :
+            if not _status and _fails_left == 0 :
+                _finished = True
+                cbdebug(obj_attr_list["name"] + ": Done: " + str(_status) + " " + str(_fails_left))
+                break
+
+            if _max_detach_tries > 0 :
+                _max_detach_tries = _max_detach_tries - 1
+
+            cbdebug(obj_attr_list["name"] + ": Attempts left: " + (str(_max_detach_tries) if _max_detach_tries >= 0 else "infinite"), True)
+
+            if _max_detach_tries == 0 :
+                break
+
+            if _fails_left > 0 :
+                _fails_left = _fails_left - 1
+                cbwarn(obj_attr_list["name"] + ": Synthetic Problem with instance destroy, trying again...", True)
+            else:
+                cbwarn(obj_attr_list["name"] + ": Problem with instance destroy, trying again...", True)
+
+            sleep(_wait)
+
+            _status, _fmsg = self.vmdestroy(obj_attr_list)
+
+        return _status, _fmsg
+
     @trace    
     def common_messages(self, obj_type, obj_attr_list, operation, status, failure_msg) :
         '''
@@ -1827,7 +1870,7 @@ packages:"""
                         cberr(_msg, True)
                         
                         obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
-                        self.vmdestroy(obj_attr_list)
+                        self.vmdestroy_repeat(obj_attr_list)
                             
                     raise CldOpsException(_msg, status)
                 
