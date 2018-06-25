@@ -1674,13 +1674,12 @@ packages:"""
         while not _finished and (_max_detach_tries > 0 or _max_detach_tries == -1) :
             if not _status and _fails_left == 0 :
                 _finished = True
-                cbdebug(obj_attr_list["name"] + ": Done: " + str(_status) + " " + str(_fails_left))
                 break
 
             if _max_detach_tries > 0 :
                 _max_detach_tries = _max_detach_tries - 1
 
-            cbdebug(obj_attr_list["name"] + ": Attempts left: " + (str(_max_detach_tries) if _max_detach_tries >= 0 else "infinite"), True)
+            cbwarn(obj_attr_list["name"] + ": Attempts left: " + (str(_max_detach_tries) if _max_detach_tries >= 0 else "infinite"), True)
 
             if _max_detach_tries == 0 :
                 break
