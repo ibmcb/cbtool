@@ -1130,14 +1130,20 @@ class GceCmds(CommonCloudFunctions) :
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
             
         except CldOpsException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
         except GCEException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
         except Exception, msg :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _fmsg = str(msg)
             _status = 23
     
