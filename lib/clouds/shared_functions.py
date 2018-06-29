@@ -1893,7 +1893,7 @@ packages:"""
     
                 _msg = "Creating volume \"" + obj_attr_list["cloud_vv_name"] + "\""                    
                 _msg += ", type \"" + str(obj_attr_list["cloud_vv_type"]) + "\""
-                if str(obj_attr_list["boot_from_volume"]).lower() == "true" :
+                if str(obj_attr_list["boot_from_volume"]).lower() == "true" and obj_attr_list["cloud_vv_name"].count("-vbv") :
                     _msg += ", from image \"" + obj_attr_list["imageid1"] + "\" (boot_volume)"
                 else :                
                     _msg += ", with size " + str(obj_attr_list["cloud_vv"]) + " GB,"
