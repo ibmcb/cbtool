@@ -536,7 +536,8 @@ class CBCLI(Cmd) :
             hdlr = StreamHandler(stdout)
         elif options.logdest == "syslog" :
             hdlr = SysLogHandler(address = (options.syslogn, int(options.syslogp)), \
-                                 facility=_syslog_selector[str(options.syslogf)])
+                                 facility=_syslog_selector[str(options.syslogf)],
+                                 socktype = socket.SOCK_DGRAM)
         else :
             hdlr = RotatingFileHandler(options.logdest, maxBytes=20971520, \
                                        backupCount=20)

@@ -1105,6 +1105,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status, _fmsg = self.vvcreate(obj_attr_list, LibcloudCmds.catalogs.cbtool[_credentials_list])
 
+            if "libcloud_location_inst" not in obj_attr_list :
+                raise CldOpsException("Region " + obj_attr_list["region"] + " has become unavailable. Check your configuration and try again.", 917)
+
             _mark_a = time()            
             if obj_attr_list["libcloud_call_type"] == "create_node_with_mixed_arguments" :
                 _reservation = LibcloudCmds.catalogs.cbtool[_credentials_list].create_node(

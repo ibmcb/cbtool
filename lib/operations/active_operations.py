@@ -1970,7 +1970,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 cbdebug("Recreating VM " + obj_attr_list["name"] + "...", True)
                                 self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                          obj_attr_list, False)
-                                _status, _fmsg = _cld_conn.vmdestroy(obj_attr_list)
+                                _status, _fmsg = _cld_conn.vmdestroy_repeat(obj_attr_list)
                                 _created_object = False
                                 _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
                                 self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
@@ -2100,7 +2100,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cld_conn.vmcunregister(obj_attr_list)
     
                     if _vmcreate :
-                        _cld_conn.vmdestroy(obj_attr_list)
+                        _cld_conn.vmdestroy_repeat(obj_attr_list)
                         if "qemu_debug_port_base" in obj_attr_list :
                             self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
                         
@@ -3059,7 +3059,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 elif _obj_type == "VM" :
                     self.pre_detach_vm(obj_attr_list)
-                    _status, _msg = _cld_conn.vmdestroy(obj_attr_list)
+                    _status, _msg = _cld_conn.vmdestroy_repeat(obj_attr_list)
 
                 elif _obj_type == "AI" :
                     self.pre_detach_ai(obj_attr_list)
