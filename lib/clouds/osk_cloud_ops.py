@@ -1190,7 +1190,9 @@ class OskCmds(CommonCloudFunctions) :
                 _imageid = None
                 if str(obj_attr_list["boot_from_volume"]).lower() == "true" :
                     _imageid = obj_attr_list["boot_volume_imageid1"]
-                
+                    obj_attr_list["cloud_vv_data_name"] = obj_attr_list["cloud_vv_name"]
+                    obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].replace("-vv","-vbv")
+
                 obj_attr_list["last_known_state"] = "about to send volume create request"
                 _mark_a = time()
                 if str(self.oskconnstorage[obj_attr_list["name"]].version) == '1' :
