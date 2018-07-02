@@ -665,10 +665,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             self.osci.remove_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
                                                               _is_tag, _key)
                         else :
-                            if _value.count("C+") :
+                            if _value.count("C+") and not _value.count(',') :
                                 _counter = True
                                 _value = _value.replace("C+",'+')
-                            elif _value.count("C-") :
+                            elif _value.count("C-") and not _value.count(',') :
                                 _value = _value.replace("C-",'-')
                                 _counter = True
                             else :
