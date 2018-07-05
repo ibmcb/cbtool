@@ -199,10 +199,13 @@ class OsCmds(LibcloudCmds) :
         
         obj_attr_list["region"] = obj_attr_list["vmc_name"]
 
-        for _location in LibcloudCmds.locations :
-            if _location.id == obj_attr_list["region"] :
-                obj_attr_list["libcloud_location_inst"] = _location
-                break
+        if len(LibcloudCmds.locations) == 1 :
+            obj_attr_list["libcloud_location_inst"] = LibcloudCmds.locations[0]
+        else :
+            for _location in LibcloudCmds.locations :
+                if _location.id == obj_attr_list["region"] :
+                    obj_attr_list["libcloud_location_inst"] = _location
+                    break
 
         _mark_a = time()
         _security_groups = []
