@@ -460,11 +460,11 @@ ruamelyaml-tag = orchestrator
 jq-tag = base
 urllib3-tag = gce,all
 httplib2shim-tag = gce,all
-rrdtool-tag = base
-python-rrdtool-tag = base
-python-dateutil-tag = base
-python-pillow-tag = base
-python-jsonschema-tag = base
+rrdtool-tag = orchestrator
+python-rrdtool-tag = orchestrator
+python-dateutil-tag = orchestrator
+python-pillow-tag = orchestrator
+python-jsonschema-tag = orchestrator
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
