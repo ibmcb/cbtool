@@ -1722,12 +1722,9 @@ function automount_data_dirs {
     if [[ $ROLE_DATA_DIR != "none" ]]
     then
         
-        if [[ $IS_CONTAINER -eq 0 ]]
-        then        
-            syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
-            sudo mkdir -p $ROLE_DATA_DIR
-            change_directory_ownership ${my_login_username} ${my_login_username} $ROLE_DATA_DIR
-        fi
+        syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
+        sudo mkdir -p $ROLE_DATA_DIR
+        change_directory_ownership ${my_login_username} ${my_login_username} $ROLE_DATA_DIR
         
         if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
         then
