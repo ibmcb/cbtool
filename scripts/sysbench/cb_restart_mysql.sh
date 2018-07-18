@@ -47,7 +47,7 @@ fi
 
 ${SUDO_CMD} sed -i "s^bind-address.*^bind-address            = $my_ip_addr^g" ${MYSQL_CONF_FILE}
 
-# Set mysql's memory cache size to be 70% of main memory
+# Set mysql's memory cache size to be a percentage of main memory
 kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
 mb=$(echo "$kb / 1024 * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
 ${SUDO_CMD} su -c "echo 'innodb_buffer_pool_size = ${mb}M' >> ${MYSQL_CONF_FILE}"
