@@ -41,6 +41,10 @@ MYSQL_NONROOT_USER = sysbench
 MYSQL_NONROOT_PASSWORD = sysbench
 TABLE_SIZE = 10000
 READ_ONLY = off
+# Probably ubuntu-specific. May need to override for CentOS
+MYSQL_CONF_FILE = /etc/mysql/mysql.conf.d/mysqld.cnf
+# Default to 70% of main memory
+MYSQL_RAM_PERCENTAGE = 70
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
