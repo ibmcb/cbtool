@@ -1655,6 +1655,15 @@ packages:"""
         return True
 
     @trace
+    def vmdestroy_repeat_and_check(self, obj_attr_list) :
+        try :
+            _status, _fmsg = self.vmdestroy(obj_attr_list)
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = obj.msg
+        return _status, _fmsg
+
+    @trace
     def vmdestroy_repeat(self, obj_attr_list) :
         '''
         We need to ensure that for any clouds which set DETACH_ATTEMPTS = -1 or > 1 that
@@ -1667,7 +1676,7 @@ packages:"""
         _max_detach_tries = int(obj_attr_list["detach_attempts"])
         _finished = False
 
-        _status, _fmsg = self.vmdestroy(obj_attr_list)
+        _status, _fmsg = self.vmdestroy_repeat_and_check(obj_attr_list)
 
         cbdebug(obj_attr_list["name"] + ": Starting with: " + str(_max_detach_tries))
 
@@ -1692,7 +1701,7 @@ packages:"""
 
             sleep(_wait)
 
-            _status, _fmsg = self.vmdestroy(obj_attr_list)
+            _status, _fmsg = self.vmdestroy_repeat_and_check(obj_attr_list)
 
         return _status, _fmsg
 
