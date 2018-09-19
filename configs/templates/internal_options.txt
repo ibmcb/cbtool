@@ -319,7 +319,8 @@ COLLECTOR_HOST_SUMMARIZER_PORT = 8652
 COLLECTOR_VM_AGGREGATOR_PORT = 8651
 COLLECTOR_VM_SUMMARIZER_PORT = 8652
 FILLER_STRING=NA
-UNCHANGED_STRING=(unchanged)
+#UNCHANGED_STRING=(unchanged)
+UNCHANGED_STRING=None
 
 # Attributes recorded during management operations
 TRACE_ATTRIBUTES = command_originated, command, name, vmc_arrived, 
