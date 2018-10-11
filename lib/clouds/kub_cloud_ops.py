@@ -28,10 +28,11 @@ from os.path import expanduser
 
 import operator
 import pykube
+import traceback
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
-from lib.remote.network_functions import hostname2ip, check_url
+from lib.remote.network_functions import hostname2ip, check_url, NetworkException
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class KubCmds(CommonCloudFunctions) :
@@ -70,10 +71,13 @@ class KubCmds(CommonCloudFunctions) :
             _endpoint_ip = "NA"            
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.kubeconn = pykube.HTTPClient(pykube.KubeConfig.from_file(access))
+            if not diag :
+                if not self.kubeconn :
+                    self.kubeconn = pykube.HTTPClient(pykube.KubeConfig.from_file(access))
 
-            for _x in pykube.Endpoint.objects(self.kubeconn) :
-                True
+                if self.kubeconn :
+                    for _x in pykube.Endpoint.objects(self.kubeconn) :
+                        True
 
             self.additional_rc_contents = "export KUBECONFIG=" + access + "\n"
             _status = 0
@@ -184,6 +188,17 @@ class KubCmds(CommonCloudFunctions) :
         return _detected_imageids
 
     @trace
+    def try_dns(self, possible_ip) :
+        name = "ip_" + possible_ip.replace(".", "_")
+        ip = possible_ip 
+        try :
+            name, ip = hostname2ip(possible_ip, True)
+        except NetworkException, e :
+            cbwarn("DNS did not work. Assuming IP address: " + possible_ip)
+
+        return name, ip
+
+    @trace
     def discover_hosts(self, obj_attr_list, start) :
         '''
         TBD
@@ -205,8 +220,7 @@ class KubCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
             obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
             
-            obj_attr_list["host_list"][_host_uuid]["cloud_hostname"], \
-            obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = hostname2ip(_host_info["name"], True)
+            obj_attr_list["host_list"][_host_uuid]["cloud_hostname"], obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = self.try_dns(_host_info["name"])
                 
             obj_attr_list["host_list"][_host_uuid]["name"] = "host_"  + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
             obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
@@ -340,7 +354,7 @@ class KubCmds(CommonCloudFunctions) :
 
             obj_attr_list["cloud_hostname"] = obj_attr_list["name"]
 
-            obj_attr_list["cloud_hostname"], obj_attr_list["cloud_ip"] = hostname2ip(obj_attr_list["name"], False)
+            obj_attr_list["cloud_hostname"], obj_attr_list["cloud_ip"] = self.try_dns(obj_attr_list["name"])
 
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid(obj_attr_list["name"])
 
@@ -468,14 +482,24 @@ class KubCmds(CommonCloudFunctions) :
 
                 obj_attr_list["run_cloud_ip"] = _address
 
-                if str(obj_attr_list["ports_base"]).lower() != "false" :
-                    obj_attr_list["prov_cloud_ip"] = obj_attr_list["host_cloud_ip"]
+                if obj_attr_list["netname"] == "public" :
+                    service = pykube.Service(self.kubeconn, { "kind": "Service", "apiVersion": "v1",  "metadata": { "name": obj_attr_list["cloud_vm_name"]}})
+                    service.reload()
+                    if "loadBalancer" in service.obj["status"] and "ingress" in service.obj["status"]["loadBalancer"] :
+                        obj_attr_list["prov_cloud_ip"] = service.obj["status"]["loadBalancer"]["ingress"][0]["ip"]
+                        # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
+                        cbdebug("Found external IP: " + obj_attr_list["prov_cloud_ip"], True)
+                    else :
+                        cbdebug("External IP for " + obj_attr_list["cloud_vm_name"] + " not available yet...") 
+                        return False
                 else :
-                    obj_attr_list["prov_cloud_ip"] = obj_attr_list["run_cloud_ip"]
+                    if str(obj_attr_list["ports_base"]).lower() != "false" :
+                        obj_attr_list["prov_cloud_ip"] = obj_attr_list["host_cloud_ip"]
+                    else :
+                        obj_attr_list["prov_cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
                 # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
                 obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
-                
                 obj_attr_list["cloud_mac"] = "NA"
                 
                 return True
@@ -696,7 +720,7 @@ class KubCmds(CommonCloudFunctions) :
                 
                 if "hostIP" in self.instance_info["status"] :
                     _host_ip = self.instance_info["status"]["hostIP"]
-                    obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(_host_ip, True)     
+                    obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = self.try_dns(_host_ip)
 
                 if obj_attr_list["abstraction"] == "replicaset" or obj_attr_list["abstraction"] == "deployment" :
                     if "cloud_rs_exact_match_name" not in obj_attr_list :
@@ -725,6 +749,8 @@ class KubCmds(CommonCloudFunctions) :
                 return False
         
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -1004,8 +1030,7 @@ class KubCmds(CommonCloudFunctions) :
                                     
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-            _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
+            _service_obj = False
             if str(obj_attr_list["ports_base"]).lower() != "false" and str(obj_attr_list["check_boot_complete"]).lower() != "wait_for_0" :
 
                 if obj_attr_list["abstraction"] == "pod" :
@@ -1017,17 +1042,26 @@ class KubCmds(CommonCloudFunctions) :
                 if obj_attr_list["abstraction"] == "deployment" :
                     _actual_app_name = obj_attr_list["cloud_d_name"]
                 
-                _obj = { "kind": "Service", \
-                                 "apiVersion": "v1", \
-                                 "metadata": { "name":  obj_attr_list["cloud_vm_name"] }, \
+                _service_obj = { "kind": "Service",
+                                 "apiVersion": "v1",
+                                 "metadata": { "name":  obj_attr_list["cloud_vm_name"] },
                                  "spec": { 
-                                          "selector": { "creator" : "cbtool", "app" : _actual_app_name }, \
-                                          "ports": [ { "name": "ssh", "protocol": "TCP", "port": obj_attr_list["prov_cloud_port"], "targetPort": int(obj_attr_list["run_cloud_port"]) } ], \
-                                          "externalIPs": [ obj_attr_list["prov_cloud_ip"] ]
+                                          "selector": { "creator" : "cbtool", "app" : _actual_app_name },
+                                          "ports": [ { "name": "ssh", "protocol": "TCP", "port": obj_attr_list["prov_cloud_port"], "targetPort": int(obj_attr_list["run_cloud_port"]) } ]
                                           }
                                 }
-        
-                pykube.Service(self.kubeconn, _obj).create()
+
+            # If we're using external IPs for initial provisioning, we have to wait for the cloud
+            # to assign a loadBalancer-type IP address before attempting to call get_ip_address()
+            if _service_obj and obj_attr_list["netname"] == "public" :
+                _service_obj["spec"]["type"] = "LoadBalancer"
+                pykube.Service(self.kubeconn, _service_obj).create()
+
+            _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
+
+            if _service_obj and obj_attr_list["netname"] == "private" :
+                _service_obj["spec"]["externalIPs"] = [ obj_attr_list["prov_cloud_ip"] ]
+                pykube.Service(self.kubeconn, _service_obj).create()
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
             
@@ -1040,6 +1074,8 @@ class KubCmds(CommonCloudFunctions) :
                 _status = 916
 
         except CldOpsException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1049,6 +1085,8 @@ class KubCmds(CommonCloudFunctions) :
             cbdebug("VM create keyboard interrupt...", True)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
 
