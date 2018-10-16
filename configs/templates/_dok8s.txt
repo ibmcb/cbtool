@@ -6,6 +6,8 @@ DOK8S_SSH_KEY_NAME = cbtool_rsa
 DOK8S_LOGIN = need_to_be_configured_by_user
 DOK8S_INITIAL_VMCS = need_to_be_configured_by_user
 DOK8S_NETNAME = need_to_be_configured_by_user
+DOK8S_CREDENTIALS = need_to_be_configured_by_user
+DOK8S_CLUSTERS = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 DOK8S_ACCESS_DOC = Please enter the full path to the kubernetes configuration file
@@ -18,6 +20,10 @@ DOK8S_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC
 DOK8S_INITIAL_VMCS_DEFAULT = world:sut
 DOK8S_NETNAME_DOC = "Please enter the name of the network that will connect all created Containers"
 DOK8S_NETNAME_DEFAULT = private
+DOK8S_CREDENTIALS_DOC = DigitalOcean Bearer Tokens
+DOK8S_CREDENTIALS_DEFAULT = xxxxx
+DOK8S_CLUSTERS_DOC = Comma-separted groups of "name:region:k8s_version:k8s_worker_size:k8s_workers_per_cluster"
+DOK8S_CLUSTERS_DEFAULT = name:region:version:worker_size,number_of_workers
 
 [SPACE : DOK8S_CLOUDCONFIG ]
 SSH_KEY_NAME = $DOK8S_SSH_KEY_NAME
@@ -27,10 +33,11 @@ COLLECT_FROM_HOST = $False
 COLLECT_FROM_GUEST = $False
 
 [VMC_DEFAULTS : DOK8S_CLOUDCONFIG]
+CLUSTERS = $DOK8S_CLUSTERS
 INITIAL_VMCS = $DOK8S_INITIAL_VMCS
 DISCOVER_HOSTS = $False
 ACCESS = $Empty
-CREDENTIALS = $Empty
+CREDENTIALS = $DOK8S_CREDENTIALS
 SECURITY_GROUPS = $Empty
 KEY_NAME = $DOK8S_KEY_NAME
 ADDITIONAL_DISCOVERY = $Empty
@@ -40,7 +47,7 @@ HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : DOK8S_CLOUDCONFIG]
 ACCESS = $Empty
-CREDENTIALS = $Empty
+CREDENTIALS = $DOK8S_CREDENTIALS
 EXTRA_INFO = $Empty
 HOSTS_PER_VMC = 5
 CAPTURE_SUPPORTED = $False

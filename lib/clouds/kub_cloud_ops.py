@@ -29,6 +29,7 @@ from os.path import expanduser
 import operator
 import pykube
 import traceback
+import threading
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
@@ -36,9 +37,8 @@ from lib.remote.network_functions import hostname2ip, check_url, NetworkExceptio
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class KubCmds(CommonCloudFunctions) :
-    '''
-    TBD
-    '''
+    catalogs = threading.local()
+
     @trace
     def __init__ (self, pid, osci, expid = None) :
         '''
@@ -48,7 +48,6 @@ class KubCmds(CommonCloudFunctions) :
         self.pid = pid
         self.osci = osci
         self.ft_supported = False
-        self.kubeconn = False        
         self.expid = expid
         self.api_error_counter = {}
         self.additional_rc_contents = ''        
@@ -63,26 +62,65 @@ class KubCmds(CommonCloudFunctions) :
 
     @trace
     def connect(self, access, credentials, vmc_name, extra_parms = {}, diag = False, generate_rc = False) :
-        '''
-        TBD
-        '''        
+        # This has been modified to support the addition of future public k8s services
+        # The function expects the YAML configuration to be in the object dictionary
+        # in advance. If it doesn't find it, it loads it from a file assuming that
+        # the cluster already exists.
+        try :
+            getattr(KubCmds.catalogs, "kubeconn")
+        except AttributeError, e :
+            cbdebug("Initializing thread local connection: ")
+
+            KubCmds.catalogs.kubeconn = {}
+
         try :
             _status = 100
             _endpoint_ip = "NA"            
             _fmsg = "An error has occurred, but no error message was captured"
 
             if not diag :
-                if not self.kubeconn :
-                    self.kubeconn = pykube.HTTPClient(pykube.KubeConfig.from_file(access))
+                if vmc_name not in KubCmds.catalogs.kubeconn :
+                    kubeyaml = False
+                    if "kubeyaml" in extra_parms :
+                        if extra_parms["kubeyaml"] :
+                            kubeyaml = extra_parms["kubeyaml"]
+                    else :
+                        fh = open(access, "r")
+                        kubeyaml = fh.read()
+                        fh.close()
 
-                if self.kubeconn :
-                    for _x in pykube.Endpoint.objects(self.kubeconn) :
-                        True
+                    if kubeyaml :
+                        KubCmds.catalogs.kubeconn[vmc_name] = pykube.HTTPClient(pykube.KubeConfig(kubeyaml))
 
-            self.additional_rc_contents = "export KUBECONFIG=" + access + "\n"
-            _status = 0
+                vmc_defaults = self.osci.get_object(extra_parms["cloud_name"], "GLOBAL", False, "vmc_defaults", False)
+                _max_tries = int(vmc_defaults["update_attempts"])
+                _wait = int(vmc_defaults["update_frequency"])
+
+                if vmc_name in KubCmds.catalogs.kubeconn and KubCmds.catalogs.kubeconn[vmc_name] :
+                    authenticated = False
+                    while _max_tries > 0 :
+                        try :
+                            for _x in pykube.Endpoint.objects(KubCmds.catalogs.kubeconn[vmc_name]) :
+                                True
+                            authenticated = True
+                            break
+                        except Exception, e :
+                            cbwarn(vmc_name + " not ready yet...", True)
+                            _fmsg = str(e)
+                            _max_tries = _max_tries - 1
+                            sleep(_wait * 2)
+                else :
+                    authenticated = True
+
+                if authenticated :
+                    _status = 0
+            else :
+                self.additional_rc_contents = "export KUBECONFIG=" + access + "\n"
+                _status = 0
             
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
 
@@ -208,7 +246,7 @@ class KubCmds(CommonCloudFunctions) :
         obj_attr_list["host_list"] = {}
         obj_attr_list["hosts"] = ''
 
-        for _host in pykube.Node.objects(self.kubeconn) :
+        for _host in pykube.Node.objects(KubCmds.catalogs.kubeconn[obj_attr_list["name"]]) :
 
             _host_info = _host.metadata
     
@@ -269,9 +307,15 @@ class KubCmds(CommonCloudFunctions) :
             sleep(_wait)
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
-            
+
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["name"],
+                         obj_attr_list)
+
+            kubeconn = KubCmds.catalogs.kubeconn[obj_attr_list["name"]]
             for _abstraction_type in [ "service", "deployment", "replicaset", "pod" ] :
-                for _item in pykube.objects.Namespace.objects(self.kubeconn) :
+                for _item in pykube.objects.Namespace.objects(kubeconn) :
                     _namespace = _item.name
                     _running_instances = True
         
@@ -279,16 +323,16 @@ class KubCmds(CommonCloudFunctions) :
                         _running_instances = False
     
                         if _abstraction_type == "service" :
-                            _object_list = pykube.objects.Service.objects(self.kubeconn).filter(namespace = _namespace)
+                            _object_list = pykube.objects.Service.objects(kubeconn).filter(namespace = _namespace)
     
                         if _abstraction_type == "deployment" :
-                            _object_list = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = _namespace)
+                            _object_list = pykube.objects.Deployment.objects(kubeconn).filter(namespace = _namespace)
     
                         if _abstraction_type == "replicaset" :                        
-                            _object_list = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = _namespace)
+                            _object_list = pykube.objects.ReplicaSet.objects(kubeconn).filter(namespace = _namespace)
     
                         if _abstraction_type == "pod" :                        
-                            _object_list = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = _namespace)
+                            _object_list = pykube.objects.Pod.objects(kubeconn).filter(namespace = _namespace)
                             
                         for _object in _object_list :
         
@@ -323,6 +367,8 @@ class KubCmds(CommonCloudFunctions) :
             _status = 0
                         
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
 
@@ -345,17 +391,15 @@ class KubCmds(CommonCloudFunctions) :
 
             self.connect(obj_attr_list["access"], \
                          obj_attr_list["credentials"], \
-                         obj_attr_list["name"])
+                         obj_attr_list["name"],
+                         obj_attr_list)
 
             if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
             else :
                 _status = 0
 
-            obj_attr_list["cloud_hostname"] = obj_attr_list["name"]
-
             obj_attr_list["cloud_hostname"], obj_attr_list["cloud_ip"] = self.try_dns(obj_attr_list["name"])
-
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid(obj_attr_list["name"])
 
             obj_attr_list["arrival"] = int(time())
@@ -368,7 +412,7 @@ class KubCmds(CommonCloudFunctions) :
                 obj_attr_list["host_count"] = "NA"
 
             obj_attr_list["network_detected"] = "flannel"
-            _container_list = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = "kube-system")
+            _container_list = pykube.objects.Pod.objects(KubCmds.catalogs.kubeconn[obj_attr_list["name"]]).filter(namespace = "kube-system")
             for _container in _container_list :
                 if _container.name.count("calico") :
                     obj_attr_list["network_detected"] = "calico"
@@ -384,6 +428,8 @@ class KubCmds(CommonCloudFunctions) :
             _fmsg = str(obj.msg)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
     
@@ -443,9 +489,10 @@ class KubCmds(CommonCloudFunctions) :
                 
                 self.connect(obj_attr_list["access"], \
                              obj_attr_list["credentials"], \
-                             _vmc_attr_list["name"], obj_attr_list)
+                             _vmc_attr_list["name"], 
+                             obj_attr_list)
 
-                _container_list = pykube.objects.Pod.objects(self.kubeconn).filter()
+                _container_list = pykube.objects.Pod.objects(KubCmds.catalogs.kubeconn[_vmc_attr_list["name"]]).filter()
                 for _container in _container_list :
                     if _container.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
                         _nr_instances += 1
@@ -483,7 +530,7 @@ class KubCmds(CommonCloudFunctions) :
                 obj_attr_list["run_cloud_ip"] = _address
 
                 if obj_attr_list["netname"] == "public" :
-                    service = pykube.Service(self.kubeconn, { "kind": "Service", "apiVersion": "v1",  "metadata": { "name": obj_attr_list["cloud_vm_name"]}})
+                    service = pykube.Service(KubCmds.catalogs.kubeconn[obj_attr_list["vmc_name"]], { "kind": "Service", "apiVersion": "v1",  "metadata": { "name": obj_attr_list["cloud_vm_name"]}})
                     service.reload()
                     if "loadBalancer" in service.obj["status"] and "ingress" in service.obj["status"]["loadBalancer"] :
                         obj_attr_list["prov_cloud_ip"] = service.obj["status"]["loadBalancer"]["ingress"][0]["ip"]
@@ -519,61 +566,61 @@ class KubCmds(CommonCloudFunctions) :
         _call = "NA"
 
         try :
-
+            kubeconn = KubCmds.catalogs.kubeconn[obj_attr_list["vmc_name"]]
             if obj_type == "pod" :
                 _call = "containers()"
                 if identifier == "all" :
-                    _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
+                    _instances = pykube.objects.Pod.objects().filter(namespace = obj_attr_list["namespace"])
                                                                    
                 else :
                     
                     if "cloud_vm_exact_match_name" in obj_attr_list :
                         identifier = obj_attr_list["cloud_vm_exact_match_name"]
-                        _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                        _instances = pykube.objects.Pod.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"metadata.name": identifier})
 
                     elif "selector" in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
-                        _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                        _instances = pykube.objects.Pod.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                           selector= _selector)
 
                     else :
-                        _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                        _instances = pykube.objects.Pod.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"metadata.name": identifier})
 
 
             elif obj_type == "replicaset" :
                 if identifier == "all" :
-                    _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
+                    _instances = pykube.objects.ReplicaSet.objects(kubeconn).filter(namespace = obj_attr_list["namespace"])
                 else :
                     if "cloud_rs_exact_match_name" in obj_attr_list  :
                         identifier = obj_attr_list["cloud_rs_exact_match_name"]
-                        _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                        _instances = pykube.objects.ReplicaSet.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"metadata.name": identifier})
                                                 
                     elif "selector" in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
-                        _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                        _instances = pykube.objects.ReplicaSet.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                              selector= _selector)
 
                     else :
-                        _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                        _instances = pykube.objects.ReplicaSet.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"metadata.name": identifier})
                         
             elif obj_type == "deployment" :
                 if identifier == "all" :
-                    _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
+                    _instances = pykube.objects.Deployment.objects(kubeconn).filter(namespace = obj_attr_list["namespace"])
                 else :
                     if "selector" in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
-                        _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                        _instances = pykube.objects.Deployment.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       selector= _selector)
             
             elif obj_type == "service" :
                 if identifier == "all" :
-                    _instances = pykube.Service.objects(self.kubeconn).filter(namespace=obj_attr_list["namespace"])
+                    _instances = pykube.Service.objects(kubeconn).filter(namespace=obj_attr_list["namespace"])
                 else :
-                    _instances = pykube.Service.objects(self.kubeconn).filter(namespace=obj_attr_list["namespace"], \
+                    _instances = pykube.Service.objects(kubeconn).filter(namespace=obj_attr_list["namespace"], \
                                                                               field_selector={"metadata.name": identifier})                    
             else :
                 _call = "volumes()"                    
@@ -865,6 +912,16 @@ class KubCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
+            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                      "VMC", False, obj_attr_list["vmc"], \
+                                                      False)
+
+            if "kubeconfig" in _vmc_attr_list :
+                obj_attr_list["kubeconfig"] = _vmc_attr_list["kubeconfig"]
+
+            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], obj_attr_list)
+
             self.determine_instance_name(obj_attr_list)
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower()
             obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()
@@ -879,7 +936,7 @@ class KubCmds(CommonCloudFunctions) :
 
             _mark_a = time()
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], obj_attr_list["name"])
+                         obj_attr_list["vmc_name"], obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
 
             _mark_a = time()
@@ -1018,13 +1075,15 @@ class KubCmds(CommonCloudFunctions) :
 
             self.pre_vmcreate_process(obj_attr_list)
 
+            kubeconn = KubCmds.catalogs.kubeconn[obj_attr_list["vmc_name"]]
+
             _mark_a = time()
             if obj_attr_list["abstraction"] == "pod" :
-                pykube.Pod(self.kubeconn, _obj).create()
+                pykube.Pod(kubeconn, _obj).create()
             if obj_attr_list["abstraction"] == "replicaset" :
-                pykube.ReplicaSet(self.kubeconn, _obj).create()
+                pykube.ReplicaSet(kubeconn, _obj).create()
             if obj_attr_list["abstraction"] == "deployment" :
-                pykube.Deployment(self.kubeconn, _obj).create()
+                pykube.Deployment(kubeconn, _obj).create()
                                                 
             self.annotate_time_breakdown(obj_attr_list, "instance_scheduling_time", _mark_a)
                                     
@@ -1055,13 +1114,13 @@ class KubCmds(CommonCloudFunctions) :
             # to assign a loadBalancer-type IP address before attempting to call get_ip_address()
             if _service_obj and obj_attr_list["netname"] == "public" :
                 _service_obj["spec"]["type"] = "LoadBalancer"
-                pykube.Service(self.kubeconn, _service_obj).create()
+                pykube.Service(kubeconn, _service_obj).create()
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
             if _service_obj and obj_attr_list["netname"] == "private" :
                 _service_obj["spec"]["externalIPs"] = [ obj_attr_list["prov_cloud_ip"] ]
-                pykube.Service(self.kubeconn, _service_obj).create()
+                pykube.Service(kubeconn, _service_obj).create()
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
             
@@ -1116,7 +1175,7 @@ class KubCmds(CommonCloudFunctions) :
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], obj_attr_list["name"])
+                         obj_attr_list["vmc_name"], obj_attr_list)
             
             _wait = int(obj_attr_list["update_frequency"])
             _max_tries = int(obj_attr_list["update_attempts"])
@@ -1190,7 +1249,7 @@ class KubCmds(CommonCloudFunctions) :
             _cs = obj_attr_list["current_state"]
     
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], obj_attr_list["name"])
+                         obj_attr_list["vmc_name"], obj_attr_list)
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0
@@ -1268,6 +1327,8 @@ class KubCmds(CommonCloudFunctions) :
 
             _pattern = "%Y-%m-%dT%H:%M:%SZ"
 
+            kubeconn = KubCmds.catalogs.kubeconn[obj_attr_list["vmc_name"]]
+
             if self.instance_info :
                                             
                 if "metadata" in self.instance_info :
@@ -1283,7 +1344,7 @@ class KubCmds(CommonCloudFunctions) :
                 _mark_a = int(obj_attr_list["cloud_vm_creation_timestamp"])
 
                 if obj_attr_list["abstraction"] == "deployment" :
-                    for _event in pykube.objects.Event.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                    for _event in pykube.objects.Event.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"involvedObject.name": obj_attr_list["cloud_d_name"]}) :
                         _event_info = _event.obj
 
@@ -1301,7 +1362,7 @@ class KubCmds(CommonCloudFunctions) :
                             _mark_a = _epoch
 
                 if obj_attr_list["abstraction"] == "replicaset" or obj_attr_list["abstraction"] == "deployment" :
-                    for _event in pykube.objects.Event.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                    for _event in pykube.objects.Event.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"involvedObject.name": obj_attr_list["cloud_rs_name"]}) :
                         _event_info = _event.obj
                         
@@ -1318,7 +1379,7 @@ class KubCmds(CommonCloudFunctions) :
                             self.annotate_time_breakdown(obj_attr_list, "instance_" + _event_info["reason"].lower() + "_time", _epoch - _mark_a, False)
                             _mark_a = _epoch
 
-                for _event in pykube.objects.Event.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                for _event in pykube.objects.Event.objects(kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"involvedObject.name": obj_attr_list["cloud_vm_name"]}) :
                     _event_info = _event.obj
                     

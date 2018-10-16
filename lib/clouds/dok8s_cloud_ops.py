@@ -29,16 +29,11 @@ from libcloud_common import LibcloudCmds
 from kub_cloud_ops import KubCmds
 
 import operator
-import pykube
 import traceback
-
 
 class Dok8sCmds(KubCmds) :
     @trace
     def __init__ (self, pid, osci, expid = None) :
-        self.kubeconfig = False
-        self.kuuid = False
-        # change to 'access'
         KubCmds.__init__(self, pid, osci, expid = expid)
 
     @trace
@@ -48,9 +43,10 @@ class Dok8sCmds(KubCmds) :
     @trace
     def connect(self, access, credentials, vmc_name, extra_parms = {}, diag = False, generate_rc = False) :
         try :
-            if not diag and not self.kubeconn :
-                # Move the pykube call into the kub adapter itself so we don't have to import it
-                self.kubeconn = pykube.HTTPClient(pykube.KubeConfig(yaml.safe_load(self.kubeconfig)))
+            extra_parms["kubeyaml"] = False
+            if not diag :
+                if "kubeconfig" in extra_parms :
+                    extra_parms["kubeyaml"] = yaml.safe_load(extra_parms["kubeconfig"])
 
             return KubCmds.connect(self, access, credentials, vmc_name, extra_parms, diag, generate_rc)
         except Exception, e :
@@ -89,21 +85,24 @@ class Dok8sCmds(KubCmds) :
                 cbdebug("Cluster cleanup failed: " + str(r.status_code), True)
                 raise CldOpsException("Could not cleanup old clusters.", 470)
 
+            cbdebug("Creating cluster for: " + obj_attr_list["name"], True)
             create = {
                 "kubernetes_cluster": {
                     "name": kname,
-                    "region": obj_attr_list["name"],
-                    "version":"1.11.1-do.1",
+                    "region": obj_attr_list["region"],
+                    "version" : obj_attr_list["k8s_version"],
                     "worker_pools": [
                         {
-                            "droplet_size" : "s-2vcpu-4gb",
-                            "version" : "1.11.1-do.1",
-                            "num_nodes" : 2,
+                            "droplet_size" : obj_attr_list["k8s_worker_size"],
+                            "version" : obj_attr_list["k8s_version"],
+                            "num_nodes" : int(obj_attr_list["nb_workers"]),
                             "name" : kname + "-pool"
                         }
                     ]
                 }
             }
+
+            cbdebug("Requesting JSON: " + str(create))
 
             # need tolerate errors, obviously
             r = s.post(self.access + "/kubernetes/clusters", json = create)
@@ -114,7 +113,7 @@ class Dok8sCmds(KubCmds) :
                 cbdebug("Waiting for ready status uuid: " + kuuid)
             else :
                 cbdebug("Create failed: " + str(r.status_code), True)
-                raise CldOpsException("No k8s for you.", 459)
+                raise CldOpsException("No k8s for you. Code: " + str(r.status_code), 459)
 
             while True :
                 r = s.get(self.access + "/kubernetes/clusters/" + kuuid)
@@ -181,7 +180,12 @@ class Dok8sCmds(KubCmds) :
         except Exception, e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
+
             cberr("Failure to create k8s cluster: " + str(e), True)
+
+            if kuuid :
+                self.destroy_cluster(kuuid)
+
             return False, False
 
         return kuuid, kubeconfig
@@ -222,20 +226,41 @@ class Dok8sCmds(KubCmds) :
             return False
 
     @trace
+    def vmccleanup(self, obj_attr_list) :
+        # This adapter creates/destroys clusters on demand, so there's
+        # nothing to cleanup when a VMC is detached or attached. All
+        # the containers will already have been removed.
+        cbdebug("5 Is it there? " + ("yes" if "kubeconfig" in obj_attr_list else "no"), True)
+        return self.common_messages("VMC", obj_attr_list, "cleaned up", 0, "")
+
+    @trace
     def vmcregister(self, obj_attr_list) :
         try :
-            if not self.kubeconfig :
-                if "kubeconfig" not in obj_attr_list :
-                    credentials = "63c4a071ae4795dcbdd424ff403856170bdb4c359a7b9278f0158b501f98ef17"
-                    self.access = obj_attr_list["access"]
-                    self.headers = {"Authorization" : "Bearer " + credentials}
-                    # This really should be in vmcregister()
-                    cbdebug("Creating cluster: " + obj_attr_list["name"], True)
-                    obj_attr_list["kuuid"], obj_attr_list["kubeconfig"] = self.create_cluster(obj_attr_list)
-                    if not obj_attr_list["kuuid"] :
-                        raise CldOpsException("vmcregister, No k8s for you.", 458)
-                self.kubeconfig = obj_attr_list["kubeconfig"]
-                self.kuuid = obj_attr_list["kuuid"]
+            cluster_list = obj_attr_list["clusters"].lower().strip().split(",")
+            region = False
+            size = False
+            version = False
+            worker_size = False
+            for cluster in cluster_list :
+                name, region, version, worker_size, nb_workers = cluster.split(":")
+                if name == obj_attr_list["name"] :
+                    cbdebug("VMC " + name + " in " + region + " using version " + version + " and " + nb_workers + " workers each of size " + worker_size, True)
+                    break
+
+            if not region :
+                return 104, "VMC " + name + " not found in CLUSTERS configuration list. Please correct and try again: " + cluster_list
+
+            obj_attr_list["region"] = region
+            obj_attr_list["nb_workers"] = nb_workers
+            obj_attr_list["k8s_version"] = version
+            obj_attr_list["k8s_worker_size"] = worker_size
+
+            if "kubeconfig" not in obj_attr_list :
+                self.access = obj_attr_list["access"]
+                self.headers = {"Authorization" : "Bearer " + obj_attr_list["credentials"]}
+                obj_attr_list["kuuid"], obj_attr_list["kubeconfig"] = self.create_cluster(obj_attr_list)
+                if not obj_attr_list["kuuid"] :
+                    return 458, "vmcregister did not find a UUID, No k8s for you."
         except Exception, e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
@@ -244,8 +269,6 @@ class Dok8sCmds(KubCmds) :
         status, msg = KubCmds.vmcregister(self, obj_attr_list)
         return status, msg
 
-    # Store things into the object. kubeconfig. kuuid, etc.
-    # This should be vmcunregister, not cleanup
     @trace
     def vmcunregister(self, obj_attr_list) :
         status, msg = KubCmds.vmcunregister(self, obj_attr_list)
