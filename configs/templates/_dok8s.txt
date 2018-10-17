@@ -74,6 +74,7 @@ NAMESPACE = default
 ABSTRACTION = pod
 REPLICAS = 1
 PORTS_BASE = 10000
+PORTS_RANGE = 5000
 IMAGE_PREFIX = ibmcb/ubuntu_
 IMAGE_SUFFIX = $EMPTY
 DOCKER_REPO = https://hub.docker.com/r/

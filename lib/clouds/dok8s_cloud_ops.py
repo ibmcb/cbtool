@@ -156,11 +156,16 @@ class Dok8sCmds(KubCmds) :
 
             cbdebug("Adding rule to firewall " + fwuuid)
 
+            vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False)
+            ports_base = int(vm_defaults["ports_base"])
+            ports_range = int(vm_defaults["ports_range"])
+            ports_end = ports_base + ports_range
+
             rule = {
               "inbound_rules": [
                 {
                   "protocol": "tcp",
-                  "ports": "40000-45000",
+                  "ports": str(ports_base) + "-" + str(ports_end),
                   "sources": {
                         "addresses": [
                           "0.0.0.0/0",
@@ -224,14 +229,6 @@ class Dok8sCmds(KubCmds) :
                 cbwarn(line, True)
             cberr("Failure to destroy k8s cluster: " + str(e), True)
             return False
-
-    @trace
-    def vmccleanup(self, obj_attr_list) :
-        # This adapter creates/destroys clusters on demand, so there's
-        # nothing to cleanup when a VMC is detached or attached. All
-        # the containers will already have been removed.
-        cbdebug("5 Is it there? " + ("yes" if "kubeconfig" in obj_attr_list else "no"), True)
-        return self.common_messages("VMC", obj_attr_list, "cleaned up", 0, "")
 
     @trace
     def vmcregister(self, obj_attr_list) :
