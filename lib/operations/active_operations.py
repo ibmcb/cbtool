@@ -1159,6 +1159,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _vm_location = obj_attr_list["pool"]
         _cn = obj_attr_list["cloud_name"]
         _vmc_lock = False
+        _colocate_lock = False
         
         del obj_attr_list["pool"]
 
@@ -1258,10 +1259,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if len(_vmc_uuid_list) :
                     _vmc_defaults = self.osci.get_object(_cn, "GLOBAL", False, \
                                                          "vmc_defaults", False)
-                    if str(_vmc_defaults["round_robin"]).lower() == "true" : # use round-robin
+                    if str(_vmc_defaults["placement_method"]).lower().strip().count("roundrobin") : # use round-robin
                         # Intra-Pool Round-robin support.
                         _visited = []
-                        _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_round_robin", obj_attr_list["vmc_pool"], 1)
+                        _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", obj_attr_list["vmc_pool"], 1)
                         assert(_vmc_lock)
 
                         for _vmc_uuid_entry in _vmc_uuid_list :
@@ -1290,6 +1291,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     assert(len(_vmc_uuid_list))
                     obj_attr_list["vmc"] = choice(_vmc_uuid_list).split('|')[0]
 
+                    if str(_vmc_defaults["placement_method"]).lower().strip().count("colocate") :
+                        _colocate_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_colocate", obj_attr_list["vmc_pool"], 1)
+                        assert(_colocate_lock)
+
+                        first_vmc = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
+                             "AI", obj_attr_list["ai"], "first_vmc", failcheck = False)
+
+                        if first_vmc :
+                            obj_attr_list["vmc"] = first_vmc
+                        else :
+                            first_vmc = obj_attr_list["vmc"]
+                            self.osci.pending_object_set(obj_attr_list["cloud_name"], \
+                                 "AI", obj_attr_list["ai"], "first_vmc", first_vmc )
+
+                        cbdebug("VM " + obj_attr_list["name"] + " will share VMC: " + first_vmc)
+                            
                     self.osci.update_object_attribute(_cn, "VMC", obj_attr_list["vmc"], False, "visited", True)
                     
                     if not obj_attr_list["vmc"] :
@@ -1366,7 +1383,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         finally :
             if _vmc_lock :
-                self.osci.release_lock(_cn, "VMC", "vmc_round_robin", _vmc_lock)
+                self.osci.release_lock(_cn, "VMC", "vmc_placement", _vmc_lock)
+            if _colocate_lock :
+                self.osci.release_lock(_cn, "VMC", "vmc_colocate", _colocate_lock)
             if _status :
                 _msg = "VM pre-attachment operations failure: " + _fmsg
                 cberr(_msg)
