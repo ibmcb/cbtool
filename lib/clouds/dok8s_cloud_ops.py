@@ -232,6 +232,9 @@ class Dok8sCmds(KubCmds) :
 
     @trace
     def vmcregister(self, obj_attr_list) :
+        status = 0
+        msg = ""
+
         try :
             cluster_list = obj_attr_list["clusters"].lower().strip().split(",")
             region = False
@@ -258,20 +261,30 @@ class Dok8sCmds(KubCmds) :
                 obj_attr_list["kuuid"], obj_attr_list["kubeconfig"] = self.create_cluster(obj_attr_list)
                 if not obj_attr_list["kuuid"] :
                     return 458, "vmcregister did not find a UUID, No k8s for you."
+            status, msg = KubCmds.vmcregister(self, obj_attr_list)
         except Exception, e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
-            raise e
+            status, msg = self.common_messages("VMC", obj_attr_list, "registered", status, msg)
 
-        status, msg = KubCmds.vmcregister(self, obj_attr_list)
         return status, msg
 
     @trace
     def vmcunregister(self, obj_attr_list) :
-        status, msg = KubCmds.vmcunregister(self, obj_attr_list)
-        if status == 0 and "kubeconfig" in obj_attr_list :
-            success = self.destroy_cluster(obj_attr_list["kuuid"])
-            if not success :
-                status = 463
-                msg = "Failed to destroy k8s cluster"
+        status = 0
+        msg = "" 
+        try :
+            self.access = obj_attr_list["access"]
+            self.headers = {"Authorization" : "Bearer " + obj_attr_list["credentials"]}
+            status, msg = KubCmds.vmcunregister(self, obj_attr_list)
+            if status == 0 and "kubeconfig" in obj_attr_list :
+                success = self.destroy_cluster(obj_attr_list["kuuid"])
+                if not success :
+                    status = 463
+                    msg = "Failed to destroy k8s cluster"
+        except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
+            status, msg = self.common_messages("VMC", obj_attr_list, "unregistered", status, msg)
         return status, msg 
+

@@ -2198,7 +2198,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _fmsg = "An error has occurred, but no error message was captured"
         
         try :
-            if "hosts" in obj_attr_list and len(obj_attr_list["hosts"]) :
+            if "hosts" in obj_attr_list and len(obj_attr_list["hosts"]) and obj_attr_list["discover_hosts"].lower() == "true":
 
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
         
@@ -3197,7 +3197,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if "hosts" in obj_attr_list :
+            if "hosts" in obj_attr_list and obj_attr_list["discover_hosts"].lower() == "true" :
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
                     _host_attr_list =  self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, _host_uuid, False)
                     self.osci.destroy_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, _host_attr_list, False)
