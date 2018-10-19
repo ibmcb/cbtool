@@ -62,10 +62,7 @@ class KubCmds(CommonCloudFunctions) :
 
     @trace
     def connect(self, access, credentials, vmc_name, extra_parms = {}, diag = False, generate_rc = False) :
-        # This has been modified to support the addition of future public k8s services
-        # The function expects the YAML configuration to be in the object dictionary
-        # in advance. If it doesn't find it, it loads it from a file assuming that
-        # the cluster already exists.
+        # We need to handle multiple VMCs simultaneously in a thread-safe manner.
         try :
             getattr(KubCmds.catalogs, "kubeconn")
         except AttributeError, e :
@@ -81,6 +78,10 @@ class KubCmds(CommonCloudFunctions) :
             if not diag :
                 if vmc_name not in KubCmds.catalogs.kubeconn :
                     kubeyaml = False
+                    # This has been modified to support the addition of future public k8s services
+                    # The function expects the YAML configuration to be in the object dictionary
+                    # in advance. If it doesn't find it, it loads it from a file assuming that
+                    # the cluster already exists.
                     if "kubeyaml" in extra_parms :
                         if extra_parms["kubeyaml"] :
                             kubeyaml = extra_parms["kubeyaml"]
@@ -92,6 +93,9 @@ class KubCmds(CommonCloudFunctions) :
                     if kubeyaml :
                         KubCmds.catalogs.kubeconn[vmc_name] = pykube.HTTPClient(pykube.KubeConfig(kubeyaml))
 
+                # When k8s clusters are created on demand, they often have not been fully bootstrapped and so
+                # the k8s API isn't fully ready yet. This is common. So, we just need to retry a few times
+                # until the k8s cluster is fully ready.
                 vmc_defaults = self.osci.get_object(extra_parms["cloud_name"], "GLOBAL", False, "vmc_defaults", False)
                 _max_tries = int(vmc_defaults["update_attempts"])
                 _wait = int(vmc_defaults["update_frequency"])
