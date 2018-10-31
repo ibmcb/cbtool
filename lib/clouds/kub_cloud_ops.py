@@ -550,7 +550,7 @@ class KubCmds(CommonCloudFunctions) :
                         obj_attr_list["prov_cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
                 # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
-                obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
+                obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] + "_" + obj_attr_list["name"]
                 obj_attr_list["cloud_mac"] = "NA"
                 
                 return True
