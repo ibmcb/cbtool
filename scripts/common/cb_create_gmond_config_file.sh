@@ -42,6 +42,8 @@ globals {
     cleanup_threshold = 60 /*secs */
     gexec = no
     send_metadata_interval = 20 /*secs */
+    override_hostname = $(hostname)
+    override_ip = ${my_ip_addr}
   }
 
 cluster {
