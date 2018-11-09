@@ -508,6 +508,31 @@ EOF
 </property>
 
 <property>
+<name>dfs.datanode.max.xcievers</name>
+<value>16384</value>
+</property>
+
+<property>
+ <name>dfs.datanode.max.transfer.threads</name>
+ <value>16384</value>
+</property>
+
+<property>
+  <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+  <value>false</value>
+</property>
+
+<property>
+	<name>dfs.client.use.datanode.hostname</name>
+	<value>true</value>
+</property>
+
+<property>
+	<name>dfs.datanode.use.datanode.hostname</name>
+	<value>true</value>
+</property>
+
+<property>
 <name>dfs.datanode.data.dir</name>
 <value>DFS_DATA_DIR</value>
 </property>
