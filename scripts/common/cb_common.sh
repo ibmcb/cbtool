@@ -427,7 +427,7 @@ my_ai_name=`get_my_vm_attribute ai_name`
 my_ai_uuid=`get_my_vm_attribute ai`
 my_base_type=`get_my_vm_attribute base_type`
 my_cloud_model=`get_my_vm_attribute model`
-my_ip_addr=`get_my_vm_attribute cloud_ip`
+my_ip_addr=`get_my_vm_attribute run_cloud_ip`
 
 function get_attached_volumes {
     
@@ -832,7 +832,7 @@ function build_ai_mapping {
     for vm in $vmlist
     do
         vmuuid=`echo $vm | cut -d "|" -f 1`
-        vmip=`get_vm_attribute ${vmuuid} cloud_ip`
+        vmip=`get_vm_attribute ${vmuuid} run_cloud_ip`
         vmhn=`get_vm_attribute ${vmuuid} cloud_hostname`
         vmhn=`echo $vmhn | tr '[:upper:]' '[:lower:]'`
         vmrole=`get_vm_attribute ${vmuuid} role`
@@ -849,7 +849,7 @@ function get_ips_from_role {
     vmuuidlist=`get_vm_uuids_from_role ${urole}`
     for vmuuid in $vmuuidlist
     do
-        get_vm_attribute ${vmuuid} cloud_ip
+        get_vm_attribute ${vmuuid} run_cloud_ip
     done
 }
 
