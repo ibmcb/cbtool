@@ -1805,6 +1805,9 @@ packages:"""
                 if "flavor" in obj_attr_list :
                     _msg += " (" + str(obj_attr_list["flavor"]) + ")"
 
+                if obj_attr_list["nest_containers_enabled"].strip().lower() == "true" :
+                    _msg += ", container: " + obj_attr_list["container_role"]
+
                 if "availability_zone" in obj_attr_list :
                     if str(obj_attr_list["availability_zone"]).lower() != "none" :
                         _msg += ", on the availability zone \"" + str(obj_attr_list["availability_zone"]) + "\""

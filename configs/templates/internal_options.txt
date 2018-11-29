@@ -51,7 +51,7 @@ INITIAL_VMCS_DOC += the point at\nwhich hypervisors are grouped together in a ty
 [SETUP]
 GLOBAL_OBJECT_LIST = setup,logstore,metricstore,filestore,dash_defaults,mon_defaults,
 GLOBAL_OBJECT_LIST += vpn,space,time,vmc_defaults,vm_defaults,ai_defaults,
-GLOBAL_OBJECT_LIST += aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,
+GLOBAL_OBJECT_LIST += aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,container_templates,
 GLOBAL_OBJECT_LIST += ai_templates,aidrs_templates,vmcrs_templates,fi_templates,
 GLOBAL_OBJECT_LIST += firs_templates,query,admission_control,api_defaults,gui_defaults,build
 
@@ -211,6 +211,9 @@ ABORT_AFTER_SSH_UPLOAD_FAILURE = $True
 PREPARE_WORKLOAD = None
 PREPARE_WORKLOAD_NAMES = None
 PREPARE_IMAGE_NAME = None
+NEST_CONTAINERS_ENABLED = $False
+NEST_CONTAINERS_REPOSITORY = ibmcb
+NEST_CONTAINERS_INSECURE_REGISTRY = $False
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -486,3 +489,50 @@ MANAGEMENT_IP = 127.0.0.1
 MANAGEMENT_PORT = 1195
 
 [AI_TEMPLATES]
+
+# These are just defaults, because ibmcb is publicly accessible.
+# Each cloud will likely need to override them if they use
+# private docker repositories. But this is enough to get the
+# user started using the public container images.
+[CONTAINER_TEMPLATES]
+TINYVM = imageids:1, imageid1:ubuntu_cb_nullworkload
+CASSANDRA = imageids:1, imageid1:ubuntu_cb_ycsb
+YCSB = imageids:1, imageid1:ubuntu_cb_ycsb
+SEED = imageids:1, imageid1:ubuntu_cb_ycsb
+HADOOPSLAVE = imageids:1, imageid1:ubuntu_cb_hadoop
+HADOOPMASTER = imageids:1, imageid1:ubuntu_cb_hadoop
+MONGO_CFG_SERVER = imageids:1, imageid1:ubuntu_cb_hadoop
+MONGODB = imageids:1, imageid1:ubuntu_cb_open_daytrader
+MONGOS = imageids:1, imageid1:ubuntu_cb_netperf
+NETCLIENT = imageids:1, imageid1:ubuntu_cb_netperf
+NETSERVER = imageids:1, imageid1:ubuntu_cb_netperf
+REDIS = imageids:1, imageid1:ubuntu_cb_nuttcp
+FIO = imageids:1, imageid1:ubuntu_cb_fio
+DRIVER_FIO = imageids:1, imageid1:ubuntu_cb_fio
+FEN_HPC = imageids:1, imageid1:ubuntu_cb_hpcc
+CN_HPC = imageids:1, imageid1:ubuntu_cb_hpcc
+DRIVER_FILEBENCH = imageids:1, imageid1:ubuntu_cb_filebench
+FILEBENCH = imageids:1, imageid1:ubuntu_cb_filebench
+GIRAPHMASTER = imageids:1, imageid1:ubuntu_cb_giraph
+GIRAPHSLAVE = imageids:1, imageid1:ubuntu_cb_giraph
+IPERFCLIENT = imageids:1, imageid1:ubuntu_cb_iperf
+IPERFSERVER = imageids:1, imageid1:ubuntu_cb_iperf
+XPINGRECEIVER = imageids:1, imageid1:ubuntu_cb_xping
+XPINGSENDER = imageids:1, imageid1:ubuntu_cb_xping
+DDGEN = imageids:1, imageid1:ubuntu_cb_ddgen
+POSTMARK = imageids:1, imageid1:ubuntu_cb_postmark
+BTEST = imageids:1, imageid1:ubuntu_cb_btest
+UNIXBENCH = imageids:1, imageid1:ubuntu_cb_unixbench
+OLDISIMDRIVER = imageids:1, imageid1:ubuntu_cb_oldisim
+OLDISIMLB = imageids:1, imageid1:ubuntu_cb_oldisim
+OLDISIMLEAF = imageids:1, imageid1:ubuntu_cb_oldisim
+OLDISIMROOT = imageids:1, imageid1:ubuntu_cb_oldisim
+APACHE = imageids:1, imageid1:ubuntu_cb_wrk
+WRK = imageids:1, imageid1:ubuntu_cb_wrk
+MEMTIER = imageids:1, imageid1:ubuntu_cb_memtier
+SCIMARK = imageids:1, imageid1:ubuntu_cb_scimark
+MULTICHASE = imageids:1, imageid1:ubuntu_cb_multichase
+SYSBENCH = imageids:1, imageid1:ubuntu_cb_sysbench
+MYSQL = imageids:1, imageid1:ubuntu_cb_sysbench
+BONNIE = imageids:1, imageid1:ubuntu_cb_bonnie
+LINPACK = imageids:1, imageid1:ubuntu_cb_linpack

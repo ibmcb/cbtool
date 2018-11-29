@@ -58,15 +58,13 @@ then
 fi
 
 refresh_hosts_file
-automount_data_dirs
 post_boot_executed=`get_my_vm_attribute post_boot_executed`
-
 if [[ x"${post_boot_executed}" == x"true" ]]
 then
     syslog_netcat "cb_post_boot.sh already executed on this VM"
 else
     syslog_netcat "Executing \"post_boot_steps\" function"
-    post_boot_steps
+    post_boot_steps False
     UTC_LOCAL_OFFSET=$(python -c "from time import timezone, localtime, altzone; _ulo = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1; print _ulo")
     put_my_pending_vm_attribute utc_offset_on_vm $UTC_LOCAL_OFFSET
     syslog_netcat "Updating \"post_boot_executed\" to \"true\""

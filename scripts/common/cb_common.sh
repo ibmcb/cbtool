@@ -40,6 +40,8 @@ ATTEMPTS=3
 
 SETUP_TIME=20
 
+NEST_EXPORTED_HOME="/tmp/userhome"
+
 ai_mapping_file=~/ai_mapping_file.txt
 
 PGREP_CMD=`which pgrep`
@@ -91,7 +93,11 @@ fi
 SCRIPT_NAME=$(echo "$BASH_SOURCE" | sed -e "s/.*\///g")
 
 function check_container {
-    if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]]
+    nest_containers_enabled=`get_my_vm_attribute nest_containers_enabled`
+
+    # If we're using nesting (workload container inside a VM),
+    # we still want to mount external volumes in the container.
+    if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]] && [[ x"${nest_containers_enabled}" != x"True" ]]
     then
         export IS_CONTAINER=1
         if [[ -z $LC_ALL ]]
@@ -435,9 +441,21 @@ function get_attached_volumes {
     
     if [[ $IS_CONTAINER -eq 0 ]]
     then
+        # If we're using nested containers, then /dev/xxx may not show up
+        # as a device the mount tab. You'll get 'overlay' or things like that.
+        # Since we're exporting the home directory of guest VM into the container
+        # we can use that mountpoint to figure out where root really is.
+
+        ROOT="/" # default
+        nest_containers_enabled=`get_my_vm_attribute nest_containers_enabled`
+        if [[ x"${nest_containers_enabled}" == x"True" ]] ; then
+            ROOT=${NEST_EXPORTED_HOME}
+        fi
+
+        ROOT_PARTITION=$(sudo mount | grep "${ROOT} " | cut -d ' ' -f 1)
+
         # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
         # So, we need a beefier regex.
-        ROOT_PARTITION=$(sudo mount | grep "/ " | cut -d ' ' -f 1)
         ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.*[0-9]\)[a-z]\+[0-9]\+$/\1/g")
         
         if [[ ${ROOT_PARTITION} == ${ROOT_VOLUME} ]] 
@@ -1295,7 +1313,112 @@ function comment_lines {
 }
 export -f comment_lines
 
+function replicate_to_container_if_nested {
+    nested=$1
+
+    if [ x"${nested}" == x"True" ] ; then
+        syslog_netcat "Inside the container now."
+        return 1
+    fi
+
+    nest_containers_enabled=`get_my_vm_attribute nest_containers_enabled`
+
+    if [ x"${nest_containers_enabled}" != x"True" ] ; then
+        syslog_netcat "Nested container not requested."
+        return 2
+    fi
+
+    username=$(whoami)
+    userpath="/home"
+    if [ ${username} == "root" ] ; then 
+        userpath="/"
+    fi
+
+    # Support using a private registry.
+    nest_containers_repository=`get_my_vm_attribute nest_containers_repository`
+
+    # We need to allow for accessing a private registry without HTTPS, if requested
+    # According to the docks, /etc/docker/daemon.json is supposed to be linux distribution-independent
+    nest_containers_insecure_registry=`get_my_vm_attribute nest_containers_insecure_registry`
+    if [ x"${nest_containers_insecure_registry}" == x"True" ] ; then
+        echo "{ \"insecure-registries\" : [\"${nest_containers_repository}\"] }" > /etc/docker/daemon.json
+    fi
+
+    service_restart_enable docker
+
+    imageid=`get_my_vm_attribute container_role`
+    image="${nest_containers_repository}/${imageid}"
+    syslog_netcat "Downloading container image from: ${image}"
+
+    # This step can be cached if the user builds an snapshot that has already done the pull.
+    docker pull ${image}
+
+    syslog_netcat "Image pulled, starting container..."
+
+    # We're going to transfer SSH control into the priveleged container
+    service_stop_disable sshd
+
+    # We export the entire home directory of the VM into the container and relabel it with
+    # the correct priveleges, then run the entrypoint script already provided
+    # which then starts SSH on its own. Because we're using host networking, everything
+    # works as-is without any changes.
+    docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -rf ${userpath}/${username}; sudo cp -a ${NEST_EXPORTED_HOME} ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"
+
+    syslog_netcat "Container started, settling..."
+
+    # Figure out when the container is ready
+    ATTEMPTS=20
+    while true ; do
+        out=$(docker exec -u ${username} --privileged cbnested bash -c "if [ x\"\$(ps -ef | grep sshd | grep -v grep)\" != x ] ; then exit 0 ; else exit 2 ; fi" 2>&1)
+        rc=$?
+        if [ $rc -gt 0 ] ; then
+            syslog_netcat "Return code: $rc $out"
+            ((ATTEMPTS=ATTEMPTS-1))
+            if [ ${ATTEMPTS} -gt 0 ] ; then
+                syslog_netcat "Still waiting on container startup. Attempts left: ${ATTEMPTS}"
+                sleep 2
+                continue
+            else
+                syslog_netcat "No attempts left. Container startup failed."
+                return 3
+            fi
+        fi
+        syslog_netcat "Container is ready."
+        break
+    done
+
+    # Finally, execute the remaining post boot commands within the container
+    syslog_netcat "Running nested steps..."
+    # FIXME: Return this error code and check for error in parent function
+    docker exec -u ${username} --privileged cbnested bash -c "cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat 'Running post_boot inside container...'; ~/cbtool/scripts/common/cb_post_boot_container.sh; exit \$?"
+
+    return $? 
+}
+
+export -f replicate_to_container_if_nested
+
 function post_boot_steps {
+
+    replicate_to_container_if_nested $1
+
+    if [ $? -eq 0 ] ; then
+        syslog_netcat "Container started, skipping VM remaining steps."
+        return
+    fi
+
+    if [[ $(echo $dir | grep -c common) -eq 1 ]]
+    then
+        ln -sf $dir/* ~
+    fi
+
+    sudo ln -sf ${dir}/../../3rd_party/monitor-core ~
+    sudo ln -sf ${dir}/../../util ~
+
+    if [[ x"${my_ai_uuid}" != x"none" ]]
+    then
+        syslog_netcat "Copying application-specific scripts to the home directory"
+        ln -sf "${dir}/../${my_base_type}/"* ~
+    fi
 
     if [[ ! -e /usr/lib64 ]]
     then
@@ -1348,19 +1471,11 @@ function post_boot_steps {
     then
         restart_ntp
     fi
-    sudo ln -sf ${dir}/../../3rd_party/monitor-core ~
-    sudo ln -sf ${dir}/../../util ~
 
     # for 32-bit VMs
     if [[ ! -e /usr/lib64/ganglia && -e /usr/lib/ganglia ]]
     then
         sudo ln -sf /usr/lib/ganglia/ /usr/lib64/ganglia
-    fi
-
-    if [[ x"${my_ai_uuid}" != x"none" ]]
-    then
-        syslog_netcat "Copying application-specific scripts to the home directory"
-        ln -sf "${dir}/../${my_base_type}/"* ~
     fi
 
     if [[ x"${collect_from_guest}" == x"true" ]]
@@ -1373,6 +1488,7 @@ function post_boot_steps {
         syslog_netcat "Bypassing the gmond and gmetad restart"
     fi
 
+    automount_data_dirs
 }
     
 function stop_ganglia {
@@ -1698,6 +1814,10 @@ function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
 
+# TODO: Some things are missing here upon reboot of a VM:
+# 1. Starting up offline docker nested containers
+# 2. Re-mounting external volumes
+# 3. Ganglia, redis, and friends within the restarted container.
 function setup_rclocal_restarts {
     if [ x"$(grep cb_start_load_manager.sh /etc/rc.local)" == x ]
     then
