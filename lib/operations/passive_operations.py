@@ -314,8 +314,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _obj_attrs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, _obj_uuid, False)
     
                             if _obj_type == "VM" or _obj_type == "AI" :
+                                _state = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)
+                                _obj_attrs['state'] = _state
                                 if obj_attr_list["state"]  != "all" : 
-                                    _state = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)
                                     if _state != obj_attr_list["state"] :
                                         continue
                                 
