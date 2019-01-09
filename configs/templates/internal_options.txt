@@ -134,7 +134,12 @@ PROTECT_SUPPORTED = $False
 FORCE_WALKTHROUGH = $True
 ADDITIONAL_DISCOVERY = $EMPTY
 # Choose from VMCs in a pool in a round-robin manner.
-ROUND_ROBIN = $True
+# Options: "random", "roundrobin", "colocate"
+# Random will send all VMs to random VMCs
+# Round robin will do round robin.
+# Colocate will make sure that all VMs of the same AI go to the same VMC
+# You can also do "colocate,roundrobin" or "colocate,random" which will do both at the same time
+PLACEMENT_METHOD = roundrobin 
 
 [VM_DEFAULTS]
 DETACH_ATTEMPTS = 1

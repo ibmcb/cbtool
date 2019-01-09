@@ -186,6 +186,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                         _line = _line.replace("; make install", "; sudo make install")
                                         _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
                                         _line = _line.replace("RUN ", "sudo ")
+                                        _line = _line.replace("ENV ", "export ")                                        
                                         _line = _line.replace("sudo cd ", "cd ")
                                         _line = _line.replace("sudo export", "export ")
                                         _line = _line.replace("sudo sudo ", "sudo ")
@@ -337,6 +338,7 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_
             if not _actual_url :
                 _msg = "##### None of the urls indicated to install \"" + depkey + "\" (" 
                 _msg += _tested_urls + ") seem to be functional."
+
                 if exception_if_no_url :
                     raise Exception(_msg)
                 else :
@@ -390,6 +392,7 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_
     _actual_cmdline_keys = _actual_cmdline_keys.replace(",,",',')    
     _actual_cmdline_keys = _actual_cmdline_keys.replace("_equal_",'=')
 
+    _actual_cmdline = _actual_cmdline.replace(";;",';')
     _actual_cmdline = _actual_cmdline.replace(";;",';')
     _actual_cmdline = _actual_cmdline.replace(";;",';')    
     _actual_cmdline = _actual_cmdline.replace("_equal_",'=')
@@ -516,8 +519,9 @@ def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
             _commandline = _commandline.replace("ARCH", depsdict["carch"].strip())            
             _commandline = _commandline.replace("DISTRO", depsdict["cdistkind"].strip())
             _commandline = _commandline.replace("REPLACE_USERNAME", depsdict["username"].strip())            
+            _commandline = _commandline.replace("/home/root", "/root")       
             _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())
-            _commandline = _commandline.replace("REPLACE_RSYNC", "rsync rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb/3rd_party/workload/")
+            _commandline = _commandline.replace("REPLACE_RSYNC", "rsync -a rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb/3rd_party/workload/")
 
             if depsdict["pip_addr"] :
                 _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"] + " --trusted-host " + depsdict["pip_addr"].split('/')[0] + ' ')
@@ -736,6 +740,10 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         _status = 100        
         _msg = "Obtaining command to be executed...."
 
+        _status = 20000
+        _result_stdout = "NA"
+        _result_stderr = "NA"
+        
         if not process_manager :
             process_manager = ProcessManagement(hostname)
 
@@ -768,12 +776,9 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
 
         if depkey == "repo" and operation == "install" :
             build_repository_files(depsdict)
-
-        _status = 20000
-        _result_stdout = "NA"
-        _result_stderr = "NA"
+                
         _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False, True, False, True, None, False, 22, False)
-
+                
         if not _status :
             if operation == "install" :
                 _msg += "DONE OK.\n"
@@ -788,7 +793,8 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
         _result_stderr = str(obj.msg)
-        _msg += "NOT OK (PMgr Exception)."
+        
+        _msg += "NOT OK (PMgr Exception, exit code " + str(_status) + "). "
 
     except Exception, e :
         _status = 23
@@ -924,10 +930,10 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             _hadoop_helper = "#!/usr/bin/env bash\n"
             _hadoop_helper += "for HADOOP_CPATH in ~ /usr/local\n"
             _hadoop_helper += "do\n"
-            _hadoop_helper += "   if [[ $(sudo ls $HADOOP_CPATH | grep -v tar | grep -c hadoop) -ne 0 ]]\n"
+            _hadoop_helper += "   if [[ $(sudo ls $HADOOP_CPATH | grep -v tar | grep -v tgz | grep -v spark | grep -c hadoop) -ne 0 ]]\n"
             _hadoop_helper += "   then\n"
             _hadoop_helper += "       eval HADOOP_CPATH=${HADOOP_CPATH}\n"
-            _hadoop_helper += "       HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep -v hadoop_store | grep hadoop | sort -r | head -n1)\n"
+            _hadoop_helper += "       HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep -v tgz | grep -v spark | grep -v hadoop_store | grep hadoop | sort -r | head -n1)\n"
             _hadoop_helper += "       eval HADOOP_HOME=\"$HADOOP_CPATH/${HADOOP_HOME}\"\n"
             _hadoop_helper += "       if [[ -d $HADOOP_HOME ]]\n"
             _hadoop_helper += "       then\n"
