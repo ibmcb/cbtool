@@ -1,0 +1,17 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+# kernbuild-install-pm
+RUN apt-get update
+RUN apt-get install -y build-essential bison flex libelf-dev libssl-dev bc time
+# kernbuild-install-pm
+
+# kernbench-install-git
+RUN cd /home/REPLACE_USERNAME
+RUN git clone https://github.com/linux-test-project/ltp.git -b 20180118
+RUN chmod +x ltp/utils/benchmark/kernbench-0.42/kernbench
+RUN wget -q https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.16.8.tar.xz
+RUN tar xf linux-4.16.8.tar.xz
+RUN mv linux-4.16.8 linux
+# kernbench-install-git
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME
