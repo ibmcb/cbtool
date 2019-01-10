@@ -691,10 +691,8 @@ class GceCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        if len(imageid) == 18 and is_number(imageid) :
-            return True
-        
-        if len(imageid) == 19 and is_number(imageid) :
+        # Checks for len() == 18/19 no longer valid. Images of length 16 were found.
+        if is_number(imageid) :
             return True
         
         return False
