@@ -536,3 +536,4 @@ SYSBENCH = imageids:1, imageid1:ubuntu_cb_sysbench
 MYSQL = imageids:1, imageid1:ubuntu_cb_sysbench
 BONNIE = imageids:1, imageid1:ubuntu_cb_bonnie
 LINPACK = imageids:1, imageid1:ubuntu_cb_linpack
+KERNBENCH = imageids:1, imageid1:ubuntu_cb_kernbench
