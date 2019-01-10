@@ -275,7 +275,11 @@ class CommonCloudFunctions:
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip assigned"
                     obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]  
                     cbdebug("VPN address for " + obj_attr_list["log_string"] + " found: " + obj_attr_list["prov_cloud_ip"])                    
-                    _vm_started = True
+                    if obj_attr_list["cloud_ip"] == "undefined" :
+                        cbdebug("Cloud has not finished returning remaining IP information.")
+                        _vm_started = False
+                    else :
+                        _vm_started = True
                 else :
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip unassigned"
                     cbdebug("VPN address for " + obj_attr_list["log_string"] + " not yet available.")                    
