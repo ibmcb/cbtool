@@ -1353,15 +1353,66 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if "run_netname" not in obj_attr_list :
                 obj_attr_list["run_netname"] = obj_attr_list["netname"]
 
-            _status = 0
-
             if not _status :
                 if "qemu_debug_port_base" in obj_attr_list :
                     _status, _fmsg = self.auto_allocate_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
+
+            if obj_attr_list["nest_containers_enabled"].strip().lower() == "true" :
+                # Once the base image boots up (the generic one the user has configured to host
+                # a nested container), we pull the actual container's base image from the [CONTAINER_TEMPLATES]
+                # section. Thus, the user should define a new section, one entry for each role that was originally
+                # defined in the [VM_TEMPLATES] section. This allows the user to seemlessly toggle between
+                # nested containers and regular VMs using their existing snapshots.
+                _container_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                 "GLOBAL", \
+                                                 False, \
+                                                 "container_templates", False)
+
+
+                if obj_attr_list["role"] not in _container_templates :
+                    _fmsg = "To use nested containers, you need to define a section named [CONTAINER_TEMPLATES] which instructs CloudBench which container images to use using the role \"" + obj_attr_list["role"] + "\". See the templates for an example and try again."
+                    _status = 5335
+                    raise CldOpsException(_fmsg, _status)
+
+                obj_attr_list["container_role"] = str2dic(_container_templates[obj_attr_list["role"]])["imageid1"]
+
+                _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                     "GLOBAL", \
+                                                     False, \
+                                                     "vm_templates", False)
+                if "nest_containers_base_image" not in _vm_templates :
+                    _fmsg = "To use nested containers, you need to define NEST_CONTAINERS_BASE_IMAGE = xxxx in the [VM_TEMPLATES] section of your configuration files. This tells CloudBench which base image to use before pulling a container within the instance. See the templates for an example and try again."
+                    _status = 5334
+                    raise CldOpsException(_fmsg, _status)
+
+                replacement = str2dic(_vm_templates["nest_containers_base_image"])
+
+                if replacement["imageid1"] != obj_attr_list["imageid1"] :
+                    # We want to make the use of nested containers transparent.
+                    # So, we will not require that the user change their [VM_TEMPLATES] definitions.
+                    # Instead, if they have enabled nested containers, we will dynamically override
+                    # the imageid they originall provided with the one they have specified
+                    # using the NEST_CONTAINERS_BASE_IMAGE key. We then overrite all VM base image roles
+                    # used at VM attachment time with this image.
+
+                    old_string = str2dic(_vm_templates[obj_attr_list["role"]])
+                    old_string["imageid1"] = replacement["imageid1"]
+                    obj_attr_list["imageid1"] = old_string["imageid1"]
+                    if "cloudinit_packages" in replacement :
+                        old_string["cloudinit_packages"] = replacement["cloudinit_packages"]
+                        obj_attr_list["cloudinit_packages"] = replacement["cloudinit_packages"]
+
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "vm_templates", False, obj_attr_list["role"], dic2str(old_string))
+
+            _status = 0
                 
         except KeyError, msg :
             _status = 40
             _fmsg = "Unknown VM role: " + str(msg)
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
 
         except self.ObjectOperationException, obj :
             _status = obj.status
