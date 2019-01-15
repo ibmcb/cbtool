@@ -1,0 +1,38 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones
+# commented.
+
+[AI_TEMPLATES : KERNBENCH]
+# Attributes MANDATORY for all Virtual Applications
+SUT = kernbench
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
+LOAD_GENERATOR_ROLE = kernbench
+LOAD_MANAGER_ROLE = kernbench
+METRIC_AGGREGATOR_ROLE = kernbench
+CAPTURE_ROLE = kernbench
+LOAD_PROFILE = default
+LOAD_LEVEL = 1
+LOAD_DURATION = 30
+CATEGORY = synthetic
+PROFILES = default
+REFERENCE = https://github.com/linux-test-project/ltp
+LICENSE = GPL_v2
+REPORTED_METRICS = elapsed_time, user_time, system_time, percent_cpu, context_switches, sleeps
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys a single instance and runs the "kernbench" synthetic benchmark\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of jobs running in parallel, currently only 1 is supported.\n
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when a specific\n
+DESCRIPTION +=    number of I/O operations is reached.\n
+KERNBENCH_SETUP1 = cb_start_kernbench.sh
+START = cb_run_kernbench.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+# NR_CPUS = 0 means use kernbench "optimal runs": 4*cpu
+KERNBENCH_NR_CPUS = 0
+KERNBENCH_PATH = ~/foo
+KERNBENCH_DATA_DIR = /kernbench
+KERNBENCH_DATA_FSTYP = ext4

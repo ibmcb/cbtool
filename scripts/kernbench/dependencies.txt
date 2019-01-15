@@ -1,0 +1,31 @@
+### START - Dependency installation order ###
+kernbuild-order = 92
+kernbench-order = 93
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+kernbuild-install = pm
+kernbench-install = git
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+kernbuild-configure = gcc -v
+kernbench-configure = ls -l ~/ltp/utils/benchmark/kernbench-0.42/kernbench
+### END - Tests ###
+
+### START - Dependency versions ###
+kernbuild-ver = ANY
+kernbench-ver = ANY
+### END - Dependency versions ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###
