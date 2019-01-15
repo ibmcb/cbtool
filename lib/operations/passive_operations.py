@@ -2346,6 +2346,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 0
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
 

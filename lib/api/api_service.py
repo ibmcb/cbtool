@@ -29,6 +29,7 @@ import sys
 import inspect
 import threading
 import SocketServer
+import traceback
  
 """
     This class is used to avoid Double-Documentation
@@ -685,7 +686,11 @@ class APIService ( threading.Thread ):
     @trace
     def run(self):
         cbdebug("API Service waiting for requests...")
-        self.server.serve_forever()
+        try :
+            self.server.serve_forever()
+        except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
         cbdebug("API Service shutting down...")
         
     @trace
