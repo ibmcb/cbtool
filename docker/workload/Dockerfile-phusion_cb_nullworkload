@@ -61,7 +61,7 @@ python-prettytable
 
 RUN pip install --upgrade \
 prettytable \
-python-daemon \
+python-daemon==2.1.2 \
 twisted \
 redis \
 pymongo

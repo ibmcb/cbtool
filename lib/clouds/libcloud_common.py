@@ -479,14 +479,21 @@ class LibcloudCmds(CommonCloudFunctions) :
 
         for _vm_role in vm_templates.keys() :            
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+            _replacement_id = _imageid
             if _imageid != "to_replace" :
-                if _imageid in _map_name_to_id :                     
-                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+                # Need to support spaces within image names.
+                # If we can't find the original name, try the same thing with spaces instead of
+                # underscores.
+                if _imageid in _map_name_to_id or _imageid.replace("_", " ") in _map_name_to_id:                     
+                    if _imageid not in _map_name_to_id :
+                        _replacement_id = _imageid.replace("_", " ")
+
+                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_replacement_id])
                 else :
                     _map_name_to_id[_imageid] = '00' + ''.join(["%s" % randint(0, 9) for num in range(0, 5)]) + '0'
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
 
-                _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
+                _map_id_to_name[_map_name_to_id[_replacement_id]] = _replacement_id
 
         _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 

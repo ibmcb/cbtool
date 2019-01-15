@@ -130,7 +130,7 @@ RUN pip install --upgrade prettytable
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
-RUN pip install --upgrade python-daemon
+RUN pip install --upgrade python-daemon==2.1.2
 # python-daemon-install-pip
 
 # python-twisted-install-pip
