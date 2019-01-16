@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-from Queue import Queue
+from Queue import Queue, Empty
 from threading import Thread
 from time import sleep
 import copy
@@ -34,7 +34,13 @@ class Worker(Thread):
 
     def run(self):
         while True:
-            func, args, kargs = self.tasks.get()
+            try:
+                func, args, kargs = self.tasks.get(timeout=0.5)
+            except Empty:
+                if self.abort:
+                    self.aborted = True
+                    return
+                continue
             try: 
                 #print ("THREAD STARTED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
                 self.abort = False
@@ -72,6 +78,7 @@ class ThreadPool:
             if all_aborted :
                 break
             sleep(0.5)
+        self.tasks.join()
 
     def wait_completion(self):
         """Wait for completion of all the tasks in the queue"""
@@ -83,4 +90,4 @@ class ThreadPool:
         '''
         result = copy.deepcopy(self.results)
         self.results = []
-        return result 
+        return result
