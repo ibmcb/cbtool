@@ -322,10 +322,12 @@ class ProcessManagement :
                 if not _thread_pool and not serial_mode :
                     pool_key = 'ai_execute_with_parallelism_' + str(execute_parallelism)
                     if pool_key not in self.thread_pools :
-                        _thread_pool = ThreadPool(int(execute_parallelism))
+                        _thread_pool = ThreadPool(int(execute_parallelism), pool_key)
                         self.thread_pools[pool_key] = _thread_pool
+                        cbdebug("POOL New pool created: " + pool_key)
                     else :
                         _thread_pool = self.thread_pools[pool_key]
+                        cbdebug("POOL Existing pool used: " + pool_key)
 
                 if serial_mode :
                     if len(cmdline_list[_index]) > 0:

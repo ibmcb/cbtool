@@ -4962,11 +4962,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     pool_key += str(obj_attr_list[operation_type + "_parallelism"])
 
                     if pool_key not in self.thread_pools :
-                        _thread_pool = ThreadPool(int(obj_attr_list[operation_type + "_parallelism"]))
+                        _thread_pool = ThreadPool(int(obj_attr_list[operation_type + "_parallelism"]), pool_key)
                         self.thread_pools[pool_key] = _thread_pool
+                        cbdebug("POOL New pool created: " + pool_key)
                     else :
                         _thread_pool = self.thread_pools[pool_key]
-                                            
+                        cbdebug("POOL Existing pool used: " + pool_key)
                 if operation_type == "attach" :       
                     _func = self.objattach
                 elif operation_type == "detach" :

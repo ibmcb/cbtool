@@ -19,7 +19,12 @@
 from Queue import Queue, Empty
 from threading import Thread
 from time import sleep
+from pwd import getpwuid
+from sys import stdout, path
 import copy
+import traceback
+
+from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
 class Worker(Thread):
     """Thread executing tasks from a given tasks queue"""
@@ -31,6 +36,7 @@ class Worker(Thread):
         self.aborted = False
         self.start()
         self.pool = pool
+        self.pid = False
 
     def run(self):
         while True:
@@ -42,21 +48,25 @@ class Worker(Thread):
                     return
                 continue
             try: 
-                #print ("THREAD STARTED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
+                cbdebug("POOL: thread started: " + func.__name__ + ": " + str(args) + " " + str(kargs) + ": " + self.pool.parent_name)
                 self.abort = False
                 self.aborted = False
                 self.pool.results.append(func(*args, **kargs))
                 self.aborted = True
             except Exception, e:
-                #print ("THREAD FAILED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
-                print e
+                cbdebug("POOL: thread failed: " + func.__name__ + ": " + str(args) + " " + str(kargs) + ": " + self.pool.parent_name)
+                for line in traceback.format_exc().splitlines() :
+                    cberr(line)
             finally :
-                #print ("THREAD FINISHED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
+                cbdebug("POOL: thread finished: " + func.__name__ + ": " + str(args) + " " + str(kargs) + ": " + self.pool.parent_name)
                 self.tasks.task_done()
 
 class ThreadPool:
     """Pool of threads consuming tasks from a queue"""
-    def __init__(self, num_threads):
+    def __init__(self, num_threads, parent_name):
+        self.pid = False
+        self.num_threads = num_threads
+        self.parent_name = parent_name
         self.results = [] 
         self.workers = []
         self.tasks = Queue(num_threads)
@@ -82,7 +92,9 @@ class ThreadPool:
 
     def wait_completion(self):
         """Wait for completion of all the tasks in the queue"""
+        # FIXME: switch to join()
         while self.tasks.unfinished_tasks > 0 :
+            cbdebug("Still waiting for completion: " + self.parent_name + " unfinished: " + str(self.tasks.unfinished_tasks))
             sleep(0.5)
             
         '''
