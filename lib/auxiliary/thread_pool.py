@@ -45,6 +45,7 @@ class Worker(Thread):
             except Empty:
                 if self.abort:
                     self.aborted = True
+                    cbdebug("POOL: worker thread exiting, empty pool: " + self.pool.parent_name)
                     return
                 continue
             try: 
@@ -60,6 +61,7 @@ class Worker(Thread):
             finally :
                 cbdebug("POOL: thread finished: " + func.__name__ + ": " + str(args) + " " + str(kargs) + ": " + self.pool.parent_name)
                 self.tasks.task_done()
+        cbdebug("POOL: worker thread exiting naturally: " + self.pool.parent_name)
 
 class ThreadPool:
     """Pool of threads consuming tasks from a queue"""
@@ -77,6 +79,7 @@ class ThreadPool:
         self.tasks.put((func, args, kargs))
         
     def abort(self):
+        cbdebug("POOL: abort requested: " + self.pool.parent_name)
         for worker in self.workers :
             worker.abort = True
         while True :
