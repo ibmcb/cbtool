@@ -40,6 +40,7 @@ class Worker(Thread):
 
     def run(self):
         while True:
+            ret = None
             try:
                 func, args, kargs = self.tasks.get(timeout=0.5)
             except Empty:
@@ -51,16 +52,18 @@ class Worker(Thread):
             try: 
                 cbdebug("POOL: thread started: " + func.__name__ + ": " + str(args) + " " + str(kargs) + ": " + self.pool.parent_name)
                 self.abort = False
-                self.aborted = False
-                self.pool.results.append(func(*args, **kargs))
-                self.aborted = True
+                ret = func(*args, **kargs)
+                self.tasks.task_done()
             except Exception, e:
                 cbdebug("POOL: thread failed: " + func.__name__ + ": " + str(args) + " " + str(kargs) + ": " + self.pool.parent_name)
                 for line in traceback.format_exc().splitlines() :
                     cberr(line)
-            finally :
-                cbdebug("POOL: thread finished: " + func.__name__ + ": " + str(args) + " " + str(kargs) + ": " + self.pool.parent_name)
+                # Each 'get' needs a 'task_done'
                 self.tasks.task_done()
+                # Put back the item that failed
+                self.tasks.put((func, args, kargs))
+                continue
+            self.pool.results.append(ret)
         cbdebug("POOL: worker thread exiting naturally: " + self.pool.parent_name)
 
 class ThreadPool:
