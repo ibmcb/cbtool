@@ -26,6 +26,7 @@
 
 import os
 import re
+import errno
 
 from time import time
 from re import sub, compile
@@ -35,6 +36,29 @@ from subprocess import PIPE,Popen
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import get_ip_address, NetworkException
+
+@trace
+def isbrokenlink(path):
+  if not os.path.lexists(path) :
+     return 4
+
+  try:
+    os.stat(path)
+  except os.error, err:
+    # broken link
+    # "No such file or directory"
+    if err.errno == errno.ENOENT:
+      return 1
+    # circular link
+    # "Too many levels of symlinks"
+    elif err.errno == errno.ELOOP:
+      return 2
+    # something else occurred,
+    # assume it as invalid anyway
+    else:
+      return 3
+
+  return 0
 
 @trace
 def parse_evaluate_variable(_variable, _orig_string, \
@@ -163,8 +187,16 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
             '''
 
             _lines = ''
+            _firsttime = True
             for _template_file_name in  os.listdir(path + "configs/templates/") :
                 if not _template_file_name.count("dependencies.txt") : 
+                    _fullpath = path + "/configs/templates/" + _template_file_name
+                    if os.path.islink(_fullpath) and isbrokenlink(_fullpath) :
+                        if _firsttime :
+                            print
+                            _firsttime = False
+                        print ("WARNING: " + _fullpath + " symlink is invalid. Skipping")
+                        continue
                     _lines += "INCLUDE configs/templates/" + _template_file_name + '\n'
 
             for _dirName, _subdirList, _fileList in os.walk(path + "scripts"):
