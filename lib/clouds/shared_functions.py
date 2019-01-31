@@ -270,7 +270,7 @@ class CommonCloudFunctions:
                 cbdebug(_msg, True)
                 _actual_wait = 0
 
-            if str(obj_attr_list["use_vpn_ip"]).lower() != "false" :
+            if str(obj_attr_list["use_vpn_ip"]).lower() != "false" and obj_attr_list["netname"] != "none" :
                 if self.get_attr_from_pending(obj_attr_list, "cloud_init_vpn") :
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip assigned"
                     obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]  
@@ -1208,7 +1208,6 @@ packages:"""
         
         _cn = obj_attr_list["cloud_name"]
         
-#        if obj_attr_list["vpn_only"].lower() != "false" :
         _ohn = obj_attr_list["vpn_server_bootstrap"]
         _fshn = obj_attr_list["vpn_server_bootstrap"]
 

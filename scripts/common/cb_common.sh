@@ -1038,11 +1038,8 @@ if [ x"${NC_HOST_SYSLOG}" == x ]; then
     # These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
     # We still want rsyslog support in scalable mode.
     USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
-    VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
 
-    # We cannot log anything with VPN_ONLY if we don't use the VPN server's IP address
-
-    if [ x"$USE_VPN_IP" == x"True" ] && [ x"$VPN_ONLY" == x"True" ] ; then
+    if [ x"$USE_VPN_IP" == x"True" ] ; then
         NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
     else
         if [ x"${osmode}" != x"scalable" ]; then
@@ -1529,7 +1526,7 @@ function start_ganglia {
     GANGLIA_FILE_LOCATION=~
     eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
     blowawaypids gmond
-    sudo screen -d -m -S gmond bash -c "while true ; do if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; sleep 10; done"
+    sudo screen -d -m -S gmond bash -c "while true ; do if [ x\`$PIDOF_CMD gmond\` == x ] ; then sudo gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; sleep 10; done"
     sleep 2
     if [[ x"$(pidof gmond)" == x ]]
     then

@@ -829,6 +829,7 @@ class SimCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
+            cbdebug(str(obj_attr_list["mgt_901_deprovisioning_request_originated"]), True)
             self.vvdestroy(obj_attr_list)
                     
             _status = 0

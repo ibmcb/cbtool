@@ -205,16 +205,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cbdebug(_msg, True)
                     cld_attr_lst["vm_defaults"]["userdata"] = "true"
 
-#                if str(cld_attr_lst["vm_defaults"]["vpn_only"]).lower() == "true" and \
-#                str(cld_attr_lst["vm_defaults"]["userdata_post_boot"]).lower() == "false" :
-
-#                    _msg = " The attribute \"VPN_ONLY\" in Global Object "
-#                    _msg += "[VM_DEFAULTS] is set to \"True\". "                    
-#                    _msg += "Will set the attribute \"USERDATA_POST_BOOT\" in the" 
-#                    _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
-#                    cbdebug(_msg, True)
-#                    cld_attr_lst["vm_defaults"]["userdata_post_boot"] = "true"
-    
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
                 _msg += "and security credentials"
