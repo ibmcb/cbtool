@@ -1414,12 +1414,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                         break
     
                     if _instance.state == NodeState.PENDING :
-                        try :
-                            _instance.destroy()
-                        except :
-                            pass
                         cbdebug(self.get_description() + " still has a pending event. Waiting to destroy...", True)
                         sleep(_wait)
+                        _curr_tries += 1                    
                         continue
     
                     try :
