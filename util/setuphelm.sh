@@ -178,7 +178,10 @@ check_ready
 echo "Configuring CB to recognize the openvpn server ..."
 POD_NAME=$(kubectl get pods --namespace "default" -l app=openvpn -o jsonpath='{ .items[0].metadata.name }')
 INTERNAL_VPN_IP=$(kubectl describe pod ${POD_NAME} | grep IP | sed "s/.* //g")
+
 VPN_STATUS_PORT=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['management_port'].lower()")
+
+echo "VPN status port: ${VPN_STATUS_PORT}"
 
 python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_VPN_IP}')"
 python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'use_vpn_ip', 'True')"
@@ -287,6 +290,8 @@ chmod +x ${dir}/portforward.sh
 kubectl cp $dir/portforward.sh default/${POD_NAME}:/etc/openvpn/certs/portsforward.sh
 kubectl exec -it ${POD_NAME} /bin/chmod +x /etc/openvpn/certs/portsforward.sh
 kubectl exec -it ${POD_NAME} /etc/openvpn/certs/portsforward.sh
+
+check_error $? "setup IPtables rules"
 
 rm ${dir}/portforward.sh 
 
