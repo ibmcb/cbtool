@@ -251,6 +251,9 @@ while true ; do
 	sleep 10
 done
 
+# The helm chart unconditionally creates this route, which is wrong. Get rid of it.
+sudo ip route delete 10.0.0.0/8
+
 # The VPN is working, but now we need the services internal to k8s
 # to be able to reach CloudBench.
 
@@ -289,6 +292,9 @@ chmod +x ${dir}/portforward.sh
 
 kubectl cp $dir/portforward.sh default/${POD_NAME}:/etc/openvpn/certs/portsforward.sh
 kubectl exec -it ${POD_NAME} /bin/chmod +x /etc/openvpn/certs/portsforward.sh
+
+check_error $? "setup IPtables script executable"
+
 kubectl exec -it ${POD_NAME} /etc/openvpn/certs/portsforward.sh
 
 check_error $? "setup IPtables rules"
