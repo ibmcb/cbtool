@@ -1113,7 +1113,8 @@ class KubCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.vvcreate(obj_attr_list)
+            if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
+                self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
@@ -1252,7 +1253,7 @@ class KubCmds(CommonCloudFunctions) :
                 sleep(_wait)
                 _curr_tries += 1                
 
-            if "cloud_vv" in obj_attr_list :
+            if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
                 self.vvdestroy(obj_attr_list)
                 
             _time_mark_drc = int(time())
