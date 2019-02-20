@@ -184,6 +184,16 @@ class Dok8sCmds(KubCmds) :
                           "::/0"
                         ]
                   }
+                },
+                {
+                  "protocol": "tcp",
+                  "ports": "22",
+                  "sources": {
+                        "addresses": [
+                          "0.0.0.0/0",
+                          "::/0"
+                        ]
+                  }
                 }
               ]
             }
