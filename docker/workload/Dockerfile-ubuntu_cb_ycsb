@@ -1,24 +1,22 @@
 FROM REPLACE_NULLWORKLOAD_UBUNTU
 
 # java-install-pm
-RUN apt-get update; apt-get install -y software-properties-common;
-RUN add-apt-repository -y ppa:openjdk-r/ppa
-RUN apt-get update; apt-get install -y openjdk-7-jre-headless
+RUN apt-get update; mkdir /home/REPLACE_USERNAME/openjdk7/ ; wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+b1_REPLACE_ARCH3.deb
+RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/o/openjdk-7/openjdk-7-jre-headless_7u161-2.6.12-1_REPLACE_ARCH3.deb
+RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/o/openjdk-7/openjdk-7-jre_7u161-2.6.12-1_REPLACE_ARCH3.deb
+RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/o/openjdk-7/openjdk-7-jdk_7u161-2.6.12-1_REPLACE_ARCH3.deb
+RUN cd /home/REPLACE_USERNAME/openjdk7/; dpkg -i *.deb; sudo apt --fix-broken -y install
 # java-install-pm
 
-RUN apt-get install -y --allow-downgrades python=2.7.11-1 python-minimal=2.7.11-1 libpython-stdlib=2.7.11-1 python2.7-dev=2.7.11-7ubuntu1 python2.7=2.7.11-7ubuntu1 python2.7-minimal=2.7.11-7ubuntu1 libpython2.7-stdlib=2.7.11-7ubuntu1 libpython2.7-minimal=2.7.11-7ubuntu1 libpython2.7-dev=2.7.11-7ubuntu1 libpython2.7=2.7.11-7ubuntu1
-
 # cassandra-install-man
-RUN wget -N -q -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb
-#RUN wget -N -q -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.2.3_all.deb
+RUN wget -N -q -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb; sudo apt --fix-broken -y install
 RUN wget -N -q -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.1.1_all.deb
-RUN dpkg -i /home/REPLACE_USERNAME/cassandra*.deb
+RUN dpkg -i /home/REPLACE_USERNAME/cassandra*.deb; sudo apt --fix-broken -y install
 # cassandra-install-man
 
 # cassandra-tools-install-man
-#RUN wget -N -q -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra-tools_2.2.3_all.deb
 RUN wget -N -q -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra-tools_2.1.1_all.deb
-RUN dpkg -i /home/REPLACE_USERNAME/cassandra-tools*.deb
+RUN dpkg -i /home/REPLACE_USERNAME/cassandra-tools*.deb; sudo apt --fix-broken -y install
 # service_stop_disable cassandra
 # cassandra-tools-install-man
 
@@ -35,7 +33,6 @@ RUN sed -i "s/.*bind.*/bind 0.0.0.0/" /etc/redis/redis.conf
 # redis-install-pm
 
 # ycsb-install-man
-#RUN wget -N -q -P /home/REPLACE_USERNAME https://github.com/brianfrankcooper/YCSB/releases/download/0.4.0/ycsb-0.4.0.tar.gz
 RUN wget -N -q -P /home/REPLACE_USERNAME https://github.com/brianfrankcooper/YCSB/releases/download/0.5.0/ycsb-0.5.0.tar.gz; cd /home/REPLACE_USERNAME; tar -xvzf ycsb-*.tar.gz; sudo rm ycsb*.gz; sudo mv ycsb-* YCSB
 # ycsb-install-man
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

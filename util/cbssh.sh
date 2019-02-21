@@ -101,4 +101,4 @@ echo "logging in: cloudbench ID: $VMID => $VMLOGIN@$VMIP"
 
 ssh ${SSH_CMD_PART1} ${SSH_CMD_PART2} ${SSH_CMD_PART3} ${SSH_CMD_PART4} ${SSH_CMD_PART5} $VMIP "${*:2}"
 
-echo -e "\n\nExit code for command \nssh ${SSH_CMD_PART1} ${SSH_CMD_PART2} ${SSH_CMD_PART3} ${SSH_CMD_PART4} $VMIP \"${*:2}\"\nhas the value of $?"
+echo -e "\n\nExit code for command \nssh ${SSH_CMD_PART1} ${SSH_CMD_PART2} ${SSH_CMD_PART3} ${SSH_CMD_PART4} ${SSH_CMD_PART5} $VMIP \"${*:2}\"\nhas the value of $?"

@@ -1,7 +1,3 @@
-Virtual Application: coremark
-Files: coremark_v1.0.tar
-URL: http://www.eembc.org/coremark/download_coremark.php
-
 Virtual Application: parboil
 Files: pb2.5benchmarks-2.tgz  pb2.5datasets_standard-2.tgz  pb2.5driver.tar
 URL:  http://impact.crhc.illinois.edu/Parboil/parboil_download_page.aspx
@@ -11,17 +7,17 @@ Files: l_lpk_p_11.3.0.004.tgz
 URL: http://registrationcenter.intel.com/irc_nas/7615/l_lpk_p_11.3.0.004.tgz
 
 Virtual Application: parboil,caffe,tensorflow
-Files: cuda-repo-fedora23-8-0-local-8.0.44-1.x86_64-rpm OR cuda-repo-ubuntu1604-8-0-local_8.0.44-1_amd64-deb
+Files: cuda-repo-fedora23-8-0-local-8.0.44-1.x86_64-rpm OR cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_amd64.deb
 URL: https://developer.nvidia.com/cuda-downloads
 
 Virtual Application: parboil,caffe,tensorflow
-Files: cudnn-8.0-linux-x64-v6.0.tgz
+Files: cudnn-10.0-linux-x64-v7.4.2.24.tar
 URL: https://developer.nvidia.com/rdp/cudnn-download  
 
 Virtual Application: SPECJbb
 File: SPECjbb2015_1_00.iso
 URL: https://pro.spec.org/private/osg/benchmarks/
-COMMENT: sudo mount -o loop ./SPECjbb2015_1_00.iso /mnt; rsync -avz /mnt/ ./SPECjbb2015_1_00/; sudo umount /mnt; rm ./SPECjbb2015_1_00
+AFTER DOWNLOAD: sudo mount -o loop ./SPECjbb2015_1_00.iso /mnt; rsync -avz /mnt/ ./SPECjbb2015_1_00/; sudo umount /mnt; rm ./SPECjbb2015_1_00
 
 Virtual Application: SPECimap
 File: SPECvirt_sc2013-1_1.iso
@@ -37,3 +33,28 @@ Virtual Application: SPECcpu
 File: cpu2006-1.2.iso
 URL: https://pro.spec.org/private/osg/benchmarks/
 AFTER DOWNLOAD: sudo mount -o loop ./cpu2006-1.2.iso /mnt; rsync -avz /mnt/ ./SPECcpu2016/; sudo umount /mnt; rm ./cpu2006-1.2.iso
+
+Virtual Application: acmeair,spark
+File: ibm-java-x86_64-sdk-8.0-5.27.bin
+URL: https://developer.ibm.com/javasdk/downloads/
+
+Virtual Application: acmeair
+File: wlp-webProfile7-17.0.0.3.zip
+URL: https://developer.ibm.com/wasdev/downloads/download-latest-stable-websphere-liberty-runtime/
+
+Virtual Application: spark
+Files: broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.*
+URL: gs://broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam
+URL: gs://broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam.bai
+URL: gs://broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.vcf
+
+Virtual Application: spark
+Files: human_g1k_v37.*
+URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.2bit
+URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.dict
+URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.fasta
+URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.fasta.fai
+
+Virtual Application: spark
+File: dbsnp_138.b37.vcf
+URL: gs://broad-spark-eval-test-data/genome/dbsnp_138.b37.vcf

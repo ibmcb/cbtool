@@ -1,0 +1,9 @@
+# 36
+synthetic coremark,bonnie,btest,ddgen,fio,filebench,postmark,iperf,netperf,nuttcp,xping,unixbench
+application-stress kernbench,memtier,oldisim,wrk,wrk_lb
+scientific hpcc,linpack,multichase,parboil,scimark
+transactional cassandra_ycsb,mongo_ycsb,redis_ycsb,open_daytrader,open_daytrader_lb,specjbb,sysbench,mongo_acmeair
+data-centric hadoop,giraph,spark
+spec nullworkload,cassandra_ycsb,hadoop
+fake nullworkload
+java acmeair,giraph,hadoop,open_daytrader,scimark,spark,specjbb

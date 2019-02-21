@@ -116,7 +116,7 @@ RUN mkdir -p /var/log/cloudbench
 
 # rsyslog-filter-pm
 RUN mkdir -p /var/log/cloudbench
-RUN sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf
+RUN sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf; sed -i -e 's^#module(load="imudp")^module(load="imudp")^g' /etc/rsyslog.conf
 RUN sed -i  "s/#\$UDPServerRun.*/\$UDPServerRun $METRIC_STORE_PORT/g" /etc/rsyslog.conf
 RUN bash -c "echo -e \"local5.*  \t\t\t\t /var/log/cloudbench/remote.log\" >> /etc/rsyslog.conf"
 RUN bash -c "echo -e \"local6.* \t\t\t\t /var/log/cloudbench/local.log\" >> /etc/rsyslog.conf"
@@ -155,7 +155,7 @@ RUN apt-get install -y python-dev libffi-dev libssl-dev libxml2-dev libxslt1-dev
 # python-devel-install-pm 
 
 # python-prettytable-install-pip
-RUN pip install --upgrade prettytable
+RUN pip install --upgrade prettytable docutils
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
@@ -163,7 +163,7 @@ RUN pip install --upgrade python-daemon
 # python-daemon-install-pip
 
 # python-twisted-install-pip
-RUN pip install --upgrade twisted
+RUN pip install --upgrade twisted service_identity
 # python-twisted-install-pip
 
 # python-beaker-install-pip
@@ -175,7 +175,7 @@ RUN pip install --upgrade webob
 # python-webob-install-pip
 
 # pyredis-install-pip
-RUN pip install --upgrade redis
+RUN pip install redis==2.10.6
 # pyredis-install-pip
 
 # pymongo-install-pip
@@ -280,6 +280,30 @@ RUN pip install --upgrade pykube
 RUN apt-get install -y r-base-core
 # R-install-pm
 
+# rrdtool-install-pm
+RUN apt-get install -y rrdtool
+# rrdtool-install-pm
+
+# python-rrdtool-install-pm
+RUN apt-get install -y python-rrdtool
+# python-rrdtool-install-pm
+
+# python-dateutil-install-pip
+RUN pip install --upgrade python-dateutil
+# python-dateutil-install-pip
+
+# python-pillow-install-pip
+RUN pip install --upgrade Pillow
+# python-pillow-install-pip
+
+# python-jsonschema-install-pip
+RUN pip install --upgrade jsonschema
+# python-jsonschema-install-pip
+
+ADD get_my_ips.sh /usr/local/bin/getmyips
+ADD gucn.sh /usr/local/bin/gucn
+RUN chmod +x /usr/local/bin/getmyips; chmod +x /usr/local/bin/gucn
+
 USER REPLACE_USERNAME
 # gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
@@ -322,26 +346,6 @@ RUN git clone https://github.com/ibmcb/StreamProx.git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/d3.git
 # d3-install-git
-
-# rrdtool-install-pm
-RUN apt-get install -y rrdtool
-# rrdtool-install-pm
-
-# python-rrdtool-install-pm
-RUN apt-get install -y python-rrdtool
-# python-rrdtool-install-pm
-
-# python-dateutil-install-pip
-RUN pip install --upgrade python-dateutil
-# python-dateutil-install-pip
-
-# python-pillow-install-pip
-RUN pip install --upgrade Pillow
-# python-pillow-install-pip
-
-# python-jsonschema-install-pip
-RUN pip install --upgrade jsonschema
-# python-jsonschema-install-pip
 
 WORKDIR /home/REPLACE_USERNAME
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/lib/clouds/

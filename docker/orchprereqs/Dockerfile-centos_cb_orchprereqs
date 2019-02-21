@@ -133,7 +133,7 @@ RUN ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
 # rsyslog-install-pm
 
 # apache-install-pm
-RUN yum____-y____install____httpd; /bin/true
+RUN yum -y install httpd; /bin/true
 # apache-install-pm
 
 # redis-install-pm
@@ -161,7 +161,7 @@ RUN yum install -y python-devel libffi-devel openssl-devel libxml2-devel
 # python-devel-install-pm 
 
 # python-prettytable-install-pip
-RUN pip install --upgrade prettytable
+RUN pip install --upgrade docutils prettytable
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
@@ -169,7 +169,7 @@ RUN pip install --upgrade python-daemon
 # python-daemon-install-pip
 
 # python-twisted-install-pip
-RUN pip install --upgrade twisted
+RUN pip install --upgrade twisted service_identity
 # python-twisted-install-pip
 
 # python-beaker-install-pip
@@ -181,7 +181,7 @@ RUN pip install --upgrade webob
 # python-webob-install-pip
 
 # pyredis-install-pip
-RUN pip install --upgrade redis
+RUN pip install redis==2.10.6
 # pyredis-install-pip
 
 # pymongo-install-pip
@@ -286,6 +286,25 @@ RUN pip install --upgrade pykube
 RUN yum install -y R
 # R-install-pm
 
+# rrdtool-install-pm
+RUN yum install -y rrdtool
+# rrdtool-install-pm
+
+# python-rrdtool-install-pm
+RUN yum install -y rrdtool-python
+# python-rrdtool-install-pm
+
+# python-dateutil-install-pip
+RUN pip install --upgrade python-dateutil
+# python-dateutil-install-pip
+
+# python-pillow-install-pip
+RUN pip install --upgrade Pillow
+# python-pillow-install-pip
+
+# python-jsonschema-install-pip
+RUN pip install --upgrade jsonschema
+# python-jsonschema-install-pip
 
 USER REPLACE_USERNAME
 # gcloud-install-man
@@ -329,26 +348,6 @@ RUN git clone https://github.com/ibmcb/StreamProx.git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/d3.git
 # d3-install-git
-
-# rrdtool-install-pm
-RUN yum install -y rrdtool
-# rrdtool-install-pm
-
-# python-rrdtool-install-pm
-RUN yum install -y rrdtool-python
-# python-rrdtool-install-pm
-
-# python-dateutil-install-pip
-RUN pip install --upgrade python-dateutil
-# python-dateutil-install-pip
-
-# python-pillow-install-pip
-RUN pip install --upgrade Pillow
-# python-pillow-install-pip
-
-# python-jsonschema-install-pip
-RUN pip install --upgrade jsonschema
-# python-jsonschema-install-pip
 
 WORKDIR /home/REPLACE_USERNAME
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/lib/clouds/
