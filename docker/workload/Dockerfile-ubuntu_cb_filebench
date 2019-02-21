@@ -2,10 +2,9 @@ FROM REPLACE_NULLWORKLOAD_UBUNTU
 
 # filebench-install-man
 RUN apt-get update
-RUN apt-get install -y libaio1 bison flex gawk
-RUN wget -N -q -P /home/REPLACE_USERNAME https://github.com/filebench/filebench/releases/download/1.5-alpha3/filebench-1.5-alpha3.tar.gz
-RUN cd /home/REPLACE_USERNAME; sudo tar -xzf filebench-*.tar.gz
-RUN sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/filebench*; cd /home/REPLACE_USERNAME/filebench*; ./configure; make; make install
+RUN apt-get install -y libaio1 bison flex gawk build-essential libtool automake
+RUN cd /home/REPLACE_USERNAME; git clone https://github.com/filebench/filebench.git
+RUN cd /home/REPLACE_USERNAME/filebench; libtoolize; aclocal; autoheader; automake --add-missing; autoconf; ./configure; make; sudo make install
 # filebench-install-man
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

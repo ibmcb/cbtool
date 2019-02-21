@@ -175,7 +175,7 @@ RUN pip install --upgrade webob
 # python-webob-install-pip
 
 # pyredis-install-pip
-RUN pip install --upgrade redis
+RUN pip install redis==2.10.6
 # pyredis-install-pip
 
 # pymongo-install-pip
@@ -300,7 +300,6 @@ RUN pip install --upgrade Pillow
 RUN pip install --upgrade jsonschema
 # python-jsonschema-install-pip
 
-RUN apt-get install -y pwgen; wget -N -P /home/REPLACE_USERNAME http://REPLACE_DROPBOX/repo/dropbox/genesis/python-genesis-master.zip; cd /home/REPLACE_USERNAME; unzip python-genesis-master.zip; cd python-genesis-master; python setup.py install
 ADD get_my_ips.sh /usr/local/bin/getmyips
 ADD gucn.sh /usr/local/bin/gucn
 RUN chmod +x /usr/local/bin/getmyips; chmod +x /usr/local/bin/gucn

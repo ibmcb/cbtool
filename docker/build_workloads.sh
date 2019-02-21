@@ -26,10 +26,6 @@ do
         -p|--phusionbase)
         CB_PHUSION_BASE="$2"
         shift
-        ;;
-        -p=*|--phusionbase=*)
-        CB_PHUSION_BASE=$(echo $key | cut -d '=' -f 2)
-        shift
         ;;        
         -c|--centosbase)
         CB_CENTOS_BASE="$2"
@@ -88,9 +84,13 @@ do
         --psall)
         CB_PUSH="push"
         CB_PALL=1
-        ;;               
+        ;;
+        -f|--force)
+        CB_FORCE_REBUILD=1
+        ;;
         -h|--help)
         echo $CB_USAGE
+        exit
         shift
         ;;
         *)
@@ -100,12 +100,22 @@ do
         shift
 done
 
-cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
+cat $CB_DOCKER_BASE_DIR/../util/workloads_alias_mapping.txt | awk '{ print $1 }' | grep $CB_WKS > /dev/null 2>&1
+if [[ $? -eq 0 ]]
+then
+	CB_WKS=$(cat $CB_DOCKER_BASE_DIR/../util/workloads_alias_mapping.txt | grep $CB_WKS[[:space:]] | cut -d ' ' -f 2)
+fi
+
+cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_CENTOS_BASE
 cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
-cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_WKS $CB_RSYNC $CB_BRANCH
-
-if [[ $CB_PUSH == "push" ]]
-then
-    cb_push_images $CB_REPO $CB_PALL workload $CB_BRANCH
-fi
+TMP_CB_WKS=$CB_WKS
+for CB_WKS in $(echo $TMP_CB_WKS | sed 's/,/ /g')
+do
+    cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_WKS $CB_RSYNC $CB_BRANCH
+    
+    if [[ $CB_PUSH == "push" ]]
+    then
+        cb_push_images $CB_REPO $CB_VERB $CB_PALL $CB_WKS $CB_BRANCH
+    fi
+done 

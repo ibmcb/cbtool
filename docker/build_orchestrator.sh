@@ -27,10 +27,6 @@ do
         CB_PHUSION_BASE="$2"
         shift
         ;;
-        -p=*|--phusionbase=*)
-        CB_PHUSION_BASE=$(echo $key | cut -d '=' -f 2)
-        shift
-        ;;        
         -c|--centosbase)
         CB_CENTOS_BASE="$2"
         shift
@@ -88,6 +84,9 @@ do
         --psall)
         CB_PUSH="push"
         CB_PALL=1
+        ;;
+        -f|--force)
+        CB_FORCE_REBUILD=1
         ;;        
         -h|--help)
         echo $CB_USAGE
@@ -100,10 +99,9 @@ do
         shift
 done
 
-rsync -az $CB_DOCKER_BASE_DIR/../configs/templates/_gen.txt $CB_DOCKER_BASE_DIR/orchprereqs/
 rsync -az $CB_DOCKER_BASE_DIR/../configs/cloud_definitions.txt $CB_DOCKER_BASE_DIR/orchprereqs/
 
-cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
+cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_CENTOS_BASE
 cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 cb_build_orchprereqs $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 cb_remove_images $CB_REPO orchestrator $CB_BRANCH
@@ -113,5 +111,5 @@ cb_build_installtest $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANC
 
 if [[ $CB_PUSH == "push" ]]
 then
-    cb_push_images $CB_REPO $CB_PALL orchestrator $CB_BRANCH
+    cb_push_images $CB_REPO $CB_VERB $CB_PALL orchestrator $CB_BRANCH
 fi
