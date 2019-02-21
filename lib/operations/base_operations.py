@@ -1424,6 +1424,7 @@ class BaseObjectOperations :
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
                     elif cmd.count("detach") :
+                        cbdebug("Overriding 901 with " + str(obj_attr_list["command_originated"]))
                         obj_attr_list["mgt_901_deprovisioning_request_originated"] = obj_attr_list["command_originated"]                        
                     elif cmd.count("login") or cmd.count("display") :
                         pass
@@ -2311,7 +2312,7 @@ class BaseObjectOperations :
                         obj_attr_list["cloud_ip"] = _vm_attr_list["cloud_ip"]
                         obj_attr_list["cloud_hostname"] = _vm_attr_list["cloud_hostname"]
                         obj_attr_list["load_manager_vm"] = _vm_uuid
-                        obj_attr_list["load_manager_ip"] = _vm_attr_list["cloud_ip"]
+                        obj_attr_list["load_manager_ip"] = _vm_attr_list["run_cloud_ip"]
                         obj_attr_list["load_manager_name"] = _vm_attr_list["name"]
                         _roles +=1
                         break
@@ -2335,7 +2336,7 @@ class BaseObjectOperations :
                                                                  False)
 
                             obj_attr_list["load_generator_vm"] = _vm_uuid
-                            obj_attr_list["load_generator_ip"] = _vm_attr_list["cloud_ip"]
+                            obj_attr_list["load_generator_ip"] = _vm_attr_list["run_cloud_ip"]
                             _roles +=1
                             break
 
@@ -2358,7 +2359,7 @@ class BaseObjectOperations :
                                                                  False)
 
                             obj_attr_list["metric_aggregator_vm"] = _vm_uuid
-                            obj_attr_list["metric_aggregator_ip"] = _vm_attr_list["cloud_ip"]
+                            obj_attr_list["metric_aggregator_ip"] = _vm_attr_list["run_cloud_ip"]
                             _roles +=1
                             break
 
@@ -2382,7 +2383,7 @@ class BaseObjectOperations :
                                                                  False)
 
                             obj_attr_list["load_generator_target_vm"] += _vm_uuid + ','
-                            obj_attr_list["load_generator_target_ip"] += _vm_attr_list["cloud_ip"] + ','
+                            obj_attr_list["load_generator_target_ip"] += _vm_attr_list["run_cloud_ip"] + ','
 
                     obj_attr_list["load_generator_target_vm"] = obj_attr_list["load_generator_target_vm"][:-1]
                     obj_attr_list["load_generator_target_ip"] = obj_attr_list["load_generator_target_ip"][:-1]
