@@ -32,7 +32,7 @@
 #   whitelists it *and* login to the k8s host and restart the docker daemon. The only
 #   way to make this happen is to install a privileged pod on every k8s worker node
 #   that mounts the host filesystem, installs an ssh key and makes the appropriate
-#   modifications to the /etc/shado file (referred to as 'backdoor' below). Once that
+#   modifications to the /etc/shadow file (referred to as 'backdoor' below). Once that
 #   is done, we can SSH into each k8s worker node finally and restart the daemon,
 #   allowing CB to create AIs that are able to use our registry.
 #

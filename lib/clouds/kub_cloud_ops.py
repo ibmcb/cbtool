@@ -223,7 +223,11 @@ class KubCmds(CommonCloudFunctions) :
 #                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     True
                 else :
-                    if vm_defaults["docker_repo"] == "https://hub.docker.com/r/" and _imageid == "ibmcb/ubuntu_cb_nullworkload" :
+                    # FIXME: Actually contact that docker registry and see if the image is accessible.
+                    # We're making use of `image_prefix` now. So, the imageid could come from literally anywhere.
+                    #if vm_defaults["docker_repo"] == "https://hub.docker.com/r/" and _imageid == "ibmcb/ubuntu_cb_nullworkload" :
+                    if _imageid.count("cb_nullworkload") :
+
                         if _imageid not in _registered_imageid_list :
                             _registered_imageid_list.append(_imageid)                        
 #                    if check_url(vm_defaults["docker_repo"] + '/' + _imageid) :                    

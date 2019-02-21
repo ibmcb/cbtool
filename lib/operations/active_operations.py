@@ -235,10 +235,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if "walkthrough" not in cld_attr_lst :                    
                     cld_attr_lst["walkthrough"] = "false"
 
+                '''
+                This is happening too early. Moving to pre_attach_vm()
                 for _vm_role in cld_attr_lst["vm_templates"].keys() :            
                     _aux = str2dic(cld_attr_lst["vm_templates"][_vm_role])
                     _aux["imageid1"] = cld_attr_lst["vm_defaults"]["image_prefix"].strip() + _aux["imageid1"] + cld_attr_lst["vm_defaults"]["image_suffix"].strip()
                     cld_attr_lst["vm_templates"][_vm_role] = dic2str(_aux)
+                '''
 
                 self.create_image_build_map(cld_attr_lst)
                     
@@ -1154,7 +1157,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
         del obj_attr_list["pool"]
 
         try :
-
             _vm_id = obj_attr_list["name"] + " (" + obj_attr_list["uuid"] + ")"
             if obj_attr_list["ai_name"].lower() != "none" :
                 _vm_id += ", part of " + obj_attr_list["ai_name"]
@@ -1393,6 +1395,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         obj_attr_list["cloudinit_packages"] = replacement["cloudinit_packages"]
 
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "vm_templates", False, obj_attr_list["role"], dic2str(old_string))
+
+            obj_attr_list["imageid1"] = obj_attr_list["image_prefix"].strip() + obj_attr_list["imageid1"] + obj_attr_list["image_suffix"].strip()
 
             _status = 0
                 
