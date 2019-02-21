@@ -104,6 +104,9 @@ echo "Exporting kubeconfig for VMC $vmcname $cldid ..."
 python -c "$PREFIX print api.vmcshow('${cldid}', '${vmcname}')['kubeconfig']" > /tmp/kubeconfig.yaml
 popd
 
+KEY_NAME=kubeVPN-${cldid}-${vmcname}
+sudo pkill -9 -f ${KEY_NAME}
+
 export KUBECONFIG=/tmp/kubeconfig.yaml
 
 echo "Installing helm in the cluster..."
@@ -321,7 +324,6 @@ done
 
 echo "Service IP: ${SERVICE_IP}"
 
-KEY_NAME=kubeVPN-${cldid}-${vmcname}
 kubectl --namespace "default" exec -it "$POD_NAME" /etc/openvpn/setup/newClientCert.sh "$KEY_NAME" "$SERVICE_IP"
 check_error $? "create client certificate"
 kubectl --namespace "default" exec -it "$POD_NAME" cat "/etc/openvpn/certs/pki/$KEY_NAME.ovpn" > "/tmp/${KEY_NAME}.ovpn"
@@ -329,8 +331,6 @@ check_error $? "extract client certificate"
 
 echo "management 127.0.0.1 ${VPN_STATUS_PORT}" >> /tmp/${KEY_NAME}.ovpn
 echo "management-log-cache 10000" >> /tmp/${KEY_NAME}.ovpn
-
-sudo pkill -9 -f ${KEY_NAME}
 
 echo "Starting VPN ..."
 sudo openvpn --config /tmp/${KEY_NAME}.ovpn --daemon
@@ -351,9 +351,6 @@ while true ; do
 	echo "Boostrap VPN IP not ready yet..."
 	sleep 10
 done
-
-# The helm chart unconditionally creates this route, which is wrong. Get rid of it.
-sudo ip route delete 10.0.0.0/8
 
 # The VPN is working, but now we need the services internal to k8s
 # to be able to reach CloudBench.
@@ -513,6 +510,9 @@ for node in $(kubectl get nodes | grep Ready | cut -d " " -f 1) ; do
 done
 
 kubectl delete --wait deployment backdoor
+
+# The helm chart unconditionally creates this route, which is wrong. Get rid of it.
+sudo ip route delete 10.0.0.0/8
 
 rm /tmp/backdoor.yaml
 rm ${dir}/portforward.sh 
