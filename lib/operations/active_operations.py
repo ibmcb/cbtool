@@ -205,16 +205,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cbdebug(_msg, True)
                     cld_attr_lst["vm_defaults"]["userdata"] = "true"
 
-#                if str(cld_attr_lst["vm_defaults"]["vpn_only"]).lower() == "true" and \
-#                str(cld_attr_lst["vm_defaults"]["userdata_post_boot"]).lower() == "false" :
-
-#                    _msg = " The attribute \"VPN_ONLY\" in Global Object "
-#                    _msg += "[VM_DEFAULTS] is set to \"True\". "                    
-#                    _msg += "Will set the attribute \"USERDATA_POST_BOOT\" in the" 
-#                    _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
-#                    cbdebug(_msg, True)
-#                    cld_attr_lst["vm_defaults"]["userdata_post_boot"] = "true"
-    
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
                 _msg += "and security credentials"
@@ -245,10 +235,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if "walkthrough" not in cld_attr_lst :                    
                     cld_attr_lst["walkthrough"] = "false"
 
+                '''
+                This is happening too early. Moving to pre_attach_vm()
                 for _vm_role in cld_attr_lst["vm_templates"].keys() :            
                     _aux = str2dic(cld_attr_lst["vm_templates"][_vm_role])
                     _aux["imageid1"] = cld_attr_lst["vm_defaults"]["image_prefix"].strip() + _aux["imageid1"] + cld_attr_lst["vm_defaults"]["image_suffix"].strip()
                     cld_attr_lst["vm_templates"][_vm_role] = dic2str(_aux)
+                '''
 
                 self.create_image_build_map(cld_attr_lst)
                     
@@ -1164,7 +1157,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
         del obj_attr_list["pool"]
 
         try :
-
             _vm_id = obj_attr_list["name"] + " (" + obj_attr_list["uuid"] + ")"
             if obj_attr_list["ai_name"].lower() != "none" :
                 _vm_id += ", part of " + obj_attr_list["ai_name"]
@@ -1403,6 +1395,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         obj_attr_list["cloudinit_packages"] = replacement["cloudinit_packages"]
 
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "vm_templates", False, obj_attr_list["role"], dic2str(old_string))
+
+            obj_attr_list["imageid1"] = obj_attr_list["image_prefix"].strip() + obj_attr_list["imageid1"] + obj_attr_list["image_suffix"].strip()
 
             _status = 0
                 

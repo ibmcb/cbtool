@@ -61,6 +61,15 @@ class KubCmds(CommonCloudFunctions) :
         return "Kubernetes Cloud"
 
     @trace
+    def purge_connection(self, obj_attr_list) :
+        vmc_name = obj_attr_list["name"]
+        if vmc_name in KubCmds.catalogs.kubeconn :
+            cbdebug("Purging old k8s connection for: " + vmc_name)
+            del KubCmds.catalogs.kubeconn[vmc_name]
+        else :
+            cbdebug("No old k8s connection found for: " + vmc_name)
+
+    @trace
     def connect(self, access, credentials, vmc_name, extra_parms = {}, diag = False, generate_rc = False) :
         # We need to handle multiple VMCs simultaneously in a thread-safe manner.
         try :
@@ -214,7 +223,11 @@ class KubCmds(CommonCloudFunctions) :
 #                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     True
                 else :
-                    if vm_defaults["docker_repo"] == "https://hub.docker.com/r/" and _imageid == "ibmcb/ubuntu_cb_nullworkload" :
+                    # FIXME: Actually contact that docker registry and see if the image is accessible.
+                    # We're making use of `image_prefix` now. So, the imageid could come from literally anywhere.
+                    #if vm_defaults["docker_repo"] == "https://hub.docker.com/r/" and _imageid == "ibmcb/ubuntu_cb_nullworkload" :
+                    if _imageid.count("cb_nullworkload") :
+
                         if _imageid not in _registered_imageid_list :
                             _registered_imageid_list.append(_imageid)                        
 #                    if check_url(vm_defaults["docker_repo"] + '/' + _imageid) :                    
@@ -297,9 +310,13 @@ class KubCmds(CommonCloudFunctions) :
         return True
 
     @trace
-    def vmccleanup(self, obj_attr_list) :
+    def vmccleanup(self, obj_attr_list, force_all = False) :
         '''
-        TBD
+        @force_all: Used for dynamic k8s clusters that are created on demand or provided
+        as a service by a cloud provider. In these cases, k8s often uses other products
+        of the cloud provider, such as block storage or load balancers, etc. We don't want
+        to leave any of these services lingering around, but they are often linked as plugins
+        via k8s, so we need to clean them up in k8s first.
         '''
         try :
             _status = 100
@@ -317,10 +334,17 @@ class KubCmds(CommonCloudFunctions) :
                          obj_attr_list["name"],
                          obj_attr_list)
 
+            if obj_attr_list["name"] not in KubCmds.catalogs.kubeconn :
+                cbwarn("No such connection for: " + obj_attr_list["name"], True)
+                _status = 0
+                _msg = "No such connection. Unregistered."
+                return 0, _msg 
             kubeconn = KubCmds.catalogs.kubeconn[obj_attr_list["name"]]
-            for _abstraction_type in [ "service", "deployment", "replicaset", "pod" ] :
+            for _abstraction_type in [ "service", "deployment", "replicaset", "pod", "pvc" ] :
                 for _item in pykube.objects.Namespace.objects(kubeconn) :
                     _namespace = _item.name
+                    if _namespace in ["kube-public", "kube-system"] :
+                        continue
                     _running_instances = True
         
                     while _running_instances and _curr_tries < _max_tries :
@@ -337,17 +361,24 @@ class KubCmds(CommonCloudFunctions) :
     
                         if _abstraction_type == "pod" :                        
                             _object_list = pykube.objects.Pod.objects(kubeconn).filter(namespace = _namespace)
+
+                        if _abstraction_type == "pvc" :
+                            _object_list = pykube.objects.PersistentVolumeClaim.objects(kubeconn).filter(namespace = _namespace)
                             
                         for _object in _object_list :
         
                             _object_name = str(_object.name)
+
+                            if _object_name == "kubernetes" :
+                                continue
                             
-                            if _object_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
+                            if force_all or _object_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
         
                                 _running_instances = True
                                 _object_id = _object.obj["metadata"]["uid"]
                                 _msg = "Terminating " + _abstraction_type + " : " 
                                 _msg += _object_id + " (" + str(_object_name) + ")"
+                                _msg += " in namespace (" + str(_namespace) + ")"
                                 cbdebug(_msg, True)
                                 
                                 _object.delete()
@@ -364,8 +395,6 @@ class KubCmds(CommonCloudFunctions) :
                 cberr(_msg, True)
             else :
                 _status = 0
-
-            self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
 
             _msg = "Ok"
             _status = 0
@@ -399,7 +428,7 @@ class KubCmds(CommonCloudFunctions) :
                          obj_attr_list)
 
             if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
-                _status, _fmsg = self.vmccleanup(obj_attr_list)
+                _status, _fmsg = self.vmccleanup(obj_attr_list, force_all = False)
             else :
                 _status = 0
 
@@ -442,7 +471,7 @@ class KubCmds(CommonCloudFunctions) :
             return _status, _msg
 
     @trace
-    def vmcunregister(self, obj_attr_list) :
+    def vmcunregister(self, obj_attr_list, force_all = False) :
         '''
         TBD
         '''
@@ -457,7 +486,12 @@ class KubCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])    
         
             if "cleanup_on_detach" in obj_attr_list and obj_attr_list["cleanup_on_detach"] == "True" :
-                _status, _fmsg = self.vmccleanup(obj_attr_list)
+                '''
+                If we are a parent class of a cloud-provided k8s service, then
+                they should tell us that they want all of the services cleanup
+                before deregistering.
+                '''
+                _status, _fmsg = self.vmccleanup(obj_attr_list, force_all = force_all)
 
             _time_mark_prc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_prc - _time_mark_drs
@@ -543,6 +577,13 @@ class KubCmds(CommonCloudFunctions) :
                     else :
                         cbdebug("External IP for " + obj_attr_list["cloud_vm_name"] + " not available yet...") 
                         return False
+                elif obj_attr_list["netname"] == "none" :
+                    # We use this option if the user has a way to access container IP
+                    # addresses directly. We currently do this via Helm + OpenVPN,
+                    # where openvpn routes containers IPs directly. Helm initiates an openvpn
+                    # server within the k8s cluster itself and spits out client credentials
+                    # for CloudBench.
+                    obj_attr_list["prov_cloud_ip"] = obj_attr_list["run_cloud_ip"]
                 else :
                     if str(obj_attr_list["ports_base"]).lower() != "false" :
                         obj_attr_list["prov_cloud_ip"] = obj_attr_list["host_cloud_ip"]
@@ -636,6 +677,9 @@ class KubCmds(CommonCloudFunctions) :
             if _instances :
                 for _x in _instances :
                     _instances = _x
+
+            if obj_type == "pod" and hasattr(_instances, "obj") :
+                obj_attr_list["node"] = _instances.obj["spec"]["nodeName"]
 
             _status = 0
 
@@ -961,7 +1005,7 @@ class KubCmds(CommonCloudFunctions) :
                        } 
                    ]
 
-            if str(obj_attr_list["ports_base"]).lower() != "false" :
+            if str(obj_attr_list["ports_base"]).lower() != "false" and obj_attr_list["netname"] != "none" :
                 obj_attr_list["prov_cloud_port"] = int(obj_attr_list["ports_base"]) + int(obj_attr_list["name"].replace("vm_",''))
 
                 if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22":
@@ -1073,7 +1117,8 @@ class KubCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.vvcreate(obj_attr_list)
+            if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
+                self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
@@ -1212,7 +1257,7 @@ class KubCmds(CommonCloudFunctions) :
                 sleep(_wait)
                 _curr_tries += 1                
 
-            if "cloud_vv" in obj_attr_list :
+            if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
                 self.vvdestroy(obj_attr_list)
                 
             _time_mark_drc = int(time())
