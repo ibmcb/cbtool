@@ -15,11 +15,11 @@
 #/*******************************************************************************
 
 '''
-    Created on Aug 27, 2011
+    Created on Mar 10, 2016
 
-    PDM Cloud Object Operations Library
+    Kubernetes Cloud Object Operations Library
 
-    @author: Marcio A. Silva
+    @author: Marcio A. Silva, Michael R. Hines
 '''
 
 from time import time, sleep, mktime, strptime
@@ -81,7 +81,7 @@ class KubCmds(CommonCloudFunctions) :
 
         try :
             _status = 100
-            _endpoint_ip = "NA"            
+            _endpoint = "NA"
             _fmsg = "An error has occurred, but no error message was captured"
 
             if not diag :
@@ -94,13 +94,11 @@ class KubCmds(CommonCloudFunctions) :
                     if "kubeyaml" in extra_parms :
                         if extra_parms["kubeyaml"] :
                             kubeyaml = extra_parms["kubeyaml"]
-                    else :
-                        fh = open(access, "r")
-                        kubeyaml = fh.read()
-                        fh.close()
 
                     if kubeyaml :
                         KubCmds.catalogs.kubeconn[vmc_name] = pykube.HTTPClient(pykube.KubeConfig(kubeyaml))
+                    else :
+                        KubCmds.catalogs.kubeconn[vmc_name] = pykube.HTTPClient(pykube.KubeConfig.from_file(access))                        
 
                 # When k8s clusters are created on demand, they often have not been fully bootstrapped and so
                 # the k8s API isn't fully ready yet. This is common. So, we just need to retry a few times
@@ -114,7 +112,7 @@ class KubCmds(CommonCloudFunctions) :
                     while _max_tries > 0 :
                         try :
                             for _x in pykube.Endpoint.objects(KubCmds.catalogs.kubeconn[vmc_name]) :
-                                True
+                                _endpoint = _x.name
                             authenticated = True
                             break
                         except Exception, e :
@@ -139,7 +137,7 @@ class KubCmds(CommonCloudFunctions) :
 
         finally :
             if _status :
-                _msg = self.get_description() + " connection to endpoint \"" + _endpoint_ip + "\" failed: " + _fmsg
+                _msg = self.get_description() + " connection to endpoint \"" + _endpoint + "\" failed: " + _fmsg
                 cberr(_msg)                    
                 raise CldOpsException(_msg, _status)
             else :
