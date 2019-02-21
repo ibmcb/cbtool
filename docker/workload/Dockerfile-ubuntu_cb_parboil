@@ -1,9 +1,12 @@
 FROM REPLACE_NULLWORKLOAD_UBUNTU
 
 # cuda-install-man
-RUN REPLACE_RSYNC/cuda-repo-ubuntu1604-8-0-local_8.0.44-1_amd64-deb /home/REPLACE_USERNAME/
-RUN dpkg -i /home/REPLACE_USERNAME/cuda-repo-ubuntu1604-8-0-local_8.0.44-1_amd64-deb
-RUN apt-get update; apt-get install -y cuda
+RUN REPLACE_RSYNC/cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_REPLACE_ARCH3.deb /home/REPLACE_USERNAME/
+RUN dpkg -i /home/REPLACE_USERNAME/cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_REPLACE_ARCH3.deb
+RUN apt-key add /var/cuda-repo-*/7fa2af80.pub
+RUN REPLACE_RSYNC/cudnn-10.0-linux-REPLACE_ARCH4-v7.4.2.24.tar /home/REPLACE_USERNAME/
+RUN apt-get update
+RUN apt-get install -y cuda
 # cuda-install-man
 
 # parboil-install-man

@@ -127,7 +127,7 @@ RUN apt-get install -y python-dev libffi-dev libssl-dev libxml2-dev libxslt1-dev
 # python-devel-install-pm 
 
 # python-prettytable-install-pip
-RUN pip install --upgrade prettytable
+RUN pip install --upgrade docutils prettytable
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
@@ -147,7 +147,7 @@ RUN pip install --upgrade webob
 # python-webob-install-pip
 
 # pyredis-install-pip
-RUN pip install --upgrade redis
+RUN pip install redis==2.10.6
 # pyredis-install-pip
 
 # pymongo-install-pip

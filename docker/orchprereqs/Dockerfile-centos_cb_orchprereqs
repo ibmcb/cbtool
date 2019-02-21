@@ -181,7 +181,7 @@ RUN pip install --upgrade webob
 # python-webob-install-pip
 
 # pyredis-install-pip
-RUN pip install --upgrade redis
+RUN pip install redis==2.10.6
 # pyredis-install-pip
 
 # pymongo-install-pip
