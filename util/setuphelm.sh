@@ -21,16 +21,26 @@
 #   the containers to report their telemetry and logs back to CloudBench over the VPN.
 #   Everything works transparently and is setup for the user by this script.
 #
+#   After the VPN is setup, we perform even more craziness with helm. We install an
+#   object-storage-based docker registry directly into the cluster. This script defaults
+#   to using object storage, but it could also be flexible enough to use volumes
+#   whatever is supported by the helm chart.
+#
+#   Finally, because docker is wierd, docker won't use unsigned or self-signed docker
+#   registries by default. As a result we have to do more trickery. The only way to
+#   make docker use the registry is to create a /etc/docker/daemon.json file that
+#   whitelists it *and* login to the k8s host and restart the docker daemon. The only
+#   way to make this happen is to install a privileged pod on every k8s worker node
+#   that mounts the host filesystem, installs an ssh key and makes the appropriate
+#   modifications to the /etc/shado file (referred to as 'backdoor' below). Once that
+#   is done, we can SSH into each k8s worker node finally and restart the daemon,
+#   allowing CB to create AIs that are able to use our registry.
+#
+#   What a PITA.
+#
 #   Usage:
 #   $ ./cb -f exit
-#   $ util/setuphelm.sh
-#
-#   At the end of the script, we have preliminary support to also setup a helm-based
-#   Docker registry (based on Object Storage), which is extremely convenient. This doesn't
-#   fully work yet, however, because it requires the Docker daemon on each k8s node
-#   to be modified to support access to insecure private docker registries. This is not possible
-#   with public "aaS" k8s clusters because we don't have access to the k8s hosts.
-#   Thus, it will only work with pre-existing clusters until we find a workaround.
+#   $ util/setuphelm.sh [objectstorage accesskey] [objectstorage secretkey]
 #
 #   Dependencies:
 #   Install kubectl
@@ -76,7 +86,7 @@ function check_ready {
 				echo "Services still not ready:"
 			fi
 		else
-			echo "Pods or still not ready:"
+			echo "Pods still not ready:"
 		fi
 
 		echo "$notready"
@@ -173,6 +183,97 @@ while true ; do
 	check_ready
 done
 
+echo "Installing the docker registry"
+
+REGISTRYPORT=5000
+accesskey="$1"
+secretkey="$2"
+
+# An S3-compatible-backed docker registry, running
+# directly inside of the k8s cluster
+
+cat << EOF > /tmp/cbhelmregistry.yaml
+replicaCount: 1
+updateStrategy:
+podAnnotations: {}
+
+image:
+  repository: registry
+  tag: 2.6.2
+  pullPolicy: IfNotPresent
+service:
+  name: registry
+  type: ClusterIP
+  port: ${REGISTRYPORT} 
+  annotations: {}
+ingress:
+  enabled: false
+  path: /
+  hosts:
+    - chart-example.local
+  annotations:
+  labels: {}
+  tls:
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+persistence:
+  accessMode: 'ReadWriteOnce'
+  enabled: false
+  size: 10Gi
+  # storageClass: '-'
+
+storage: s3 
+secrets:
+   s3:
+     accessKey: "${accesskey}"
+     secretKey: "${secretkey}"
+s3:
+  region: nyc3
+  regionEndpoint: nyc3.digitaloceanspaces.com
+  bucket: mariner-docker
+  encrypt: false
+  secure: true
+configData:
+  version: 0.1
+  log:
+    fields:
+      service: registry
+  storage:
+    cache:
+      blobdescriptor: inmemory
+  http:
+    addr: :${REGISTRYPORT}
+    headers:
+      X-Content-Type-Options: [nosniff]
+  health:
+    storagedriver:
+      enabled: true
+      interval: 10s
+      threshold: 3
+securityContext:
+  enabled: true
+  runAsUser: 1000
+  fsGroup: 1000
+priorityClassName: ""
+nodeSelector: {}
+tolerations: []
+EOF
+
+echo "Installing docker registry backed by Object storage"
+
+helm install stable/docker-registry -f /tmp/cbhelmregistry.yaml
+
+check_error $? "helm install registry"
+
 check_ready
 
 echo "Configuring CB to recognize the openvpn server ..."
@@ -187,7 +288,7 @@ python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERN
 python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'use_vpn_ip', 'True')"
 
 while true ; do
-	RELEASE=$(helm list -q)
+	RELEASE=$(helm list | grep openvpn | sed "s/\t/ /g" | cut -d " " -f 1)
 	code=$?
 	if [ $code -eq 0 ] && [ x"$RELEASE" != x ] ; then
 		break
@@ -290,125 +391,115 @@ EOF
 
 chmod +x ${dir}/portforward.sh
 
-kubectl cp $dir/portforward.sh default/${POD_NAME}:/etc/openvpn/certs/portsforward.sh
-kubectl exec -it ${POD_NAME} /bin/chmod +x /etc/openvpn/certs/portsforward.sh
+kubectl cp $dir/portforward.sh default/${POD_NAME}:/etc/openvpn/certs/portforward.sh
+kubectl exec -it ${POD_NAME} /bin/chmod +x /etc/openvpn/certs/portforward.sh
 
 check_error $? "setup IPtables script executable"
 
-kubectl exec -it ${POD_NAME} /etc/openvpn/certs/portsforward.sh
+kubectl exec -it ${POD_NAME} /etc/openvpn/certs/portforward.sh
 
 check_error $? "setup IPtables rules"
 
-rm ${dir}/portforward.sh 
 
-# This part isn't working yet, but the code is here.
+check_ready
 
-echo "Installing the docker registry"
+while true ; do
+	RELEASE=$(helm list | grep registry | sed "s/\t/ /g" | cut -d " " -f 1)
+	if [ $? -eq 0 ] && [ x"$RELEASE" != x ]; then
+		break
+	fi
+	echo "Registry not ready yet..."
+	check_ready
+done
 
-REGISTRYPORT=5000
-PRIVATE_REGISTRY="ibmcb" # ${INTERNAL_VPN_IP}:${REGISTRYPORT}
-accesskey="$1"
-secretkey="$2"
+while true ; do
+	PODNAME=$(kubectl get pods --namespace default -l "app=docker-registry,release=${RELEASE}" -o jsonpath="{.items[0].metadata.name}")
+	if [ $? -eq 0 ] && [ x"$PODNAME" != x ]; then
+		break
+	fi
+	echo "Pod name not yet ready... "
+	check_ready
+done
+	
+REGISTRYIP=$(kubectl describe pod ${PODNAME} | grep IP | sed "s/.* //g")
+check_error $? "get registry IP address"
 
-# An S3-compatible-backed docker registry, running
-# directly inside of the k8s cluster
+PRIVATE_REGISTRY="${REGISTRYIP}:${REGISTRYPORT}"
+python -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu_')"
 
-cat << EOF >> /tmp/cbhelmregistry.yaml
-replicaCount: 1
-updateStrategy:
-podAnnotations: {}
+NODES=$(kubectl get nodes | grep Ready | wc -l)
+SSHKEY="$(cat ~/.ssh/id_rsa.pub)"
 
-image:
-  repository: registry
-  tag: 2.6.2
-  pullPolicy: IfNotPresent
-service:
-  name: registry
-  type: ClusterIP
-  port: ${REGISTRYPORT} 
-  annotations: {}
-ingress:
-  enabled: false
-  path: /
-  hosts:
-    - chart-example.local
-  annotations:
-  labels: {}
-  tls:
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
-persistence:
-  accessMode: 'ReadWriteOnce'
-  enabled: false
-  size: 10Gi
-  # storageClass: '-'
+echo "Performing backdoor reconfiguration on ${NODES} nodes... "
 
-storage: s3 
-secrets:
-   s3:
-     accessKey: "${accesskey}"
-     secretKey: "${secretkey}"
-s3:
-  region: nyc3
-  regionEndpoint: nyc3.digitaloceanspaces.com
-  bucket: mariner-docker
-  encrypt: false
-  secure: true
-configData:
-  version: 0.1
-  log:
-    fields:
-      service: registry
-  storage:
-    cache:
-      blobdescriptor: inmemory
-  http:
-    addr: :${REGISTRYPORT}
-    headers:
-      X-Content-Type-Options: [nosniff]
-  health:
-    storagedriver:
-      enabled: true
-      interval: 10s
-      threshold: 3
-securityContext:
-  enabled: true
-  runAsUser: 1000
-  fsGroup: 1000
-priorityClassName: ""
-nodeSelector: {}
-tolerations: []
+cat << EOF > /tmp/backdoor.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backdoor
+  labels:
+    app: foo
+spec:
+  replicas: ${NODES} 
+  selector:
+    matchLabels:
+      app: foo
+  template:
+    metadata:
+      labels:
+       app: foo
+    spec:
+      volumes:
+      - name: data
+        hostPath:
+          path: /
+      affinity:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchExpressions:
+                        - key: "app"
+                          operator: In
+                          values:
+                          - foo 
+                    topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: entrypoint
+        image: ubuntu:18.04
+        command: ["/bin/bash"]
+        args: ["-c", "/bin/echo \$SSHKEY >> /tmp/slash/root/.ssh/authorized_keys && echo '{ \"insecure-registries\" : [\"${PRIVATE_REGISTRY}\"] }' > /tmp/slash/etc/docker/daemon.json && sed -ie 's/\\\\:0\\\\:0/\\\\:99999\\\\:0/g' /tmp/slash/etc/shadow && /bin/sleep infinity"]
+        env:
+        - name: SSHKEY
+          value: "${SSHKEY}"
+        volumeMounts:
+        - name: data
+          mountPath: /tmp/slash
+          readOnly: false
+        securityContext:
+          privileged: true
 EOF
 
-# There doesn't seem to be a way to do this without access to
-# the host k8s droplets to modify the docker daemon to allow
-# insecure docker registries to be accessible.
 
-#helm install stable/docker-registry -f /tmp/cbhelmregistry.yaml
+cat /tmp/backdoor.yaml | kubectl create -f -
+check_error $? "install backdoor"
 
-rm /tmp/cbhelmregistry.yaml
-
-#check_error $? "helm install registry"
-#check_ready
-
-#SERVICE=$(helm list | grep registry | cut -d " " -f 1)
-#check_error $? "find helm registry service"
-#PODNAME=$(kubectl get pods --namespace default -l "app=docker-registry,release=${SERVICE}" -o jsonpath="{.items[0].metadata.name}")
-#check_error $? "get registry pod name"
-#REGISTRYIP=$(kubectl describe pod ${PODNAME} | grep IP | sed "s/.* //g")
-#check_error $? "get registry IP address"
-
-python -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu')"
+check_ready
 
 kubectl get pods
+
+echo "Restarting docker on all nodes..."
+
+for node in $(kubectl get nodes | grep Ready | cut -d " " -f 1) ; do
+	nodeip=$(kubectl describe node ${node} | grep ExternalIP | sed "s/.* //g")
+	echo "Restarting on ${nodeip}"
+	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${nodeip} "service docker restart"
+	check_error $? "docker restart failed"
+done
+
+kubectl delete --wait deployment backdoor
+
+rm /tmp/backdoor.yaml
+rm ${dir}/portforward.sh 
+rm /tmp/cbhelmregistry.yaml
 
 echo "Done."
