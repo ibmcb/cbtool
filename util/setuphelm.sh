@@ -421,11 +421,27 @@ while true ; do
 	check_ready
 done
 	
-REGISTRYIP=$(kubectl describe pod ${PODNAME} | grep IP | sed "s/.* //g")
-check_error $? "get registry IP address"
+SERVICE_NAME=$(kubectl get svc --namespace "default" -l "app=docker-registry,release=${RELEASE}" -o jsonpath='{ .items[0].metadata.name }')
+echo "Registry Service name: ${SERVICE_NAME}"
+check_error $? "get registry service name"
+check_ready
+
+while true ; do
+	REGISTRYIP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
+	code=$?
+	if [ $code -eq 0 ] && [ x"$REGISTRYIP" != x ] ; then
+		break
+	fi
+	echo "Docker Service IP not yet ready ..."
+	sleep 10
+	check_ready
+done
+
 
 PRIVATE_REGISTRY="${REGISTRYIP}:${REGISTRYPORT}"
 python -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu_')"
+
+echo "Registry located at: ${PRIVATE_REGISTRY}"
 
 NODES=$(kubectl get nodes | grep Ready | wc -l)
 SSHKEY="$(cat ~/.ssh/id_rsa.pub)"
