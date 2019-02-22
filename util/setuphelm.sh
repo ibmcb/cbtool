@@ -311,6 +311,7 @@ check_ready
 
 while true ; do
 	SERVICE_IP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o go-template='{{ range $k, $v := (index .status.loadBalancer.ingress 0)}}{{ $v }}{{end}}')
+	INTERNAL_SERVICE_IP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
 	code=$?
 	if [ $code -eq 0 ] && [ x"$SERVICE_IP" != x ] ; then
 		break
@@ -322,7 +323,7 @@ done
 
 echo "Service IP: ${SERVICE_IP}"
 
-python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${SERVICE_IP}')"
+python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
 kubectl --namespace "default" exec -it "$POD_NAME" /etc/openvpn/setup/newClientCert.sh "$KEY_NAME" "$SERVICE_IP"
 check_error $? "create client certificate"
 kubectl --namespace "default" exec -it "$POD_NAME" cat "/etc/openvpn/certs/pki/$KEY_NAME.ovpn" > "/tmp/${KEY_NAME}.ovpn"
