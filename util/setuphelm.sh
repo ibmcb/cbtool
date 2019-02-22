@@ -195,14 +195,17 @@ secretkey="$2"
 # An S3-compatible-backed docker registry, running
 # directly inside of the k8s cluster
 
+#  repository: registry
+#  tag: 2.6.2
+
 cat << EOF > /tmp/cbhelmregistry.yaml
 replicaCount: 1
 updateStrategy:
 podAnnotations: {}
 
 image:
-  repository: registry
-  tag: 2.6.2
+  repository: registry@sha256 
+  tag: 5a156ff125e5a12ac7fdec2b90b7e2ae5120fa249cf62248337b6d04abc574c8 
   pullPolicy: IfNotPresent
 service:
   name: registry
@@ -218,16 +221,6 @@ ingress:
   labels: {}
   tls:
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
 persistence:
   accessMode: 'ReadWriteOnce'
   enabled: false
