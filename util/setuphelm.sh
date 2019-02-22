@@ -104,6 +104,9 @@ echo "Exporting kubeconfig for VMC $vmcname $cldid ..."
 python -c "$PREFIX print api.vmcshow('${cldid}', '${vmcname}')['kubeconfig']" > /tmp/kubeconfig.yaml
 popd
 
+KEY_NAME=kubeVPN-${cldid}-${vmcname}
+sudo pkill -9 -f ${KEY_NAME}
+
 export KUBECONFIG=/tmp/kubeconfig.yaml
 
 echo "Installing helm in the cluster..."
@@ -120,7 +123,7 @@ check_ready
 
 vpn_network=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['network'].lower()")
 
-cat << EOF > /tmp/helm_openvpn_values.yaml 
+cat << EOF > /tmp/cbhelm_openvpn_values.yaml 
 replicaCount: 1
 
 updateStrategy: {}
@@ -173,7 +176,7 @@ EOF
 
 echo "Installing OpenVPN in the cluster ... "
 while true ; do
-	helm install stable/openvpn -f /tmp/helm_openvpn_values.yaml
+	helm install stable/openvpn -f /tmp/cbhelm_openvpn_values.yaml
 	if [ $? -eq 0 ] ; then
 		break
 	fi
@@ -192,14 +195,17 @@ secretkey="$2"
 # An S3-compatible-backed docker registry, running
 # directly inside of the k8s cluster
 
+#  repository: registry
+#  tag: 2.6.2
+
 cat << EOF > /tmp/cbhelmregistry.yaml
 replicaCount: 1
 updateStrategy:
 podAnnotations: {}
 
 image:
-  repository: registry
-  tag: 2.6.2
+  repository: registry@sha256 
+  tag: 5a156ff125e5a12ac7fdec2b90b7e2ae5120fa249cf62248337b6d04abc574c8 
   pullPolicy: IfNotPresent
 service:
   name: registry
@@ -215,16 +221,6 @@ ingress:
   labels: {}
   tls:
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
 persistence:
   accessMode: 'ReadWriteOnce'
   enabled: false
@@ -278,13 +274,11 @@ check_ready
 
 echo "Configuring CB to recognize the openvpn server ..."
 POD_NAME=$(kubectl get pods --namespace "default" -l app=openvpn -o jsonpath='{ .items[0].metadata.name }')
-INTERNAL_VPN_IP=$(kubectl describe pod ${POD_NAME} | grep IP | sed "s/.* //g")
 
 VPN_STATUS_PORT=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['management_port'].lower()")
 
 echo "VPN status port: ${VPN_STATUS_PORT}"
 
-python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_VPN_IP}')"
 python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'use_vpn_ip', 'True')"
 
 while true ; do
@@ -310,6 +304,7 @@ check_ready
 
 while true ; do
 	SERVICE_IP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o go-template='{{ range $k, $v := (index .status.loadBalancer.ingress 0)}}{{ $v }}{{end}}')
+	INTERNAL_SERVICE_IP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
 	code=$?
 	if [ $code -eq 0 ] && [ x"$SERVICE_IP" != x ] ; then
 		break
@@ -321,7 +316,7 @@ done
 
 echo "Service IP: ${SERVICE_IP}"
 
-KEY_NAME=kubeVPN-${cldid}-${vmcname}
+python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
 kubectl --namespace "default" exec -it "$POD_NAME" /etc/openvpn/setup/newClientCert.sh "$KEY_NAME" "$SERVICE_IP"
 check_error $? "create client certificate"
 kubectl --namespace "default" exec -it "$POD_NAME" cat "/etc/openvpn/certs/pki/$KEY_NAME.ovpn" > "/tmp/${KEY_NAME}.ovpn"
@@ -329,8 +324,9 @@ check_error $? "extract client certificate"
 
 echo "management 127.0.0.1 ${VPN_STATUS_PORT}" >> /tmp/${KEY_NAME}.ovpn
 echo "management-log-cache 10000" >> /tmp/${KEY_NAME}.ovpn
-
-sudo pkill -9 -f ${KEY_NAME}
+# The helm chart unconditionally creates this route, which is wrong. Get rid of it.
+echo 'pull-filter ignore "route 10.0.0.0"' >> /tmp/${KEY_NAME}.ovpn
+echo 'pull-filter ignore redirect-gateway' >> /tmp/${KEY_NAME}.ovpn
 
 echo "Starting VPN ..."
 sudo openvpn --config /tmp/${KEY_NAME}.ovpn --daemon
@@ -352,22 +348,20 @@ while true ; do
 	sleep 10
 done
 
-# The helm chart unconditionally creates this route, which is wrong. Get rid of it.
-sudo ip route delete 10.0.0.0/8
-
 # The VPN is working, but now we need the services internal to k8s
 # to be able to reach CloudBench.
 
 echo "Uploading iptables rules ... "
 
 logproto=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['protocol'].lower()")
+logprotoupper=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['protocol'].upper()")
 logport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['port'].lower()")
 metricport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'metricstore')['port'].lower()")
 fileport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'filestore')['port'].lower()")
 apiport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'api_defaults')['port'].lower()")
 redisport=6379 # command isn't working yet
 
-cat << EOF > ${dir}/portforward.sh
+cat << EOF > /tmp/cbportforward.sh
 #!/usr/bin/env bash
 
 iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 22 -j DNAT --to ${bootstrap}:22
@@ -389,9 +383,9 @@ iptables -A PREROUTING -t nat -i eth0 -p tcp --dport ${fileport} -j DNAT --to ${
 iptables -A FORWARD -p tcp -d ${bootstrap} --dport ${fileport} -j ACCEPT
 EOF
 
-chmod +x ${dir}/portforward.sh
+chmod +x /tmp/cbportforward.sh
 
-kubectl cp $dir/portforward.sh default/${POD_NAME}:/etc/openvpn/certs/portforward.sh
+kubectl cp /tmp/cbportforward.sh default/${POD_NAME}:/etc/openvpn/certs/portforward.sh
 kubectl exec -it ${POD_NAME} /bin/chmod +x /etc/openvpn/certs/portforward.sh
 
 check_error $? "setup IPtables script executable"
@@ -399,9 +393,63 @@ check_error $? "setup IPtables script executable"
 kubectl exec -it ${POD_NAME} /etc/openvpn/certs/portforward.sh
 
 check_error $? "setup IPtables rules"
-
-
 check_ready
+
+cat << EOF > /tmp/cbvpnservice.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: openvpn-proxy 
+spec:
+#  type: NodePort
+  ports:
+  - port: ${redisport} 
+    protocol: TCP
+    name: redis
+    targetPort: ${redisport} 
+  - port: 22 
+    protocol: TCP
+    name: ssh 
+    targetPort: 22 
+  - port: ${metricport} 
+    protocol: TCP
+    name: mongodb 
+    targetPort: ${metricport} 
+  - port: ${logport} 
+    protocol: ${logprotoupper} 
+    name: rsyslog 
+    targetPort: ${logport} 
+  - port: ${apiport} 
+    protocol: TCP
+    name: api 
+    targetPort: ${apiport} 
+  - port: ${fileport} 
+    protocol: TCP
+    name: rsync 
+    targetPort: ${fileport} 
+  selector:
+    app: openvpn 
+EOF
+
+kubectl create -f /tmp/cbvpnservice.yaml
+
+check_error $? "setup openvpn proxy"
+check_ready
+
+while true ; do
+	INTERNAL_SERVICE_IP=$(kubectl get svc --namespace "default" "openvpn-proxy" -o json | jq -r .spec.clusterIP)
+	code=$?
+	if [ $code -eq 0 ] && [ x"${INTERNAL_SERVICE_IP}" != x ] ; then
+		break
+	fi
+	echo "Openvpn Proxy IP not yet ready ..."
+	sleep 10
+	check_ready
+done
+
+echo "Openvpn Proxy IP: ${INTERNAL_SERVICE_IP}"
+
+python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
 
 while true ; do
 	RELEASE=$(helm list | grep registry | sed "s/\t/ /g" | cut -d " " -f 1)
@@ -421,18 +469,34 @@ while true ; do
 	check_ready
 done
 	
-REGISTRYIP=$(kubectl describe pod ${PODNAME} | grep IP | sed "s/.* //g")
-check_error $? "get registry IP address"
+SERVICE_NAME=$(kubectl get svc --namespace "default" -l "app=docker-registry,release=${RELEASE}" -o jsonpath='{ .items[0].metadata.name }')
+echo "Registry Service name: ${SERVICE_NAME}"
+check_error $? "get registry service name"
+check_ready
+
+while true ; do
+	REGISTRYIP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
+	code=$?
+	if [ $code -eq 0 ] && [ x"$REGISTRYIP" != x ] ; then
+		break
+	fi
+	echo "Docker Service IP not yet ready ..."
+	sleep 10
+	check_ready
+done
+
 
 PRIVATE_REGISTRY="${REGISTRYIP}:${REGISTRYPORT}"
 python -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu_')"
+
+echo "Registry located at: ${PRIVATE_REGISTRY}"
 
 NODES=$(kubectl get nodes | grep Ready | wc -l)
 SSHKEY="$(cat ~/.ssh/id_rsa.pub)"
 
 echo "Performing backdoor reconfiguration on ${NODES} nodes... "
 
-cat << EOF > /tmp/backdoor.yaml
+cat << EOF > /tmp/cbbackdoor.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -480,7 +544,7 @@ spec:
 EOF
 
 
-cat /tmp/backdoor.yaml | kubectl create -f -
+cat /tmp/cbbackdoor.yaml | kubectl create -f -
 check_error $? "install backdoor"
 
 check_ready
@@ -498,8 +562,10 @@ done
 
 kubectl delete --wait deployment backdoor
 
-rm /tmp/backdoor.yaml
-rm ${dir}/portforward.sh 
+rm /tmp/cbbackdoor.yaml
+rm /tmp/cbportforward.sh 
 rm /tmp/cbhelmregistry.yaml
+rm /tmp/cbvpnservice.yaml
+rm /tmp/cbhelm_openvpn_values.yaml 
 
 echo "Done."
