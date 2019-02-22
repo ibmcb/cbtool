@@ -333,6 +333,7 @@ echo "management 127.0.0.1 ${VPN_STATUS_PORT}" >> /tmp/${KEY_NAME}.ovpn
 echo "management-log-cache 10000" >> /tmp/${KEY_NAME}.ovpn
 # The helm chart unconditionally creates this route, which is wrong. Get rid of it.
 echo 'pull-filter ignore "route 10.0.0.0"' >> /tmp/${KEY_NAME}.ovpn
+echo 'pull-filter ignore redirect-gateway' >> /tmp/${KEY_NAME}.ovpn
 
 echo "Starting VPN ..."
 sudo openvpn --config /tmp/${KEY_NAME}.ovpn --daemon
