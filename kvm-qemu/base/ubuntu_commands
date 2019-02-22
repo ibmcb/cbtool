@@ -1,27 +1,56 @@
-install sudo,rsync,python2.7,git,wget,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop,libyaml-0-2
+run-command sed -i '/^#.* partner/s/^#//' /etc/apt/sources.list
 
-run-command apt-get install -y --allow-downgrades python=2.7.11-1 python-minimal=2.7.11-1 libpython-stdlib=2.7.11-1 python2.7-dev=2.7.11-7ubuntu1 python2.7=2.7.11-7ubuntu1 python2.7-minimal=2.7.11-7ubuntu1 libpython2.7-stdlib=2.7.11-7ubuntu1 libpython2.7-minimal=2.7.11-7ubuntu1 libpython2.7-dev=2.7.11-7ubuntu1 libpython2.7=2.7.11-7ubuntu1
+upload /tmp/cache_resolve_dns:/root/cache_resolve_dns
+run-command sed -i '/^#CBSTART/,/^#CBEND/{//p;d;}' /etc/hosts
+run-command sed -i '/^#CB/d' /etc/hosts
+run-command echo "#CBSTART: Added by cloudbench" >> /etc/hosts
+run-command cat /root/cache_resolve_dns >> /etc/hosts
+run-command echo "#CBEND: Added by cloudbench" >> /etc/hosts
 
-run-command sudo pip install requests==2.12
+install sudo,rsync,python2.7,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop,libyaml-0-2
+install net-tools,psmisc,ntp,git,wget,python-pip,gcc,make,bc,sshpass,curl,screen,ncftp,lftp,haproxy,vim,netcat-openbsd,nmap
+install openvpn,ganglia-monitor,rsyslog,apache2,redis-server,mongodb,sudo,python-libvirt,python-dev,pssh,jq,iptables,openssh-server
+install r-base-core,rrdtool,python-rrdtool,pwgen,python-docutils,language-pack-en,subnetcalc
+
+install expect,xfce4,xfce4-goodies,tightvncserver
+run-command curl -sL https://ibm.biz/idt-installer | bash
+
+run-command sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf
+run-command sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
+run-command ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd; mkdir -p /var/log/cloudbench
+
+run-command mkdir -p /var/log/cloudbench
+run-command sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf
+run-command sed -i -e 's^#module(load="imudp")^module(load="imudp")^g' /etc/rsyslog.conf
+run-command bash -c "echo -e \"local5.*  \t\t\t\t /var/log/cloudbench/remote.log\" >> /etc/rsyslog.conf"
+run-command bash -c "echo -e \"local6.* \t\t\t\t /var/log/cloudbench/local.log\" >> /etc/rsyslog.conf"
+
+run-command sudo pip install -i https://pypi.python.org/simple/ requests==2.12
+run-command sudo pip install -i https://pypi.python.org/simple/ docutils 
+run-command sudo pip install -i https://pypi.python.org/simple/ python-daemon
+run-command sudo pip install -i https://pypi.python.org/simple/ --upgrade pyasn1-modules
+
+run-command curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+run-command add-apt-repository "deb https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+run-command apt-get update
+run-command apt-get install -y -q --allow-unauthenticated docker-ce=18.06.1~ce~3-0~ubuntu
+
+run-command sed -i 's^-H.*^-H fd:// -H tcp://0.0.0.0:2375^g' /lib/systemd/system/docker.service
+run-command systemctl daemon-reload
 
 run-command ln -s /usr/bin/python2.7 /usr/bin/python; /bin/true
 edit /etc/default/grub:s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"biosdevname=0 net.ifnames=0\"/
 run-command update-grub
 root-password password:temp4now
+
 edit /etc/ssh/sshd_config:s/PermitRootLogin without-password/PermitRootLogin yes/
-upload REPLACE_PATH/base/extra_nic.cfg:/etc/network/interfaces.d/extra_nic.cfg
-upload REPLACE_PATH/base/fixdefaultgw.sh:/usr/local/bin/fixdefaultgw.sh
-upload REPLACE_PATH/base/fixdefaultgw.service:/etc/systemd/system/fixdefaultgw.service
 upload REPLACE_PATH/base/getmyips.sh:/usr/local/bin/getmyips
-upload REPLACE_PATH/base/configfw.sh:/usr/local/bin/configfw
 upload REPLACE_PATH/base/gucn.sh:/usr/local/bin/gucn
+upload REPLACE_PATH/base/fixulimits.sh:/usr/local/bin/fixulimits.sh
 
-chmod 0755:/usr/local/bin/fixdefaultgw.sh
 chmod 0755:/usr/local/bin/getmyips
-chmod 0755:/usr/local/bin/configfw
 chmod 0755:/usr/local/bin/gucn
-
-run-command systemctl enable fixdefaultgw
+chmod 0755:/usr/local/bin/fixulimits.sh
 
 run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash ubuntu
 run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash fedora; 
@@ -34,6 +63,11 @@ run-command echo 'REPLACE_USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
 password ubuntu:password:temp4now
 password fedora:password:temp4now
 password REPLACE_USERNAME:password:temp4now
+
+run-command mkdir /root/.docker
+run-command mkdir /home/ubuntu/.docker
+run-command mkdir /home/fedora/.docker
+run-command mkdir /home/REPLACE_USERNAME/.docker
 
 run-command ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa; 
 upload /home/REPLACE_USERNAME/.ssh/authorized_keys:/root/.ssh/authorized_keys

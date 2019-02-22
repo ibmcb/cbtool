@@ -1,5 +1,4 @@
 ### START - Dependency installation order ###
-#oraclejava-order = 80
 java-order = 81
 ycsb-order = 82
 cassandra-order = 83
@@ -13,7 +12,6 @@ cassandra-tools-order = 84
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-oraclejava-install = man
 java-install = pm
 cassandra-install = man
 cassandra-tools-install = man
@@ -21,8 +19,7 @@ ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+java-configure = /tmp/cb_is_java_installed.sh openjdk 7
 cassandra-configure = which cassandra
 cassandra-tools-configure = which token-generator
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3

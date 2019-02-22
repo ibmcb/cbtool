@@ -19,7 +19,7 @@ memtier_benchmark-install = man
 ### START - Tests ###
 autoreconf-configure = autoconf --version 2>&1 | head -n 1 | awk '{ print $4 }'
 redis-configure = redis-server -v
-memtier_benchmark-configure = ls -la ~/memtier_benchmark
+memtier_benchmark-configure = sudo ls -la /usr/local/bin/memtier_benchmark
 ### END - Tests ###
 
 ### START - Dependency versions ###

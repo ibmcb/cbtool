@@ -21,7 +21,7 @@ scimark-install = man
 ### START - Tests ###
 git-configure = gcc -v
 git-configure = git --version
-java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+java-configure = /tmp/cb_is_java_installed.sh openjdk 7
 scimark-configure = ls ~/jnt/scimark2/commandline.class
 ### END - Tests ###
 
