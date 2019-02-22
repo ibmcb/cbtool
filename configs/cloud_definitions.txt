@@ -17,12 +17,12 @@ MAIN_LOGIN = cbuser
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
 # Which cloud to pick first when the tool first starts
-STARTUP_CLOUD = MYSIMCLOUD
+STARTUP_CLOUD = MYSIM
 
 # List the clouds you want to define
-CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
-CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
-CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
+CLOUDOPTION_MYSIM = cldattach sim, vmcattach all
+CLOUDOPTION_MYOS = cldattach osk, vmcattach all
+CLOUDOPTION_MYEC2 = cldattach ec2, vmcattach all
 CLOUDOPTION_MYVCD = cldattach vcd, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
@@ -31,12 +31,13 @@ CLOUDOPTION_MYDO = cldattach do, vmcattach all
 CLOUDOPTION_MYPDM = cldattach pdm, vmcattach all
 CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
 CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
-CLOUDOPTION_MYAS = cldattach os, vmcattach all
+CLOUDOPTION_MYOS = cldattach os, vmcattach all
+CLOUDOPTION_MYAS = cldattach as, vmcattach all
 
 # START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
-# Smart Cloud Provisioning (SCP) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYSIMCLOUD]
+# Simulated Cloud (SIM) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYSIM]
 SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:lg
 SIM_SSH_KEY_NAME = cbtool_rsa
 SIM_KEY_NAME = cbtool_rsa 
@@ -44,32 +45,37 @@ SIM_SECURITY_GROUPS = simsecgrp
 SIM_LOGIN = cbuser
 #-------------------------------------------------------------------------------
 # OpenStack (OSK) requires the following parameters (replace everything between <>, *including* the signs!)
-[USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
-OSK_ACCESS = http://<address>:5000/v2.0/                   # Address of controlled node (where nova-api runs)
+[USER-DEFINED : CLOUDOPTION_MYOS]
+OSK_ACCESS = http://<address>:5000/v2.0/                                                                              # Address of the controller node (where nova-api runs)
 OSK_CREDENTIALS =  <user>-<password>-<tenant>
-OSK_SECURITY_GROUPS = default	                           # Make sure that this group exists first
-OSK_INITIAL_VMCS = RegionOne:sut                           # Change "RegionOne" accordingly
-OSK_LOGIN = cbuser                                         # The username that logins on the VMs
+OSK_INITIAL_VMCS = RegionOne:sut                                                                                      # Change "RegionOne" accordingly
+OSK_SECURITY_GROUPS = default	                                                                                      # Make sure that this group exists first
+OSK_NETNAME = private                                                                                                 # Make sure that this network exists first
+OSK_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+OSK_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+OSK_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # Elastic Compute Cloud (EC2) requires the following parameters 
-[USER-DEFINED : CLOUDOPTION_MYAMAZON]
-EC2_ACCESS = ABCDEFGHIJKLMNOPQRST                          # This is the AWS access key id
-EC2_SECURITY_GROUPS = cloudbench                           # Make sure that this group exists first 
-EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # This is the AWS secret access key 
-EC2_KEY_NAME = cbtool_rsa                                  # Make sure that this key exists first 
-EC2_INITIAL_VMCS = us-east-1:sut                           # Change "us-east-1" accordingly
-EC2_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
-EC2_LOGIN = cbuser                                         # The username that logins on the VMs
+[USER-DEFINED : CLOUDOPTION_MYEC2] 
+EC2_ACCESS = ABCDEFGHIJKLMNOPQRST                                                                                     # This is the AWS access key id
+EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*                                                            # This is the AWS secret access key 
+EC2_SECURITY_GROUPS = cloudbench                                                                                      # Make sure that this group exists first 
+EC2_KEY_NAME = cbtool_rsa                                                                                             # Make sure that this key exists first 
+EC2_INITIAL_VMCS = us-east-1:sut                                                                                      # Change "us-east-1" accordingly
+EC2_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+EC2_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+EC2_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # vCloud Director requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYVCD]
-VCD_ACCESS = 10.1.1.1                                      # IP address or host name for vCloud Director API
-VCD_CREDENTIALS = happyguy@DeployPlace;password            # username to log into vCloud Director API
-VCD_KEY_NAME = xxxxx                                       # password to log into vCloud Director API (same as above)
-VCD_SECURITY_GROUPS = none                                 # Not used in vCloud Director, but required by CloudBench
-VCD_INITIAL_VMCS = DeployPlace                             # vCloud Director instance name
-VCD_SSH_KEY_NAME = cbtool_rsa                              # Private key used to SSH into VMs
-VCD_LOGIN = cbuser                                         # Username associated with the private key above
+VCD_ACCESS = 10.1.1.1                                                                                                 # IP address or host name for vCloud Director API
+VCD_CREDENTIALS = happyguy@DeployPlace;password                                                                       # username to log into vCloud Director API
+VCD_KEY_NAME = xxxxx                                                                                                  # password to log into vCloud Director API (same as above)
+VCD_SECURITY_GROUPS = none                                                                                            # Not used in vCloud Director, but required by CloudBench
+VCD_INITIAL_VMCS = DeployPlace                                                                                        # vCloud Director instance name
+VCD_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+VCD_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+VCD_LOGIN = cbuser                                                                                                    # Username associated with the private key above
 VCD_SNMP_VERSION = 1
 VCD_SNMP_PASSWORD = dummy
 VCD_SNMP_COMMUNITY = cbtest
@@ -77,46 +83,69 @@ VCD_SNMP_VARIABLE = SNMPv2-MIB::sysLocation
 #-------------------------------------------------------------------------------
 # Parallel Libvirt Manager (PLM) requires the following parameters 
 [USER-DEFINED : CLOUDOPTION_MYPLM]
-PLM_ACCESS = <address>:6060
+PLM_ACCESS = <address>
 PLM_INITIAL_VMCS = grouptwo:sut
-PLM_SSH_KEY_NAME = cbtool_rsa
+PLM_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+PLM_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+PLM_NETNAME = default
+PLM_POOLNAME = default
 PLM_LOGIN = cbuser
 #-------------------------------------------------------------------------------
 # SoftLayer (SLR) requires the following parameters 
 [USER-DEFINED : CLOUDOPTION_MYSLR ]
-SLR_ACCESS = private                                                                            # Leave "private" if you are running inside SoftLayer
-SLR_CREDENTIALS = <username>-ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*0123456789001234567890-cci # User and API access key can be obtained from https://manage.softlayer.com/Administrative/apiKeychain
-SLR_LOGIN = cbuser                                                                              # The username that logins on the VMs
-SLR_INITIAL_VMCS = dal05                                                                        # Select the appropriate SoftLayer datacenter
+SLR_ACCESS = private                                                                                                  # Leave "private" if you are running inside SoftLayer
+SLR_CREDENTIALS = <username>-ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*0123456789001234567890-cci                       # User and API access key can be obtained from https://manage.softlayer.com/Administrative/apiKeychain
+SLR_INITIAL_VMCS = dal05                                                                                              # Select the appropriate SoftLayer datacenter
+SLR_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+SLR_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+SLR_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 [USER-DEFINED : CLOUDOPTION_MYGCE ]
-GCE_ACCESS = project_name_for_images,project_name_for_instances  # Obtained with "gcloud info".
-GCE_SECURITY_GROUPS = cloudbench                           # Currently, not used
-GCE_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # Currently, not used
-GCE_INITIAL_VMCS = us-east1-b:sut                          # Change "us-east1-b" accordingly
-GCE_LOGIN = cbuser                                         # The username that logins on the VMs
+GCE_ACCESS = project_name_for_images,project_name_for_instances                                                       # Obtained with "gcloud info".
+GCE_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*                                                            # Currently, not used
+GCE_INITIAL_VMCS = us-east1-b:sut                                                                                     # Change "us-east1-b" accordingly
+GCE_SECURITY_GROUPS = cloudbench                                                                                      # Currently, not used
+GCE_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+GCE_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+GCE_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
-# DigitalOcean (DO) requires the following parameters
+# DigitalOcean (DO) requires the following parameters (via LibCloud)
 [USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN]
-DO_INITIAL_VMCS = tor1:sut                                                                       # VMC == DO data center (we don't have availability zones yet)
-DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1;another_token:arbitrarytag2  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
-DO_SSH_KEY_NAME = cbtool_rsa                                                                     # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
-DO_KEY_NAME = key_name_from_digitialocean.com                                                    # Comma-separated list of IDs (or names) of your DO ssh keys
-DO_LOGIN = root                                                                                  # The username that logins on the VMs
+DO_INITIAL_VMCS = tor1:sut                                                                                            # VMC == DO data center (we don't have availability zones yet)
+DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1;another_token:arbitrarytag2                       # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
+DO_SSH_KEY_NAME = cbtool_rsa                                                                                          # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
+DO_KEY_NAME = key_name_from_digitialocean.com                                                                         # Comma-separated list of IDs (or names) of your DO ssh keys
+DO_LOGIN = root                                                                                                       # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+# Parallel Docker Manager (PDM) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYPDM ]
-PDM_INITIAL_VMCS = world                                 # This really does not matter, could be anything
-PDM_CREDENTIALS = NOTUSED                                # Currently not used
-PDM_ACCESS = tcp://<address>:2375,tcp://<address>:2375   # A comma-separated list of Docker hosts (usually port 2375) or a single Swarm host (usually port 5001)
-PDM_NETNAME = bridge                                     # The name of an already existing network on Docker
-PDM_LOGIN = cbuser                                       # The username that logins on the VMs
+PDM_INITIAL_VMCS = world                                                                                              # This really does not matter, could be anything
+PDM_ACCESS = tcp://<address>:2375,tcp://<address>:2375                                                                # A comma-separated list of Docker hosts (usually port 2375) or a single Swarm host (usually port 5001)
+PDM_CREDENTIALS = NOTUSED                                                                                             # Currently not used
+PDM_NETNAME = bridge                                                                                                  # The name of an already existing network on Docker
+PDM_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+PDM_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+PDM_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+# Parallel Container Manager (PCM) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYPCM ]
-PCM_INITIAL_VMCS = world                                   # This really does not matter, could be anything
-PCM_CREDENTIALS = trustpassword                            # LXD's "trust password"
-PCM_ACCESS = https://<address>:8443,https://<address>:8443 # A comma-separated list of LXD hosts (usually port 8443)
-PCM_NETNAME = lxdbr0                                       # The name of an already existing network on LXD
-PCM_LOGIN = cbuser                                         # The username that logins on the VMs
+PCM_ACCESS = https://<address>:8443,https://<address>:8443                                                            # A comma-separated list of LXD hosts (usually port 8443)
+PCM_CREDENTIALS = trustpassword                                                                                       # LXD's "trust password"
+PCM_INITIAL_VMCS = world                                                                                              # This really does not matter, could be anything
+PCM_NETNAME = lxdbr0                                                                                                  # The name of an already existing network on LXD
+PCM_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+PCM_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+PCM_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
+#-------------------------------------------------------------------------------
+# Kubernetes (KUB) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYKUB ]
+KUB_ACCESS = ~/.kube/config                                                                                           # The full path to the kubernetes configuration file
+KUB_CREDENTIALS = NOTUSED                                                                                             # Currently not used
+KUB_INITIAL_VMCS = world                                                                                              # This really does not matter, could be anything
+KUB_NETNAME = NOTUSED                                                                                                 # Currently not used
+KUB_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+KUB_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+KUB_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # Azure Service Manager (AS) requires the following parameters (via LibCloud)
 [USER-DEFINED : CLOUDOPTION_MYAS ]
@@ -127,12 +156,15 @@ AS_SSH_KEY_NAME = cbtool_rsa                                                    
 AS_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
 AS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
-[USER-DEFINED : CLOUDOPTION_MYKUB ]
-KUB_INITIAL_VMCS = world                                 # This really does not matter, could be anything
-KUB_CREDENTIALS = NOTUSED                                # Currently not used
-KUB_ACCESS = ~/.kube/config                              # The full path to the kubernetes configuration file
-KUB_NETNAME = NOTUSED                                    # Currently not used
-KUB_LOGIN = root                                         # The username that logins on the VMs
+# Openstack (OS) requires the following parameters (via LibCloud)
+[USER-DEFINED : CLOUDOPTION_MYOS ]
+OS_CREDENTIALS = arbitrarytag1:file1,arbitrarytag1:file2                                                             # File referes to the "rc" file used to connect to the cloud
+OS_INITIAL_VMCS = RegionOne:sut                                                                                      # This value will be overriden by whatever is defined on the "rc" file (i.e., make sure that they do match)
+OS_SECURITY_GROUPS = default                                                                                         # Make sure that this group exists first
+OS_NETNAME = private                                                                                                 # Make sure that this network exists first
+OS_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+OS_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+OS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # END: Specify the individual parameters for each cloud
 
