@@ -361,6 +361,7 @@ done
 echo "Uploading iptables rules ... "
 
 logproto=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['protocol'].lower()")
+logprotoupper=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['protocol'].upper()")
 logport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['port'].lower()")
 metricport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'metricstore')['port'].lower()")
 fileport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'filestore')['port'].lower()")
@@ -399,9 +400,63 @@ check_error $? "setup IPtables script executable"
 kubectl exec -it ${POD_NAME} /etc/openvpn/certs/portforward.sh
 
 check_error $? "setup IPtables rules"
-
-
 check_ready
+
+cat << EOF > ${dir}/vpnservice.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: openvpn-proxy 
+spec:
+#  type: NodePort
+  ports:
+  - port: ${redisport} 
+    protocol: TCP
+    name: redis
+    targetPort: ${redisport} 
+  - port: 22 
+    protocol: TCP
+    name: ssh 
+    targetPort: 22 
+  - port: ${metricport} 
+    protocol: TCP
+    name: mongodb 
+    targetPort: ${metricport} 
+  - port: ${logport} 
+    protocol: ${logprotoupper} 
+    name: rsyslog 
+    targetPort: ${logport} 
+  - port: ${apiport} 
+    protocol: TCP
+    name: api 
+    targetPort: ${apiport} 
+  - port: ${fileport} 
+    protocol: TCP
+    name: rsync 
+    targetPort: ${fileport} 
+  selector:
+    app: openvpn 
+EOF
+
+kubectl create -f ${dir}/vpnservice.yaml
+
+check_error $? "setup openvpn proxy"
+check_ready
+
+while true ; do
+	INTERNAL_SERVICE_IP=$(kubectl get svc --namespace "default" "openvpn-proxy" -o json | jq -r .spec.clusterIP)
+	code=$?
+	if [ $code -eq 0 ] && [ x"${INTERNAL_SERVICE_IP}" != x ] ; then
+		break
+	fi
+	echo "Openvpn Proxy IP not yet ready ..."
+	sleep 10
+	check_ready
+done
+
+echo "Openvpn Proxy IP: ${INTERNAL_SERVICE_IP}"
+
+python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
 
 while true ; do
 	RELEASE=$(helm list | grep registry | sed "s/\t/ /g" | cut -d " " -f 1)
