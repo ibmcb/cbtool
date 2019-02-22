@@ -15,8 +15,8 @@ specjbb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-specjbb-configure = redis-server -v
+java-configure = /tmp/cb_is_java_installed.sh openjdk 7
+specjbb-configure = ls ~/SPECjbb2015_1_00/
 ### END - Tests ###
 
 ### START - Dependency versions ###

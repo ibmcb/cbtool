@@ -2,7 +2,7 @@
 
 source ./build_common.sh
 
-CB_USAGE="Usage: $0 -r built image location [-w Workload] [-l CB Username/login] [-b branch] [-o distros] [--skip] [--verbose]"
+CB_USAGE="Usage: $0 -r built image location [-w Workload] [-l CB Username/login] [-b branch] [-o distros] [--noskip] [--verbose] [--allinone]"
 
 while [[ $# -gt 0 ]]
 do
@@ -57,12 +57,15 @@ do
         CB_RSYNC=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
-        --skip)
-        CB_BASE_IMAGE_SKIP=1
-        CB_NULLWORKLOAD_IMAGE_SKIP=1        
+        --noskip)
+        CB_BASE_IMAGE_SKIP=0
+        CB_NULLWORKLOAD_IMAGE_SKIP=0
         ;;                                                 
         -v|--verbose)
         CB_VERB='-v'
+        ;;
+        --allinone)
+        CB_ALLINONE=1
         ;;
         -h|--help)
         echo $CB_USAGE
@@ -92,16 +95,15 @@ then
     CB_KVMQEMU_DISTROS_IMG_LIST=$CB_KVMQEMU_UBUNTU_BASE' '$CB_KVMQEMU_CENTOS_BASE
 fi
 
-if [[ $CB_BASE_IMAGE_SKIP -eq 0 ]]
+cat $CB_KVMQEMU_S_DIR/../util/workloads_alias_mapping.txt | awk '{ print $1 }' | grep $CB_WKS > /dev/null 2>&1
+if [[ $? -eq 0 ]]
 then
-    download_base_images
-    create_base_images
+	CB_WKS=$(cat $CB_KVMQEMU_S_DIR/../util/workloads_alias_mapping.txt | grep $CB_WKS[[:space:]] | cut -d ' ' -f 2)
 fi
 
-if [[ $CB_NULLWORKLOAD_IMAGE_SKIP -eq 0 ]]
-then
-    create_workload_images nullworkload $CB_DISTROS
-fi
+download_base_images
+create_base_images
+create_workload_images nullworkload $CB_DISTROS
 
 if [[ $(echo $CB_WKS | grep -c none) -eq 0 ]]
 then 

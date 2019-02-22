@@ -1,6 +1,5 @@
 ### START - Dependency installation order ###
 java-order = 82
-#ibm-java-order = 82
 ycsb-order = 83
 mongo-order = 84
 ### END - Dependency installation order ###
@@ -13,14 +12,12 @@ mongo-order = 84
 # pip = python pip utility
 # man = "manual"
 java-install = pm
-#ibm-java-install = man
 mongo-install = pm
 ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-#ibm-java-configure = sudo ls /opt/ibm/java-*
+java-configure = /tmp/cb_is_java_installed.sh openjdk 7
 mongo-configure =  mongod --version
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 ycsb-configure = ls -la ~/YCSB
@@ -28,7 +25,6 @@ ycsb-configure = ls -la ~/YCSB
 
 ### START - Dependency versions ###
 java-ver = 1.7
-#ibm-java-ver = 1.8
 mongo-ver = 2.4.0
 ycsb-ver = ANY
 ### END - Dependency versions ###

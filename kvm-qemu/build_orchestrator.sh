@@ -2,7 +2,7 @@
 
 source ./build_common.sh
 
-CB_USAGE="Usage: $0 -r built image location [-l CB Username/login] [-b branch] [-o distros] [--skip] [--verbose]"
+CB_USAGE="Usage: $0 -r built image location [-l CB Username/login] [-b branch] [-o distros] [--noskip] [--verbose] [--allinone]"
 
 while [[ $# -gt 0 ]]
 do
@@ -57,12 +57,15 @@ do
         CB_RSYNC=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
-        --skip)
-        CB_BASE_IMAGE_SKIP=1
-        CB_NULLWORKLOAD_IMAGE_SKIP=1        
-        ;;                                                 
+        --noskip)
+        CB_BASE_IMAGE_SKIP=0
+        CB_NULLWORKLOAD_IMAGE_SKIP=0
+        ;;
         -v|--verbose)
         CB_VERB='-v'
+        ;;
+        --allinone)
+        CB_ALLINONE=1
         ;;
         -h|--help)
         echo $CB_USAGE

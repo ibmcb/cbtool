@@ -30,7 +30,7 @@ mongo-driver-java-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-ibm-java-configure = sudo ls /opt/ibm/java-*
+ibm-java-configure = /tmp/cb_is_java_installed.sh ibm 8
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 gradle-configure = gradle -v | grep Gradle | cut -d ' ' -f 2
 acmeair-configure = ls -la ~/acmeair
