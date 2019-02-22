@@ -123,7 +123,7 @@ check_ready
 
 vpn_network=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['network'].lower()")
 
-cat << EOF > /tmp/helm_openvpn_values.yaml 
+cat << EOF > /tmp/cbhelm_openvpn_values.yaml 
 replicaCount: 1
 
 updateStrategy: {}
@@ -176,7 +176,7 @@ EOF
 
 echo "Installing OpenVPN in the cluster ... "
 while true ; do
-	helm install stable/openvpn -f /tmp/helm_openvpn_values.yaml
+	helm install stable/openvpn -f /tmp/cbhelm_openvpn_values.yaml
 	if [ $? -eq 0 ] ; then
 		break
 	fi
@@ -368,7 +368,7 @@ fileport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'filestore')['port']
 apiport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'api_defaults')['port'].lower()")
 redisport=6379 # command isn't working yet
 
-cat << EOF > ${dir}/portforward.sh
+cat << EOF > /tmp/cbportforward.sh
 #!/usr/bin/env bash
 
 iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 22 -j DNAT --to ${bootstrap}:22
@@ -390,9 +390,9 @@ iptables -A PREROUTING -t nat -i eth0 -p tcp --dport ${fileport} -j DNAT --to ${
 iptables -A FORWARD -p tcp -d ${bootstrap} --dport ${fileport} -j ACCEPT
 EOF
 
-chmod +x ${dir}/portforward.sh
+chmod +x /tmp/cbportforward.sh
 
-kubectl cp $dir/portforward.sh default/${POD_NAME}:/etc/openvpn/certs/portforward.sh
+kubectl cp /tmp/cbportforward.sh default/${POD_NAME}:/etc/openvpn/certs/portforward.sh
 kubectl exec -it ${POD_NAME} /bin/chmod +x /etc/openvpn/certs/portforward.sh
 
 check_error $? "setup IPtables script executable"
@@ -402,7 +402,7 @@ kubectl exec -it ${POD_NAME} /etc/openvpn/certs/portforward.sh
 check_error $? "setup IPtables rules"
 check_ready
 
-cat << EOF > ${dir}/vpnservice.yaml
+cat << EOF > /tmp/cbvpnservice.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -438,7 +438,7 @@ spec:
     app: openvpn 
 EOF
 
-kubectl create -f ${dir}/vpnservice.yaml
+kubectl create -f /tmp/cbvpnservice.yaml
 
 check_error $? "setup openvpn proxy"
 check_ready
@@ -503,7 +503,7 @@ SSHKEY="$(cat ~/.ssh/id_rsa.pub)"
 
 echo "Performing backdoor reconfiguration on ${NODES} nodes... "
 
-cat << EOF > /tmp/backdoor.yaml
+cat << EOF > /tmp/cbbackdoor.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -551,7 +551,7 @@ spec:
 EOF
 
 
-cat /tmp/backdoor.yaml | kubectl create -f -
+cat /tmp/cbbackdoor.yaml | kubectl create -f -
 check_error $? "install backdoor"
 
 check_ready
@@ -569,8 +569,10 @@ done
 
 kubectl delete --wait deployment backdoor
 
-rm /tmp/backdoor.yaml
-rm ${dir}/portforward.sh 
+rm /tmp/cbbackdoor.yaml
+rm /tmp/cbportforward.sh 
 rm /tmp/cbhelmregistry.yaml
+rm /tmp/cbvpnservice.yaml
+rm /tmp/cbhelm_openvpn_values.yaml 
 
 echo "Done."
