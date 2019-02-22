@@ -281,13 +281,11 @@ check_ready
 
 echo "Configuring CB to recognize the openvpn server ..."
 POD_NAME=$(kubectl get pods --namespace "default" -l app=openvpn -o jsonpath='{ .items[0].metadata.name }')
-INTERNAL_VPN_IP=$(kubectl describe pod ${POD_NAME} | grep IP | sed "s/.* //g")
 
 VPN_STATUS_PORT=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['management_port'].lower()")
 
 echo "VPN status port: ${VPN_STATUS_PORT}"
 
-python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_VPN_IP}')"
 python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'use_vpn_ip', 'True')"
 
 while true ; do
@@ -324,6 +322,7 @@ done
 
 echo "Service IP: ${SERVICE_IP}"
 
+python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${SERVICE_IP}')"
 kubectl --namespace "default" exec -it "$POD_NAME" /etc/openvpn/setup/newClientCert.sh "$KEY_NAME" "$SERVICE_IP"
 check_error $? "create client certificate"
 kubectl --namespace "default" exec -it "$POD_NAME" cat "/etc/openvpn/certs/pki/$KEY_NAME.ovpn" > "/tmp/${KEY_NAME}.ovpn"
