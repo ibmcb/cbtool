@@ -4,7 +4,7 @@ if [[ ! -z $1 ]]
 then
     CB_USERNAME=$1
 else
-	CB_USERNAME=$USER
+    CB_USERNAME=$USER
 fi
 
 if [[ -z $2 ]]
@@ -18,9 +18,9 @@ then
     if [ $0 != "-bash" ] ; then
         popd 2>&1 > /dev/null
     fi
-    CB_BASE_DIR=$(echo $CB_BASE_DIR | sed 's^/configs^^g')
+    CB_BASE_DIR=$(echo $CB_BASE_DIR | sed 's^/configs^^g' | sed 's^/private_configs^^g')
 else
-	CB_BASE_DIR=$2
+    CB_BASE_DIR=$2
 fi
 
 CB_PRIVATE_CONFIG=${CB_PRIVATE_CONFIG:-0}
@@ -53,6 +53,7 @@ else
     CB_DEFAULT_GUI_DEFAULTS_PORT=30005
     CB_DEFAULT_VPN_SERVER_PORT=30006
 fi
+
 if [[ $CB_PRIVATE_CONFIG -eq 0 && -d $CB_BASE_DIR ]]
 then
     sudo ls $CB_BASE_DIR/private_configs/ > /dev/null 2>&1
@@ -76,6 +77,11 @@ then
     fi
 fi
 
+if [[ -z $CB_USERNAME ]]
+then
+    CB_USERNAME=$(whoami)
+fi
+
 CB_CONFIG_FILE=$CB_BASE_DIR/configs/${CB_USERNAME}_cloud_definitions.txt
 
 sudo chown -R $CB_USERNAME:$CB_USERNAME $CB_BASE_DIR
@@ -89,8 +95,11 @@ echo "    Setting the parameter \"MANAGER_IP\", on the \"[USER-DEFINED]\" sectio
 sed -i "s/MANAGER_IP.*/MANAGER_IP = ${CB_MANAGER_IP}/g" $CB_CONFIG_FILE
 
 CB_STARTUP_CLOUD=${CB_STARTUP_CLOUD:-MYSIM}
-echo "    Setting the parameter \"STARTUP_CLOUD\", on the \"[USER-DEFINED]\" section to \"$CB_STARTUP_CLOUD\""
-sed -i "s/STARTUP_CLOUD.*/STARTUP_CLOUD = ${CB_STARTUP_CLOUD}/g" $CB_CONFIG_FILE
+if [[ $CB_STARTUP_CLOUD != "NONE" ]]
+then
+    echo "    Setting the parameter \"STARTUP_CLOUD\", on the \"[USER-DEFINED]\" section to \"$CB_STARTUP_CLOUD\""
+    sed -i "s/STARTUP_CLOUD.*/STARTUP_CLOUD = ${CB_STARTUP_CLOUD}/g" $CB_CONFIG_FILE
+fi
 
 CB_OBJECTSTORE_HOST=${CB_OBJECTSTORE_HOST:-\$MANAGER_IP}
 CB_OBJECTSTORE_PORT=${CB_OBJECTSTORE_PORT:-$CB_DEFAULT_OBJECTSTORE_PORT}
@@ -123,6 +132,8 @@ CB_VPN_SERVER_PORT=${CB_VPN_SERVER_PORT:-$CB_DEFAULT_VPN_SERVER_PORT}
 CB_VPN_NETWORK=${CB_VPN_NETWORK:-192.168.0.0}
 CB_VPN_NETMASK=${CB_VPN_NETMASK:-255.255.0.0}
 
+CB_ATTACH_STARTUP_CLOUD=${CB_ATTACH_STARTUP_CLOUD:-1}
+
 echo "" >> $CB_CONFIG_FILE
 echo "[OBJECTSTORE]" >> $CB_CONFIG_FILE
 echo "HOST=${CB_OBJECTSTORE_HOST}" >> $CB_CONFIG_FILE
@@ -141,6 +152,10 @@ echo "HOST=${CB_METRICSTORE_HOST}" >> $CB_CONFIG_FILE
 echo "PORT=${CB_METRICSTORE_PORT}" >> $CB_CONFIG_FILE
 echo "DATABASE=${CB_METRICSTORE_DATABASE}" >> $CB_CONFIG_FILE
 echo "USAGE=${CB_METRICSTORE_USAGE}" >> $CB_CONFIG_FILE
+if [[ ! -z $CB_METRICSTORE_PASSWORD ]]
+then
+    echo "PASSWORD = $CB_METRICSTORE_PASSWORD" >> $CB_CONFIG_FILE
+fi
 echo "" >> $CB_CONFIG_FILE
 echo "[FILESTORE]" >> $CB_CONFIG_FILE
 echo "HOST=${CB_FILESTORE_HOST}" >> $CB_CONFIG_FILE
@@ -162,9 +177,9 @@ echo "SERVER_PORT=${CB_VPN_SERVER_PORT}" >> $CB_CONFIG_FILE
 echo "NETWORK=${CB_VPN_NETWORK}" >> $CB_CONFIG_FILE
 echo "NETMASK=${CB_VPN_NETMASK}" >> $CB_CONFIG_FILE
 
-for cmodel in SIM PLM PDM PCM KUB NOP OSK OS GEN CSK VCD EC2 SLR GCE DO AS
+for cmodel in SIM PLM PDM PCM KUB NOP OSK OS CSK VCD EC2 SLR GCE DO AS
 do
-    for param in ACCESS CREDENTIALS SECURITY_GROUPS INITIAL_VMCS SSH_KEY_NAME NETNAME LOGIN
+    for param in ACCESS CREDENTIALS SECURITY_GROUPS INITIAL_VMCS SSH_KEY_NAME NETNAME POOLNAME NETNAME LOGIN
     do
         cb_env_var_name=CB_${cmodel}_${param}
         cb_env_var_value=$(echo ${!cb_env_var_name})
@@ -176,12 +191,12 @@ do
     done
 done
     
-for obj in VMC_DEFAULTS VM_DEFAULTS AI_DEFAULTS AIDRS_DEFAULTS
+for obj in MON_DEFAULTS VMC_DEFAULTS VM_DEFAULTS AI_DEFAULTS AIDRS_DEFAULTS
 do
-    for cmodel in EMPTY SIM PLM PDM PCM KUB NOP OSK OS GEN CSK VCD EC2 SLR GCE DO AS
+    for cmodel in EMPTY SIM PLM PDM PCM KUB NOP OSK OS CSK VCD EC2 SLR GCE DO AS
     do
         section_exists=0
-        for param in EMPTY REMOTE_DIR_NAME RUN_NETNAME PROV_NETNAME EXECUTE_SCRIPT_NAME CHECK_BOOT_STARTED CHECK_BOOT_COMPLETE LEAVE_INSTANCE_ON_FAILURE PORTS_BASE USE_VPN_IP USE_FLOATING_IP FLOATING_POOL USE_JUMPHOST
+        for param in EMPTY REMOTE_DIR_NAME RUN_NETNAME PROV_NETNAME EXECUTE_SCRIPT_NAME CHECK_BOOT_STARTED CHECK_BOOT_COMPLETE TRANSFER_FILES CHECK_SSH RUN_GENERIC_SCRIPTS RUN_APPLICATION_SCRIPTS UPDATE_FREQUENCY DONT_START_LOAD_MANAGER LEAVE_INSTANCE_ON_FAILURE PORTS_BASE USE_VPN_IP USE_FLOATING_IP FLOATING_POOL EXPLICIT_VOLUME_CREATION USE_JUMPHOST JUMPHOST_IP JUMPHOST_LOGIN COLLECT_FROM_GUEST PORT VPC_NAME IMAGE_PREFIX IMAGE_SUFFIX ARCH EMULATOR
         do
             cb_env_var_name=CB_${obj}_${cmodel}_${param}
             cb_env_var_name=$(echo $cb_env_var_name | sed 's/_EMPTY//g')
@@ -189,7 +204,7 @@ do
             cb_section_name=$(echo $cb_section_name | sed 's/ : EMPTY_CLOUDCONFIG//g')
             if [[ ! -z ${!cb_env_var_name} ]]
             then
-                echo "    Setting the parameter \"$param\", on the section \"$cb_section_name\" to \"${!cb_env_var_name}"
+                echo "    Setting the parameter \"$param\", on the section \"$cb_section_name\" to \"${!cb_env_var_name}\""
                 if [[ $section_exists -eq 0 ]]
                 then
                     echo "" >> $CB_CONFIG_FILE
@@ -204,8 +219,24 @@ done
 
 if [[ ! -z $CB_CLOUD_RENAME ]]
 then
+    if [[ $CB_CLOUD_RENAME == "AUTO" ]]
+    then
+        which gucn 2>&1 > /dev/null
+        if [[ $? -eq 0 ]]
+        then
+            CB_CLOUD_RENAME=MYCLOUD$(gucn)
+        else
+            CB_CLOUD_RENAME=CB$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w 8 | head -n 1 | tr '[:lower:]' '[:upper:]')
+        fi
+    fi
+    
     echo "    Renaming STARTUP_CLOUD \"$CB_STARTUP_CLOUD\" to \"$CB_CLOUD_RENAME\""
     sed -i "s/$CB_STARTUP_CLOUD/$CB_CLOUD_RENAME/g" $CB_CONFIG_FILE
+fi
+
+if [[ $CB_ATTACH_STARTUP_CLOUD -eq 0 ]]
+then
+    sed -i "s/.*STARTUP_CLOUD/#STARTUP_CLOUD/g" $CB_CONFIG_FILE    
 fi
 
 echo "END: Built private cloud configuration file \"$CB_CONFIG_FILE\" combining both \"$CB_BASE_DIR/configs/cloud_definitions.txt\" and environment variables (all variables start with \"CB_\")"
