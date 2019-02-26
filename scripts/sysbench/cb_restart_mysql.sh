@@ -25,7 +25,7 @@ MYSQL_NONROOT_USER=`get_my_ai_attribute_with_default mysql_nonroot_user sysbench
 MYSQL_NONROOT_PASSWORD=`get_my_ai_attribute_with_default mysql_nonroot_password sysbench`
 MYSQL_DATA_DIR=`get_my_ai_attribute_with_default mysql_data_dir /sysbench`
 MYSQL_CONF_FILE=`get_my_ai_attribute_with_default mysql_conf_file /etc/mysql/mysql.conf.d/mysqld.cnf`
-MYSQL_RAM_PERCENTAGE=`get_my_ai_attribute_with_default mysql_ram_percentage 70`
+#MYSQL_RAM_PERCENTAGE=`get_my_ai_attribute_with_default mysql_ram_percentage 10`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 NETSTAT_CMD=`which netstat`
@@ -48,9 +48,9 @@ fi
 ${SUDO_CMD} sed -i "s^bind-address.*^bind-address            = $my_ip_addr^g" ${MYSQL_CONF_FILE}
 
 # Set mysql's memory cache size to be a percentage of main memory
-kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
-mb=$(echo "$kb / 1024 * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
-${SUDO_CMD} su -c "echo 'innodb_buffer_pool_size = ${mb}M' >> ${MYSQL_CONF_FILE}"
+#kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
+#mb=$(echo "$kb / 1024 * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
+#${SUDO_CMD} su -c "echo 'innodb_buffer_pool_size = ${mb}M' >> ${MYSQL_CONF_FILE}"
 
 if [[ $(${SUDO_CMD} ls /etc/apparmor.d/tunables/ | grep -c alias) -ne 0 ]]
 then

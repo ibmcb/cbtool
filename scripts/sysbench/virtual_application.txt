@@ -13,11 +13,11 @@ LOAD_GENERATOR_ROLE = sysbench
 LOAD_MANAGER_ROLE = sysbench
 METRIC_AGGREGATOR_ROLE = sysbench
 CAPTURE_ROLE = mysql
-LOAD_PROFILE = complex
+LOAD_PROFILE = oltp_read_write
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = 30
 CATEGORY = transactional
-PROFILES = simple,complex,nontrx,sp
+PROFILES = bulk_insert,oltp_delete,oltp_insert,oltp_point_select,oltp_read_only,oltp_read_write,oltp_update_index,oltp_update_non_index,oltp_write_only,select_random_points,select_random_ranges
 REFERENCE = https://github.com/akopytov/sysbench
 LICENSE = GPL_v2
 REPORTED_METRICS = throughput,latency,95_latency,datagen_time,datagen_size,completion_time,errors,quiescent_time
@@ -25,7 +25,7 @@ REPORTED_METRICS = throughput,latency,95_latency,datagen_time,datagen_size,compl
 # VApp-specific MANDATORY attributes
 DESCRIPTION =Deploys an instance running the sysbench (OLTP) load generator and\n
 DESCRIPTION +=one instance running MySQL database.\n
-DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (parameter --oltp-test-mode)\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (parameter /usr/share/sysbench/*.lua)\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on sysbench (parameter --num-threads).\n 
 DESCRIPTION +=  - LOAD_DURATION meaning: for how long should sysbench run.\n
 
@@ -40,7 +40,6 @@ MYSQL_ROOT_PASSWORD = temp4now
 MYSQL_NONROOT_USER = sysbench
 MYSQL_NONROOT_PASSWORD = sysbench
 TABLE_SIZE = 10000
-READ_ONLY = off
 # Probably ubuntu-specific. May need to override for CentOS
 MYSQL_CONF_FILE = /etc/mysql/mysql.conf.d/mysqld.cnf
 # Default to 70% of main memory

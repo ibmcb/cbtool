@@ -13,7 +13,6 @@ MYSQL_DATA_DIR=`get_my_ai_attribute_with_default mysql_data_dir /sysbench`
 MYSQL_IPS=`get_ips_from_role mysql`
 LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
 TABLE_SIZE=`get_my_ai_attribute_with_default table_size 10000`
-READ_ONLY=`get_my_ai_attribute_with_default read_only off`
 
 CONN_STR="--mysql-host=${LOAD_GENERATOR_TARGET_IP} --mysql-db=${MYSQL_DATABASE_NAME} --mysql-user=${MYSQL_NONROOT_USER} --mysql-password=${MYSQL_NONROOT_PASSWORD}"
 
@@ -23,7 +22,7 @@ then
     GEN_COMMAND_LINE=""
 else
     GENERATE_DATA=`get_my_ai_attribute_with_default regenerate_data true`
-    GEN_COMMAND_LINE="sysbench --test=oltp ${CONN_STR} cleanup;"
+    GEN_COMMAND_LINE="sysbench ${CONN_STR} --db_driver=mysql /usr/share/sysbench/${LOAD_PROFILE}.lua cleanup;"
 fi
 
 GENERATE_DATA=$(echo $GENERATE_DATA | tr '[:upper:]' '[:lower:]')
@@ -40,7 +39,7 @@ then
     eval DT_BUILD_CMD=${DT_BUILD_CMD}
                         
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the Sysbench load profile \"${LOAD_PROFILE}\"" 
-    GEN_COMMAND_LINE="sysbench --test=oltp ${CONN_STR} --oltp-table-size=${TABLE_SIZE} prepare"
+    GEN_COMMAND_LINE="sysbench ${CONN_STR} --table-size=${TABLE_SIZE} --db_driver=mysql /usr/share/sysbench/${LOAD_PROFILE}.lua prepare"
     syslog_netcat "Command line is: ${GEN_COMMAND_LINE}"
     if [[ x"${log_output_command}" == x"true" ]]
     then
@@ -66,7 +65,7 @@ else
     
 fi
 
-CMDLINE="sysbench --test=oltp ${CONN_STR} --oltp-table-size=${TABLE_SIZE} --oltp-test-mode=${LOAD_PROFILE} --oltp-read-only=${READ_ONLY} --num-threads=${LOAD_LEVEL} --max-time=${LOAD_DURATION} --max-requests=0 run"
+CMDLINE="sysbench ${CONN_STR} --table-size=${TABLE_SIZE} --num-threads=${LOAD_LEVEL} --time=${LOAD_DURATION} --max-requests=0 --db_driver=mysql /usr/share/sysbench/${LOAD_PROFILE}.lua run"
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 
 tp=$(cat $RUN_OUTPUT_FILE | grep transactions | grep per | cut -d '(' -f 2 | cut -d ' ' -f 1)
