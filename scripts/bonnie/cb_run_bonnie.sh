@@ -49,14 +49,14 @@ lat_r_block=$(cat ${RUN_OUTPUT_FILE} | tail -1 | cut -d ',' -f 41)
 lat_rand_block=$(cat ${RUN_OUTPUT_FILE} | tail -1 | cut -d ',' -f 42)
 
 echo $tp_w_block | grep +++
-is_tp_w_block_err=$?
+is_tp_w_block_ok=$?
 
 echo $tp_r_block | grep +++
-is_tp_r_block_err=$?
+is_tp_r_block_ok=$?
 
 LATENCY=$(echo "scale=2; ($lat_w_block + $lat_r_block)/2" | sed 's/us//g' | sed 's/ms//g' | bc -l)
 
-if [[ $is_tp_w_block_err -eq 0 && $is_tp_r_block_err -eq 0 ]]
+if [[ $is_tp_w_block_ok -eq 1 && $is_tp_r_block_ok -eq 1 ]]
 then
     TPUT=$(echo "scale=2; ($tp_w_block + $tp_r_block)/2" | bc -l)
 fi
