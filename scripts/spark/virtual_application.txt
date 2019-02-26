@@ -1,0 +1,88 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : SPARK]
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = sparkmaster->2_x_sparkslave
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False
+LOAD_GENERATOR_ROLE = sparkmaster
+LOAD_MANAGER_ROLE = sparkmaster
+METRIC_AGGREGATOR_ROLE = sparkmaster
+CAPTURE_ROLE = sparkslave
+LOAD_PROFILE = gatk4s
+LOAD_LEVEL = uniformIXIXI1I3
+LOAD_DURATION = 60
+CATEGORY = data-centric
+PROFILES = pi, gatk4s, gatk4f
+REFERENCE = https://spark.apache.org, https://github.com/broadinstitute/gatk, https://github.com/SparkTC/spark-bench/
+LICENSE = Apache_v2
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,quiescent_time,iterations
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys a Spark (and Hadoop) cluster (1 master instance and N slave instances).\n
+DESCRIPTION +=The master node also runs the "SparkBench" benchmark, which is used\n
+DESCRIPTION +=to submit spark jobs to the cluster.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: pi (very basic pi determination), \n
+DESCRIPTION +=    and GATK4 (gatk4s for "Small" and gatk4f for "Full")\n
+DESCRIPTION +=    (Genome Analysis Toolkit, with the "small" dataset)\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: although the specifics vary by load profile,\n
+DESCRIPTION +=    it basically represents "amount of data" generated and processed\n
+DESCRIPTION +=    by the job.\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when the spark job\n
+DESCRIPTION +=    is completed.\n
+SPARKMASTER_SETUP1 = cb_config_hadoop_cluster.sh
+SPARKSLAVE_SETUP1 = cb_config_hadoop_cluster.sh
+SPARKMASTER_SETUP2 = cb_start_hadoop_cluster.sh
+SPARKSLAVE_SETUP2 = cb_start_hadoop_cluster.sh
+SPARKMASTER_SETUP3 = cb_config_spark_cluster.sh
+SPARKSLAVE_SETUP3 = cb_config_spark_cluster.sh
+SPARKMASTER_SETUP4 = cb_start_spark_cluster.sh
+SPARKMASTER_RESIZE1 = cb_restart_hadoop_cluster.sh
+SPARKSLAVE_RESIZE1 = cb_restart_hadoop_cluster.sh
+SPARKSLAVE_RESIZE2 = cb_config_spark_cluster.sh
+SPARKMASTER_RESIZE2 = cb_start_spark_cluster.sh
+SPARKMASTER_RESIZE3 = cb_config_spark_cluster.sh
+START = cb_run_spark.sh
+
+# VApp-specific modifier parameters.
+JAVA_HOME = auto
+JAVA_VER = 8
+HADOOP_HOME = ~/hadoop-2.7.5
+SPARK_HOME = ~/spark-2.2.3-bin-hadoop2.7
+HADOOP_EXAMPLES = share/hadoop/mapreduce/hadoop-mapreduce-examples-VERSION.jar
+SPARK_EXAMPLE = examples/jars/spark-examples_2.11-2.2.1.jar
+SPARKMASTER_DATA_DIR=/dfs
+SPARKMASTER_DATA_FSTYP = ext4
+SPARKSLAVE_DATA_DIR=/dfs
+SPARKSLAVE_DATA_FSTYP = ext4
+DFS_NAME_DIR = /dfs/cbhadoopname
+DFS_DATA_DIR = /dfs/cbhadoopdata
+REPLICATION_FACTOR = 3
+LOAD_FACTOR = 1000
+SPARK_LOCAL_DIRS = /dev/shm/spark_tmp
+SPARK_WORKER_CORES = 8
+SPARK_WORKER_MEMORY = 8192m
+SPARK_EXECUTOR_MEMORY = 8192m
+SPARK_DRIVER_MEMORY = 4096m
+SPARK_WORKER_DIR = ~/swork
+SPARK_WORKER_OPTS = NA
+SPARK_EXECUTOR_INSTANCES = 1
+SPARK_EXECUTOR_CORES = 8
+SPARK_DAEMON_MEMORY = 1g
+SPARK_HISTORY_OPTS = NA
+SPARK_SHUFFLE_OPTS = NA
+SPARK_DAEMON_JAVA_OPTS = NA
+#SPARK_GATK4_HOME=~/gatk-4.0.10.0
+SPARK_GATK4_HOME=~/gatk-4.0.1.1
+SPARK_GATK4_HDFS_TARGET = q4_spark_eval
+SPARK_GATK4_DIRECT_MEMORY = 4294967296
+SPARK_GATK4_PAIRHMM = LOGLESS_CACHING
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
