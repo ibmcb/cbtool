@@ -15,11 +15,11 @@ CAPTURE_ROLE = kernbench
 LOAD_PROFILE = default
 LOAD_LEVEL = 1
 LOAD_DURATION = 30
-CATEGORY = synthetic
+CATEGORY = application-stress
 PROFILES = default
 REFERENCE = https://github.com/linux-test-project/ltp
 LICENSE = GPL_v2
-REPORTED_METRICS = elapsed_time, user_time, system_time, percent_cpu, context_switches, sleeps
+REPORTED_METRICS = latency, elapsed_time, user_time, system_time, percent_cpu, context_switches, sleeps
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION =Deploys a single instance and runs the "kernbench" synthetic benchmark\n
@@ -31,8 +31,8 @@ KERNBENCH_SETUP1 = cb_start_kernbench.sh
 START = cb_run_kernbench.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-# NR_CPUS = 0 means use kernbench "optimal runs": 4*cpu
-KERNBENCH_NR_CPUS = 0
+# NR_CPUS = auto means use kernbench "optimal runs": 4*cpu
+KERNBENCH_NR_CPUS = auto
 KERNBENCH_PATH = ~/foo
 KERNBENCH_DATA_DIR = /kernbench
 KERNBENCH_DATA_FSTYP = ext4

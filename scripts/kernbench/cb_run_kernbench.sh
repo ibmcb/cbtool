@@ -8,13 +8,17 @@ set_load_gen $@
 
 LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
-KERNBENCH_NR_CPUS=$(get_my_ai_attribute_with_default kernbench_nr_cpus 0)
+KERNBENCH_NR_CPUS=$(get_my_ai_attribute_with_default kernbench_nr_cpus auto)
 KERNBENCH_DATA_DIR=$(get_my_ai_attribute_with_default kernbench_data_dir /kernbench)
-KERNBENCH_PATH=$(get_my_ai_attribute_with_default kernbench_path /foo)
+KERNBENCH_PATH=$(get_my_ai_attribute_with_default kernbench_path ~/foo)
+eval KERNBENCH_PATH=${KERNBENCH_PATH}
+
+linux_distribution
 
 # Override the default 4*cpu for make -j <nr>
-if test $KERNBENCH_NR_CPUS = 0; then
-	NRJOBS=""
+if [[ $KERNBENCH_NR_CPUS == "auto" ]]
+then
+	NRJOBS="-o $((NR_CPUS*4))"
 else
 	NRJOBS="-o $KERNBENCH_NR_CPUS"
 fi
@@ -37,18 +41,10 @@ system_time:$system_time:s \
 percent_cpu:$percent_cpu:pc \
 context_switches:$context_switches:nr \
 sleeps:$sleeps:nr \
+latency:$elapsed_time:s \
 $(common_metrics)
 
-echo "~/cb_report_app_metrics.py \
-	elapsed_time:$elapsed_time:s \
-	user_time:$user_time:s \
-	system_time:$system_time:s \
-	percent_cpu:$percent_cpu:pc \
-	context_switches:$context_switches:nr \
-	sleeps:$sleeps:nr \
-	$(common_metrics)" >>/tmp/metrics.txt
-
-rm ${KERNBENCH_PATH}/kernbench.log
+rm -rf ${KERNBENCH_PATH}/kernbench.log
 
 unset_load_gen
 
