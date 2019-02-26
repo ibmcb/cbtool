@@ -45,10 +45,16 @@ START = cb_run_giraph.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto
+JAVA_VER = 7
 HADOOP_HOME = ~/hadoop-1.2.1
 HADOOP_EXAMPLES = hadoop-examples-1.2.1.jar
-DFS_NAME_DIR = /tmp/cbhadoopname
-DFS_DATA_DIR = /tmp/cbhadoopdata
+DFS_NAME_DIR = /dfs/cbhadoopname
+DFS_DATA_DIR = /dfs/cbhadoopdata
+REPLICATION_FACTOR = 3
+GIRAPHSLAVE_DATA_FSTYP = ext4
+GIRAPHSLAVE_DATA_DIR = /dfs
+GIRAPHMASTER_DATA_FSTYP = ext4
+GIRAPHMASTER_DATA_DIR = /dfs
 GIRAPH_HOME = ~/giraph/
 ZOOKEEPER_HOME=~/giraph/zookeeper/zookeeper-3.4.6/
 EDGES_PER_VERTEX = 3

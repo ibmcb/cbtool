@@ -52,6 +52,7 @@ START = cb_run_daytrader.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto
+JAVA_VER = 7
 JAVA_MAX_MEM_HEAP = 0.8
 JAVA_EXTRA_CMD_OPTS = -Xms256m
 NR_QUOTES=4000
