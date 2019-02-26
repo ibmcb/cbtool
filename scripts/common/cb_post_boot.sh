@@ -58,7 +58,18 @@ then
 fi
 
 refresh_hosts_file
+automount_data_dirs
+fix_ulimit
+
+which virsh > /dev/null 2>&1
+if [[ $? -eq 0 ]]
+then
+    sudo virsh net-destroy default >/dev/null 2>&1
+    sudo virsh net-undefine default >/dev/null 2>&1
+fi
+
 post_boot_executed=`get_my_vm_attribute post_boot_executed`
+
 if [[ x"${post_boot_executed}" == x"true" ]]
 then
     syslog_netcat "cb_post_boot.sh already executed on this VM"
