@@ -19,6 +19,8 @@
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 source ~/.bashrc
 
+check_container
+
 set_load_gen $@
 
 FEN_HPC_IP=`get_ips_from_role fen_hpc`
@@ -59,6 +61,28 @@ N_SIZE=`echo "($N_SIZE_FLOAT + 0.5) / 1" | bc` #rounding the number
 #Get the block size from the AI
 NB_SIZE=`get_my_ai_attribute_with_default nb_size 4`
 
+# -----------------------------------------------------------------------------------------------
+# Script modified by GA - calculate HPL size based on available RAM in the system
+# -----------------------------------------------------------------------------------------------
+# Figure out the total RAM we have - memory size x # nodes
+# WARNING - we are assuming that the compute nodes have at least as much RAM as the FEN
+TOTALRAM=$((MEM_SIZE_KB*1024*NUM_NODES))
+syslog_netcat "   => TOTALRAM=$((TOTALRAM/1024/1024)) MBytes (Total available RAM in AI)"
+# Dimension HPCC to use 1/3rd of the total amount of RAM
+LURAM=$((TOTALRAM/3))
+syslog_netcat "   => LURAM= $((LURAM/1024/1024)) MBytes (1/3rd of available RAM)"
+# calculate the matrix size based on LURAM, assumin 8-byte words
+N2=$((LURAM/8))
+N_SIZE=$(bc <<< "scale=0; sqrt(($N2))")
+syslog_netcat "   => derived N_SIZE=${N_SIZE} (assuming 1/3rd RAM utilization)"
+# re-confirm that we are using the right amount of RAM
+syslog_netcat "   => Memory used = $((N_SIZE*N_SIZE*8/1024/1024)) MBytes"
+TOTALOPS=$((N_SIZE*N_SIZE*N_SIZE*2/3))
+syslog_netcat "   => Total operations = $((TOTALOPS/1024/1024/1024)) gigaops"
+syslog_netcat "   => Expected HPL duration (assuming 1GFlop/process) = $((TOTALOPS/NUM_PROCESSES/1024/1024/1024)) seconds"
+
+syslog_netcat "Parameters: np=$NUM_PROCESSES, processes-per-node=$PROCESSES_PER_NODE, Ns=$N_SIZE, NBs=$NB_SIZE."
+
 syslog_netcat "Parameters: np=$NUM_PROCESSES, processes-per-node=$PROCESSES_PER_NODE, Ns=$N_SIZE, NBs=$NB_SIZE."
 
 cd $bench_app_dir
@@ -90,7 +114,7 @@ lat=`echo "scale=8;  ${lat} / 1000" | bc`
 ~/cb_report_app_metrics.py \
 throughput_G_HPL:$tp1:Tflops \
 bandwidth_G_PTRANS:$tp2:GBps \
-throughput_G_RandomAccess:$tp3:Gupps \
+throughput_G_RandomAccess:$tp3:Gups \
 throughput_G_FFTE:$tp4:Gflops \
 throughput_EP_STREAM_Triad:$tp5:GBps \
 throughput_EP_DGEMM:$tp6:Gflops \
@@ -98,7 +122,7 @@ bandwidth_RandomRing:$tp7:GBps \
 lat_RandomRing:$lat:usec \
 bandwidth:$tp7:GBps \
 latency:$lat:usec \
-throughput:$tp3:Gupps \
+throughput:$tp3:Gups \
 $(common_metrics)    
     
 unset_load_gen
