@@ -782,13 +782,22 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
                 if "sticky_" + _m in obj_attr_list :
                     _previous_m = obj_attr_list["sticky_" + _m]
-                    _current_m = _previous_m                    
+                    _current_m = _previous_m
                 else :
                     _previous_m = obj_attr_list[_m]
                     _current_m = _metrics_dict["app_" + _m]["val"]
+
+                if is_number(_previous_m) :
+                    if float(_previous_m) > 0 :
+                        _previous_m = "yes"
+                    else :
+                        _previous_m = "no"
     
-                if is_number(_current_m) and float(_current_m) > 0 :
-                    _current_m = "yes"
+                if is_number(_current_m) :
+                    if float(_current_m) > 0 :
+                        _current_m = "yes"
+                    else :
+                        _current_m = "no"
 
                 _username = obj_attr_list["username"]
                 
@@ -823,7 +832,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
                     obj_attr_list[_m] = _previous_m
                     _osci.remove_from_view(_cloud_name, "VM", obj_attr_list, "BY" + _m.upper())
-                    
+                                        
                     obj_attr_list[_m] = _current_m
                     _osci.add_to_view(_cloud_name, "VM", obj_attr_list, "BY" + _m.upper(), "arrival")
 

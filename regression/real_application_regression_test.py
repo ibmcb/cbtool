@@ -70,32 +70,28 @@ def get_type_list(options) :
     '''
     TBD
     '''
-
+    _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
+    _fn = _path + "/../util/workloads_alias_mapping.txt"
+    _fd = open(_fn, 'r')
+    _fc = _fd.read()
+    _cb_workload_alias = {}
+    for _line in _fc.split('\n') :
+        if _line[0] != "#" :
+            _key, _contents = _line.split(' ')
+            _cb_workload_alias[_key] = _contents
+    _fd.close()
+        
     if not options.typelist.count(',') :
         options.file_identifier = '_' + options.typelist
     else :
         options.file_identifier = ''
         
-    if options.typelist == "all" :        
-        options.typelist = "nullworkload,bonnie,btest,ddgen,fio,filebench,postmark,iperf,netperf,nuttcp,xping,unixbench,coremark,memtier,oldisim,wrk,wrk_lb,hpcc,linpack,multichase,parboil,scimark,cassandra_ycsb,mongo_ycsb,redis_ycsb,open_daytrader,open_daytrader_lb,specjbb,sysbench,hadoop,giraph,mongo_acmeair" 
-    
-    if options.typelist == "fake" :
-        options.typelist = "nullworkload"
-
-    if options.typelist == "synthetic" :
-        options.typelist = "bonnie,btest,ddgen,fio,filebench,postmark,iperf,netperf,nuttcp,xping,unixbench,coremark"
-
-    if options.typelist == "application-stress" :
-        options.typelist = "memtier,oldisim,wrk,wrk_lb"
+    if options.typelist == "all" :
+        options.typelist="fake,synthetic,application-stress,scientific,transactional,data-centric"
         
-    if options.typelist == "scientific" :    
-        options.typelist = "hpcc,linpack,multichase,parboil,scimark"
-        
-    if options.typelist == "transactional" :
-        options.typelist = "cassandra_ycsb,mongo_ycsb,redis_ycsb,open_daytrader,open_daytrader_lb,specjbb,sysbench,mongo_acmeair"
-
-    if options.typelist == "data-centric" :
-        options.typelist = "hadoop,giraph"
+    for _wks in options.typelist.split(',') :
+        if _wks in _cb_workload_alias :
+            options.typelist = options.typelist.replace(_wks, _cb_workload_alias[_wks])
 
     if options.headeronly :
         options.file_identifier = '_a0'
@@ -285,6 +281,7 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
         _sut = ''
         _management_metrics_pass = False
         _runtime_metrics_pass = False
+        _runtime_metrics_problem = ''
         _runtime_missing_metrics = []
             
         _rt_m_list = "load_id,load_profile,load_duration,completion_time,datagen_time,throughput,bandwidth,latency"
@@ -359,6 +356,7 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             _initial_time = int(time())
             _curr_time = 0
             _collected_samples = 0
+            _must_have_metrics_found = 0
             
             _app_m = apiconn.typeshow(cloud_name, _actual_application_type)["reported_metrics"].replace(", ",',').split(',')
             _app_m += [ "app_load_profile", "app_load_id", "app_load_level" ]
@@ -379,6 +377,11 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                                 if _metric not in _runtime_missing_metrics :
                                     _runtime_missing_metrics.append(_metric)
                                 print "NOK"
+                            elif _metric.count("completion_time") and \
+                            (_runtime_metrics[_metric]["val"] == "0" or _runtime_metrics[_metric]["val"] == "0.0" or _runtime_metrics[_metric]["val"] == "NA" ) :
+                                _runtime_metrics_problem = "|compl is zero or NA|"
+                                _runtime_missing_metrics.append(_metric)
+                                print "NOK"      
                             else :
                                 if not _metric.count("load_profile") :
                                     try:
@@ -394,6 +397,7 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                         _aux_run_time_metrics = ''
                         
                         if _collected_samples >= runtime_samples :
+
                             for _m in _rt_m_list.split(',') :
                                 _value = "NA"
     
@@ -403,6 +407,9 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                                     
                                     if not _m == "app_load_profile" :
                                         _value = str(round(float(_runtime_metrics[_m]["val"]),2))
+                                        if _m == "app_throughput" or _m == "app_bandwidth" or _m == "app_latency" :
+                                            if str(_runtime_metrics[_m]["val"]) != "NA" and str(_runtime_metrics[_m]["val"]) != "0" and str(_runtime_metrics[_m]["val"]) != "0.0" :
+                                                _must_have_metrics_found +=1                                  
                                     else :
                                         _value = _runtime_metrics[_m]["val"]
                                 
@@ -421,10 +428,20 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                 sleep(check_interval)
 
             if _collected_samples >= runtime_samples :
-                _runtime_metrics_pass = _aux_run_time_metrics[0:-1]
-                _msg = "    Reported application performance metrics OK"
-                print _msg
+                if not _must_have_metrics_found :
+                    _runtime_metrics_problem += " |tput, bw and lat are all zero or NA|"
 
+                if not len(_aux_run_time_metrics[0:-1]) :
+                    _runtime_metrics_problem += " |no metrics found on the sample|"                    
+
+                if not _runtime_metrics_problem :
+                    _runtime_metrics_pass = _aux_run_time_metrics[0:-1]                     
+                    _msg = "    Reported application performance metrics OK"
+                    print _msg
+                else :
+                    _msg = "    Reported application performance metrics NOK: " + _runtime_metrics_problem
+                    print _msg
+                                        
         if "uuid" in _vapp :
             _msg = "    Destroying Virtual Application \"" + _vapp["name"] + "\"..."
             print _msg
