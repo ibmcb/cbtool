@@ -53,7 +53,7 @@ fi
 
 CB_RSYNC=$CB_RSYNC_ADDR:${CB_RSYNC_PORT}/$(whoami)_cb
 echo "##### Testing rsync server on $CB_RSYNC..." 
-rsync -a rsync://${CB_RSYNC}/3rd_party/pypureomapi*tar.gz > /dev/null 2>&1
+rsync -a rsync://${CB_RSYNC}/util/cbssh.sh > /dev/null 2>&1
 if [[ $? -ne 0 ]]
 then
     echo "Error while testing rsync server"
