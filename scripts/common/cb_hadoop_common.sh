@@ -42,6 +42,13 @@ eval DFS_DATA_DIR=${DFS_DATA_DIR}
 syslog_netcat "Local directory for Hadoop datanode is ${DFS_DATA_DIR}"
 export DFS_DATA_DIR=$DFS_DATA_DIR
 
+#sudo mkdir -p ${DFS_NAME_DIR}
+#sudo chown -R $(whoami) ${DFS_NAME_DIR}
+#sudo mkdir -p ${DFS_DATA_DIR}
+#sudo chown -R $(whoami) ${DFS_DATA_DIR}
+
+DFS_REPLICATION_FACTOR=`get_my_ai_attribute_with_default replication_factor 3`
+
 if [[ -z ${HADOOP_HOME} ]]
 then
     HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-2.6.0`
@@ -165,31 +172,35 @@ then
     fi
 fi
 
-export GIRAPH_HOME=${GIRAPH_HOME}
 
-if [[ -z ${ZOOKEPER_HOME} ]]
+if [[ $my_type == "giraph" ]]
 then
-    ZOOKEPER_HOME=`get_my_ai_attribute_with_default zookeper_home ~/giraph/zookeeper/zookeeper-3.4.6/`
+    export GIRAPH_HOME=${GIRAPH_HOME}
     
-    eval ZOOKEPER_HOME=${ZOOKEPER_HOME}
-    ls $ZOOKEPER_HOME
-    if [[ $? -ne 0 ]]
+    if [[ -z ${ZOOKEPER_HOME} ]]
     then
-        syslog_netcat "ZOOKEPER_HOME directory $ZOOKEPER_HOME not found."
-    else
-        if [[ -f ~/.bashrc ]]
+        ZOOKEPER_HOME=`get_my_ai_attribute_with_default zookeper_home ~/giraph/zookeeper/zookeeper-3.4.6/`
+        
+        eval ZOOKEPER_HOME=${ZOOKEPER_HOME}
+        ls $ZOOKEPER_HOME
+        if [[ $? -ne 0 ]]
         then
-            is_zookeper_home_export=`grep -c "ZOOKEPER_HOME=${ZOOKEPER_HOME}" ~/.bashrc`
-            if [[ $is_zookeper_home_export -eq 0 ]]
+            syslog_netcat "ZOOKEPER_HOME directory $ZOOKEPER_HOME not found."
+        else
+            if [[ -f ~/.bashrc ]]
             then
-                syslog_netcat "Adding ZOOKEPER_HOME ($ZOOKEPER_HOME) to bashrc"
-                echo "export ZOOKEPER_HOME=${ZOOKEPER_HOME}" >> ~/.bashrc
+                is_zookeper_home_export=`grep -c "ZOOKEPER_HOME=${ZOOKEPER_HOME}" ~/.bashrc`
+                if [[ $is_zookeper_home_export -eq 0 ]]
+                then
+                    syslog_netcat "Adding ZOOKEPER_HOME ($ZOOKEPER_HOME) to bashrc"
+                    echo "export ZOOKEPER_HOME=${ZOOKEPER_HOME}" >> ~/.bashrc
+                fi
             fi
         fi
     fi
+    
+    export ZOOKEPER_HOME=${ZOOKEPER_HOME}
 fi
-
-export ZOOKEPER_HOME=${ZOOKEPER_HOME}
 
 if [[ $my_type == "spark" ]]
 then
@@ -270,21 +281,24 @@ fi
 export SPARK_HOME=${SPARK_HOME}
 syslog_netcat "SPARK_HOME was determined to be $SPARK_HOME"   
 
-if [[ -z ${HIBENCH_HOME} ]]
+if [[ $my_type == "hadoop" ]]
 then
-    HIBENCH_HOME=`get_my_ai_attribute_with_default hibench_home ~/HiBench`
-
-    eval HIBENCH_HOME=${HIBENCH_HOME}
-    
-    if [[ -f ~/.bashrc ]]
-    then
-        is_hibench_home_export=`grep -c "HIBENCH_HOME=${HIBENCH_HOME}" ~/.bashrc`
-        if [[ $is_hibench_home_export -eq 0 ]]
-        then
-            syslog_netcat "Adding HIBENCH_HOME ($HIBENCH_HOME) to bashrc"
-            echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> ~/.bashrc
-        fi
-    fi
+	if [[ -z ${HIBENCH_HOME} ]]
+	then
+	    HIBENCH_HOME=`get_my_ai_attribute_with_default hibench_home ~/HiBench`
+	
+	    eval HIBENCH_HOME=${HIBENCH_HOME}
+	    
+	    if [[ -f ~/.bashrc ]]
+	    then
+	        is_hibench_home_export=`grep -c "HIBENCH_HOME=${HIBENCH_HOME}" ~/.bashrc`
+	        if [[ $is_hibench_home_export -eq 0 ]]
+	        then
+	            syslog_netcat "Adding HIBENCH_HOME ($HIBENCH_HOME) to bashrc"
+	            echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> ~/.bashrc
+	        fi
+	    fi
+	fi
 fi
 
 if [[ -d ${HADOOP_HOME}/sbin ]]
@@ -499,7 +513,7 @@ EOF
 <configuration>
 <property>
 <name>dfs.replication</name>
-<value>3</value>
+<value>DFS_REPLICATION_FACTOR</value>
 </property>
 
 <property>
@@ -649,6 +663,7 @@ function update_hadoop_config_files {
 
     sudo sed -i -e "s^DFS_NAME_DIR^${DFS_NAME_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
     sudo sed -i -e "s^DFS_DATA_DIR^${DFS_DATA_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
+    sudo sed -i -e "s^DFS_REPLICATION_FACTOR^${DFS_REPLICATION_FACTOR}^g" $HADOOP_CONF_DIR/hdfs-site.xml    	
 
     syslog_netcat "Placeholders updated."    
 }

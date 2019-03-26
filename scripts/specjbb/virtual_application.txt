@@ -34,6 +34,7 @@ START = cb_run_specjbb.sh
 
 # VApp-specific modifier parameters.
 JAVA_HOME = auto
+JAVA_VER = 7
 JAVA_MAX_MEM_HEAP = 0.8
 JAVA_EXTRA_CMD_OPTS = -Xms256m
 LOAD_FACTOR = 1000

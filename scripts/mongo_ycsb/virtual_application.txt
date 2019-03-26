@@ -43,6 +43,8 @@ MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
 START = cb_run_ycsb.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
+JAVA_HOME = auto
+JAVA_VER = 7
 APP_COLLECTION = lazy
 RUN_COUNTER_NAME = experiment_id_counter
 MONGODB_DATA_DIR = /dbstore

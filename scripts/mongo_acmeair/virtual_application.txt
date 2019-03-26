@@ -42,13 +42,14 @@ MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
 START = cb_run_acme.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
+JAVA_HOME = auto
+JAVA_VER = 8
 # ACMEAIR_PATH = ~/acmeair-monolithic-java
 # ACMEAIR_PROPERTIES = ~/acmeair.properties
 # ACMEAIR_DRIVER_PATH = ~/acmeair-driver
 # ACMEAIR_DRIVER_RAMPUP_TIME = 10
 # ACMEAIR_HTTP_PORT = 9085
 # ACMEAIR_HTTPS_PORT = 9485
-# JAVA_HOME = auto
 # WLP_SERVERDIR = /opt/ibm/wlp
 # NUM_CUSTOMERS = 1000
 

@@ -1614,6 +1614,12 @@ function execute_load_generator {
         ERROR=$?
         APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))
     fi
+
+    if [[ $ERROR -eq 0 && $APP_COMPLETION_TIME -eq 0 ]]
+    then
+        APP_COMPLETION_TIME=1
+    fi        
+    
     update_app_errors $ERROR
     update_app_completiontime $APP_COMPLETION_TIME
     
@@ -2038,10 +2044,28 @@ function ihs_setup {
 export -f ihs_setup
 
 function set_java_home {
+
+    if [[ ! -z ${JAVA_HOME} ]]  
+    then
+        sudo ls $JAVA_HOME
+        if [[ $? -ne 0 ]]
+        then
+            syslog_netcat "The JAVA_HOME specified in the AI attributes \"${JAVA_HOME}\" could not be located. Will attempt to get it from the AI attributes..."
+            unset JAVA_HOME
+        fi
+    fi
+    
     if [[ -z ${JAVA_HOME} ]]
     then
         JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)
-    
+        JAVA_VER=$(get_my_ai_attribute_with_default java_ver auto)
+
+        syslog_netcat "The JAVA_VERSION was set to \"${JAVA_VER}\""
+        if [[ $JAVA_VER == "auto" ]]
+        then            
+            JAVA_VER=''
+        fi            
+                                    
         if [[ ${JAVA_HOME} != "auto" ]]   
         then
             sudo ls $JAVA_HOME
@@ -2059,10 +2083,10 @@ function set_java_home {
             sudo ls /opt/ibm/java-*
             if [[ $? -eq 0 ]]
             then
-                JAVA_HOME=$(sudo find /opt/ibm/ | grep jre/bin/javaws | sed 's^/bin/javaws^^g' | sort -r | head -n 1)
+                JAVA_HOME=$(sudo find /opt/ibm/ | grep jre/bin/javaws | grep "\-$JAVA_VER" | sed 's^/bin/javaws^^g' | sort -r | head -n 1)
             else            
                 syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"
-                JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+                JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | grep "\-$JAVA_VER" | sed '/^$/d' | sort -r | head -n 1)/jre
             fi
         fi
 
