@@ -32,14 +32,16 @@ done
 sudo sed -i "s/bind_ip.*$/bind_ip = ${my_ip_addr}/g" ${MONGODB_CONF_FILE}
 sudo sed -i "s/port.*$/port = 27017/g" ${MONGODB_CONF_FILE}
 
+my_dbpath=$(sudo cat /etc/mongodb.conf | grep dbpath | cut -d '=' -f 2)
+
 #
 # Start Mongos 
 #
 sudo pkill -9 -f configdb
 sudo screen -S MGSS -X quit
 sudo screen -d -m -S MGSS
-sudo screen -p 0 -S MGSS -X stuff "sudo mongos --configdb ${mongocfg_ip}:27019$(printf \\r)"
-
+sudo screen -p 0 -S MGSS -X stuff "sudo mongos --configdb cbcsrs/${mongocfg_ip}:27017 --port 27017 --fork --bind_ip 0.0.0.0 --logpath /var/log/mongodb/mongodb.log$(printf \\r)"
+#sudo screen -p 0 -S MGSS -X stuff "sudo mongos --configdb cbcsrs/${mongocfg_ip}:27017 --port 27017 --dbpath ${my_dbpath} --fork --bind_ip 0.0.0.0 --logpath /var/log/mongodb/mongodb.log$(printf \\r)"
 wait_until_port_open ${my_ip_addr} 27017 20 5
 
 STATUS=$?
@@ -57,8 +59,8 @@ fi
 pos=1
 for db in $mongo_ips
 do
-    mongo --host ${mongos_ip}:27017 --eval "sh.addShard(\"mongo$pos:27017\")"
-    syslog_netcat " Adding the following shard: mongo$pos:27017 "
+    mongo --host ${mongos_ip}:27017 --eval "sh.addShard(\"cbdrs${pos}/$db:27017\")"
+    syslog_netcat " Adding the following shard: cbdrs${pos}/$db:27017 "
     ((pos++))
 done
 

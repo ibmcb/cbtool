@@ -29,22 +29,31 @@ do
     ((pos++))
 done
 
-sudo sed -i "s/bind_ip.*$/bind_ip = ${my_ip_addr}/g" ${MONGODB_CONF_FILE}
+sudo sed -i "s/bind_ip.*$/bind_ip = ≈/g" ${MONGODB_CONF_FILE}
 sudo sed -i "s/port.*$/port = 27017/g" ${MONGODB_CONF_FILE}
 
+my_dbpath=$(sudo cat /etc/mongodb.conf | grep dbpath | cut -d '=' -f 2)
+	
 # Start Mongo Config-Serverv
 
 service_stop_disable mongod
 service_stop_disable mongodb
         
-sudo pkill -9 -f ${SERVICES[${LINUX_DISTRO}]}
+sudo pkill -9 -f configsvr
 
 sudo screen -S MGCS -X quit
 sudo screen -d -m -S MGCS
 sudo screen -p 0 -S MGCS -X stuff "sudo rm /var/lib/mongo/mongod.lock$(printf \\r)"
-sudo screen -p 0 -S MGCS -X stuff "sudo $MONGODB_EXECUTABLE --configsvr --dbpath $(sudo cat /etc/mongodb.conf | grep dbpath | cut -d '=' -f 2)$(printf \\r)"
+sudo screen -p 0 -S MGCS -X stuff "sudo $MONGODB_EXECUTABLE --configsvr --dbpath ${my_dbpath} --port 27017 --replSet cbcsrs --fork --bind_ip 0.0.0.0 --logpath /var/log/mongodb/mongodb.log$(printf \\r)"
+#sudo screen -p 0 -S MGCS -X stuff "sudo $MONGODB_EXECUTABLE --configsvr --dbpath $(sudo cat /etc/mongodb.conf | grep dbpath | cut -d '=' -f 2)$(printf \\r)"
 
-wait_until_port_open 127.0.0.1 27019 20 5
+sleep 10
+
+sudo screen -S MGCSI -X quit
+sudo screen -d -m -S MGCSI	
+sudo screen -p 0 -S MGCSI -X stuff "mongo --port 27017 --eval \"var config = { _id: 'cbcsrs', members: [ { _id: 0, host: \\\\\"${my_ip_addr}:27017\\\\\" } ] }; rs.initiate( config ); while (rs.status().startupStatus || (rs.status().hasOwnProperty('myState') && rs.status().myState != 1)) { printjson( rs.status() ); sleep(1000); }; printjson( rs.status() );\"$(printf \\r)"
+
+wait_until_port_open 127.0.0.1 27017 20 5
 
 STATUS=$?
 
