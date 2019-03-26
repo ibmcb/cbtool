@@ -40,6 +40,15 @@ sed -i "s^FILEBENCH_DATA_DIR^$FILEBENCH_DATA_DIR^g" ${PERSONALITY_FILE}
 sed -i "s^LOAD_DURATION^$LOAD_DURATION^g" ${PERSONALITY_FILE}
 sed -i "s^usage \"^#usage \"^g" ${PERSONALITY_FILE}
 
+if [[ $(sudo cat /etc/*release* | grep DISTRIB_RELEASE | cut -d '=' -f 2) == "18.04" ]]
+then
+    echo 0 | sudo tee /proc/sys/kernel/randomize_va_space >/dev/null 2>&1
+    if [[ $(sudo cat /proc/sys/kernel/randomize_va_space) -ne 0 ]]
+    then
+        syslog_netcat "\"/proc/sys/kernel/randomize_va_space\" in non-zero. Filebench will hang!"
+    fi
+fi
+
 CMDLINE="sudo ${filebench} -f ${PERSONALITY_FILE}"
 
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
