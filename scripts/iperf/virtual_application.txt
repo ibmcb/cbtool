@@ -33,7 +33,7 @@ IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
 IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
 START = cb_run_iperf.sh
 
-# VApp-specific modifier parameters. 
+# VApp-specific modifier parameters.
 TRAFFIC_MSS=auto
 RATE_LIMIT=auto
 IF_MTU=auto

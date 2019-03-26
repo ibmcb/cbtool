@@ -33,6 +33,12 @@ else
     provision_application_stop $START
 fi
 
+IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
+
+if [[ ${IF_MTU} != "auto" ]]
+then
+    sudo ifconfig $my_if mtu ${IF_MTU}
+fi
 
 LOAD_PROFILE=$(get_my_ai_attribute load_profile)
 
