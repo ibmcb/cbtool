@@ -36,6 +36,8 @@ import sys
 
 home = os.path.expanduser("~")
 
+_path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
+
 def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
     '''
     TBD
@@ -101,7 +103,7 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
     _reg_tst_expl_fh.close()
     
     _msg = str(_counter) + " test cases written to the experiment plan file."
-    _msg += " Now run it with the command \"./cloudbench/cloudbench.py --trace regression/"
+    _msg += " Now run it with the command \"" + _path + "/../cb --soft_reset --trace regression/"
     _msg += reg_tst_expl_fn + " 2>&1 > regression_test_output.txt\""
     print _msg
 
