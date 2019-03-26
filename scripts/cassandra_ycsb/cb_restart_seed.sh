@@ -69,8 +69,20 @@ fi
 if [[ $(grep -c "LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh) -eq 0 ]]
 then
     LINE_NUMBER=$(sudo grep -n LOCAL_JMX=yes ${CASSANDRA_CONF_DIR}/cassandra-env.sh | cut -d ':' -f 1)
+    if [[ -z $LINE_NUMBER ]]
+    then
+        LINE_NUMBER=$(sudo grep -n JMX_PORT= ${CASSANDRA_CONF_DIR}/cassandra-env.sh | cut -d ':' -f 1)
+    fi        
     LINE_NUMBER=$((LINE_NUMBER-2))
     sudo sed -i -e "${LINE_NUMBER}i\LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
+fi
+
+if [[ $(grep -c "JAVA_HOME=" /etc/init.d/cassandra) -eq 0 ]]
+then
+    LINE_NUMBER=$(sudo grep -n "# Export JAVA_HOME, if set." /etc/init.d/cassandra | cut -d ':' -f 1)
+    LINE_NUMBER=$((LINE_NUMBER-2))
+    sudo sed -i -e "${LINE_NUMBER}i\JAVA_HOME=${JAVA_HOME}" /etc/init.d/cassandra
+    systemctl daemon-reload
 fi
 
 pos=1
