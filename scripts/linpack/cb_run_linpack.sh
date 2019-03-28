@@ -39,8 +39,9 @@ LEADING_DIMENSIONS=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
 
 LINPACK_IP=`get_ips_from_role linpack`
 
-NUM_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
-export OMP_NUM_THREADS=$NUM_CPU
+linux_distribution
+
+export OMP_NUM_THREADS=$NR_CPUS
 echo "Sample Intel(R) LINPACK data file (from lininput_xeon64)" > ${LINPACK_DAT}
 echo "Intel(R) LINPACK data" >> ${LINPACK_DAT}
 echo "1 # number of tests" >> ${LINPACK_DAT}
