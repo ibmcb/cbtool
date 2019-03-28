@@ -73,6 +73,16 @@ fi
 export PATH=$PATH:~
 eval PATH=$PATH
 
+if [[ ! -f ~/.bashrc ]]
+then
+    sudo ls /root/.bashrc > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
+        sudo cp /root/.bashrc ~/.bashrc
+        sudo chown $(whoami):$(whoami) ~/.bashrc
+    fi
+fi  
+
 # Test for redis-cli
 if [ x"$(uname -a | grep CYGWIN)" != x ] ; then
     rediscli="$dir/redis.bat"
@@ -105,9 +115,11 @@ function check_container {
             export LC_ALL=C
         fi
         export NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`                  
+        export MEM_SIZE_KB=`echo $(get_my_vm_attribute size) | cut -d '-' -f 2` 
     else
         export IS_CONTAINER=0
         export NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`                
+        export MEM_SIZE_KB=`cat /proc/meminfo | grep MemTotal | awk '{ print $2 }'`
     fi
 }
 export -f check_container
@@ -573,7 +585,13 @@ function mount_filesystem_on_volume {
         
     if [[ $VOLUME != "NONE" ]]
     then
-        
+        if [[ $(sudo mount | grep -c $VOLUME) -ne 0 ]]
+        then
+            ACTUAL_MOUNTPOINT_DIR=$(sudo mount | grep $VOLUME | awk '{ print $3 }')
+            syslog_netcat "The Volume \"$VOLUME\" is already accessible through the directory $ACTUAL_MOUNTPOINT_DIR. Bypassing the mounting of $MOUNTPOINT_DIR on it..."
+            return 0
+        fi
+
         if [[ $(sudo mount | grep $VOLUME | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
         then
             syslog_netcat "Setting ${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
@@ -593,7 +611,14 @@ function mount_filesystem_on_volume {
                 exit 1
             else
                 syslog_netcat "$FILESYS_TYPE filesystem on volume $VOLUME successfully made accessible through mountpoint ${MOUNTPOINT_DIR}"
+                
+                if [[ $(sudo cat /etc/fstab | grep -c ${MOUNTPOINT_DIR}) -eq 0 ]]
+                then
+                    sudo bash -c "echo \"${VOLUME} ${MOUNTPOINT_DIR} ${FILESYS_TYPE} defaults 0 2\" >> /etc/fstab"
+                fi
             fi
+            
+            
         else
             syslog_netcat "${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME is already setup!"            
         fi
@@ -829,10 +854,13 @@ function get_vm_uuids_from_role {
     cat ${ai_mapping_file} | grep $1 | grep -v just_for_lost | cut -d ',' -f 2
 }
 
-function get_hostname_from_role {
-    role=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    vmuuid=`get_vm_uuids_from_role $role`
-    get_vm_attribute ${vmuuid} cloud_hostname
+function get_hostnames_from_role {
+    urole=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    vmuuidlist=`get_vm_uuids_from_role ${urole}`
+    for vmuuid in $vmuuidlist
+    do
+        get_vm_attribute ${vmuuid} cloud_hostname
+    done
 }
 
 function get_vm_hostnames_from_ai {
@@ -1487,7 +1515,38 @@ function post_boot_steps {
 
     automount_data_dirs
 }
-    
+
+function fix_ulimit {
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
+
+    if [[ $IS_REDHAT -eq 0 ]]
+    then    
+        sudo ls /etc/security/limits.conf > /dev/null 2>&1
+        if [[ $? -eq 0 ]]
+        then 
+            sudo cat /etc/security/limits.conf | grep "root      -       nofile      1048576" > /dev/null 2>&1
+            if [[ $? -ne 0 ]]
+            then
+                sudo bash -c "echo \"*         -       nofile      1048576\" >> /etc/security/limits.conf"
+                sudo bash -c "echo \"root      -       nofile      1048576\" >> /etc/security/limits.conf"
+                sudo bash -c "echo \"*         -       noproc      1048576\" >> /etc/security/limits.conf"
+                sudo bash -c "echo \"root      -       noproc      1048576\" >> /etc/security/limits.conf"
+            fi          
+        fi
+         
+        sudo cat /etc/sysctl.conf | grep "fs.file-max = 1048576" > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            sudo bash -c "echo \"fs.file-max = 1048576\" >> /etc/sysctl.conf"
+            sudo bash -c "echo \"kernel.pid_max = 4194303\" >> /etc/sysctl.conf"
+            sudo sysctl -p            
+        fi
+    fi
+}
+
 function stop_ganglia {
             
     if [[ -z ${LINUX_DISTRO} ]]
