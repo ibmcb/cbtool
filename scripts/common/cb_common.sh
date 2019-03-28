@@ -614,7 +614,7 @@ function mount_filesystem_on_volume {
                 
                 if [[ $(sudo cat /etc/fstab | grep -c ${MOUNTPOINT_DIR}) -eq 0 ]]
                 then
-                    sudo bash -c "echo \"${VOLUME} ${MOUNTPOINT_DIR} ext4  defaults 0 2\" >> /etc/fstab"
+                    sudo bash -c "echo \"${VOLUME} ${MOUNTPOINT_DIR} ${FILESYS_TYPE} defaults 0 2\" >> /etc/fstab"
                 fi
             fi
             
