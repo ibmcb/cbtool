@@ -394,6 +394,8 @@ class KubCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
+            self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
+
             _msg = "Ok"
             _status = 0
                         
@@ -980,6 +982,11 @@ class KubCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
+            if str(obj_attr_list["image_pull_secrets"]).lower() != "false" :
+                _image_pull_secrets = [ { "name" : "regcred" } ]
+            else :
+                _image_pull_secrets = [ ]
+                
             _mark_a = time()
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                          obj_attr_list["vmc_name"], obj_attr_list)
@@ -1027,13 +1034,15 @@ class KubCmds(CommonCloudFunctions) :
                                                   }, \
                                         "annotations" : _annotations
                                       }, \
-                         "spec": { "containers":
+                         "spec": { "containers" :
                                      [ 
                                         { "env": _env, \
                                            "name": obj_attr_list["cloud_vm_name"], \
-                                           "image": obj_attr_list["imageid1"]
+                                           "image": obj_attr_list["imageid1"], \
+                                           "imagePullPolicy" : obj_attr_list["image_pull_policy"], \
                                         }
-                                     ]
+                                     ], 
+                                   "imagePullSecrets" : _image_pull_secrets
                                  }
                        }
 
@@ -1056,12 +1065,14 @@ class KubCmds(CommonCloudFunctions) :
                                                             [ 
                                                                { "env": _env, \
                                                                  "name": obj_attr_list["cloud_vm_name"], \
-                                                                 "image": obj_attr_list["imageid1"] 
-                                                               } 
-                                                            ] 
+                                                                 "image": obj_attr_list["imageid1"], \
+                                                                 "imagePullPolicy" : obj_attr_list["image_pull_policy"], \
+                                                               }
+                                                            ],
+                                                          "imagePullSecrets" : _image_pull_secrets                                                         
                                                         }
                                                }
-                                  } 
+                                  }
     
                         }
                 obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_rs_name"] + ',' + "role:master,tier:backend" 
@@ -1085,12 +1096,14 @@ class KubCmds(CommonCloudFunctions) :
                                                             [ 
                                                                { "env": _env, \
                                                                  "name": obj_attr_list["cloud_vm_name"], \
-                                                                 "image": obj_attr_list["imageid1"] 
-                                                               } 
-                                                            ] 
+                                                                 "image": obj_attr_list["imageid1"], \
+                                                                 "imagePullPolicy" : obj_attr_list["image_pull_policy"], \
+                                                               }
+                                                            ], 
+                                                          "imagePullSecrets" : _image_pull_secrets                                                         
                                                         }
                                                }
-                                  } 
+                                  }
     
                         }
 
