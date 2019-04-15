@@ -69,6 +69,8 @@ REPLICAS = 1
 PORTS_BASE = 10000
 IMAGE_PREFIX = ibmcb/ubuntu_
 IMAGE_SUFFIX = $EMPTY
+IMAGE_PULL_POLICY = IfNotPresent
+IMAGE_PULL_SECRETS = $False
 DOCKER_REPO = https://hub.docker.com/r/
 ANNOTATIONS = $Empty
 
