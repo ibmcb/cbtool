@@ -1090,26 +1090,19 @@ class CommonCloudFunctions:
             return None
 
         cloudconfig = "#cloud-config\n"
-        cloudconfig += "ssh_pwauth: true\n"
-        cloudconfig += "disable_root: false\n"
-        cloudconfig += "chpasswd:\n"
-        cloudconfig += "  list: |\n"
-        cloudconfig += "    root:temp4now\n"
-        cloudconfig += "  expire: false\n\n"        
-        cloudconfig += "users:\n"
-        cloudconfig += "- name: " + obj_attr_list["login"] + "\n"
-        cloudconfig += "  lock-passwd: true\n"
-        cloudconfig += "  home: /home/" + obj_attr_list["login"] + "\n"
-        cloudconfig += "  shell: /bin/bash\n"        
-        cloudconfig += "  sudo: ALL=(ALL) NOPASSWD:ALL\n"
-        
-        if obj_attr_list["userdata_ssh"].lower() == "true" :        
-            cloudconfig += "  ssh_authorized_keys:\n   - " + obj_attr_list["pubkey_contents"]
+
+        if "cloudinit_sudo_passwd" in obj_attr_list and str(obj_attr_list["cloudinit_sudo_passwd"]).lower() != "false" and "cloudinit_sudo_user" in obj_attr_list :
+               cloudconfig += "users:\n"
+               cloudconfig += "- name: " + obj_attr_list["cloudinit_sudo_user"] + "\n"
+               cloudconfig += "  lock-passwd: false\n"
+               cloudconfig += "  lock_passwd: false\n"
+               cloudconfig += "  passwd: " + obj_attr_list["cloudinit_sudo_passwd"].replace("DOLLAR", "$") + "\n"
+               cloudconfig += "  sudo: ALL=(ALL) NOPASSWD:ALL\n"
         
         if obj_attr_list["userdata_ssh"].lower() == "true" :
-            cloudconfig += "\n\n"
+#            cloudconfig += "disable_root: false\n"            
             cloudconfig += "ssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
-        cloudconfig += "\n"            
+            cloudconfig += "\n"            
 
         cloudconfig += "write_files:\n"
         cloudconfig += "  - path: /tmp/cb_post_boot.sh\n"
