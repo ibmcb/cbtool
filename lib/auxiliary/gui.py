@@ -1988,7 +1988,7 @@ class GUIDispatcher(Resource) :
         request.setHeader('Access-Control-Allow-Origin', '*')
         request.setHeader('Access-Control-Allow-Methods', 'GET')
         request.setHeader('Access-Control-Allow-Headers', 'x-prototype-version,x-requested-with')
-        request.setHeader('Access-Control-Max-Age', 2520)
+        request.setHeader('Access-Control-Max-Age', "2520")
 
         if name.count("3rd_party") :
             return self.third_party
