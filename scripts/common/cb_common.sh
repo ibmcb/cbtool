@@ -883,10 +883,11 @@ function build_ai_mapping {
         vmhn=`echo $vmhn | tr '[:upper:]' '[:lower:]'`
         vmrole=`get_vm_attribute ${vmuuid} role`
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
-        echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
-        # This is for LOST. It's buggy. It needs the '.' because it
-        # doesn't understand shortnames/longnames properly
-        echo "${vmip}    ${vmhn}.    #${vmrole}    ${vmclouduuid}    ,just_for_lost" >> ${ai_mapping_file}
+		# Lines were getting duplicated (presumably because the function is called more than once.
+		# Avoid adding a line twice:
+		if [ x"$(grep ${vmuuid} ${ai_mapping_file})" == x ] ; then 
+			echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
+		fi
     done
 }
 
