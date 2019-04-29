@@ -247,7 +247,7 @@ class Dok8sCmds(KubCmds) :
 
             r = s.delete(self.access + "/kubernetes/clusters/" + kuuid)
 
-            if r.status_code != 202 :
+            if r.status_code not in [202, 204] :
                 cbdebug("Failed to delete: " + str(r.status_code), True)
                 raise CldOpsException("Destroy cluster failed.", 462)
                 
@@ -345,8 +345,8 @@ class Dok8sCmds(KubCmds) :
                 _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
                 for droplet in loads(_vmc_attr_list["droplets"]) :
                     if droplet["name"] == obj_attr_list["node"] :
-                        obj_attr_list["dropletid"] = droplet["id"]
-                        cbdebug("Container " + obj_attr_list["name"] + " sent to Node " + obj_attr_list["node"] + " = " + str(obj_attr_list["dropletid"]), True)
+                        obj_attr_list["host_name"] = droplet["id"]
+                        cbdebug("Container " + obj_attr_list["name"] + " sent to Node " + obj_attr_list["node"] + " = " + str(obj_attr_list["host_name"]), True)
                         obj_attr_list["droplet"] = dumps(droplet)
                         break
         except Exception, e :

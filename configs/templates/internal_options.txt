@@ -344,7 +344,7 @@ VM_ATTRIBUTES += cloud_hostname, vmc_name, vmc_cloud_ip, host_name,
 VM_ATTRIBUTES += host_cloud_ip, role, size, imageid1, ai, ai_name, type, aidrs, 
 VM_ATTRIBUTES += aidrs_name, pattern, utc_offset_delta, tenant, netname,
 VM_ATTRIBUTES += total_ai_provisioning_time, instance_preparation_on_vm, application_start_on_vm,
-VM_ATTRIBUTES += comments, abort
+VM_ATTRIBUTES += comments, abort, node
 
 ### Layout of the trace file
 TRACE_HEADER = TRACE_ATTRIBUTES
