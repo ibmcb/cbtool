@@ -556,7 +556,7 @@ echo "Restarting docker on all nodes..."
 for node in $(kubectl get nodes | grep Ready | cut -d " " -f 1) ; do
 	nodeip=$(kubectl describe node ${node} | grep ExternalIP | sed "s/.* //g")
 	echo "Restarting on ${nodeip}"
-	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${nodeip} "service docker restart"
+	ssh -o ConnectTimeout=120 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${nodeip} "service docker restart"
 	check_error $? "docker restart failed"
 done
 

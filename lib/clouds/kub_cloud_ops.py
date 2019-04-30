@@ -117,6 +117,14 @@ class KubCmds(CommonCloudFunctions) :
                             break
                         except Exception, e :
                             cbwarn(vmc_name + " not ready yet...", True)
+                            # If we are in cleanup mode (force_all == True), then
+                            # don't attempt to cleanup the cluster forever. The cluster
+                            # may be in an invalid state and be unreachable. Let
+                            # the user clean it up.
+                            if "adapter_force_all" in extra_parms and extra_parms["adapter_force_all"] :
+                                cbwarn("k8s cluster potentially in an invalid state. Continuing...", True)
+                                break
+
                             _fmsg = str(e)
                             _max_tries = _max_tries - 1
                             sleep(_wait * 2)
@@ -326,6 +334,8 @@ class KubCmds(CommonCloudFunctions) :
             sleep(_wait)
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
+
+            obj_attr_list["adapter_force_all"] = force_all
 
             self.connect(obj_attr_list["access"], \
                          obj_attr_list["credentials"], \
@@ -562,8 +572,8 @@ class KubCmds(CommonCloudFunctions) :
                 
         if len(_networks) :
 
-            if "podIP" in self.instance_info["status"] :
-                _address = self.instance_info["status"]["podIP"]
+            if "podIP" in obj_attr_list["k8s_instance"]["status"] :
+                _address = obj_attr_list["k8s_instance"]["status"]["podIP"]
 
                 obj_attr_list["run_cloud_ip"] = _address
 
@@ -808,13 +818,13 @@ class KubCmds(CommonCloudFunctions) :
                             _instance_status = _instance.obj["status"]["containerStatuses"][0]["state"].keys()[0]
             
             if str(_instance_status) == "running" :
-                self.instance_info = _instance.obj
+                obj_attr_list["k8s_instance"] = _instance.obj
                 obj_attr_list["cloud_vm_exact_match_name"] = _instance.name
                 obj_attr_list["cloud_vm_name"] = _instance.name
                 obj_attr_list["cloud_hostname"] = _instance.name
                 
-                if "hostIP" in self.instance_info["status"] :
-                    _host_ip = self.instance_info["status"]["hostIP"]
+                if "hostIP" in _instance.obj["status"] :
+                    _host_ip = _instance.obj["status"]["hostIP"]
                     obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = self.try_dns(_host_ip)
 
                 if obj_attr_list["abstraction"] == "replicaset" or obj_attr_list["abstraction"] == "deployment" :
@@ -825,18 +835,18 @@ class KubCmds(CommonCloudFunctions) :
                             obj_attr_list["cloud_rs_name"] = _x_instance.name
 
                             if "metadata" in _x_instance.obj :
-                                if "uid" in _x_instance.obj["metadata"] :                        
+                                if "uid" in _x_instance.obj["metadata"] :
                                     obj_attr_list["cloud_rs_uuid"] = _x_instance.obj["metadata"]["uid"]
-                                                 
+
                 if obj_attr_list["abstraction"] == "deployment" :
                     if "cloud_d_exact_match_name" not in obj_attr_list :
                         _x_instance = self.get_instances(obj_attr_list, "deployment", obj_attr_list["cloud_d_name"])
-                        if _x_instance :                        
+                        if _x_instance :
                             obj_attr_list["cloud_d_exact_match_name"] = _x_instance.name
                             obj_attr_list["cloud_d_name"] = _x_instance.name
 
                             if "metadata" in _x_instance.obj :
-                                if "uid" in _x_instance.obj["metadata"] :           
+                                if "uid" in _x_instance.obj["metadata"] :
                                     obj_attr_list["cloud_d_uuid"] = _x_instance.obj["metadata"]["uid"]
                             
                 return True
@@ -1030,7 +1040,8 @@ class KubCmds(CommonCloudFunctions) :
                          "metadata": { "name":  obj_attr_list["cloud_vm_name"], \
                                        "namespace": obj_attr_list["namespace"] , \
                                        "labels" : { "creator" : "cbtool", \
-                                                    "app" :  obj_attr_list["cloud_vm_name"] 
+                                                    "app" :  obj_attr_list["cloud_vm_name"], \
+                                                    "ai" : obj_attr_list["ai"]
                                                   }, \
                                         "annotations" : _annotations
                                       }, \
@@ -1042,7 +1053,23 @@ class KubCmds(CommonCloudFunctions) :
                                            "imagePullPolicy" : obj_attr_list["image_pull_policy"], \
                                         }
                                      ], 
-                                   "imagePullSecrets" : _image_pull_secrets
+                                   "imagePullSecrets" : _image_pull_secrets,
+                                   "affinity": { 
+                                     "podAntiAffinity" : {
+                                       "requiredDuringSchedulingIgnoredDuringExecution" : [
+                                         { "labelSelector": {
+                                             "matchExpressions": [
+                                               { "key" : "ai",
+                                                "operator" : "In",
+                                                "values" : [obj_attr_list["ai"]]
+                                               }
+                                             ] 
+                                           },
+                                          "topologyKey" : "kubernetes.io/hostname"
+                                        }
+                                      ]                                       
+                                     }
+                                  }
                                  }
                        }
 
@@ -1389,17 +1416,17 @@ class KubCmds(CommonCloudFunctions) :
 
             kubeconn = KubCmds.catalogs.kubeconn[obj_attr_list["vmc_name"]]
 
-            if self.instance_info :
+            if "k8s_instance" in obj_attr_list and obj_attr_list["k8s_instance"] :
                                             
-                if "metadata" in self.instance_info :
-                    if "resourceVersion" in self.instance_info["metadata"] :
-                        obj_attr_list["cloud_resource_version"] = self.instance_info["metadata"]["resourceVersion"]
+                if "metadata" in obj_attr_list["k8s_instance"] :
+                    if "resourceVersion" in obj_attr_list["k8s_instance"]["metadata"] :
+                        obj_attr_list["cloud_resource_version"] = obj_attr_list["k8s_instance"]["metadata"]["resourceVersion"]
 
-                    if "uid" in self.instance_info["metadata"] :                        
-                        obj_attr_list["cloud_vm_uuid"] = self.instance_info["metadata"]["uid"]
-                                
-                    if "creationTimestamp" in self.instance_info["metadata"] and "cloud_vm_creation_timestamp" not in obj_attr_list :
-                        obj_attr_list["cloud_vm_creation_timestamp"] = int(mktime(strptime(self.instance_info["metadata"]["creationTimestamp"], _pattern)))                       
+                    if "uid" in obj_attr_list["k8s_instance"]["metadata"] :
+                        obj_attr_list["cloud_vm_uuid"] = obj_attr_list["k8s_instance"]["metadata"]["uid"]
+
+                    if "creationTimestamp" in obj_attr_list["k8s_instance"]["metadata"] and "cloud_vm_creation_timestamp" not in obj_attr_list :
+                        obj_attr_list["cloud_vm_creation_timestamp"] = int(mktime(strptime(obj_attr_list["k8s_instance"]["metadata"]["creationTimestamp"], _pattern)))
 
                 _mark_a = int(obj_attr_list["cloud_vm_creation_timestamp"])
 
