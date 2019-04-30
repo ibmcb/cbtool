@@ -29,6 +29,7 @@ from shared_functions import CldOpsException, CommonCloudFunctions
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import NodeState
+from libcloud.common.types import MalformedResponseError
 
 from copy import deepcopy
 
@@ -555,18 +556,20 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                     for _reservation in _reservations :
                         if _reservation.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) :
-                            if _reservation.state == NodeState.PENDING :
-                                cbdebug("Instance still has a pending event. waiting to destroy...")
-                                sleep(10)
-                                _msg = "Cleaning up " + self.get_description() + ". Destroying CB instantiated node: " + _reservation.name
-                                cbdebug(_msg)
+                            if _reservation.state in [ NodeState.PENDING, NodeState.STOPPED ] :
+                                cbdebug("Instance " + _reservation.name + " still has a pending event. waiting to destroy...")
                                 continue
 
                             try :
                                 cbdebug("Killing: " + _reservation.name + " (" + tenant + ")", True)
                                 _reservation.destroy()
-                            except :
-                                pass
+                            except MalformedResponseError, e :
+                                self.dump_httplib_headers(credentials_list)
+                                cbdebug("The Cloud's API is misbehaving...", True)
+                            except Exception, e :
+                                for line in traceback.format_exc().splitlines() :
+                                    cbwarn(line, True)
+                                self.dump_httplib_headers(credentials_list)
                             _running_instances = True
                         else :
                             _msg = "Cleaning up " + self.get_description() + ".  Ignoring instance: " + _reservation.name
@@ -591,8 +594,13 @@ class LibcloudCmds(CommonCloudFunctions) :
                                 try :
                                     cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
                                     _volume.destroy()
-                                except :
-                                    pass
+                                except MalformedResponseError, e :
+                                    self.dump_httplib_headers(credentials_list)
+                                    raise CldOpsException("The Cloud's API is misbehaving", 1483)
+                                except Exception, e :
+                                    for line in traceback.format_exc().splitlines() :
+                                        cbwarn(line, True)
+                                    self.dump_httplib_headers(credentials_list)
                                 _running_volumes = True
                             else :
                                 _msg = "Cleaning up " + self.get_description() + ". Ignoring volume: " + _volume.name
@@ -1081,8 +1089,13 @@ class LibcloudCmds(CommonCloudFunctions) :
                         try :
                             _volume.destroy()
                             break
-                        except :
-                            pass
+                        except MalformedResponseError, e :
+                            self.dump_httplib_headers(credentials_list)
+                            raise CldOpsException("The Cloud's API is misbehaving", 1483)
+                        except Exception, e :
+                            for line in traceback.format_exc().splitlines() :
+                                cbwarn(line, True)
+                            self.dump_httplib_headers(credentials_list)
                                 
             _status = 0
 
@@ -1402,7 +1415,10 @@ class LibcloudCmds(CommonCloudFunctions) :
                 firsttime = True
                 _time_mark_drs = int(time())
                 _instance = self.get_instances(obj_attr_list)
-                while _instance and _curr_tries < _max_tries :
+                while _instance :
+                    if _curr_tries >= _max_tries :
+                        self.dump_httplib_headers(_credentials_list)
+                        raise CldOpsException("The Cloud's API is misbehaving", 1485)
                     _errmsg = "get_instances"
                     cbdebug("Getting instance...")
                     _instance = self.get_instances(obj_attr_list)
@@ -1413,7 +1429,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
                         break
     
-                    if _instance.state == NodeState.PENDING :
+                    if _instance.state in [ NodeState.PENDING, NodeState.STOPPED ] :
                         cbdebug(self.get_description() + " still has a pending event. Waiting to destroy...", True)
                         sleep(_wait)
                         _curr_tries += 1                    
@@ -1430,8 +1446,13 @@ class LibcloudCmds(CommonCloudFunctions) :
                             obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
     
                         firsttime = False
-                    except :
-                        pass
+                    except MalformedResponseError, e :
+                        self.dump_httplib_headers(_credentials_list)
+                        raise CldOpsException("The Cloud's API is misbehaving", 1483)
+                    except Exception, e :
+                        for line in traceback.format_exc().splitlines() :
+                            cbwarn(line, True)
+                        self.dump_httplib_headers(_credentials_list)
     
                     _msg = "Inside destroy. " + _errmsg
                     _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
