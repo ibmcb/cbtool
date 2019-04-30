@@ -1098,24 +1098,18 @@ class CommonCloudFunctions:
         cloudconfig += "  expire: false\n\n"        
         cloudconfig += "users:\n"
         cloudconfig += "- name: " + obj_attr_list["login"] + "\n"
-        cloudconfig += "  lock-passwd: true\n"
+        if str(obj_attr_list["password"]).lower() != "false" :
+            cloudconfig += "  lock-passwd: false\n"
+            cloudconfig += "  lock_passwd: false\n"
+            cloudconfig += "  passwd: " + obj_attr_list["password"].replace("DOLLAR", "$") + "\n"        
+        else :
+            cloudconfig += "  lock-passwd: true\n"
         cloudconfig += "  home: /home/" + obj_attr_list["login"] + "\n"
         cloudconfig += "  shell: /bin/bash\n"        
         cloudconfig += "  sudo: ALL=(ALL) NOPASSWD:ALL\n"
 
         if obj_attr_list["userdata_ssh"].lower() == "true" :        
             cloudconfig += "  ssh_authorized_keys:\n   - " + obj_attr_list["pubkey_contents"]
-
-        if str(obj_attr_list["cloudinit_sudo_user"]).lower() != "false" :
-            cloudconfig += "\n- name: " + obj_attr_list["cloudinit_sudo_user"] + "\n"
-            cloudconfig += "  lock-passwd: false\n"
-            cloudconfig += "  lock_passwd: false\n"
-            cloudconfig += "  shell: /bin/bash\n"        
-            if str(obj_attr_list["cloudinit_sudo_passwd"]).lower() != "false" :
-                cloudconfig += "  passwd: " + obj_attr_list["cloudinit_sudo_passwd"].replace("DOLLAR", "$") + "\n"
-            cloudconfig += "  sudo: ALL=(ALL) NOPASSWD:ALL\n"
-            if obj_attr_list["userdata_ssh"].lower() == "true" :        
-                cloudconfig += "  ssh_authorized_keys:\n   - " + obj_attr_list["pubkey_contents"]
 
         if obj_attr_list["userdata_ssh"].lower() == "true" :
             cloudconfig += "\n\n"
