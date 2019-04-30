@@ -46,6 +46,7 @@ PROTECT_SUPPORTED = $True
 USE_CINDERCLIENT = $True
 USE_GLANCECLIENT = $False
 HOST_USER_ROOT = $False
+ALL_TENANTS = 0
 
 [VM_DEFAULTS : OSK_CLOUDCONFIG]
 ACCESS = $OSK_ACCESS
@@ -81,11 +82,14 @@ USE_GLANCECLIENT = $False
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
+USERDATA = $True
+USERDATA_SSH = $True
 AVAILABILITY_ZONE = $Empty
 BOOT_VOLUME_IMAGEID1_INSTANCE = None
 FLAVOR_INSTANCE = None
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
+ALL_TENANTS = 0
 
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
 ATTACH_PARALLELISM = 10
@@ -122,7 +126,7 @@ APACHE = size:m1.medium, imageid1:cb_wrk
 BONNIE = size:m1.medium, imageid1:cb_bonnie
 BTEST = size:m1.medium, imageid1:cb_btest
 CASSANDRA = size:m1.medium, imageid1:cb_ycsb
-CHECK = size:m1.tiny, imageid1:to_replace
+CHECK = size:m1.small, imageid1:to_replace
 CLIENT_IBM_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
 CLIENT_OPEN_DAYTRADER = size:m1.medium, imageid1:cb_open_daytrader
 CLIENT_TRADELITE = size:m1.medium, imageid1:cb_tradelite

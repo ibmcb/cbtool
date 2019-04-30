@@ -213,7 +213,7 @@ PREPARE_IMAGE_NAME = None
 NEST_CONTAINERS_ENABLED = $False
 NEST_CONTAINERS_REPOSITORY = ibmcb
 NEST_CONTAINERS_INSECURE_REGISTRY = $False
-CLOUDINIT_SUDO_USER = cbtool
+CLOUDINIT_SUDO_USER = $False # Disabled
 # Use the 'openssl' command to choose a password to enable this feature.
 # Requires cloud-init support.
 CLOUDINIT_SUDO_PASSWD = $False # Disabled
