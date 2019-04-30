@@ -38,6 +38,7 @@ from cStringIO import StringIO
 import threading
 import traceback
 import os
+import httplib
 
 try:
     from http.client import HTTPConnection # py3
@@ -57,7 +58,12 @@ import contextlib
 
 '''
 We need the ability to log HTTP headers to debug what happens
-with libcloud, but libcloud doesn't make that easy, so we have to
+with libcloud.
+
+For the response HTTP headers, that's not problem => We get that
+from the libcloud library itself.
+
+For the request headers, libcloud doesn't make that easy, so we have to
 bypass it.
 
 What we're trying to do here is solve a conundrum. Under the covers,
@@ -67,7 +73,8 @@ transport library.
 httplib, has the ability to debug itself, but instead of using the logging
 library like a "good" python library should, it just prints to stdout.
 In a separate patch (via Dockerfile) we fix httplib to work correctly
-and use a logger.
+and use a logger. We can't really monkey patch this, and sending a python
+patch upstream would take too long
 
 That being said, after it uses the logging library correctly, we still
 have to capture the log output the headers ONLY when something bad happens.
@@ -80,21 +87,29 @@ to hit a python exception in libcloud, we dump those headers to the log
 if and only if there is an exception.
 
 That's what all the mess below is for.
+
+So, below, if we don't carry the patch to httplib, we only log the response
+headers (which are usually what matters). If we carry the httplib patch
+(sold separately), then we will also log the request headers.
 '''
 
-# Tell httplib (patched) to debug and use the logging module
-HTTPConnection.debuglevel = 3
-HTTPSConnection.debuglevel = 3
-httplib_log = logging.getLogger("httplib")
-httplib_log.setLevel(logging.DEBUG)
-httplib_log.propagate = False 
+stream = False
 
-# Capture those messages to StringIO
-stream = StringIO()
-handler = logging.StreamHandler(stream)
-for handler in httplib_log.handlers: 
-    httplib_log.removeHandler(handler)
-httplib_log.addHandler(handler)
+# Tell the httplib patch (if available, sold separately) to debug and use the logging module
+# for logging the request headers.
+if hasattr(httplib, "httplib_log") :
+    HTTPConnection.debuglevel = 3
+    HTTPSConnection.debuglevel = 3
+    httplib_log = logging.getLogger("httplib")
+    httplib_log.setLevel(logging.DEBUG)
+    httplib_log.propagate = False 
+
+    # Capture those messages to StringIO
+    stream = StringIO()
+    handler = logging.StreamHandler(stream)
+    for handler in httplib_log.handlers: 
+        httplib_log.removeHandler(handler)
+    httplib_log.addHandler(handler)
 
 class LibcloudCmds(CommonCloudFunctions) :
     catalogs = threading.local()
@@ -225,11 +240,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
     @trace
     def dump_reset(self, location) :
-        #stream.seek(0, os.SEEK_END)
-        #cbdebug("Flush " + location + " has " + str(stream.tell()) + " bytes.")
-        #stream.seek(0)
-        stream.truncate(0)
-        stream.seek(0)
+        if stream :
+            stream.truncate(0)
+            stream.seek(0)
 
     @trace
     def get_adapter(self, credentials_list) :
@@ -252,12 +265,16 @@ class LibcloudCmds(CommonCloudFunctions) :
             cbwarn("Cannot dump headers. Credentials list is False.")
         else :
             try :
-                send_headers = stream.getvalue().strip().replace("\n\n", "\n").split("\n")
-                for header in send_headers :
-                    if header.count("Bearer") :
-                        cberr("send ==> Bearer: xxxxxxxxxxxxxxx")
-                    else :
-                        cberr("send ==> " + header.strip())
+                # Log the request headers, if available.
+                if stream :
+                    send_headers = stream.getvalue().strip().replace("\n\n", "\n").split("\n")
+                    for header in send_headers :
+                        if header.count("Bearer") :
+                            cberr("send ==> Bearer: xxxxxxxxxxxxxxx")
+                        else :
+                            cberr("send ==> " + header.strip())
+
+                # Grab the response headers from libcloud itself and log those.
                 headers = LibcloudCmds.catalogs.cbtool[credentials_list].connection.connection.getheaders()
                 for hkey in headers.keys() :
                     cberr("recv ==> " + str(hkey) + ": " + headers[hkey])
