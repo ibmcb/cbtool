@@ -1092,10 +1092,6 @@ class CommonCloudFunctions:
         cloudconfig = "#cloud-config\n"
         cloudconfig += "ssh_pwauth: true\n"
         cloudconfig += "disable_root: false\n"
-        cloudconfig += "chpasswd:\n"
-        cloudconfig += "  list: |\n"
-        cloudconfig += "    root:temp4now\n"
-        cloudconfig += "  expire: false\n\n"        
         cloudconfig += "users:\n"
         cloudconfig += "- name: " + obj_attr_list["login"] + "\n"
         if str(obj_attr_list["password"]).lower() != "false" :
