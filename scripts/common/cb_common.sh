@@ -1367,7 +1367,9 @@ function replicate_to_container_if_nested {
     # According to the docks, /etc/docker/daemon.json is supposed to be linux distribution-independent
     nest_containers_insecure_registry=`get_my_vm_attribute nest_containers_insecure_registry`
     if [ x"${nest_containers_insecure_registry}" == x"True" ] ; then
-        echo "{ \"insecure-registries\" : [\"${nest_containers_repository}\"] }" > /etc/docker/daemon.json
+        echo "{ \"insecure-registries\" : [\"${nest_containers_repository}\"] }" > /tmp/daemon.json
+		chown root:root /tmp/daemon.json
+		sudo mv /tmp/daemon.json /etc/docker/daemon.json
     fi
 
     service_restart_enable docker
@@ -1377,7 +1379,7 @@ function replicate_to_container_if_nested {
     syslog_netcat "Downloading container image from: ${image}"
 
     # This step can be cached if the user builds an snapshot that has already done the pull.
-    docker pull ${image}
+    sudo docker pull ${image}
 
     syslog_netcat "Image pulled, starting container..."
 
@@ -1388,14 +1390,14 @@ function replicate_to_container_if_nested {
     # the correct priveleges, then run the entrypoint script already provided
     # which then starts SSH on its own. Because we're using host networking, everything
     # works as-is without any changes.
-    docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -rf ${userpath}/${username}; sudo cp -a ${NEST_EXPORTED_HOME} ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"
+    sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -rf ${userpath}/${username}; sudo cp -a ${NEST_EXPORTED_HOME} ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"
 
     syslog_netcat "Container started, settling..."
 
     # Figure out when the container is ready
     ATTEMPTS=20
     while true ; do
-        out=$(docker exec -u ${username} --privileged cbnested bash -c "if [ x\"\$(ps -ef | grep sshd | grep -v grep)\" != x ] ; then exit 0 ; else exit 2 ; fi" 2>&1)
+        out=$(sudo docker exec -u ${username} --privileged cbnested bash -c "if [ x\"\$(ps -ef | grep sshd | grep -v grep)\" != x ] ; then exit 0 ; else exit 2 ; fi" 2>&1)
         rc=$?
         if [ $rc -gt 0 ] ; then
             syslog_netcat "Return code: $rc $out"
@@ -1416,7 +1418,7 @@ function replicate_to_container_if_nested {
     # Finally, execute the remaining post boot commands within the container
     syslog_netcat "Running nested steps..."
     # FIXME: Return this error code and check for error in parent function
-    docker exec -u ${username} --privileged cbnested bash -c "cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat 'Running post_boot inside container...'; ~/cbtool/scripts/common/cb_post_boot_container.sh; exit \$?"
+    sudo docker exec -u ${username} --privileged cbnested bash -c "cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat 'Running post_boot inside container...'; ~/cbtool/scripts/common/cb_post_boot_container.sh; exit \$?"
 
     return $? 
 }
