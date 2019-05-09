@@ -1390,12 +1390,12 @@ function replicate_to_container_if_nested {
     # the correct priveleges, then run the entrypoint script already provided
     # which then starts SSH on its own. Because we're using host networking, everything
     # works as-is without any changes.
-    sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -rf ${userpath}/${username}; sudo cp -a ${NEST_EXPORTED_HOME} ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"
+    sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo mkdir ${userpath}/$username; sudo cp -a ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chmod 755 ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"
 
     syslog_netcat "Container started, settling..."
 
     # Figure out when the container is ready
-    ATTEMPTS=20
+    ATTEMPTS=100
     while true ; do
         out=$(sudo docker exec -u ${username} --privileged cbnested bash -c "if [ x\"\$(ps -ef | grep sshd | grep -v grep)\" != x ] ; then exit 0 ; else exit 2 ; fi" 2>&1)
         rc=$?
