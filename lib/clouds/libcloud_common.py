@@ -30,6 +30,7 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import NodeState
 from libcloud.common.types import MalformedResponseError
+from libcloud.common.exceptions import BaseHTTPError
 
 from copy import deepcopy
 
@@ -280,7 +281,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     cberr("recv ==> " + str(hkey) + ": " + headers[hkey])
             except Exception, e :
                 for line in traceback.format_exc().splitlines() :
-                    cbwarn(line, True)
+                    cberr(line, True)
 
         self.dump_reset("maindump")
 
@@ -580,6 +581,10 @@ class LibcloudCmds(CommonCloudFunctions) :
                             try :
                                 cbdebug("Killing: " + _reservation.name + " (" + tenant + ")", True)
                                 _reservation.destroy()
+                            except BaseHTTPError, e :
+                                if e.code == 404 :
+                                    cbwarn("404: Not trusting instance " + _reservation.name + " error status... Will try again.", True)
+                                self.dump_httplib_headers(credentials_list)
                             except MalformedResponseError, e :
                                 self.dump_httplib_headers(credentials_list)
                                 cbdebug("The Cloud's API is misbehaving...", True)
@@ -1463,6 +1468,11 @@ class LibcloudCmds(CommonCloudFunctions) :
                             obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
     
                         firsttime = False
+                    except BaseHTTPError, e :
+                        if e.code == 404 :
+                            cbwarn("404: Not trusting instance " + obj_attr_list["name"] + " error status... Will try again.", True)
+                        self.dump_httplib_headers(_credentials_list)
+                        raise CldOpsException("The Cloud's API is misbehaving, code: " + str(e.code), 1484)
                     except MalformedResponseError, e :
                         self.dump_httplib_headers(_credentials_list)
                         raise CldOpsException("The Cloud's API is misbehaving", 1483)
