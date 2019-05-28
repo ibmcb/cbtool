@@ -27,6 +27,7 @@ from time import time, strftime, strptime, localtime
 from os import chmod
 from random import random
 from datetime import datetime
+from re import sub, split
 
 from ..auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
@@ -604,3 +605,9 @@ def value_cleanup(object_dict, unit) :
     _val_string = _val_string[0:-3]
             
     return _val_string
+
+def natural_keys(text):
+  def atoi(text):
+    return int(text) if text.isdigit() else text
+
+  return [ atoi(c) for c in split(r'(\d+)', text) ]
