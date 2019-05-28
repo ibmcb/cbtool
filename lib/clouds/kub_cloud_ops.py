@@ -30,6 +30,7 @@ import operator
 import pykube
 import traceback
 import threading
+import json
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
@@ -389,7 +390,17 @@ class KubCmds(CommonCloudFunctions) :
                                 _msg += " in namespace (" + str(_namespace) + ")"
                                 cbdebug(_msg, True)
                                 
-                                _object.delete()
+                                if force_all :
+                                    # For kubernetes as a service (non-static clusters), there's no need to wait for ever for pods to delete.
+                                    # Make sure they don't take forever.
+                                    r = _object.api.delete(**_object.api_kwargs(data=json.dumps({"propagationPolicy" : "Background", "gracePeriodSeconds" : 0})))
+                                    if r.status_code != 404:
+                                        _object.api.raise_for_status(r)
+                                else :
+                                    # Otherwise, if it's a permanent k8s cluster, send a normal delete.
+                                    # If the delete gets stuck, the user needs to investiage.
+                                    _object.delete()
+
                                     
                         sleep(_wait)
         
