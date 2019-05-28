@@ -70,6 +70,8 @@ DATABASE_SIZE_VERSUS_MEMORY = 0.5
 REPLICATION_FACTOR = 3
 LOAD_THREADS = 8
 DROP_KEYSPACE = 1
+# 50% for cassandra. Docs recommend leaving a lot available for page cache
+SEED_RAM_PERCENTAGE = 50
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

@@ -42,19 +42,20 @@ syslog_netcat "Starting generic VM post_boot configuration"
 linux_distribution
 setup_passwordless_ssh
 
+syslog_netcat "Relaxing all security configurations"
+security_configuration
+
 load_manager_vm_uuid=`get_my_ai_attribute load_manager_vm`
 
 if [[ x"${my_vm_uuid}" == x"${load_manager_vm_uuid}" || x"${my_type}" == x"none" ]]
 then
-    syslog_netcat "Relaxing all security configurations"
-    security_configuration
     syslog_netcat "Starting (AI) Log store..."
     start_syslog `get_global_sub_attribute logstore port`
     syslog_netcat "Local (AI) Log store started"
     syslog_netcat "Starting (AI) Object store..."
     start_redis ${osportnumber}
     syslog_netcat "Local (AI) Object store started"
-    setup_rclocal_restarts
+	setup_rclocal_restarts
 fi
 
 refresh_hosts_file
