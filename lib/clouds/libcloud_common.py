@@ -926,7 +926,12 @@ class LibcloudCmds(CommonCloudFunctions) :
             
             if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
                 if self.use_get_image :
-                    _candidate_images = self.get_adapter(obj_attr_list["credentials_list"]).get_image(obj_attr_list["imageid1"])
+                    try :
+                        _candidate_images = self.get_adapter(obj_attr_list["credentials_list"]).get_image(obj_attr_list["imageid1"])
+                    except BaseHTTPError, e :
+                        if e.code == 404 :
+                            cbdebug("Instead looking for: " + obj_attr_list["imageid1"].replace("_", " "), True)
+                            _candidate_images = self.get_adapter(obj_attr_list["credentials_list"]).get_image(obj_attr_list["imageid1"].replace("_", " "))
                 else :
                     for _image in self.get_adapter(obj_attr_list["credentials_list"]).list_images() :
                         if _image.id == obj_attr_list["imageid1"] :

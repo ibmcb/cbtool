@@ -52,9 +52,9 @@ class DoCmds(LibcloudCmds) :
         # arbitrary length. At best we can detect whether or not they
         # are integers, but the number of digits is never a guarantee.
 
-        if is_number(imageid) :
-            return True
-        return False
+        # DigitalOcean also supports regularly-named images.
+        # Just return true unconditionally.
+        return True
 
     @trace            
     def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
