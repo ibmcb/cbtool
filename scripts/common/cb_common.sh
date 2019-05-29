@@ -39,6 +39,7 @@ RANGE=60
 ATTEMPTS=3
 
 SETUP_TIME=20
+SUDO_CMD=`which sudo`
 
 NEST_EXPORTED_HOME="/tmp/userhome"
 
@@ -1395,7 +1396,7 @@ function replicate_to_container_if_nested {
     syslog_netcat "Container started, settling..."
 
     # Figure out when the container is ready
-    ATTEMPTS=100
+    ATTEMPTS=400
     while true ; do
         out=$(sudo docker exec -u ${username} --privileged cbnested bash -c "if [ x\"\$(ps -ef | grep sshd | grep -v grep)\" != x ] ; then exit 0 ; else exit 2 ; fi" 2>&1)
         rc=$?
@@ -1468,7 +1469,6 @@ function post_boot_steps {
 
     SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
     KILL_CMD=`which killall`
-    SUDO_CMD=`which sudo`
     export PATH=$PATH:/sbin
     PIDOF_CMD=`which pidof`
 

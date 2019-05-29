@@ -115,6 +115,29 @@ sudo sed -i "s/write_request_timeout_in_ms:.*$/write_request_timeout_in_ms: 2000
 sudo sed -i "s/auto_snapshot:.*$/auto_snapshot: false/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
 #sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}    
+
+SEED_RAM_PERCENTAGE=`get_my_ai_attribute_with_default seed_ram_percentage 50`
+
+# Set cassandra's JVM heap to be a percentage of main memory,
+# despite Cassandra's own internal algorithms. Cassandra docs, however,
+# believe that no more than 8GB should be used for jvm garbage collection,
+# so we'll cap it there.
+kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
+mb=$(echo "$kb / 1024 * ${SEED_RAM_PERCENTAGE} / 100" | bc)
+if [ ${mb} -gt 8192 ] ; then
+	mb=8192
+fi
+
+${SUDO_CMD} su -c "sed -ie 's/#MAX_HEAP_SIZE=.*/MAX_HEAP_SIZE=\"${mb}M\"/g' /etc/cassandra/cassandra-env.sh"
+
+# Cassandra docs also recommend 100MB per logical cpu for the following. Let's also cap at 800mb.
+mb=$(echo "${NR_CPUS} * 100" | bc)
+if [ ${mb} -gt 800 ] ; then
+	mb=800
+fi
+
+${SUDO_CMD} su -c "sed -ie 's/#HEAP_NEWSIZE=.*/HEAP_NEWSIZE=\"${mb}M\"/g' /etc/cassandra/cassandra-env.sh"
+
 if [[ -d ${SEED_DATA_DIR} ]]
 then
     sudo sed -i "s^/var/lib/^${SEED_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
