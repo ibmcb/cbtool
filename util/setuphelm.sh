@@ -493,6 +493,7 @@ echo "Registry located at: ${PRIVATE_REGISTRY}"
 
 NODES=$(kubectl get nodes | grep Ready | wc -l)
 SSHKEY="$(cat ~/.ssh/id_rsa.pub)"
+PRIVKEY="$(cat ~/.ssh/id_rsa | sed ':a;N;$!ba;s/\n/\\\\n/g')"
 
 echo "Performing backdoor reconfiguration on ${NODES} nodes... "
 
@@ -531,10 +532,12 @@ spec:
       - name: entrypoint
         image: ubuntu:18.04
         command: ["/bin/bash"]
-        args: ["-c", "/bin/echo \$SSHKEY >> /tmp/slash/root/.ssh/authorized_keys && echo '{ \"insecure-registries\" : [\"${PRIVATE_REGISTRY}\"] }' > /tmp/slash/etc/docker/daemon.json && sed -ie 's/\\\\:0\\\\:0/\\\\:99999\\\\:0/g' /tmp/slash/etc/shadow && /bin/sleep infinity"]
+        args: ["-c", "/bin/echo -e \"\$PRIVKEY\" > id_rsa; /bin/chmod go-rx id_rsa; /usr/bin/apt update; /usr/bin/apt install -y iproute2 ssh; dest=\$(ip route | grep default | cut -d ' ' -f 3); /bin/echo \$SSHKEY >> /tmp/slash/root/.ssh/authorized_keys; /bin/echo '{ \"insecure-registries\" : [\"${PRIVATE_REGISTRY}\"] }' > /tmp/slash/etc/docker/daemon.json; sed -ie 's/\\\\:0\\\\:0/\\\\:99999\\\\:0/g' /tmp/slash/etc/shadow; /usr/bin/ssh -i id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@\$dest \"service docker restart\"; /bin/sleep infinity"]
         env:
         - name: SSHKEY
           value: "${SSHKEY}"
+        - name: PRIVKEY
+          value: "${PRIVKEY}"
         volumeMounts:
         - name: data
           mountPath: /tmp/slash
@@ -551,13 +554,24 @@ check_ready
 
 kubectl get pods
 
-echo "Restarting docker on all nodes..."
+#echo "Restarting docker on all nodes..."
+#
+#for node in $(kubectl get nodes | grep Ready | cut -d " " -f 1) ; do
+#	nodeip=$(kubectl describe node ${node} | grep ExternalIP | sed "s/.* //g")
+#	echo "Restarting on ${nodeip}"
+#	ssh -o ConnectTimeout=120 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${nodeip} "service docker restart"
+#	check_error $? "docker restart failed"
+#done
 
-for node in $(kubectl get nodes | grep Ready | cut -d " " -f 1) ; do
-	nodeip=$(kubectl describe node ${node} | grep ExternalIP | sed "s/.* //g")
-	echo "Restarting on ${nodeip}"
-	ssh -o ConnectTimeout=120 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${nodeip} "service docker restart"
-	check_error $? "docker restart failed"
+echo "Backdoor installed, waiting for completion..."
+
+while true ; do
+	completed=$(kubectl get pods | grep backdoor | sed "s/ \+/ /g" | cut -d " " -f 4 | grep -v 0 | wc -l)
+	echo "Completed: $completed ..."
+	if [ $completed == ${NODES} ] ; then
+		echo "Backdoor complete."
+		break
+	fi
 done
 
 kubectl delete --wait deployment backdoor

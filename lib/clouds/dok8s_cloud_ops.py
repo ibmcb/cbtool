@@ -166,7 +166,30 @@ class Dok8sCmds(KubCmds) :
                     fwuuid = fw['id']
                     cbdebug("Firewall found: " + fwuuid)
 
-            cbdebug("Adding rule to firewall " + fwuuid)
+            # Unfortunately, the DO api has a bug in it where they return that the k8s
+            # cluster has been created, when in fact they are still performing operations
+            # on it. In this case, the firewall rules needed by k8s itself are not yet
+            # installed, and if we install our rules too fast, they get deleted.
+            # So, first wait until we "see" that their rules have been installed first
+            # before we proceed. (Not more than a few seconds).
+
+            found = False
+            while not found :
+                r = s.get(self.access + "/firewalls/" + fwuuid)
+
+                cbdebug("Checking for ready firewall rules...")
+                if r.status_code == 200 :
+                    rules = r.json()
+                    for rule in rules["firewall"]["inbound_rules"] :
+                        if str(rule["ports"]).count("30000-32767") :
+                            cbdebug("Found rule: " + str(rule))
+                            found = True
+                            break
+                else :
+                    cbdebug("Error " + str(r.status_code) + " checking on rule update.")
+                sleep(5)
+
+            cbdebug("Rules ready. Adding our rule to firewall " + fwuuid)
 
             vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False)
             ports_base = int(vm_defaults["ports_base"])
