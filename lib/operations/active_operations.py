@@ -36,7 +36,7 @@ from lib.auxiliary.data_ops import str2dic, dic2str, get_boostrap_command, selec
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
-from lib.auxiliary.data_ops import selective_dict_update
+from lib.auxiliary.data_ops import selective_dict_update, natural_keys
 from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds, rewrite_cloudconfig, rewrite_cloudoptions
 from lib.clouds.shared_functions import CldOpsException
 from lib.remote.network_functions import Nethashget
@@ -1072,7 +1072,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "experiment: " + _fmsg
                 cberr(_msg)
             else :
-                _msg = "\nAll VMCs successfully attached to this experiment." + self.walkthrough_messages("CLOUD", "attach", _obj_attr_list)
+                _msg = "\nAll VMCs successfully attached to this experiment." + self.walkthrough_messages("CLOUD", "attach", obj_attr_list)
                 cbdebug(_msg)
                         
             return self.package(_status, _msg, self.get_cloud_parameters(obj_attr_list["cloud_name"]))
@@ -1247,14 +1247,59 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _vmc_uuid_list = self.osci.query_by_view(_cn, "VMC", "BYPOOL", \
                                                          obj_attr_list["vmc_pool"])
 
-    
                 if len(_vmc_uuid_list) :
-                    _vmc_defaults = self.osci.get_object(_cn, "GLOBAL", False, \
-                                                         "vmc_defaults", False)
+
+                    # We want round-robin support to be as deterministic as possible
+                    # We want to iterate through the VMC lists by name so that they
+                    # are always visited in the same order, so do a basic lexicographical sort.
+                    if len(_vmc_uuid_list) > 1 :
+                        _vmc_uuid_names = {}
+                        for _vitem in _vmc_uuid_list :
+                            _vmc_uuid_names[_vitem.split("|")[1]] = _vitem
+
+                        _vitem_names = _vmc_uuid_names.keys()
+                        _vitem_names.sort(key=natural_keys)
+                        _vmc_uuid_list = []
+
+                        for _vitem in _vitem_names :
+                            _vmc_uuid_list.append(_vmc_uuid_names[_vitem])
+
+                        cbdebug("Naturally sorted VMC uuid list by name: " + str(_vmc_uuid_list))
+    
+                    _vmc_defaults = self.osci.get_object(_cn, "GLOBAL", False, "vmc_defaults", False)
                     if str(_vmc_defaults["placement_method"]).lower().strip().count("roundrobin") : # use round-robin
                         # Intra-Pool Round-robin support.
                         _visited = []
-                        _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", obj_attr_list["vmc_pool"], 1)
+
+                        if obj_attr_list["ai_name"].lower() != "none" :
+                            # Force serializing of the placement decision (but not the attachment)
+                            # so that we can deterministically round-robin VMs to the same places
+                            # during baseline tests.
+                            while True :
+                                _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", obj_attr_list["vmc_pool"], 1)
+                                assert(_vmc_lock)
+                                cbdebug("Waiting: " + str(obj_attr_list["placement_order"]) + " for AI " + str(obj_attr_list["ai"]))
+                                placement_leader = self.osci.pending_object_get(_cn, "AI", obj_attr_list["ai"], "placement_leader", failcheck = False)
+
+                                if isinstance(placement_leader, bool) and not placement_leader :
+                                    cbdebug("Initializing placement leader: 0")
+                                    self.osci.pending_object_set(_cn, "AI", obj_attr_list["ai"], "placement_leader", 0)
+                                    placement_leader = 0
+                                else :
+                                   cbdebug("Got leader: " + str(placement_leader))
+
+                                if int(placement_leader) == int(obj_attr_list["placement_order"]) :
+                                    cbdebug("It's my turn! " + obj_attr_list["name"])
+                                    self.osci.pending_object_set(_cn, "AI", obj_attr_list["ai"], "placement_leader", int(placement_leader) + 1)
+                                    break
+                                else :
+                                    cbdebug("Placement leader: " + str(placement_leader))
+
+                                self.osci.release_lock(_cn, "VMC", "vmc_placement", _vmc_lock)
+                                sleep(1)
+                        else :
+                            _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", obj_attr_list["vmc_pool"], 1)
+
                         assert(_vmc_lock)
 
                         for _vmc_uuid_entry in _vmc_uuid_list :
@@ -1281,7 +1326,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         cbdebug("After Visited: " + str(len(_visited)) + " total: " + str(len(_vmc_uuid_list)))
 
                     assert(len(_vmc_uuid_list))
-                    obj_attr_list["vmc"] = choice(_vmc_uuid_list).split('|')[0]
+                    if str(_vmc_defaults["placement_method"]).lower().strip().count("roundrobin") :
+                        obj_attr_list["vmc"] = _vmc_uuid_list[0].split('|')[0]
+                        cbdebug("Round-robin selected: " + str(_vmc_uuid_list[0]))
+                    else :
+                        obj_attr_list["vmc"] = choice(_vmc_uuid_list).split('|')[0]
 
                     if str(_vmc_defaults["placement_method"]).lower().strip().count("colocate") :
                         _colocate_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_colocate", obj_attr_list["vmc_pool"], 1)
@@ -2576,6 +2625,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(obj.msg)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
 

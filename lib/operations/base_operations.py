@@ -2169,7 +2169,6 @@ class BaseObjectOperations :
             else :
                 obj_attr_list["load_balancer_target_role"] = "none"
 
-            _vm_nr = 1
             _cloud_ips = {}
             for _tier_nr in range(0, len(_tiers)) :
 
@@ -2204,6 +2203,7 @@ class BaseObjectOperations :
                     _pobj_uuid = _pobj_uuid.upper()
                     obj_attr_list["vms"] += _pobj_uuid + ','
                     obj_attr_list["parallel_operations"][_vm_counter]["uuid"] = _pobj_uuid
+                    obj_attr_list["parallel_operations"][_vm_counter]["placement_order"] = _vm_counter
                     obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
                     obj_attr_list["parallel_operations"][_vm_counter]["ai_name"] = obj_attr_list["name"]
                     obj_attr_list["parallel_operations"][_vm_counter]["aidrs"] = obj_attr_list["aidrs"]
