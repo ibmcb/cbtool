@@ -37,45 +37,12 @@ import socket
 
 from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
-from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit, ReconnectingNewlineSysLogHandler
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
 from lib.stores.redis_datastore_adapter import RedisMgdConn
 
 from daemon import DaemonContext
-
-# Extend the class so that we emit a newline instead of the #000 character
-# when running over TCP
-# This bug was fixed in python v3, but not v2: https://bugs.python.org/issue12168
-class NewlineSysLogHandler(logging.handlers.SysLogHandler):
-    def emit(self, record):
-        try:
-            msg = self.format(record) + '\n'
-            """
-            We need to convert record level to lowercase, maybe this will
-            change in the future.
-            """
-            prio = '<%d>' % self.encodePriority(self.facility,
-                                                self.mapPriority(record.levelname))
-            # Message is a string. Convert to bytes as required by RFC 5424
-            if type(msg) is unicode:
-                msg = msg.encode('utf-8')
-            msg = prio + msg
-            if self.unixsocket:
-                try:
-                    self.socket.send(msg)
-                except socket.error:
-                    self.socket.close() # See issue 17981
-                    self._connect_unixsocket(self.address)
-                    self.socket.send(msg)
-            elif self.socktype == socket.SOCK_DGRAM:
-                self.socket.sendto(msg, self.address)
-            else:
-                self.socket.sendall(msg)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            self.handleError(record)
 
 def actuator_cli_parsing() :
     
@@ -270,7 +237,7 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest,
                 _facility = 23
 
             if protocol == "TCP" :
-                hdlr = NewlineSysLogHandler(address = (hostname, int(port)),
+                hdlr = ReconnectingNewlineSysLogHandler(address = (hostname, int(port)),
                                             facility=_syslog_selector[str(_facility)],
                                             socktype = socket.SOCK_STREAM)
             else :

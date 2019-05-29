@@ -25,11 +25,13 @@
 '''
 
 from __future__ import print_function
-from logging.handlers import logging
+from logging.handlers import logging, SysLogHandler
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO
 from sys import getsizeof, stderr, _getframe
 from itertools import chain
 from collections import deque
+import sys
+import socket
 import __builtin__
 
 try:
@@ -267,3 +269,92 @@ def total_size(o, handlers={}, verbose=False):
 
 
     print(total_size(d, verbose=True))
+
+# Extend the class so that we emit a newline instead of the #000 character
+# when running over TCP
+# This bug was fixed in python v3, but not v2: https://bugs.python.org/issue12168
+#
+# Also further extend the class to handle TCP socket failure.
+class ReconnectingNewlineSysLogHandler(logging.handlers.SysLogHandler):
+    """Syslog handler that reconnects if the socket closes
+
+    If we're writing to syslog with TCP and syslog restarts, the old TCP socket
+    will no longer be writeable and we'll get a socket.error of type 32.  When
+    than happens, use the default error handling, but also try to reconnect to
+    the same host/port used before.  Also make 1 attempt to re-send the
+    message.
+    """
+    def __init__(self, *args, **kwargs):
+        super(ReconnectingNewlineSysLogHandler, self).__init__(*args, **kwargs)
+        self._is_retry = False
+
+    def _reconnect(self):
+        """Make a new socket that is the same as the old one"""
+        # close the existing socket before getting a new one to the same host/port
+        if self.socket:
+            self.socket.close()
+
+        # cut/pasted from logging.handlers.SysLogHandler
+        if self.unixsocket:
+            self._connect_unixsocket(self.address)
+        else:
+            self.socket = socket.socket(socket.AF_INET, self.socktype)
+            if self.socktype == socket.SOCK_STREAM:
+                self.socket.connect(self.address)
+
+    def handleError(self, record):
+        # use the default error handling (writes an error message to stderr)
+        super(ReconnectingNewlineSysLogHandler, self).handleError(record)
+
+        # If we get an error within a retry, just return.  We don't want an
+        # infinite, recursive loop telling us something is broken.
+        # This leaves the socket broken.
+        if self._is_retry:
+            return
+
+        # Set the retry flag and begin deciding if this is a closed socket, and
+        # trying to reconnect.
+        self._is_retry = True
+        try:
+            __, exception, __ = sys.exc_info()
+            # If the error is a broken pipe exception (32), get a new socket.
+            if isinstance(exception, socket.error) and exception.errno == 32:
+                try:
+                    self._reconnect()
+                except:
+                    # If reconnecting fails, give up.
+                    pass
+                else:
+                    # Make an effort to rescue the recod.
+                    self.emit(record)
+        finally:
+            self._is_retry = False
+
+    def emit(self, record):
+        try:
+            msg = self.format(record) + '\n'
+            """
+            We need to convert record level to lowercase, maybe this will
+            change in the future.
+            """
+            prio = '<%d>' % self.encodePriority(self.facility,
+                                                self.mapPriority(record.levelname))
+            # Message is a string. Convert to bytes as required by RFC 5424
+            if type(msg) is unicode:
+                msg = msg.encode('utf-8')
+            msg = prio + msg
+            if self.unixsocket:
+                try:
+                    self.socket.send(msg)
+                except socket.error:
+                    self.socket.close() # See issue 17981
+                    self._connect_unixsocket(self.address)
+                    self.socket.send(msg)
+            elif self.socktype == socket.SOCK_DGRAM:
+                self.socket.sendto(msg, self.address)
+            else:
+                self.socket.sendall(msg)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
