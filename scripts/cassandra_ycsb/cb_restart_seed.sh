@@ -116,27 +116,50 @@ sudo sed -i "s/auto_snapshot:.*$/auto_snapshot: false/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
 #sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}    
 
-SEED_RAM_PERCENTAGE=`get_my_ai_attribute_with_default seed_ram_percentage 50`
+SEED_RAM_PERCENTAGE=`get_my_ai_attribute_with_default seed_ram_percentage AUTO`
 
-# Set cassandra's JVM heap to be a percentage of main memory,
-# despite Cassandra's own internal algorithms. Cassandra docs, however,
-# believe that no more than 8GB should be used for jvm garbage collection,
-# so we'll cap it there.
 kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
-mb=$(echo "$kb / 1024 * ${SEED_RAM_PERCENTAGE} / 100" | bc)
-if [ ${mb} -gt 8192 ] ; then
-	mb=8192
+ram=$(echo "$kb / 1024" | bc)
+
+mb="false"
+
+if [ ${SEED_RAM_PERCENTAGE} == "AUTO" ] ; then
+	if [ $ram -le 2048 ] ; then
+		syslog_netcat "You need at least 2GB of RAM to complete the benchmark for each instance. You currently are using ${ram}MB instances. Please increase and try again."
+		exit 3
+	fi
+
+	if [ $ram -le 4096 ] ; then
+		mb=2048
+	fi
+	
+	# else do nothing. Don't modify any settings.
+
+else
+	# Set cassandra's JVM heap to be a percentage of main memory,
+	# despite Cassandra's own internal algorithms. Cassandra docs, however,
+	# believe that no more than 8GB should be used for jvm garbage collection,
+	# so we'll cap it there.
+	mb=$(echo "$kb / 1024 * ${SEED_RAM_PERCENTAGE} / 100" | bc)
+	if [ ${mb} -gt 8192 ] ; then
+		mb=8192
+	fi
 fi
 
-${SUDO_CMD} su -c "sed -ie 's/#MAX_HEAP_SIZE=.*/MAX_HEAP_SIZE=\"${mb}M\"/g' /etc/cassandra/cassandra-env.sh"
+if [ $mb != "false" ] ; then
+	syslog_netcat "Setting JVM heap to ${mb}MB"
 
-# Cassandra docs also recommend 100MB per logical cpu for the following. Let's also cap at 800mb.
-mb=$(echo "${NR_CPUS} * 100" | bc)
-if [ ${mb} -gt 800 ] ; then
-	mb=800
+	${SUDO_CMD} su -c "sed -ie 's/#MAX_HEAP_SIZE=.*/MAX_HEAP_SIZE=\"${mb}M\"/g' /etc/cassandra/cassandra-env.sh"
+
+	# Cassandra docs require the heap size to be changed *in tandem* with this tunable as well:
+	# For this one it recommends 100MB per logical cpu for the following. Let's also cap at 800mb.
+	mb=$(echo "${NR_CPUS} * 100" | bc)
+	if [ ${mb} -gt 800 ] ; then
+		mb=800
+	fi
+
+	${SUDO_CMD} su -c "sed -ie 's/#HEAP_NEWSIZE=.*/HEAP_NEWSIZE=\"${mb}M\"/g' /etc/cassandra/cassandra-env.sh"
 fi
-
-${SUDO_CMD} su -c "sed -ie 's/#HEAP_NEWSIZE=.*/HEAP_NEWSIZE=\"${mb}M\"/g' /etc/cassandra/cassandra-env.sh"
 
 if [[ -d ${SEED_DATA_DIR} ]]
 then
