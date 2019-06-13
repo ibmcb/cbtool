@@ -177,3 +177,4 @@ XPINGRECEIVER =  size:1-256, imageid1:cb_xping
 XPINGSENDER =  size:1-256, imageid1:cb_xping
 YATINYVM = size:1-256, imageid1:cb_nullworkload
 YCSB = size:2-4096, imageid1:cb_ycsb
+TPCC = size:2-4096, imageid1:cb_tpcc
