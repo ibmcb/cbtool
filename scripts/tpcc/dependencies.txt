@@ -1,0 +1,39 @@
+### START - Dependency installation order ###
+redis-order = 81
+mysql-order = 82
+sysbench-order = 83
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+redit-install = pip
+mysql-install = pm
+sysbench-install = pm
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+redit-configure = redis-cli --version | awk '{ print $2 }'
+mysql-configure = mysql --version | cut -d ' ' -f 6
+sysbench-configure = sysbench --version | awk '{ print $2 }'
+### END - Tests ###
+
+### START - Dependency versions ###
+redis-ver = 2.10.6
+mysql-ver = 2.0
+sysbench-ver = 1.0
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###
