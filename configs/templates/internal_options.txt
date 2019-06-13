@@ -555,3 +555,4 @@ BONNIE = imageids:1, imageid1:ubuntu_cb_bonnie
 LINPACK = imageids:1, imageid1:ubuntu_cb_linpack
 KERNBENCH = imageids:1, imageid1:ubuntu_cb_kernbench
 LB = imageids:1, imageid1:ubuntu_cb_nullworkload
+TPCC = imageids:1, imageid1:ubuntu_cb_tpcc

@@ -95,7 +95,7 @@ sed -i s/"<NBs>"/"$NB_SIZE"/g      $infile
 sed -i s/"<Ps>"/"1"/g              $infile
 sed -i s/"<Qs>"/"$NUM_PROCESSES"/g $infile
 
-CMDLINE="mpirun -np $NUM_PROCESSES --machinefile $cluster_hosts_file --mca btl tcp,self $bench_app_bin"
+CMDLINE="mpirun --allow-run-as-root -np $NUM_PROCESSES --machinefile $cluster_hosts_file --mca btl tcp,self $bench_app_bin"
 
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 
