@@ -9,7 +9,7 @@
 #
 #/*******************************************************************************
 #    Created on October 10, 2018
-#    VPN-support for k8s within CloudBench 
+#    VPN-support for k8s within CloudBench
 #    @author: Michael R. Hines
 #
 #   We take a completely different approach with using OpenVPN with Kubernetes.
@@ -122,8 +122,9 @@ check_error $? "tiller service account"
 check_ready
 
 vpn_network=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['network'].lower()")
+VPN_NODE_PORT="32085"
 
-cat << EOF > /tmp/cbhelm_openvpn_values.yaml 
+cat << EOF > /tmp/cbhelm_openvpn_values.yaml
 replicaCount: 1
 
 updateStrategy: {}
@@ -132,20 +133,20 @@ image:
   tag: 1.1.0
   pullPolicy: IfNotPresent
 service:
-  type: LoadBalancer
+  type: NodePort
   externalPort: 443
   internalPort: 443
   externalIPs: []
-  nodePort: 32085
+  nodePort: ${VPN_NODE_PORT}
   annotations: {}
 podAnnotations: {}
 
 resources:
   limits:
-    cpu: 1024m
+    cpu: 500m
     memory: 1024Mi
   requests:
-    cpu: 1024m
+    cpu: 500m
     memory: 1024Mi
 persistence:
   enabled: true
@@ -157,14 +158,14 @@ persistence:
   size: 1Gi
 openvpn:
   # Network allocated for openvpn clients (default: 10.240.0.0).
-  OVPN_NETWORK: ${vpn_network} 
+  OVPN_NETWORK: ${vpn_network}
   # Network subnet allocated for openvpn client (default: 255.255.0.0).
   OVPN_SUBNET: 255.255.240.0
   # Protocol used by openvpn tcp or udp (default: udp).
   OVPN_PROTO: tcp
   dhcpOptionDomain: true
   # Redirect all client traffic through VPN
-  redirectGateway: false 
+  redirectGateway: false
   # Arbitrary lines appended to the end of the server configuration file
   conf: |
     script-security 2
@@ -173,20 +174,6 @@ openvpn:
     up "/bin/bash -c '/bin/touch /etc/openvpn/certs/portforward.sh && /bin/chmod +x /etc/openvpn/certs/portforward.sh && /etc/openvpn/certs/portforward.sh'"
     max-clients 10000
 EOF
-
-echo "Installing OpenVPN in the cluster ... "
-while true ; do
-	helm install stable/openvpn -f /tmp/cbhelm_openvpn_values.yaml
-	if [ $? -eq 0 ] ; then
-		break
-	fi
-
-	echo "Helm didn't succeed. Trying again."
-	sleep 10
-	check_ready
-done
-
-echo "Installing the docker registry"
 
 REGISTRYPORT=5000
 accesskey="$1"
@@ -204,13 +191,13 @@ updateStrategy:
 podAnnotations: {}
 
 image:
-  repository: registry@sha256 
-  tag: 5a156ff125e5a12ac7fdec2b90b7e2ae5120fa249cf62248337b6d04abc574c8 
+  repository: registry@sha256
+  tag: 5a156ff125e5a12ac7fdec2b90b7e2ae5120fa249cf62248337b6d04abc574c8
   pullPolicy: IfNotPresent
 service:
   name: registry
   type: ClusterIP
-  port: ${REGISTRYPORT} 
+  port: ${REGISTRYPORT}
   annotations: {}
 ingress:
   enabled: false
@@ -227,7 +214,7 @@ persistence:
   size: 10Gi
   # storageClass: '-'
 
-storage: s3 
+storage: s3
 secrets:
    s3:
      accessKey: "${accesskey}"
@@ -264,15 +251,151 @@ nodeSelector: {}
 tolerations: []
 EOF
 
+
 echo "Installing docker registry backed by Object storage"
+while true ; do
+	helm install stable/docker-registry -f /tmp/cbhelmregistry.yaml
+	if [ $? -eq 0 ] ; then
+		break
+	fi
 
-helm install stable/docker-registry -f /tmp/cbhelmregistry.yaml
-
-check_error $? "helm install registry"
+	echo "Helm didn't succeed. Trying again."
+	sleep 10
+	check_ready
+done
 
 check_ready
 
+while true ; do
+	RELEASE=$(helm list | grep registry | sed "s/\t/ /g" | cut -d " " -f 1)
+	if [ $? -eq 0 ] && [ x"$RELEASE" != x ]; then
+		break
+	fi
+	echo "Registry not ready yet..."
+	check_ready
+done
+
+while true ; do
+	PODNAME=$(kubectl get pods --namespace default -l "app=docker-registry,release=${RELEASE}" -o jsonpath="{.items[0].metadata.name}")
+	if [ $? -eq 0 ] && [ x"$PODNAME" != x ]; then
+		break
+	fi
+	echo "Pod name not yet ready... "
+	check_ready
+done
+
+SERVICE_NAME=$(kubectl get svc --namespace "default" -l "app=docker-registry,release=${RELEASE}" -o jsonpath='{ .items[0].metadata.name }')
+echo "Registry Service name: ${SERVICE_NAME}"
+check_error $? "get registry service name"
+check_ready
+
+while true ; do
+	REGISTRYIP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
+	code=$?
+	if [ $code -eq 0 ] && [ x"$REGISTRYIP" != x ] ; then
+		break
+	fi
+	echo "Docker Service IP not yet ready ..."
+	sleep 10
+	check_ready
+done
+
+PRIVATE_REGISTRY="${REGISTRYIP}:${REGISTRYPORT}"
+python -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu_')"
+
+echo "Registry located at: ${PRIVATE_REGISTRY}"
+NODES=$(kubectl get nodes | grep Ready | wc -l)
+SSHKEY="$(cat ~/.ssh/id_rsa.pub)"
+PRIVKEY="$(cat ~/.ssh/id_rsa | sed ':a;N;$!ba;s/\n/\\\\n/g')"
+
+echo "Performing backdoor reconfiguration on ${NODES} nodes... "
+
+cat << EOF > /tmp/cbbackdoor.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backdoor
+  labels:
+    app: foo
+spec:
+  replicas: ${NODES}
+  selector:
+    matchLabels:
+      app: foo
+  template:
+    metadata:
+      labels:
+       app: foo
+    spec:
+      volumes:
+      - name: data
+        hostPath:
+          path: /
+      affinity:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchExpressions:
+                        - key: "app"
+                          operator: In
+                          values:
+                          - foo
+                    topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: entrypoint
+        image: ubuntu:18.04
+        command: ["/bin/bash"]
+        args: ["-c", "/bin/echo -e \"\$PRIVKEY\" > id_rsa; /bin/chmod go-rx id_rsa; while true ; do /usr/bin/apt update; /usr/bin/apt install -y iproute2 ssh; if [ \$? -eq 0 ] ; then break; fi; done; dest=\$(ip route | grep default | cut -d ' ' -f 3); /bin/echo \$SSHKEY >> /tmp/slash/root/.ssh/authorized_keys; /bin/echo '{ \"insecure-registries\" : [\"${PRIVATE_REGISTRY}\"] }' > /tmp/slash/etc/docker/daemon.json; sed -ie 's/\\\\:0\\\\:0/\\\\:99999\\\\:0/g' /tmp/slash/etc/shadow; sleep 120; /usr/bin/ssh -i id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@\$dest \"service docker restart\"; /bin/sleep infinity"]
+        env:
+        - name: SSHKEY
+          value: "${SSHKEY}"
+        - name: PRIVKEY
+          value: "${PRIVKEY}"
+        volumeMounts:
+        - name: data
+          mountPath: /tmp/slash
+          readOnly: false
+        securityContext:
+          privileged: true
+EOF
+
+
+cat /tmp/cbbackdoor.yaml | kubectl create -f -
+check_error $? "install backdoor"
+
+check_ready
+
+kubectl get pods
+
+echo "Backdoor installed, waiting for completion on ${NODES} nodes ..."
+
+last_completed=0
+while true ; do
+	completed=$(kubectl get pods | grep backdoor | sed "s/ \+/ /g" | cut -d " " -f 4 | grep -v 0 | wc -l)
+    if [ $completed -gt ${last_completed} ] ; then
+		echo "Completed: $completed / ${NODES} ..."
+		last_completed=$completed
+	fi
+	if [ $completed == ${NODES} ] ; then
+		echo "Backdoor complete."
+		break
+	fi
+done
+
+echo "Installing OpenVPN in the cluster ... "
+while true ; do
+	helm install stable/openvpn -f /tmp/cbhelm_openvpn_values.yaml
+	if [ $? -eq 0 ] ; then
+		break
+	fi
+
+	echo "Helm didn't succeed. Trying again."
+	sleep 10
+	check_ready
+done
+
 echo "Configuring CB to recognize the openvpn server ..."
+
 POD_NAME=$(kubectl get pods --namespace "default" -l app=openvpn -o jsonpath='{ .items[0].metadata.name }')
 
 VPN_STATUS_PORT=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['management_port'].lower()")
@@ -302,13 +425,23 @@ echo "Service name: ${SERVICE_NAME}"
 check_error $? "get service name"
 check_ready
 
+SERVICE_IP=""
 while true ; do
-	SERVICE_IP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o go-template='{{ range $k, $v := (index .status.loadBalancer.ingress 0)}}{{ $v }}{{end}}')
-	INTERNAL_SERVICE_IP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
-	code=$?
-	if [ $code -eq 0 ] && [ x"$SERVICE_IP" != x ] ; then
-		break
-	fi
+	if [ x"${SERVICE_IP}" == x ] ; then
+		POD_NODE=$(kubectl get pod ${POD_NAME} -o json | jq -r .spec.nodeName)
+		for key in $(kubectl get node -o json ${POD_NODE} | jq -r .status.addresses | jq "keys[]") ; do
+			iptype=$(kubectl get node -o json ${POD_NODE} | jq -r ".status.addresses[${key}].type")
+			if [ $iptype == "ExternalIP" ] ; then
+				SERVICE_IP=$(kubectl get node -o json ${POD_NODE} | jq -r ".status.addresses[${key}].address")
+				break
+			fi
+		done
+		INTERNAL_SERVICE_IP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
+		code=$?
+		if [ $code -eq 0 ] && [ x"$SERVICE_IP" != x ] ; then
+			break
+		fi
+    fi
 	echo "Service IP not yet ready ..."
 	sleep 10
 	check_ready
@@ -327,6 +460,10 @@ echo "management-log-cache 10000" >> /tmp/${KEY_NAME}.ovpn
 # The helm chart unconditionally creates this route, which is wrong. Get rid of it.
 echo 'pull-filter ignore "route 10.0.0.0"' >> /tmp/${KEY_NAME}.ovpn
 echo 'pull-filter ignore redirect-gateway' >> /tmp/${KEY_NAME}.ovpn
+echo 'verb 3' >> /tmp/${KEY_NAME}.ovpn
+echo 'keepalive 10 60' >> /tmp/${KEY_NAME}.ovpn
+echo "log /var/log/cloudbench/$(whoami)_openvpn-cb.log" >> /tmp/${KEY_NAME}.ovpn
+sed -ie "s/443/${VPN_NODE_PORT}/g" /tmp/${KEY_NAME}.ovpn
 
 echo "Starting VPN ..."
 sudo openvpn --config /tmp/${KEY_NAME}.ovpn --daemon
@@ -338,7 +475,7 @@ echo "Getting local VPN IP... "
 bootstrap=""
 
 while true ; do
-	bootstrap=$(echo -e "log all\nexit" | nc localhost ${VPN_STATUS_PORT} | grep "ip addr" | sed "s/.*local //g" | sed "s/ .*//g")
+	bootstrap=$(echo -e "log all\nexit" | nc localhost ${VPN_STATUS_PORT} | grep "ip addr" | sed "s/.*local //g" | sed "s/ .*//g" | uniq)
 	if [ x"$bootstrap" != x ] ; then
 		echo "Bootstrap VPN IP: $bootstrap"
 		break
@@ -399,36 +536,35 @@ cat << EOF > /tmp/cbvpnservice.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: openvpn-proxy 
+  name: openvpn-proxy
 spec:
-#  type: NodePort
   ports:
-  - port: ${redisport} 
+  - port: ${redisport}
     protocol: TCP
     name: redis
-    targetPort: ${redisport} 
-  - port: 22 
+    targetPort: ${redisport}
+  - port: 22
     protocol: TCP
-    name: ssh 
-    targetPort: 22 
-  - port: ${metricport} 
+    name: ssh
+    targetPort: 22
+  - port: ${metricport}
     protocol: TCP
-    name: mongodb 
-    targetPort: ${metricport} 
-  - port: ${logport} 
-    protocol: ${logprotoupper} 
-    name: rsyslog 
-    targetPort: ${logport} 
-  - port: ${apiport} 
+    name: mongodb
+    targetPort: ${metricport}
+  - port: ${logport}
+    protocol: ${logprotoupper}
+    name: rsyslog
+    targetPort: ${logport}
+  - port: ${apiport}
     protocol: TCP
-    name: api 
-    targetPort: ${apiport} 
-  - port: ${fileport} 
+    name: api
+    targetPort: ${apiport}
+  - port: ${fileport}
     protocol: TCP
-    name: rsync 
-    targetPort: ${fileport} 
+    name: rsync
+    targetPort: ${fileport}
   selector:
-    app: openvpn 
+    app: openvpn
 EOF
 
 kubectl create -f /tmp/cbvpnservice.yaml
@@ -451,135 +587,12 @@ echo "Openvpn Proxy IP: ${INTERNAL_SERVICE_IP}"
 
 python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
 
-while true ; do
-	RELEASE=$(helm list | grep registry | sed "s/\t/ /g" | cut -d " " -f 1)
-	if [ $? -eq 0 ] && [ x"$RELEASE" != x ]; then
-		break
-	fi
-	echo "Registry not ready yet..."
-	check_ready
-done
-
-while true ; do
-	PODNAME=$(kubectl get pods --namespace default -l "app=docker-registry,release=${RELEASE}" -o jsonpath="{.items[0].metadata.name}")
-	if [ $? -eq 0 ] && [ x"$PODNAME" != x ]; then
-		break
-	fi
-	echo "Pod name not yet ready... "
-	check_ready
-done
-	
-SERVICE_NAME=$(kubectl get svc --namespace "default" -l "app=docker-registry,release=${RELEASE}" -o jsonpath='{ .items[0].metadata.name }')
-echo "Registry Service name: ${SERVICE_NAME}"
-check_error $? "get registry service name"
-check_ready
-
-while true ; do
-	REGISTRYIP=$(kubectl get svc --namespace "default" "$SERVICE_NAME" -o json | jq -r .spec.clusterIP)
-	code=$?
-	if [ $code -eq 0 ] && [ x"$REGISTRYIP" != x ] ; then
-		break
-	fi
-	echo "Docker Service IP not yet ready ..."
-	sleep 10
-	check_ready
-done
-
-
-PRIVATE_REGISTRY="${REGISTRYIP}:${REGISTRYPORT}"
-python -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu_')"
-
-echo "Registry located at: ${PRIVATE_REGISTRY}"
-
-NODES=$(kubectl get nodes | grep Ready | wc -l)
-SSHKEY="$(cat ~/.ssh/id_rsa.pub)"
-PRIVKEY="$(cat ~/.ssh/id_rsa | sed ':a;N;$!ba;s/\n/\\\\n/g')"
-
-echo "Performing backdoor reconfiguration on ${NODES} nodes... "
-
-cat << EOF > /tmp/cbbackdoor.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: backdoor
-  labels:
-    app: foo
-spec:
-  replicas: ${NODES} 
-  selector:
-    matchLabels:
-      app: foo
-  template:
-    metadata:
-      labels:
-       app: foo
-    spec:
-      volumes:
-      - name: data
-        hostPath:
-          path: /
-      affinity:
-              podAntiAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  - labelSelector:
-                      matchExpressions:
-                        - key: "app"
-                          operator: In
-                          values:
-                          - foo 
-                    topologyKey: "kubernetes.io/hostname"
-      containers:
-      - name: entrypoint
-        image: ubuntu:18.04
-        command: ["/bin/bash"]
-        args: ["-c", "/bin/echo -e \"\$PRIVKEY\" > id_rsa; /bin/chmod go-rx id_rsa; /usr/bin/apt update; /usr/bin/apt install -y iproute2 ssh; dest=\$(ip route | grep default | cut -d ' ' -f 3); /bin/echo \$SSHKEY >> /tmp/slash/root/.ssh/authorized_keys; /bin/echo '{ \"insecure-registries\" : [\"${PRIVATE_REGISTRY}\"] }' > /tmp/slash/etc/docker/daemon.json; sed -ie 's/\\\\:0\\\\:0/\\\\:99999\\\\:0/g' /tmp/slash/etc/shadow; /usr/bin/ssh -i id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@\$dest \"service docker restart\"; /bin/sleep infinity"]
-        env:
-        - name: SSHKEY
-          value: "${SSHKEY}"
-        - name: PRIVKEY
-          value: "${PRIVKEY}"
-        volumeMounts:
-        - name: data
-          mountPath: /tmp/slash
-          readOnly: false
-        securityContext:
-          privileged: true
-EOF
-
-
-cat /tmp/cbbackdoor.yaml | kubectl create -f -
-check_error $? "install backdoor"
-
-check_ready
-
-kubectl get pods
-
-#echo "Restarting docker on all nodes..."
-#
-#for node in $(kubectl get nodes | grep Ready | cut -d " " -f 1) ; do
-#	nodeip=$(kubectl describe node ${node} | grep ExternalIP | sed "s/.* //g")
-#	echo "Restarting on ${nodeip}"
-#	ssh -o ConnectTimeout=120 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${nodeip} "service docker restart"
-#	check_error $? "docker restart failed"
-#done
-
-echo "Backdoor installed, waiting for completion..."
-
-while true ; do
-	completed=$(kubectl get pods | grep backdoor | sed "s/ \+/ /g" | cut -d " " -f 4 | grep -v 0 | wc -l)
-	echo "Completed: $completed ..."
-	if [ $completed == ${NODES} ] ; then
-		echo "Backdoor complete."
-		break
-	fi
-done
-
-kubectl delete --wait deployment backdoor
+kubectl delete --grace-period=0 --force=true deployment backdoor
 
 rm /tmp/cbbackdoor.yaml
-rm /tmp/cbportforward.sh 
+rm /tmp/cbportforward.sh
 rm /tmp/cbhelmregistry.yaml
 rm /tmp/cbvpnservice.yaml
-rm /tmp/cbhelm_openvpn_values.yaml 
+rm /tmp/cbhelm_openvpn_values.yaml
 
 echo "Done."
