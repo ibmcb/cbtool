@@ -48,7 +48,7 @@ START = cb_run_hadoop.sh
 
 # VApp-specific modifier parameters.
 JAVA_HOME = auto
-JAVA_VER = 7
+JAVA_VER = 8
 HADOOP_HOME = ~/hadoop-2.6.1
 HADOOP_EXAMPLES = share/hadoop/mapreduce/hadoop-mapreduce-examples-VERSION.jar
 HIBENCH_HOME = ~/HiBench
