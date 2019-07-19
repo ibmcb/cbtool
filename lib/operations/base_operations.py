@@ -1581,6 +1581,7 @@ class BaseObjectOperations :
         TBD
         '''
         try :            
+            _cloud_name = obj_attr_list["cloud_name"]
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
@@ -1640,6 +1641,21 @@ class BaseObjectOperations :
                 else :
 
                     True
+
+            elif transaction == "schedule" :
+               '''
+               We don't lock here because pre_attach_vm needs to be serialized
+               during the scheduling process and has already taken the lock.
+               '''
+               _scheduled_vms = self.osci.update_object_attribute(_cloud_name, "VMC", obj_attr_list["vmc"], False, "scheduled_vms", 1, counter = True, lock = False)
+               cbdebug("Increased count for " + obj_attr_list["vmc"] + " VM " + obj_attr_list["name"] + " up to: " + str(_scheduled_vms))
+
+            elif transaction == "deschedule" :
+               _vmc_lock = self.osci.acquire_lock(_cloud_name, "VMC", "vmc_placement", "vmc_placement", 1)
+               assert(_vmc_lock)
+               _scheduled_vms = self.osci.update_object_attribute(_cloud_name, "VMC", obj_attr_list["vmc"], False, "scheduled_vms", -1, counter = True, lock = False)
+               cbdebug("Dropped count for " + obj_attr_list["vmc"] + " VM " + obj_attr_list["name"] + " down to: " + str(_scheduled_vms))
+               self.osci.release_lock(_cloud_name, "VMC", "vmc_placement", _vmc_lock)
 
             elif transaction == "migrate" :
                 vmc = obj_attr_list["destination_vmc"]
