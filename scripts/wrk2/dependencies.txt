@@ -1,0 +1,43 @@
+### START - Dependency installation order ###
+git-order = 82
+gcc-order = 83
+nodejs-order = 84
+wrk2-order = 85
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+gcc-install = pm
+git-install = pm
+nodejs-install = pm
+wrk2-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+git-configure = gcc -v
+git-configure = git --version
+nodejs-configure = nodejs --version
+wrk2-configure = ls -la ~/wrk2/wrk
+### END - Tests ###
+
+### START - Dependency versions ###
+gcc-ver = ANY
+git-ver = ANY
+nodejs-ver = ANY
+wrk2-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###

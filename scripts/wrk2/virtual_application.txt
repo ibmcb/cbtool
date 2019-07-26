@@ -1,0 +1,61 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : WRK2] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = wrk2->nodejs
+LOAD_BALANCER_SUPPORTED = $True
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORTS = 80
+LOAD_BALANCER_TARGET_URL = 
+LOAD_BALANCER_PORT = 80
+LOAD_BALANCER_URL =
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = wrk2
+LOAD_MANAGER_ROLE = wrk2
+METRIC_AGGREGATOR_ROLE = wrk2
+CAPTURE_ROLE = nodejs 
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I800
+LOAD_DURATION = 30
+CATEGORY = application-stress
+PROFILES = default
+REFERENCE = https://github.com/giltene/wrk2
+LICENSE = Apache_v2
+REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys an instance running the wrk2 (!= wrk) HTTP load generator and one or\n
+DESCRIPTION +=more instances running the Apache Web Server (in case of multiple\n
+DESCRIPTION +=instances, an additional load balancer instance running HAProxy\n
+DESCRIPTION +=is also deployed).\n
+DESCRIPTION +=wrk2 supports controlling the RPS (requests/s).
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ \n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on wrk2 (parameter -t).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: for how long should wrk2 run.\n
+# This only has effect if the parameter LOAD_BALANCER is set to "$True"
+LB_SETUP1 = cb_restart_loadbalancer.sh
+LB_RESET1 = cb_restart_loadbalancer.sh
+# These are always executed
+NODEJS_SETUP1 = cb_restart_nodejs.sh
+START = cb_run_wrk2.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+# Requests/s. The primary motivation for using wrk2 over wrk.
+# 'auto' means make the #threads match the number of CPUs
+THREADS=auto
+CONNECTIONS=400
+# Make the backend return a fixed number of bytes
+RESPONSESIZE=0
+# Make the backend wait for a fixed amount of time
+RESPONSEDELAY=0
+PROTOCOL=http
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

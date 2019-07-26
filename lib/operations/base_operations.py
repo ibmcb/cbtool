@@ -4021,12 +4021,12 @@ class BaseObjectOperations :
                                     _msg += obj_attr_list["image_suffix"].strip() + "\" on the CLI\n"
 
                     if _obj_type == "VM" and obj_attr_list["role"] == "tinyvm" :
-                        _msg = "\n\n You have sucessfully deployed your first fully configured"
+                        _msg = "\n\n You have successfully deployed your first fully configured"
                         _msg += " instance, with the role \"tinyvm\". Now lets try deploy "
                         _msg += "our first workload with \"aiattach nullworkload\" on the CLI\n"
         
                     if _obj_type == "AI" and obj_attr_list["type"] == "nullworkload" :
-                        _msg = "\n\n You have sucessfully deployed your first workload. You can"
+                        _msg = "\n\n You have successfully deployed your first workload. You can"
                         _msg += " check the CB's GUI (go to Dashboard -> Application Performance) "
                         _msg += "or run \"monlist VM\" on the CLI. If you see application"
                         _msg += " samples, this means that the initial configuration is complete.\n"
@@ -4037,7 +4037,7 @@ class BaseObjectOperations :
         
                 if operation == "capture" :
                     if obj_attr_list["captured_image_name"] == "cb_nullworkload" :
-                        _msg = "\n\n You have sucessfully captured your first fully configured"
+                        _msg = "\n\n You have successfully captured your first fully configured"
                         _msg += " instance, with the role \"tinyvm\", as part of the workload"
                         _msg += " \"nullworkload\". Now lets try to attach this new instance"
                         _msg += " with \"vmattach tinyvm\". on the CLI\n"                
