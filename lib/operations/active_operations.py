@@ -235,14 +235,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if "walkthrough" not in cld_attr_lst :                    
                     cld_attr_lst["walkthrough"] = "false"
 
-                '''
-                This is happening too early. Moving to pre_attach_vm()
-                for _vm_role in cld_attr_lst["vm_templates"].keys() :            
-                    _aux = str2dic(cld_attr_lst["vm_templates"][_vm_role])
-                    _aux["imageid1"] = cld_attr_lst["vm_defaults"]["image_prefix"].strip() + _aux["imageid1"] + cld_attr_lst["vm_defaults"]["image_suffix"].strip()
-                    cld_attr_lst["vm_templates"][_vm_role] = dic2str(_aux)
-                '''
-
                 self.create_image_build_map(cld_attr_lst)
                     
                 for _vmc_entry in _initial_vmcs :
@@ -1269,14 +1261,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _vmc_defaults = self.osci.get_object(_cn, "GLOBAL", False, "vmc_defaults", False)
                     if str(_vmc_defaults["placement_method"]).lower().strip().count("roundrobin") : # use round-robin
                         # Intra-Pool Round-robin support.
-                        _visited = []
 
                         if obj_attr_list["ai_name"].lower() != "none" :
                             # Force serializing of the placement decision (but not the attachment)
                             # so that we can deterministically round-robin VMs to the same places
                             # during baseline tests.
                             while True :
-                                _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", obj_attr_list["vmc_pool"], 1)
+                                _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", "vmc_placement", 1)
                                 assert(_vmc_lock)
                                 cbdebug("Waiting: " + str(obj_attr_list["placement_order"]) + " for AI " + str(obj_attr_list["ai"]))
                                 placement_leader = self.osci.pending_object_get(_cn, "AI", obj_attr_list["ai"], "placement_leader", failcheck = False)
@@ -1298,34 +1289,43 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 self.osci.release_lock(_cn, "VMC", "vmc_placement", _vmc_lock)
                                 sleep(1)
                         else :
-                            _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", obj_attr_list["vmc_pool"], 1)
+                            _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", "vmc_placement", 1)
 
                         assert(_vmc_lock)
 
+                        # First, let's make it a counter and then populate this list based on the highest counter.
+
+                        _highest_vmcount = 0
+                        _highest_vmcs = []
                         for _vmc_uuid_entry in _vmc_uuid_list :
                             _vmc_attr_list = self.osci.get_object(_cn, "VMC", False, _vmc_uuid_entry.split('|')[0], False)
 
-                            if "visited" not in _vmc_attr_list or str(_vmc_attr_list["visited"]).lower() == "false" :
+                            if "scheduled_vms" not in _vmc_attr_list :
+                                self.osci.update_object_attribute(_cn, "VMC", _vmc_uuid_entry.split('|')[0], False, "scheduled_vms", 0)
                                 continue
 
-                            _visited.append(_vmc_uuid_entry)
+                            _vmcount = int(_vmc_attr_list["scheduled_vms"])
 
-                        if len(_visited) == len(_vmc_uuid_list) :
-                            for _vmc_uuid_entry in _vmc_uuid_list :
-                                self.osci.update_object_attribute(_cn, "VMC", _vmc_uuid_entry.split('|')[0], False, "visited", False)
-                            _visited = []
+                            if len(_highest_vmcs) == 0 or _vmcount >= _highest_vmcount :
+                                _highest_vmcount = _vmcount
+                                _highest_vmcs.append(_vmc_uuid_entry)
+                            else :
+                                cbdebug("Skipping VMC " + _vmc_uuid_entry + " as candidate, current count: " + str(_vmcount))
 
-                        while len(_visited) :
-                            assert(_visited[0] in _vmc_uuid_list)
-                            for idx in range(0, len(_vmc_uuid_list)) :
-                                if _visited[0] == _vmc_uuid_list[idx] :
-                                    del _vmc_uuid_list[idx]
-                                    del _visited[0]
-                                    break
+                        # Remove the VMCs with the highest vmcount from the candidate list
+                        _highest_vmcs.reverse()
+                        for _highest_vmc in _highest_vmcs :
+                            if len(_vmc_uuid_list) > 1 :
+                               for _vmc_uuid_entry_idx in range(0, len(_vmc_uuid_list)) :
+                                   _vmc_uuid_entry = _vmc_uuid_list[_vmc_uuid_entry_idx]
+                                   if _vmc_uuid_entry == _highest_vmc :
+                                       cbdebug("Removing from candidate list: " + _highest_vmc)
+                                       del _vmc_uuid_list[_vmc_uuid_entry_idx]
+                                       break
 
-                        cbdebug("After Visited: " + str(len(_visited)) + " total: " + str(len(_vmc_uuid_list)))
-
+                        cbdebug("Scheduling for VM " + obj_attr_list["name"] + " excluding highest VM count " + str(_highest_vmcount) + " VMC " + str(_highest_vmcs))
                     assert(len(_vmc_uuid_list))
+
                     if str(_vmc_defaults["placement_method"]).lower().strip().count("roundrobin") :
                         obj_attr_list["vmc"] = _vmc_uuid_list[0].split('|')[0]
                         cbdebug("Round-robin selected: " + str(_vmc_uuid_list[0]))
@@ -1333,7 +1333,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         obj_attr_list["vmc"] = choice(_vmc_uuid_list).split('|')[0]
 
                     if str(_vmc_defaults["placement_method"]).lower().strip().count("colocate") :
-                        _colocate_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_colocate", obj_attr_list["vmc_pool"], 1)
+                        _colocate_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_colocate", "vmc_placement", 1)
                         assert(_colocate_lock)
 
                         first_vmc = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
@@ -1348,8 +1348,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         cbdebug("VM " + obj_attr_list["name"] + " will share VMC: " + first_vmc)
                             
-                    self.osci.update_object_attribute(_cn, "VMC", obj_attr_list["vmc"], False, "visited", True)
-                    
                     if not obj_attr_list["vmc"] :
                         _fmsg = "No VMCs on pool \"" +  obj_attr_list["vmc_pool"] + "\""
                         _fmsg += " are available for VM creation."
@@ -1446,6 +1444,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "vm_templates", False, obj_attr_list["role"], dic2str(old_string))
 
             obj_attr_list["imageid1"] = obj_attr_list["image_prefix"].strip() + obj_attr_list["imageid1"] + obj_attr_list["image_suffix"].strip()
+
+            self.admission_control("VM", obj_attr_list, "schedule")
 
             _status = 0
                 
@@ -2216,6 +2216,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cld_conn.vmdestroy_repeat(obj_attr_list)
                         if "qemu_debug_port_base" in obj_attr_list :
                             self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
+
+                    if _pre_attach and _obj_type == "VM" :
+                        self.admission_control(_obj_type, obj_attr_list, "deschedule")
                         
                     if _aidefine :
                         _cld_conn.aiundefine(obj_attr_list,"deprovision_finished")
@@ -3335,6 +3338,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if "qemu_debug_port_base" in obj_attr_list :
                 self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
+
+            self.admission_control("VM", obj_attr_list, "deschedule")
 
             if str(obj_attr_list["current_state"]).lower() != "attached" :
 
