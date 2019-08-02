@@ -25,7 +25,7 @@ CATEGORY = application-stress
 PROFILES = default
 REFERENCE = https://github.com/giltene/wrk2
 LICENSE = Apache_v2
-REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time
+REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time,connecterrors,readerrors,writeerrors,timeouts
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION =Deploys an instance running the wrk2 (!= wrk) HTTP load generator and one or\n
