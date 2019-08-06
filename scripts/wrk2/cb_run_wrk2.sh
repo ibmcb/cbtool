@@ -51,6 +51,7 @@ cd ~
 
 lat=$(cat ${RUN_OUTPUT_FILE} | grep Latency | awk '{ print $2 }')
 tp=$(cat ${RUN_OUTPUT_FILE} | grep Req/Sec | awk '{ print $2 }')
+tp_stddev=$(cat ${RUN_OUTPUT_FILE} | grep Req/Sec | awk '{ print $3 }')
 tptotal=$(cat ${RUN_OUTPUT_FILE} | grep Requests/sec | awk '{ print $2 }')
 connecterrors=$(cat ${RUN_OUTPUT_FILE} | grep "errors" | awk '{ print $4 }' | grep -oE "[0-9]+")
 readerrors=$(cat ${RUN_OUTPUT_FILE} | grep "errors" | awk '{ print $6 }' | grep -oE "[0-9]+")
@@ -60,6 +61,7 @@ timeouts=$(cat ${RUN_OUTPUT_FILE} | grep "errors" | awk '{ print $10 }' | grep -
 ~/cb_report_app_metrics.py \
 $(format_for_report latency $lat) \
 $(format_for_report throughput $tp) \
+$(format_for_report throughput_stddev ${tp_stddev}) \
 $(format_for_report throughput_total $tptotal) \
 $(format_for_report connecterrors $connecterrors) \
 $(format_for_report readerrors $readerrors) \
