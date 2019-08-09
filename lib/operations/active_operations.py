@@ -949,7 +949,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
             else :
                 _msg = "VMC object named \"" + obj_attr_list["name"] + "\" was "
-                _msg += "sucessfully cleaned up on this experiment." 
+                _msg += "successfully cleaned up on this experiment." 
                 cbdebug(_msg)
             return self.package(_status, _msg, _result)
 
@@ -2241,7 +2241,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
 
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
-                _msg += " (named \"" + obj_attr_list["name"] +  "\") sucessfully "
+                _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully "
                 _msg += "attached to this experiment."                
 
                 if "prepare_" + str(_staging) + "_complete" in obj_attr_list :
@@ -3272,7 +3272,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
                 _msg += "named \"" + obj_attr_list["name"] + "\") was "
-                _msg += "sucessfully detached from this experiment."
+                _msg += "successfully detached from this experiment."
                 cbdebug(_msg)
                 obj_attr_list["tracking"] = "Detach: success." 
                 

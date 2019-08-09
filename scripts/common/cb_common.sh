@@ -24,7 +24,7 @@ dir=$(pwd)
 if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
-    
+
 # Get all parameters to connect to the datastore
 cloudname=`cat ~/cb_os_parameters.txt | grep "#OSCN" | cut -d "-" -f 2`
 oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | cut -d "-" -f 2`
@@ -50,7 +50,7 @@ PKILL_CMD=`which pkill`
 SUBSCRIBE_CMD=~/cb_subscribe.py
 RSYSLOGD_CMD=/sbin/rsyslogd
 
-NC=`which netcat` 
+NC=`which netcat`
 if [[ $? -ne 0 ]]
 then
     NC=`which nc`
@@ -82,7 +82,7 @@ then
         sudo cp /root/.bashrc ~/.bashrc
         sudo chown $(whoami):$(whoami) ~/.bashrc
     fi
-fi  
+fi
 
 # Test for redis-cli
 if [ x"$(uname -a | grep CYGWIN)" != x ] ; then
@@ -112,20 +112,20 @@ function check_container {
     then
         export IS_CONTAINER=1
         if [[ -z $LC_ALL ]]
-        then 
+        then
             export LC_ALL=C
         fi
-        export NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`                  
-        export MEM_SIZE_KB=`echo $(get_my_vm_attribute size) | cut -d '-' -f 2` 
+        export NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`
+        export MEM_SIZE_KB=`echo $(get_my_vm_attribute size) | cut -d '-' -f 2`
     else
         export IS_CONTAINER=0
-        export NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`                
+        export NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
         export MEM_SIZE_KB=`cat /proc/meminfo | grep MemTotal | awk '{ print $2 }'`
     fi
 }
 export -f check_container
-    
-function check_gpu_cuda {    
+
+function check_gpu_cuda {
     syslog_netcat "Check if cuda is installed..."
     sudo ls -la /usr/local/cuda
     if [[ $? -eq 0 ]]
@@ -139,7 +139,7 @@ function check_gpu_cuda {
             export IS_GPU=1
         else
             syslog_netcat "GPU driver modules cannot be found"
-            export IS_GPU=0            
+            export IS_GPU=0
         fi
     else
         syslog_netcat "The cuda directory does not exist"
@@ -147,7 +147,7 @@ function check_gpu_cuda {
     fi
 }
 export -f check_gpu_cuda
-    
+
 function linux_distribution {
     IS_UBUNTU=$(cat /etc/*release | grep -c "Ubuntu")
 
@@ -155,13 +155,13 @@ function linux_distribution {
     then
         export LINUX_DISTRO=1
     fi
-    
-    IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat\|CentOS\|Fedora")    
+
+    IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat\|CentOS\|Fedora")
     if [[ ${IS_REDHAT} -ge 1 ]]
     then
         export LINUX_DISTRO=2
     fi
-    
+
     check_container
 }
 export -f linux_distribution
@@ -173,7 +173,7 @@ function service_stop_disable {
     then
         linux_distribution
     fi
-    
+
     for s in $*
     do
         if [[ ${LINUX_DISTRO} -eq 2 ]]
@@ -206,35 +206,35 @@ function service_stop_disable {
                     DISABLE_COMMAND="sudo sh -c 'echo manual > /etc/init/$s.override'"
                 else
                     DISABLE_COMMAND="sudo update-rc.d -f $s remove"
-                fi                    
+                fi
             fi
         fi
 
-        syslog_netcat "Stopping service \"${s}\" with command \"$STOP_COMMAND\"..."       
+        syslog_netcat "Stopping service \"${s}\" with command \"$STOP_COMMAND\"..."
         bash -c "$STOP_COMMAND"
 
-        syslog_netcat "Disabling service \"${s}\" with command \"$DISABLE_COMMAND\"..."               
+        syslog_netcat "Disabling service \"${s}\" with command \"$DISABLE_COMMAND\"..."
         bash -c "$DISABLE_COMMAND"
     done
     /bin/true
 }
 export -f service_stop_disable
-    
+
 function service_restart_enable {
     #1 - service list (space-separated list)
     if [[ -z ${LINUX_DISTRO} ]]
     then
         linux_distribution
     fi
-    
+
     for s in $*
-    do            
+    do
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
             if [[ $(sudo sv status $s 2>&1 | grep -v "fail:" | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo sv restart $s"
-                ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
+                ENABLE_COMMAND="sudo rm /etc/service/$s/down"
             elif [[ $(sudo systemctl 2>&1 | grep -c $s) -ne 0 && $(sudo find /etc/systemd 2>&1 | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
@@ -247,7 +247,7 @@ function service_restart_enable {
             if [[ $(sudo sv status $s 2>&1 | grep -v "fail:" | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo sv restart $s"
-                ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
+                ENABLE_COMMAND="sudo rm /etc/service/$s/down"
             elif [[ $(sudo systemctl 2>&1 | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
@@ -256,23 +256,23 @@ function service_restart_enable {
                 START_COMMAND="sudo service $s restart"
                 if [[ -f /etc/init/$s.conf ]]
                 then
-                    ENABLE_COMMAND="sudo rm -rf /etc/init/$s.override"            
+                    ENABLE_COMMAND="sudo rm -rf /etc/init/$s.override"
                 else
                     ENABLE_COMMAND="sudo update-rc.d -f $s defaults"
                 fi
             fi
         fi
-    
+
         counter=1
         ATTEMPTS=7
         while [ "$counter" -le "$ATTEMPTS" ]
         do
-            syslog_netcat "Restarting service \"${s}\", with command \"$START_COMMAND\", attempt ${counter} of ${ATTEMPTS}..."            
+            syslog_netcat "Restarting service \"${s}\", with command \"$START_COMMAND\", attempt ${counter} of ${ATTEMPTS}..."
             bash -c "$START_COMMAND"
             if [[ $? -eq 0 ]]
             then
                 syslog_netcat "Service \"$s\" was successfully restarted"
-                syslog_netcat "Enabling service \"${s}\", with command \"$ENABLE_COMMAND\"..."   
+                syslog_netcat "Enabling service \"${s}\", with command \"$ENABLE_COMMAND\"..."
                 bash -c "$ENABLE_COMMAND"
                 break
             else
@@ -280,14 +280,14 @@ function service_restart_enable {
                 counter="$(( $counter + 1 ))"
             fi
         done
-    
+
         if [[ "${counter}" -ge "$ATTEMPTS" ]]
         then
             syslog_netcat "Service \"${s}\" failed to restart after ${ATTEMPTS} attempts"
             exit 1
         fi
     done
-    
+
     /bin/true
 }
 export -f service_restart_enable
@@ -347,7 +347,7 @@ function get_hash {
     key_name=$2
     attribute_name=`echo $3 | tr '[:upper:]' '[:lower:]'`
     non_cacheable=$4
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:${object_type}:${key_name} ${attribute_name}" ${non_cacheable} 
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:${object_type}:${key_name} ${attribute_name}" ${non_cacheable}
 }
 
 function get_vm_attribute {
@@ -428,7 +428,7 @@ function be_open_or_die {
         ((nmapcount=nmapcount+1))
         if [ $nmapcount -lt $tries ] ; then
             echo "port checker: host $host port not open yet..."
-            sleep $delay 
+            sleep $delay
         fi
     done
     echo "port checker: host $host port $port could not be reached. Dying now."
@@ -440,7 +440,7 @@ export -f be_open_or_die
 # Sometimes the VPN comes up to slow, so, if it doesn't work, then
 # we need to try again.
 be_open_or_die $oshostname $osportnumber tcp 30 5
-    
+
 my_role=`get_my_vm_attribute role`
 my_ai_name=`get_my_vm_attribute ai_name`
 my_ai_uuid=`get_my_vm_attribute ai`
@@ -449,9 +449,9 @@ my_cloud_model=`get_my_vm_attribute model`
 my_ip_addr=`get_my_vm_attribute run_cloud_ip`
 
 function get_attached_volumes {
-    
+
     check_container
-    
+
     if [[ $IS_CONTAINER -eq 0 ]]
     then
         # If we're using nested containers, then /dev/xxx may not show up
@@ -470,23 +470,23 @@ function get_attached_volumes {
         # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
         # So, we need a beefier regex.
         ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.*[0-9]\)[a-z]\+[0-9]\+$/\1/g")
-        
-        if [[ ${ROOT_PARTITION} == ${ROOT_VOLUME} ]] 
+
+        if [[ ${ROOT_PARTITION} == ${ROOT_VOLUME} ]]
         then
             ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.\)[0-9]\+$/\1/g")
         fi
-        
+
         SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
         if [[ -z ${SWAP_VOLUME} ]]
         then
             SWAP_VOLUME="NONE"
         fi
-        
+
         VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
     else
         VOLUME_LIST=$(sudo mount | grep /mnt/cbvol | awk '{ print $3 }')
     fi
-    
+
     if [[ -z ${VOLUME_LIST} ]]
     then
         VOLUME_LIST="NONE"
@@ -510,11 +510,11 @@ function change_directory_ownership {
     CHOWN_GROUP=$2
     CHOWN_DIR=$3
 
-    ACTUAL_CHOWN_DIR="/"$(echo "${CHOWN_DIR}" | cut -d '/' -f 2)    
+    ACTUAL_CHOWN_DIR="/"$(echo "${CHOWN_DIR}" | cut -d '/' -f 2)
 
     CMD="sudo chown -R ${CHOWN_USER}:${CHOWN_GROUP} ${ACTUAL_CHOWN_DIR}"
     syslog_netcat "Changing ownership of ${CHOWN_DIR} with command \"$CMD\""
-            
+
     $CMD
 }
 export -f change_directory_ownership
@@ -532,7 +532,7 @@ function link_directory_to_volume {
         then
             VOLUME="NONE"
         fi
-    fi        
+    fi
 
     if [[ $VOLUME != "NONE" ]]
     then
@@ -540,7 +540,7 @@ function link_directory_to_volume {
         sudo ln -s $MOUNTPOINT_DIR $VOLUME
         change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
     fi
-    
+
     if [[ -d $MOUNTPOINT_DIR ]]
     then
         change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
@@ -559,14 +559,14 @@ function mount_filesystem_on_volume {
         syslog_netcat "No mountpoint specified. Bypassing mounting"
         return 1
     fi
-    
+
     if [[ -z $FILESYS_TYPE ]]
     then
         FILESYS_TYPE=ext4
     fi
-    
+
     if [[ -z $VOLUME ]]
-    then        
+    then
         VOLUME=$(get_attached_volumes)
     else
         if [[ $(sudo fdisk -l | grep -c $VOLUME) -eq 0 ]]
@@ -583,7 +583,7 @@ function mount_filesystem_on_volume {
     fi
 
     change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
-        
+
     if [[ $VOLUME != "NONE" ]]
     then
         if [[ $(sudo mount | grep -c $VOLUME) -ne 0 ]]
@@ -602,28 +602,28 @@ function mount_filesystem_on_volume {
                 syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
                 sudo mkfs.$FILESYS_TYPE -F $VOLUME
             fi
-            
+
             syslog_netcat "Making $FILESYS_TYPE filesystem on volume $VOLUME accessible through the mountpoint ${MOUNTPOINT_DIR}"
             sudo mount $VOLUME ${MOUNTPOINT_DIR}
-            
+
             if [[ $? -ne 0 ]]
             then
-                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
+                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK"
                 exit 1
             else
                 syslog_netcat "$FILESYS_TYPE filesystem on volume $VOLUME successfully made accessible through mountpoint ${MOUNTPOINT_DIR}"
-                
+
                 if [[ $(sudo cat /etc/fstab | grep -c ${MOUNTPOINT_DIR}) -eq 0 ]]
                 then
                     sudo bash -c "echo \"${VOLUME} ${MOUNTPOINT_DIR} ${FILESYS_TYPE} defaults 0 2\" >> /etc/fstab"
                 fi
             fi
-            
-            
+
+
         else
-            syslog_netcat "${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME is already setup!"            
+            syslog_netcat "${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME is already setup!"
         fi
-        
+
         change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
 
     fi
@@ -634,7 +634,7 @@ export -f mount_filesystem_on_volume
 function mount_filesystem_on_memory {
 
     RAMDEVICE=/dev/ram0
-    
+
     MOUNTPOINT_DIR=$1
     FILESYS_TYPE=$2
     MEMORY_DISK_SIZE=$3
@@ -644,51 +644,51 @@ function mount_filesystem_on_memory {
     then
         syslog_netcat "No mountpoint specified. Bypassing mounting"
         return 1
-    fi    
+    fi
 
     if [[ -z $FILESYS_TYPE ]]
     then
         syslog_netcat "No filesystem type specified. Bypassing mounting"
         return 1
-    fi    
+    fi
 
     if [[ -z $MEMORY_DISK_SIZE ]]
     then
         syslog_netcat "No memory disk size specified. Bypassing mounting"
         return 1
-    fi    
+    fi
 
     if [[ -z $MOUNTPOINT_OWNER  ]]
     then
         MOUNTPOINT_OWER=${my_login_username}
     fi
-    
+
     sudo mkdir -p $MOUNTPOINT_DIR
 
     change_directory_ownership ${MOUNTPOINT_OWER} ${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-                    
+
     if [[ $FILESYS_TYPE == "tmpfs" ]]
     then
         if [[ $(sudo mount | grep $FILESYS_TYPE | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
-        then        
+        then
             syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}..."
             sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE},noatime,nodiratime tmpfs $MOUNTPOINT_DIR
         else
             syslog_netcat "A tmpfs filesystem is already accessible through the mountpoint ${MOUNTPOINT_DIR}!"
-        fi            
+        fi
     else
         if [[ $(sudo mount | grep $RAMDEVICE | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
-        then                
+        then
             syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}..."
             if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
             then
                 syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
                 sudo mkfs.ext4 -F $RAMDEVICE
-            fi            
+            fi
             sudo mount $RAMDEVICE $MOUNTPOINT_DIR
         else
-            syslog_netcat "An ext4 filesystem on ramdisk $RAMDEVICE is accessible through the mountpoint ${MOUNTPOINT_DIR}!"            
-        fi    
+            syslog_netcat "An ext4 filesystem on ramdisk $RAMDEVICE is accessible through the mountpoint ${MOUNTPOINT_DIR}!"
+        fi
     fi
 
     change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
@@ -703,23 +703,23 @@ function mount_remote_filesystem {
     FILESERVER_IP=$3
     FILESERVER_PATH=$4
     MOUNTPOINT_OWNER=$5
-    
+
     if [[ -z $MOUNTPOINT_DIR ]]
     then
         syslog_netcat "No mountpoint specified. Bypassing mounting"
         return 1
-    fi    
+    fi
 
     if [[ -z $FILESERVER_IP ]]
     then
         syslog_netcat "No fileserver IP specified. Bypassing mounting"
         return 1
-    fi            
-                        
+    fi
+
     sudo mkdir -p $MOUNTPOINT_DIR
 
     change_directory_ownership ${MOUNTPOINT_OWNER} ${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
-            
+
     if [[ $FILESYS_TYPE == "nfs" ]]
     then
 
@@ -728,14 +728,14 @@ function mount_remote_filesystem {
             syslog_netcat "Setting nfs storage on ($MOUNTPOINT_DIR) from $FILESERVER_IP:${FILESERVER_PATH}...."
             sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
         else
-            syslog_netcat "Nfs storage on ($MOUNTPOINT_DIR) from $FILESERVER_IP:${FILESERVER_PATH} is already setup!"            
+            syslog_netcat "Nfs storage on ($MOUNTPOINT_DIR) from $FILESERVER_IP:${FILESERVER_PATH} is already setup!"
         fi
     fi
-    
+
     return 0
 }
 export -f mount_remote_filesystem
-    
+
 my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
 my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
@@ -761,13 +761,13 @@ function decrement_my_ai_attribute {
 
 function put_my_vm_attribute {
     attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    attribute_value=$2    
+    attribute_value=$2
     put_hash VM ${my_vm_uuid} ${attribute_name} ${attribute_value}
 }
 
 function put_my_pending_vm_attribute {
     attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    attribute_value=$2    
+    attribute_value=$2
     put_hash VM:PENDING ${my_vm_uuid} ${attribute_name} ${attribute_value}
 }
 
@@ -886,7 +886,7 @@ function build_ai_mapping {
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
 		# Lines were getting duplicated (presumably because the function is called more than once.
 		# Avoid adding a line twice:
-		if [ x"$(grep ${vmuuid} ${ai_mapping_file})" == x ] ; then 
+		if [ x"$(grep ${vmuuid} ${ai_mapping_file})" == x ] ; then
 			echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
 		fi
     done
@@ -935,7 +935,7 @@ function get_first_from_list {
     fi
     list_contents=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber lrange ${osinstance}:${object_type}:${list_name} 0 0" 1`
     echo $list_contents > val.txt
-    first_elem=`cat val.txt` #what if the list is empty?? - the first_elem will be empty, too. 
+    first_elem=`cat val.txt` #what if the list is empty?? - the first_elem will be empty, too.
 }
 
 function get_whole_list {
@@ -1034,7 +1034,7 @@ function publishai {
     msg=$2
     publish_msg AI $channel $msg
 }
-    
+
 function subscribemsg {
     object=`echo $1 | tr '[:lower:]' '[:upper:]'`
     channel=$2
@@ -1074,7 +1074,7 @@ if [ x"${NC_HOST_SYSLOG}" == x ]; then
     else
         if [ x"${osmode}" != x"scalable" ]; then
             NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
-        else 
+        else
             NC_HOST_SYSLOG=${load_manager_ip}
         fi
     fi
@@ -1087,7 +1087,7 @@ if [ x"${NC_HOST_SYSLOG}" == x ]; then
     fi
     if [ x"${osmode}" != x"scalable" ]; then
         NC_OPTIONS="-w1 $PROTO"
-    else 
+    else
         NC_OPTIONS="-w1 $PROTO -q1"
     fi
 fi
@@ -1131,7 +1131,7 @@ function syslog_netcat {
 
 function refresh_hosts_file {
 
-    if [[ x"${my_ai_uuid}" != x"none" ]] 
+    if [[ x"${my_ai_uuid}" != x"none" ]]
     then
         build_ai_mapping
     fi
@@ -1142,7 +1142,7 @@ function refresh_hosts_file {
     then
         echo "${my_ip_addr}    ${HOSTNAME}" >> ${ai_mapping_file}
     fi
-    
+
     syslog_netcat "Refreshing hosts file ... "
     sudo bash -c "rm -f /etc/hosts; echo '127.0.0.1    localhost' >> /etc/hosts; cat ${ai_mapping_file} >> /etc/hosts"
 }
@@ -1151,7 +1151,7 @@ function provision_application_start {
     if [[ -f /tmp/provision_application_start ]]
     then
         PASTART=$(cat /tmp/provision_application_start)
-    else 
+    else
         PASTART=$(date +%s)
         echo $PASTART > /tmp/provision_application_start
     fi
@@ -1161,7 +1161,7 @@ export -f provision_application_start
 
 function provision_application_stop {
     PASTART=$1
-    
+
     if [[ -z $PASTART ]]
     then
         if [[ -f /tmp/provision_application_start ]]
@@ -1177,10 +1177,10 @@ function provision_application_stop {
         END=$(date +%s)
         DIFF=$(( $END - $PASTART ))
         syslog_netcat "Updating vm application startup time with value ${DIFF}"
-        put_my_pending_vm_attribute application_start_on_vm $DIFF          
+        put_my_pending_vm_attribute application_start_on_vm $DIFF
         #        put_my_pending_vm_attribute mgt_007_application_start $DIFF
     else
-        syslog_netcat "Application Instance already deployed (once). Will not report application startup time (again)"    
+        syslog_netcat "Application Instance already deployed (once). Will not report application startup time (again)"
     fi
 }
 export -f provision_application_stop
@@ -1194,7 +1194,7 @@ export -f provision_generic_start
 
 function provision_generic_stop {
     PASTART=$1
-    
+
     if [[ -z $PASTART ]]
     then
         if [[ -f /tmp/provision_generic_start ]]
@@ -1210,10 +1210,10 @@ function provision_generic_stop {
         END=$(date +%s)
         DIFF=$(( $END - $PASTART ))
         syslog_netcat "Updating instance preparation time with value ${DIFF}"
-        put_my_pending_vm_attribute instance_preparation_on_vm $DIFF        
+        put_my_pending_vm_attribute instance_preparation_on_vm $DIFF
         #        put_my_pending_vm_attribute mgt_006_instance_preparation $DIFF
     else
-        syslog_netcat "Generic startup already run (once). Will not report instance preparation time (again)"    
+        syslog_netcat "Generic startup already run (once). Will not report instance preparation time (again)"
     fi
 }
 export -f provision_generic_stop
@@ -1226,22 +1226,22 @@ function security_configuration {
     fi
 
     if [[ $IS_CONTAINER -eq 0 ]]
-    then                                        
+    then
         FW_SERVICE[1]="ufw"
         FW_SERVICE[2]="iptables"
-    
+
         service_stop_disable ${FW_SERVICE[${LINUX_DISTRO}]}
-    
+
         if [[ ${LINUX_DISTRO} -eq 1 ]]
         then
             syslog_netcat "Disabling Apparmor..."
             service_stop_disable apparmor
             sudo service apparmor teardown
         fi
-                
+
         if [[ ${LINUX_DISTRO} -eq 2 ]]
-        then 
-            syslog_netcat "Disabling SElinux..."        
+        then
+            syslog_netcat "Disabling SElinux..."
             sudo sed -i "s/^SELINUX=.*/SELINUX=disabled/" /etc/selinux/config
             sudo setenforce 0
         fi
@@ -1253,7 +1253,7 @@ function security_configuration {
 export -f security_configuration
 
 function start_redis {
-    
+
     if [[ -z ${LINUX_DISTRO} ]]
     then
         linux_distribution
@@ -1266,17 +1266,17 @@ function start_redis {
     REDIS_CONFIG[2]="/etc/redis.conf"
 
     if [[ $IS_CONTAINER -eq 0 ]]
-    then        
+    then
         service_stop_disable ${REDIS_SERVICE[${LINUX_DISTRO}]}
     fi
-    
+
     TMPLT_OBJSTORE_PORT=$1
     syslog_netcat "Updating object store configuration template"
-    sudo cp ${REDIS_CONFIG[${LINUX_DISTRO}]} ${REDIS_CONFIG[${LINUX_DISTRO}]}.old                
+    sudo cp ${REDIS_CONFIG[${LINUX_DISTRO}]} ${REDIS_CONFIG[${LINUX_DISTRO}]}.old
     sudo sed -i s/"port 6379"/"port ${TMPLT_OBJSTORE_PORT}"/g ${REDIS_CONFIG[${LINUX_DISTRO}]}
 
     if [[ $IS_CONTAINER -eq 0 ]]
-    then            
+    then
         service_restart_enable ${REDIS_SERVICE[${LINUX_DISTRO}]}
     fi
 }
@@ -1284,10 +1284,10 @@ export -f start_redis
 
 function start_syslog {
     if [[ $IS_CONTAINER -eq 0 ]]
-    then                                            
+    then
         is_syslog_running=`ps aux | grep -v grep | grep -c rsyslog.conf`
         if [ ${is_syslog_running} -eq 0 ]
-        then 
+        then
             mkdir -p ~/logs
             TMPLT_LOGSTORE_PORT=$1
             sed -i s/"TMPLT_LOGSTORE_PORT"/"${TMPLT_LOGSTORE_PORT}"/g ~/rsyslog.conf
@@ -1307,21 +1307,21 @@ function restart_ntp {
     fi
 
     NTP_SERVICE[1]="ntp"
-    NTP_SERVICE[2]="ntpd" 
+    NTP_SERVICE[2]="ntpd"
 
     if [[ $IS_CONTAINER -eq 0 ]]
-    then                                        
+    then
         service_stop_disable ${NTP_SERVICE[${LINUX_DISTRO}]}
     fi
-    
+
     syslog_netcat "Creating ${NTP_SERVICE[${LINUX_DISTRO}]} (ntp.conf) file"
     ~/cb_create_ntp_config_file.sh
-    
+
     syslog_netcat "Forcing clock update from ntp"
     sudo ~/cb_timebound_exec.py ntpd -gq 5
-    
+
     if [[ $IS_CONTAINER -eq 0 ]]
-    then        
+    then
         service_restart_enable ${NTP_SERVICE[${LINUX_DISTRO}]}
     fi
 }
@@ -1329,9 +1329,9 @@ export -f restart_ntp
 
 function online_or_offline {
     if [ x"$1" == x ] ; then
-        echo online 
+        echo online
     else
-        echo offline 
+        echo offline
     fi
 }
 
@@ -1357,7 +1357,7 @@ function replicate_to_container_if_nested {
 
     username=$(whoami)
     userpath="/home"
-    if [ ${username} == "root" ] ; then 
+    if [ ${username} == "root" ] ; then
         userpath="/"
     fi
 
@@ -1421,7 +1421,7 @@ function replicate_to_container_if_nested {
     # FIXME: Return this error code and check for error in parent function
     sudo docker exec -u ${username} --privileged cbnested bash -c "cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat 'Running post_boot inside container...'; ~/cbtool/scripts/common/cb_post_boot_container.sh; exit \$?"
 
-    return $? 
+    return $?
 }
 
 export -f replicate_to_container_if_nested
@@ -1495,7 +1495,7 @@ function post_boot_steps {
     sudo bash -c "chmod 777 /dev/pts/*"
     DISABLE_TIMESYNC=$(get_my_vm_attribute disable_timesync)
     DISABLE_TIMESYNC=$(echo ${DISABLE_TIMESYNC} | tr '[:upper:]' '[:lower:]')
-    if [[ $DISABLE_TIMESYNC == "false" ]] 
+    if [[ $DISABLE_TIMESYNC == "false" ]]
     then
         restart_ntp
     fi
@@ -1526,10 +1526,10 @@ function fix_ulimit {
     fi
 
     if [[ $IS_REDHAT -eq 0 ]]
-    then    
+    then
         sudo ls /etc/security/limits.conf > /dev/null 2>&1
         if [[ $? -eq 0 ]]
-        then 
+        then
             sudo cat /etc/security/limits.conf | grep "root      -       nofile      1048576" > /dev/null 2>&1
             if [[ $? -ne 0 ]]
             then
@@ -1537,33 +1537,33 @@ function fix_ulimit {
                 sudo bash -c "echo \"root      -       nofile      1048576\" >> /etc/security/limits.conf"
                 sudo bash -c "echo \"*         -       noproc      1048576\" >> /etc/security/limits.conf"
                 sudo bash -c "echo \"root      -       noproc      1048576\" >> /etc/security/limits.conf"
-            fi          
+            fi
         fi
-         
+
         sudo cat /etc/sysctl.conf | grep "fs.file-max = 1048576" > /dev/null 2>&1
         if [[ $? -ne 0 ]]
         then
             sudo bash -c "echo \"fs.file-max = 1048576\" >> /etc/sysctl.conf"
             sudo bash -c "echo \"kernel.pid_max = 4194303\" >> /etc/sysctl.conf"
-            sudo sysctl -p            
+            sudo sysctl -p
         fi
     fi
 }
 
 function stop_ganglia {
-            
+
     if [[ -z ${LINUX_DISTRO} ]]
     then
         linux_distribution
     fi
 
     if [[ $IS_CONTAINER -eq 0 ]]
-    then        
+    then
         GANGLIA_SERVICE[1]="ganglia-monitor gmetad"
         GANGLIA_SERVICE[2]="gmond gmetad"
-          
-        service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
-        
+
+        service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}
+
         syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
         gpid="$(pidof gmond)"
         blowawaypids gmond
@@ -1597,7 +1597,7 @@ function start_ganglia {
     else
         syslog_netcat "Ganglia monitoring processes (gmond) restarted successfully on $SHORT_HOSTNAME"
     fi
-    
+
     if [[ x"${my_vm_uuid}" == x"${metric_aggregator_vm_uuid}" || x"${my_type}" == x"none" ]]
     then
         syslog_netcat "Starting Gmetad"
@@ -1606,7 +1606,7 @@ function start_ganglia {
         blowawaypids gmetad
 
         GMETAD_PATH=~/${my_remote_dir}/3rd_party/monitor-core/gmetad-python
-        
+
         eval GMETAD_PATH=${GMETAD_PATH}
         $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 1
 #       $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
@@ -1621,7 +1621,7 @@ function start_ganglia {
         fi
     fi
 }
-export -f start_ganglia    
+export -f start_ganglia
 
 function execute_load_generator {
 
@@ -1641,35 +1641,35 @@ function execute_load_generator {
         QSTART=$(cat /tmp/quiescent_time_start)
         END=$(date +%s)
         DIFF=$(( $END - $QSTART ))
-        echo $DIFF > /tmp/quiescent_time        
+        echo $DIFF > /tmp/quiescent_time
     fi
-    
+
     if [[ ${run_limit} -gt 0 ]]
     then
-        syslog_netcat "This AI will execute the load_generating process ${run_limit} more times (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)" 
+        syslog_netcat "This AI will execute the load_generating process ${run_limit} more times (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
         syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE} (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
         if [[ x"${log_output_command}" == x"true" ]]
         then
             syslog_netcat "Command output will be shown"
             LOAD_GENERATOR_START=$(date +%s)
-            $CMDLINE 2>&1 | while read line ; do
+            eval $CMDLINE 2>&1 | while read line ; do
                 syslog_netcat "$line"
                 echo $line >> $OUTPUT_FILE
             done
             ERROR=$?
             LOAD_GENERATOR_END=$(date +%s)
-            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START )) 
+            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))
         else
             syslog_netcat "Command output will NOT be shown"
-            LOAD_GENERATOR_START=$(date +%s)            
-            $CMDLINE 2>&1 >> $OUTPUT_FILE
+            LOAD_GENERATOR_START=$(date +%s)
+            eval $CMDLINE 2>&1 >> $OUTPUT_FILE
             ERROR=$?
             LOAD_GENERATOR_END=$(date +%s)
-            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))            
+            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))
         fi
         run_limit=`decrement_my_ai_attribute run_limit`
     else
-        LOAD_GENERATOR_START=$(date +%s)        
+        LOAD_GENERATOR_START=$(date +%s)
         syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
         sleep ${LOAD_DURATION}
         LOAD_GENERATOR_END=$(date +%s)
@@ -1680,22 +1680,22 @@ function execute_load_generator {
     if [[ $ERROR -eq 0 && $APP_COMPLETION_TIME -eq 0 ]]
     then
         APP_COMPLETION_TIME=1
-    fi        
-    
+    fi
+
     update_app_errors $ERROR
     update_app_completiontime $APP_COMPLETION_TIME
-    
+
     echo $(date +%s) > /tmp/quiescent_time_start
 
     if [[ ! -z $LIDMSG ]]
     then
-        syslog_netcat "RUN COMPLETE: ${LIDMSG}"    
+        syslog_netcat "RUN COMPLETE: ${LIDMSG}"
     fi
-                
+
     return 0
 }
 export -f execute_load_generator
-            
+
 function setup_passwordless_ssh {
 
     SSH_KEY_NAME=$(get_my_vm_attribute identity)
@@ -1731,12 +1731,12 @@ function update_app_errors {
     else
         ERROR=0
     fi
-    
+
     if [[ ! -z $2 ]]
     then
         rm -rf /tmp/app_errors
     fi
-    
+
     if [[ ! -f /tmp/app_errors ]]
     then
         echo "0" > /tmp/app_errors
@@ -1749,8 +1749,8 @@ function update_app_errors {
         echo $new_err > /tmp/app_errors
     else
         new_err=$(cat /tmp/app_errors )
-    fi    
-    
+    fi
+
     echo $new_err
     return 0
 }
@@ -1763,18 +1763,18 @@ function update_app_datagentime {
         echo $1 > /tmp/data_generation_time
         return 0
     fi
-        
+
     if [[ -f /tmp/old_data_generation_time ]]
     then
         datagentime=-$(cat /tmp/old_data_generation_time)
     fi
-    
+
     if [[ -f /tmp/data_generation_time ]]
     then
         datagentime=$(cat /tmp/data_generation_time)
         mv /tmp/data_generation_time /tmp/old_data_generation_time
     fi
-    
+
     echo $datagentime
     return 0
 }
@@ -1786,7 +1786,7 @@ function update_app_datagensize {
         echo $1 > /tmp/data_generation_size
         return 0
     fi
-        
+
     if [[ -f /tmp/old_data_generation_size ]]
     then
         datagensize=-$(cat /tmp/old_data_generation_size)
@@ -1795,9 +1795,9 @@ function update_app_datagensize {
     if [[ -f /tmp/data_generation_size ]]
     then
         datagensize=$(cat /tmp/data_generation_size)
-        mv /tmp/data_generation_size /tmp/old_data_generation_size        
+        mv /tmp/data_generation_size /tmp/old_data_generation_size
     fi
-    
+
     echo $datagensize
     return 0
 }
@@ -1810,18 +1810,18 @@ function update_app_completiontime {
         echo $1 > /tmp/app_completiontime
         return 0
     fi
-        
+
     if [[ -f /tmp/old_app_completiontime ]]
     then
         completiontime=-$(cat /tmp/old_app_completiontime)
     fi
-    
+
     if [[ -f /tmp/app_completiontime ]]
     then
         completiontime=$(cat /tmp/app_completiontime)
         mv /tmp/app_completiontime /tmp/old_app_completiontime
     fi
-    
+
     echo $completiontime
 
     return 0
@@ -1829,14 +1829,14 @@ function update_app_completiontime {
 export -f update_app_completiontime
 
 function update_app_quiescent {
-        
+
     if [[ -f /tmp/quiescent_time ]]
     then
         quiescent_time=$(cat /tmp/quiescent_time)
     else
-        quiescent_time=-1 
+        quiescent_time=-1
     fi
-    
+
     echo $quiescent_time
     return 0
 }
@@ -1847,7 +1847,7 @@ function vercomp {
     then
         return 0
     fi
-    
+
     local IFS=.
     local i ver1=($1) ver2=($2)
 
@@ -1855,7 +1855,7 @@ function vercomp {
     do
         ver1[i]=0
     done
-    
+
     for ((i=0; i<${#ver1[@]}; i++))
     do
         if [[ -z ${ver2[i]} ]]
@@ -1891,7 +1891,7 @@ function setup_rclocal_restarts {
         chmod +x /tmp/rc.local
         echo "su $(whoami) -c \"$dir/cb_start_load_manager.sh\"" >> /tmp/rc.local
         echo "exit 0" >> /tmp/rc.local
-        sudo mv -f /tmp/rc.local /etc/rc.local  
+        sudo mv -f /tmp/rc.local /etc/rc.local
     fi
 }
 
@@ -1906,27 +1906,27 @@ function automount_data_dirs {
 
     if [[ $ROLE_DATA_DIR != "none" ]]
     then
-        
+
         syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
         sudo mkdir -p $ROLE_DATA_DIR
         change_directory_ownership ${my_login_username} ${my_login_username} $ROLE_DATA_DIR
-        
+
         if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
         then
-    
+
             #        ROLE_DATA_SIZE=$(get_my_ai_attribute_with_default ${my_role}_data_size 256m)
             DATA_SIZE=$(get_my_vm_attribute_with_default data_size 256m)
             mount_filesystem_on_memory ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${ROLE_DATA_SIZE} ${my_login_username}
-            
+
         elif [[ $ROLE_DATA_FSTYP == "nfs" ]]
         then
-            
+
             #        ROLE_DATA_FILESERVER_IP=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_ip none)
             #        ROLE_DATA_FILESERVER_PATH=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_path none)
             DATA_FILESERVER_IP=$(get_my_vm_attribute_with_default data_fileserver_ip none)
-            DATA_FILESERVER_PATH=$(get_my_vm_attribute_with_default data_fileserver_path none)        
+            DATA_FILESERVER_PATH=$(get_my_vm_attribute_with_default data_fileserver_path none)
             if [[ $ROLE_DATA_FILESERVER_IP != "none" && $ROLE_DATA_FILESERVER_PATH != "none" ]]
-            then         
+            then
                 mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH} ${my_login_username}
             fi
             #        run_limit=`decrement_my_ai_attribute run_limit`
@@ -1941,7 +1941,7 @@ function automount_data_dirs {
     fi
 }
 export -f automount_data_dirs
-    
+
 function haproxy_setup {
     LOAD_BALANCER_PORTS=$1
     LOAD_BALANCER_BACKEND_SERVERS=$2
@@ -1951,62 +1951,105 @@ function haproxy_setup {
     then
         LOAD_BALANCER_MODE=$3
     fi
-            
+
+	NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
+
+	if [ ! -e /etc/ssl/private/mydomain.pem ] ; then
+	   sudo openssl genrsa -out mydomain.key 2048
+       sudo openssl req -new -key mydomain.key -out mydomain.csr -batch -verbose
+       sudo openssl x509 -req -days 365 -in mydomain.csr -signkey mydomain.key -out mydomain.crt
+       sudo bash -c "cat mydomain.key mydomain.crt >> /etc/ssl/private/mydomain.pem"
+	fi
+
     f=/tmp/haporxy.cfg
 cat << EOF > $f
 global
-  chroot  /var/lib/haproxy
-  daemon
-  group  haproxy
-  log  127.0.0.1 local0
-  maxconn  4096
-  pidfile  /var/run/haproxy.pid
-  stats  socket /var/lib/haproxy/stats
-  user  haproxy
+        log /dev/log    local0
+        log /dev/log    local1 notice
+        chroot /var/lib/haproxy
+        stats socket /run/haproxy/admin.sock mode 660 level admin
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
+        maxconn 100000
+        tune.bufsize 32768
+        tune.ssl.default-dh-param 1024
+
+        # Default SSL material locations
+        ca-base /etc/ssl/certs
+        crt-base /etc/ssl/private
+
+        ssl-default-bind-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256
+
+        ssl-default-bind-options ssl-min-ver TLSv1.2 ssl-max-ver TLSv1.3
+
+        ssl-default-server-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256
+
+        ssl-default-server-options ssl-min-ver TLSv1.2 ssl-max-ver TLSv1.3
+
+        nbproc 1
+        nbthread ${NR_CPUS}
+        cpu-map auto:1/1-${NR_CPUS} 1-${NR_CPUS}
 
 defaults
-  log  global
-  maxconn  8000
-  stats  enable
-  timeout  http-request 10s
-  timeout  queue 1m
-  timeout  connect 10s
-  timeout  client 1m
-  timeout  server 1m
-  timeout  check 10s
+  log     global
+  mode    http
+  option  log-health-checks
+  option  log-separate-errors
+  option  dontlognull
+  option  httplog
+  option  splice-auto
+  option  socket-stats
+  retries 3
+  option  redispatch
+  maxconn 100000
+  timeout connect     10s
+  timeout client      1m
+  timeout server      1m
+  timeout check 	  10s
+  timeout http-keep-alive 300s
+  http-reuse safe
+  errorfile 400 /etc/haproxy/errors/400.http
+  errorfile 403 /etc/haproxy/errors/403.http
+  errorfile 408 /etc/haproxy/errors/408.http
+  errorfile 500 /etc/haproxy/errors/500.http
+  errorfile 502 /etc/haproxy/errors/502.http
+  errorfile 503 /etc/haproxy/errors/503.http
+  errorfile 504 /etc/haproxy/errors/504.http
+
+frontend https
+  option http-use-htx
+  option http-keep-alive
+  bind 0.0.0.0:443 tfo ssl alpn h2,http/1.1 npn h2,http/1.1 crt /etc/ssl/private/mydomain.pem
+  default_backend cb
+
+frontend http
+  option http-use-htx
+  option http-keep-alive
+  bind 0.0.0.0:80 tfo
+  default_backend cb
+
+backend cb
+  option http-use-htx
+  option forwardfor
+  option http-keep-alive
+  option tcp-smart-connect
+  http-reuse safe
+  http-response set-header Connection "Keep-Alive"
+  http-response add-header Access-Control-Allow-Origin "*"
 
 EOF
 
     LOAD_BALANCER_PORTS=$(echo $LOAD_BALANCER_PORTS | sed 's/,/ /g')
-    
+
     for LBP in $LOAD_BALANCER_PORTS
     do
-        echo "" >> $f    
-        echo "listen ${my_type}${LBP}" >> $f
-        echo "  bind 0.0.0.0:${LBP}" >> $f   
-        
-        if [[ $LOAD_BALANCER_NODE == "http" ]]
-        then
-            echo "  mode http" >> $f            
-            echo "  retries 3" >> $f
-            echo "  option tcplog" >> $f
-            echo "  option redispatch" >> $f
-            echo "  balance roundrobin" >> $f
-        fi
-            
-        if [[ $LOAD_BALANCER_NODE == "tcp" ]]
-        then
-            echo "  mode tcp" >> $f
-            echo "  retries 3" >> $f
-            echo "  option tcplog" >> $f 
-            echo "  option redispatch" >> $f
-        fi        
-            
         for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
         do
             echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LBP check" >> $f
-        done   
-    done    
+        done
+    done
     sudo ls /etc/haproxy/haproxy.cfg.backup
     if [[ $? -ne 0 ]]
     then
@@ -2014,30 +2057,30 @@ EOF
     fi
 
     sudo mv $f /etc/haproxy/haproxy.cfg
-    
+
     SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
     ATTEMPTS=3
     while [[ "$ATTEMPTS" -ge  0 ]]
-    do 
+    do
         syslog_netcat "Checking for an HAproxy load balancer running on $SHORT_HOSTNAME...."
         result="$(ps -ef | grep haproxy | grep -v grep)"
-        
+
         if [[ x"$result" == x ]]
-        then 
+        then
             ((ATTEMPTS=ATTEMPTS-1))
             syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
-    
+
             service_restart_enable haproxy
             syslog_netcat "HAproxy started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
             syslog_netcat "Will wait 5 seconds and check for haproxy processes...."
             sleep 5
-        else 
-            syslog_netcat "HAproxy load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
-    
+        else
+            syslog_netcat "HAproxy load balancer already running on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
+
             provision_application_stop $START
-        fi    
+        fi
         exit 0
-    
+
     done
     syslog_netcat "haproxy load Balancer could not be restarted on $SHORT_HOSTNAME - NOK"
     exit 2
@@ -2047,58 +2090,58 @@ export -f haproxy_setup
 #FIXME
 function ihs_setup {
     syslog_netcat "Fixing up httpd.conf..... to point to IPs ${LOAD_BALANCER_TARGET_IPS_CSV}"
-    
+
     conf_file=/opt/IBM/HTTPServer/conf/httpd.conf
     tmp_file=/tmp/http.conf.tmp
-    
+
     if [[ x"$(grep "balancer\://$LOAD_BALANCER_TARGET" $conf_file)" == x ]]
     then
         sudo cp $conf_file $tmp_file
         sudo chmod 777 $tmp_file
-    
+
         echo "<Proxy balancer://$LOAD_BALANCER_TARGET>" >> $tmp_file
-    
+
         for ip in $LOAD_BALANCER_TARGET_IPS ; do
             echo "BalancerMember http://$ip:$LOAD_BALANCER_TARGET_PORT/$LOAD_BALANCER_TARGET_URL" >> $tmp_file
         done
-    
-    
+
+
         echo "</Proxy>" >> $tmp_file
         echo "ProxyPass /daytrader balancer://$LOAD_BALANCER_TARGET" >> $tmp_file
         echo "ProxyPassReverse /daytrader balancer://$LOAD_BALANCER_TARGET" >> $tmp_file
-    
+
         syslog_netcat "Done setting up child load targets for balancer in httpd.conf..."
-    
+
         sudo cp $tmp_file $conf_file
     else
         syslog_netcat "httpd.conf already fixed. skipping..."
     fi
 
-    SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)    
+    SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
     ATTEMPTS=3
     while [[ "$ATTEMPTS" -ge  0 ]]
-    do 
+    do
         syslog_netcat "Checking for a http load balancer running on $SHORT_HOSTNAME...."
         result="$(ps -ef | grep httpd | grep -v grep)"
         syslog_netcat "Done checking for a WAS server running on $SHORT_HOSTNAME"
-        
+
         if [[ x"$result" == x ]]
-        then 
+        then
             ((ATTEMPTS=ATTEMPTS-1))
             syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
-    
+
             sudo /opt/IBM/HTTPServer/bin/apachectl restart
             sudo /opt/IBM/HTTPServer/bin/adminctl restart
             syslog_netcat "Apache started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
             syslog_netcat "Will wait 5 seconds and check for httpd processes...."
             sleep 5
-        else 
+        else
             syslog_netcat "Load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
-    
+
             provision_application_stop $START
-        fi    
+        fi
         exit 0
-    
+
     done
     syslog_netcat "Load Balancer could not be restarted on $SHORT_HOSTNAME - NOK"
     exit 2
@@ -2107,7 +2150,7 @@ export -f ihs_setup
 
 function set_java_home {
 
-    if [[ ! -z ${JAVA_HOME} ]]  
+    if [[ ! -z ${JAVA_HOME} ]]
     then
         sudo ls $JAVA_HOME
         if [[ $? -ne 0 ]]
@@ -2116,7 +2159,7 @@ function set_java_home {
             unset JAVA_HOME
         fi
     fi
-    
+
     if [[ -z ${JAVA_HOME} ]]
     then
         JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)
@@ -2124,11 +2167,11 @@ function set_java_home {
 
         syslog_netcat "The JAVA_VERSION was set to \"${JAVA_VER}\""
         if [[ $JAVA_VER == "auto" ]]
-        then            
+        then
             JAVA_VER=''
-        fi            
-                                    
-        if [[ ${JAVA_HOME} != "auto" ]]   
+        fi
+
+        if [[ ${JAVA_HOME} != "auto" ]]
         then
             sudo ls $JAVA_HOME
             if [[ $? -ne 0 ]]
@@ -2137,7 +2180,7 @@ function set_java_home {
                 JAVA_HOME="auto"
             fi
         fi
-        
+
         if [[ ${JAVA_HOME} == "auto" ]]
         then
 
@@ -2146,14 +2189,14 @@ function set_java_home {
             if [[ $? -eq 0 ]]
             then
                 JAVA_HOME=$(sudo find /opt/ibm/ | grep jre/bin/javaws | grep "\-$JAVA_VER" | sed 's^/bin/javaws^^g' | sort -r | head -n 1)
-            else            
+            else
                 syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"
                 JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | grep "\-$JAVA_VER" | sed '/^$/d' | sort -r | head -n 1)/jre
             fi
         fi
 
-        syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
-                
+        syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""
+
         eval JAVA_HOME=${JAVA_HOME}
         if [[ -f ~/.bashrc ]]
         then
@@ -2165,7 +2208,7 @@ function set_java_home {
             fi
         fi
     else
-        syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
+        syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"
     fi
 
     export JAVA_HOME=${JAVA_HOME}
@@ -2174,22 +2217,22 @@ function set_java_home {
     then
         export PATH=${JAVA_HOME}/bin:$PATH
     fi
-    
+
     JAVA_MAX_MEM_HEAP=$(get_my_ai_attribute_with_default java_max_mem_heap 0.8)
 
-    check_container 
-    
+    check_container
+
     if [[ $IS_CONTAINER -eq 1 ]]
     then
         mem=`echo $(get_my_vm_attribute size) | cut -d '-' -f 2`
-        export JAVA_MAX_MEM_HEAP=$(echo "scale=0; $mem*${JAVA_MAX_MEM_HEAP}" | bc -l)        
-    else 
+        export JAVA_MAX_MEM_HEAP=$(echo "scale=0; $mem*${JAVA_MAX_MEM_HEAP}" | bc -l)
+    else
         mem=`cat /proc/meminfo | sed -n 's/MemTotal:[ ]*\([0-9]*\) kB.*/\1/p'`
-        export JAVA_MAX_MEM_HEAP=$(echo "scale=0; $mem*${JAVA_MAX_MEM_HEAP}/1024" | bc -l)        
+        export JAVA_MAX_MEM_HEAP=$(echo "scale=0; $mem*${JAVA_MAX_MEM_HEAP}/1024" | bc -l)
     fi
-    
+
     JAVA_EXTRA_CMD_OPTS=$(get_my_ai_attribute_with_default java_extra_cmd_opts "-Xms256m")
-    
+
     echo $JAVA_EXTRA_CMD_OPTS | grep Xmx
     if [[ $? -ne 0 ]]
     then
@@ -2199,7 +2242,7 @@ function set_java_home {
 export -f set_java_home
 
 my_sut=$(get_my_ai_attribute sut)
-    
+
 function set_load_gen {
     LOAD_PROFILE=$1
     LOAD_LEVEL=$2
@@ -2217,7 +2260,7 @@ function set_load_gen {
         export LOAD_DURATION=$LOAD_DURATION
         export LOAD_ID=$LOAD_ID
     fi
-    
+
     if [[ -z "$SLA_RUNTIME_TARGETS" ]]
     then
         /bin/true
@@ -2231,7 +2274,7 @@ function set_load_gen {
 #    export RUN_ID=$(echo $OUTPUT_FILE | sed 's^/tmp/tmp.^^g')
     lidmsgs="Benchmarking $my_type SUT: "
     lidmsgm=''
-    
+
     for ir in $(echo $my_sut | sed 's/->/ /g' | sed 's/[0-9]_x_//g')
     do
         lidmsgm=${lidmsgm}$(echo $ir | tr '[:lower:]' '[:upper:]')"="$(echo `get_ips_from_role $ir` | sed 's/ /,/g')" -> "
@@ -2239,12 +2282,12 @@ function set_load_gen {
     lidmsgm=${lidmsgm}"_+"
     lidmsgm=$(echo ${lidmsgm} | sed 's/-> _+/ /g')
     lidmsge="with LOAD_PROFILE=${LOAD_PROFILE}, LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
-    
+
     export LIDMSG=${lidmsgs}${lidmsgm}${lidmsge}
-                
+
     update_app_errors 0 reset
     syslog_netcat "PREPARING: ${LIDMSG}"
-}    
+}
 export -f set_load_gen
 
 function unset_load_gen {
@@ -2253,11 +2296,11 @@ function unset_load_gen {
     syslog_netcat "METRIC COLLECTION COMPLETE: ${LIDMSG}"
 }
 export -f unset_load_gen
-    
+
 function format_for_report {
     metric_name=$1
     metric_value=$2
-    
+
     echo $metric_value | grep [0-9].us > /dev/null 2>&1
     if [[ $? -eq 0 ]]
     then
@@ -2267,24 +2310,25 @@ function format_for_report {
 
     echo $metric_value | grep [0-9].k > /dev/null 2>&1
     if [[ $? -eq 0 ]]
-    then        
+    then
         echo $metric_name":"$(echo "scale=2; $2 * 1000" | sed 's/k//g' | bc -l)":tps"
         return 0
-    fi    
+    fi
 
     echo $metric_value | grep [0-9].ms > /dev/null 2>&1
     if [[ $? -eq 0 ]]
     then
         echo $metric_name":"$(echo $2 | sed 's/ms//g')":ms"
         return 0
-    fi    
+    fi
+    echo "${metric_name}:${metric_value}:units"
 }
 export -f format_for_report
 
 function common_metrics {
     mtr_str=''
     mtr_str=${mtr_str}" load_id:${LOAD_ID}:seqnum"
-    mtr_str=${mtr_str}" load_profile:${LOAD_PROFILE}:name" 
+    mtr_str=${mtr_str}" load_profile:${LOAD_PROFILE}:name"
     mtr_str=${mtr_str}" load_level:${LOAD_LEVEL}:load"
     mtr_str=${mtr_str}" load_duration:${LOAD_DURATION}:sec"
     mtr_str=${mtr_str}" errors:$(update_app_errors):num"
