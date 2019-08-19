@@ -25,9 +25,10 @@ RUN /bin/true; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/hadoop
 # spark-install-man
 #RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.1.3/spark-2.1.3-bin-hadoop2.7.tgz
 #RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.2.2/spark-2.2.2-bin-hadoop2.7.tgz
-RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.2.3/spark-2.2.3-bin-hadoop2.7.tgz
+#RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.2.3/spark-2.2.3-bin-hadoop2.7.tgz
+RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.3.3/spark-2.3.3-bin-hadoop2.7.tgz
 RUN /bin/true; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/spark*.tgz
-RUN wget -N -q -P /home/REPLACE_USERNAME http://9.2.130.17/repo/dropbox/cloudbench/spark/spark-2.2.0-bin-ibm-dcs-spark.tgz; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/spark-2.2.0-bin-ibm-dcs-spark.tgz
+RUN wget -N -q -P /home/REPLACE_USERNAME http://REPLACE_DROPBOX/repo/dropbox/cloudbench/spark/spark-2.2.0-bin-ibm-dcs-spark.tgz; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/spark-2.2.0-bin-ibm-dcs-spark.tgz
 # spark-install-man
 
 # gradle-install-pm

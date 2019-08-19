@@ -2,6 +2,8 @@ FROM REPLACE_BASE_VANILLA_UBUNTU
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+USER root
+
 RUN apt-get update
 RUN useradd -ms /bin/bash REPLACE_USERNAME
 

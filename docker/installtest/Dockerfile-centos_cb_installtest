@@ -1,4 +1,7 @@
 FROM REPLACE_BASE_VANILLA_CENTOS
+
+USER root
+
 RUN yum -y update
 RUN yum -y install openssh-server 
 RUN yum -y install passwd 
