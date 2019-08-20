@@ -28,6 +28,7 @@ from time import sleep
 from subprocess import PIPE,Popen
 import base64
 import hashlib
+import binascii
 from os.path import isdir
 import re
 
@@ -281,6 +282,8 @@ def get_ssh_key(pub_key_fn, fptype = "common", read_from_file = True) :
 
     if fptype == "Amazon Elastic Compute Cloud" or fptype == "EC2" or fptype == "ec2" :
         _key_fingerprint = key2ec2fp(pub_key_fn)    
+    elif fptype == "IBM Cloud" or fptype == "IBM" or fptype == "ibm" :
+        _key_fingerprint = keyibmfp(_key_contents)
     else :
         _key_fingerprint = key2fp(_key_contents)
                 
@@ -293,6 +296,14 @@ def key2fp(pubkey_contents):
     key = base64.b64decode(pubkey_contents.encode('ascii'))
     fp_plain = hashlib.md5(key).hexdigest()
     return ':'.join(a+b for a,b in zip(fp_plain[::2], fp_plain[1::2]))
+
+def keyibmfp(pubkey_contents):
+    '''
+    TBD
+    ''' 
+    key = bytes(pubkey_contents)
+    fp_plain = base64.b64encode(hashlib.sha256(binascii.a2b_base64(key)).digest()).rstrip(b'=')
+    return "SHA256:" + fp_plain.decode('utf-8')
 
 def key2ec2fp(pub_key_fn) :
     '''
