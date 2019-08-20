@@ -118,6 +118,12 @@ def main() :
                        default=False, \
                        help="Install on a python virtual environment (python dependencies ONLY !!!)")
 
+    _parser.add_option("--cleanupimageid",\
+                       action="store_true", \
+                       dest="cleanupimageid", \
+                       default=False, \
+                       help="Remove /etc/image-id from the instance's disk. Useful when preparing images for cloning")
+
     _parser.add_option("--logdest", dest = "logdest", metavar = "LOGDEST", \
                       default = "console", help ="Alter default logging behavior")
     

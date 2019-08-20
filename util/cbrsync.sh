@@ -19,7 +19,7 @@ CBRSYNC_REMOTE_DIR=$(echo $CBRSYNC_BASE_DIR | sed "s^$HOME^^g")
 
 if [[ -z $1 ]] 
 then
-    echo "Usage $CBRSYNC_BASE_DIR/cbrsync.sh <DESTINATION IP> [build|run]"
+    echo "Usage: $CBRSYNC_BASE_DIR/util/cbrsync.sh <DESTINATION IP> [build|run]"
     exit 1
 fi
 
@@ -46,5 +46,5 @@ do
     fi
 
     ssh -o PasswordAuthentication=no -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${CBRSYNC_TARGET} "mkdir -p ~/$CBRSYNC_REMOTE_DIR/" > /dev/null 2>&1
-    rsync -avzP $CBRSYNC_ADDITIONAL_EXCLUDE --exclude .git/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/ $CBRSYNC_BASE_DIR/ ${CBRSYNC_TARGET}:~/$CBRSYNC_REMOTE_DIR
+    rsync -avzP $CBRSYNC_ADDITIONAL_EXCLUDE --exclude .git/ --exclude old_data/ --include=configs/cloud_definitions.txt --include configs/build*.sh --include configs/generated/ --include=configs/templates/ --exclude=configs/* --exclude tsam/ --exclude data/ --exclude .cb_history --exclude stores/ --exclude jar/ --exclude windows/ $CBRSYNC_BASE_DIR/ ${CBRSYNC_TARGET}:~/$CBRSYNC_REMOTE_DIR/
 done

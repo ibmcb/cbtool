@@ -1066,10 +1066,18 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             _process_manager = ProcessManagement(hostname)
             _cmd = "sudo chown -R " + depsdict["username"] + ':' + depsdict["username"] + " /home/" + depsdict["username"] + '/'
             _cmd = _cmd.replace("/home/root", "/root")
-            _status, _x, _y = _process_manager.run_os_command(_cmd, raise_exception = False)
+
+            if options.cleanupimageid :
+                _cmd += "; sudo truncate -s 0 /etc/machine-id; sudo rm -rf /var/lib/dbus/machine-id; sudo ln -s /etc/machine-id /var/lib/dbus/machine-id"
+                            
+            _status, _x, _y = _process_manager.run_os_command(_cmd, raise_exception = False)            
             _msg = "All dependencies are in place"
+                
             if len(options.wks) :
                 _msg += " for workload(s) \"" + str(options.wks) + "\""
+
+            if options.cleanupimageid :
+                _msg += " (imageid cleanup was invoked)"
 
         return _status, _msg
 

@@ -1,18 +1,38 @@
-run-command sed -i '/^#.* partner/s/^#//' /etc/apt/sources.list
+#
+#
+#
+upload REPLACE_PATH/base/tempconfigetchosts.sh:/usr/local/bin/tempconfigetchosts
+upload REPLACE_PATH/base/preinjectkeys.sh:/usr/local/bin/preinjectkeys
+upload REPLACE_PATH/base/getmyips.sh:/usr/local/bin/getmyips
+upload REPLACE_PATH/base/gucn.sh:/usr/local/bin/gucn
+upload REPLACE_PATH/base/fixulimits.sh:/usr/local/bin/fixulimits
+#
+upload REPLACE_PATH/base/installrlibs.R:/usr/local/bin/installrlibs
+
+#
+chmod 0755:/usr/local/bin/tempconfigetchosts
+chmod 0755:/usr/local/bin/preinjectkeys
+chmod 0755:/usr/local/bin/getmyips
+chmod 0755:/usr/local/bin/gucn
+chmod 0755:/usr/local/bin/fixulimits
+#
+chmod 0755:/usr/local/bin/installrlibs
 
 upload /tmp/cache_resolve_dns:/root/cache_resolve_dns
-run-command sed -i '/^#CBSTART/,/^#CBEND/{//p;d;}' /etc/hosts
-run-command sed -i '/^#CB/d' /etc/hosts
-run-command echo "#CBSTART: Added by cloudbench" >> /etc/hosts
-run-command cat /root/cache_resolve_dns >> /etc/hosts
-run-command echo "#CBEND: Added by cloudbench" >> /etc/hosts
+
+run-command /usr/local/bin/tempconfigetchosts
+
+run-command sed -i '/^#.* partner/s/^#//' /etc/apt/sources.list
 
 install sudo,rsync,python2.7,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop,libyaml-0-2
 install net-tools,psmisc,ntp,git,wget,python-pip,gcc,make,bc,sshpass,curl,screen,ncftp,lftp,haproxy,vim,netcat-openbsd,nmap
 install openvpn,ganglia-monitor,rsyslog,apache2,redis-server,mongodb,sudo,python-libvirt,python-dev,pssh,jq,iptables,openssh-server
-install r-base-core,rrdtool,python-rrdtool,pwgen,python-docutils,language-pack-en,subnetcalc
+install r-base-core,rrdtool,python-rrdtool,pwgen,python-docutils,language-pack-en,subnetcalc,haveged,python-libxml2,uuid
 
 install expect,xfce4,xfce4-goodies,tightvncserver
+
+run-command sudo cp /bin/nc /usr/local/bin/netcat
+
 run-command curl -sL https://ibm.biz/idt-installer | bash
 
 run-command sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf
@@ -29,14 +49,17 @@ run-command sudo pip install -i https://pypi.python.org/simple/ requests==2.12
 run-command sudo pip install -i https://pypi.python.org/simple/ docutils 
 run-command sudo pip install -i https://pypi.python.org/simple/ python-daemon
 run-command sudo pip install -i https://pypi.python.org/simple/ --upgrade pyasn1-modules
+run-command sudo pip install -i https://pypi.python.org/simple/ --upgrade docker-py==1.8.1 wget markup httplib2shim pylxd mongo beaker webob redis==2.10.6 
 
 run-command curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 run-command add-apt-repository "deb https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 run-command apt-get update
-run-command apt-get install -y -q --allow-unauthenticated docker-ce=18.06.1~ce~3-0~ubuntu
+run-command apt-get install -y -q --allow-unauthenticated docker-ce
 
 run-command sed -i 's^-H.*^-H fd:// -H tcp://0.0.0.0:2375^g' /lib/systemd/system/docker.service
 run-command systemctl daemon-reload
+
+run-command grep UseDNS /etc/ssh/sshd_config; if [[ $? -ne 0 ]]; then echo 'UseDNS no' >> /etc/ssh/sshd_config; fi 
 
 run-command ln -s /usr/bin/python2.7 /usr/bin/python; /bin/true
 edit /etc/default/grub:s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"biosdevname=0 net.ifnames=0\"/
@@ -44,78 +67,43 @@ run-command update-grub
 root-password password:temp4now
 
 edit /etc/ssh/sshd_config:s/PermitRootLogin without-password/PermitRootLogin yes/
-upload REPLACE_PATH/base/getmyips.sh:/usr/local/bin/getmyips
-upload REPLACE_PATH/base/gucn.sh:/usr/local/bin/gucn
-upload REPLACE_PATH/base/fixulimits.sh:/usr/local/bin/fixulimits.sh
+edit /etc/ssh/sshd_config:s/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/
+edit /etc/ssh/sshd_config:s/.*UseDNS.*/UseDNS no/
 
-chmod 0755:/usr/local/bin/getmyips
-chmod 0755:/usr/local/bin/gucn
-chmod 0755:/usr/local/bin/fixulimits.sh
+#run-command systemctl enable fixnetwork
+run-command sudo systemctl enable haveged
 
-run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash ubuntu
-run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash fedora; 
 run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash REPLACE_USERNAME
-
-run-command echo 'ubuntu  ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
-run-command echo 'fedora  ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
+run-command usermod -aG sudo REPLACE_USERNAME 
+run-command sed -i 's/%sudo.*ALL=(ALL:ALL).*ALL/%sudo   ALL=(ALL:ALL) NOPASSWD:ALL/g' /etc/sudoers
 run-command echo 'REPLACE_USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-password ubuntu:password:temp4now
-password fedora:password:temp4now
 password REPLACE_USERNAME:password:temp4now
 
 run-command mkdir /root/.docker
-run-command mkdir /home/ubuntu/.docker
-run-command mkdir /home/fedora/.docker
 run-command mkdir /home/REPLACE_USERNAME/.docker
 
+#
+#
+
 run-command ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa; 
-upload /home/REPLACE_USERNAME/.ssh/authorized_keys:/root/.ssh/authorized_keys
-upload /home/REPLACE_USERNAME/.ssh/config:/root/.ssh/config
-upload /home/REPLACE_USERNAME/.ssh/id_rsa:/root/.ssh/id_rsa
-upload /home/REPLACE_USERNAME/.ssh/id_rsa.pub:/root/.ssh/id_rsa.pub
-run-command touch /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys
-run-command touch /root/.ssh/config; chmod 644 /root/.ssh/config
-run-command touch /root/.ssh/id_rsa; chmod 600 /root/.ssh/id_rsa
-run-command touch /root/.ssh/id_rsa.pub; chmod 644 /root/.ssh/id_rsa.pub
+run-command touch /root/.ssh/authorized_keys
+run-command chmod 644 /root/.ssh/authorized_keys
+run-command cat /root/.ssh/id_rsa.pub > /root/.ssh/authorized_keys
+run-command touch /root/.ssh/config
+run-command echo "StrictHostKeyChecking no" > /root/.ssh/config
+run-command echo "UserKnownHostsFile=/dev/null" >> /root/.ssh/config
+run-command echo "HashKnownHosts no" >> /root/.ssh/config
+run-command chmod 644 /root/.ssh/config
 run-command chown -R root:root /root
 
-run-command mkdir -p /home/ubuntu/.ssh/
-run-command ssh-keygen -q -t rsa -N '' -f /home/ubuntu/.ssh/id_rsa; 
-upload /home/REPLACE_USERNAME/.ssh/authorized_keys:/home/ubuntu/.ssh/authorized_keys
-upload /home/REPLACE_USERNAME/.ssh/config:/home/ubuntu/.ssh/config
-upload /home/REPLACE_USERNAME/.ssh/id_rsa:/home/ubuntu/.ssh/id_rsa
-upload /home/REPLACE_USERNAME/.ssh/id_rsa.pub:/home/ubuntu/.ssh/id_rsa.pub
-run-command touch /home/ubuntu/.ssh/authorized_keys; chmod 644 /home/ubuntu/.ssh/authorized_keys
-run-command touch /home/ubuntu/.ssh/config; chmod 644 /home/ubuntu/.ssh/config
-run-command touch /home/ubuntu/.ssh/id_rsa; chmod 600 /home/ubuntu/.ssh/id_rsa
-run-command touch /home/ubuntu/.ssh/id_rsa.pub; chmod 644 /home/ubuntu/.ssh/id_rsa.pub
-run-command chown -R ubuntu:ubuntu /home/ubuntu/
-
-run-command mkdir -p /home/fedora/.ssh/
-run-command ssh-keygen -q -t rsa -N '' -f /home/fedora/.ssh/id_rsa; 
-upload /home/REPLACE_USERNAME/.ssh/authorized_keys:/home/fedora/.ssh/authorized_keys
-upload /home/REPLACE_USERNAME/.ssh/config:/home/fedora/.ssh/config
-upload /home/REPLACE_USERNAME/.ssh/id_rsa:/home/fedora/.ssh/id_rsa
-upload /home/REPLACE_USERNAME/.ssh/id_rsa.pub:/home/fedora/.ssh/id_rsa.pub
-run-command touch /home/fedora/.ssh/authorized_keys; chmod 644 /home/fedora/.ssh/authorized_keys
-run-command touch /home/fedora/.ssh/config; chmod 644 /home/fedora/.ssh/config
-run-command touch /home/fedora/.ssh/id_rsa; chmod 600 /home/fedora/.ssh/id_rsa
-run-command touch /home/fedora/.ssh/id_rsa.pub; chmod 644 /home/fedora/.ssh/id_rsa.pub
-run-command chown -R fedora:fedora /home/fedora/
-
 run-command mkdir -p /home/REPLACE_USERNAME/.ssh/
-run-command ssh-keygen -q -t rsa -N '' -f /home/REPLACE_USERNAME/.ssh/id_rsa
-upload /home/REPLACE_USERNAME/.ssh/authorized_keys:/home/REPLACE_USERNAME/.ssh/authorized_keys
-upload /home/REPLACE_USERNAME/.ssh/config:/home/REPLACE_USERNAME/.ssh/config
-upload /home/REPLACE_USERNAME/.ssh/id_rsa:/home/REPLACE_USERNAME/.ssh/id_rsa
-upload /home/REPLACE_USERNAME/.ssh/id_rsa.pub:/home/REPLACE_USERNAME/.ssh/id_rsa.pub
-run-command touch /home/REPLACE_USERNAME/.ssh/authorized_keys; chmod 644 /home/REPLACE_USERNAME/.ssh/authorized_keys
-run-command touch /home/REPLACE_USERNAME/.ssh/config; chmod 644 /home/REPLACE_USERNAME/.ssh/config
-run-command touch /home/REPLACE_USERNAME/.ssh/id_rsa; chmod 600 /home/REPLACE_USERNAME/.ssh/id_rsa
-run-command touch /home/REPLACE_USERNAME/.ssh/id_rsa.pub; chmod 644 /home/REPLACE_USERNAME/.ssh/id_rsa.pub
-run-command chmod 644 /home/REPLACE_USERNAME/.ssh/authorized_keys; chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+run-command rsync -a /root/.ssh/ /home/REPLACE_USERNAME/.ssh/
 run-command chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+
+#
+#
+#
 
 run-command cd /home/REPLACE_USERNAME; git clone https://github.com/ibmcb/cbtool.git
 run-command cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH; mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party
@@ -124,4 +112,39 @@ edit /etc/cloud/cloud.cfg:s/name: ubuntu/name: REPLACE_USERNAME/
 edit /etc/cloud/cloud.cfg:s/lock_passwd: True/lock_passwd: False/
 edit /etc/cloud/cloud.cfg:s/gecos: Ubuntu/gecos: Cloudbench/
 
+run-command /usr/local/bin/fixulimits
+
+##### For "all in one" image
+
+#all-in-one install build-essential,gengetopt,libgoogle-perftools-dev,libevent-dev,scons,libboost-all-dev,tmux
+#all-in-one install autoconf,automake,libpcre3-dev,pkg-config,zlib1g-dev,libtool,node-ws,nuttcp,xinetd,subversion,maven,ant,libaio1
+#all-in-one install gradle,python-numpy,scala,sysbench,hpcc,gfortran,libopenmpi-dev
+
+#all-in-one run-command echo "mysql-server-5.7 mysql-server/root_password password temp4now" | sudo debconf-set-selections; echo "mysql-server-5.7 mysql-server/root_password_again password temp4now" | sudo debconf-set-selections
+#all-in-one run-command apt-get install -y mysql-server python-mysqldb python-pip python-dev libmysqlclient-dev
+
+#all-in-one run-command chmod 0755 /home/REPLACE_USERNAME/cloudbench/3rd_party/workload/ibm-java-x86_64-sdk-8.0-5.5.bin
+#all-in-one run-command echo "INSTALLER_UI=silent" > /home/REPLACE_USERNAME/installer.properties; echo "LICENSE_ACCEPTED=TRUE" >> /home/REPLACE_USERNAME/installer.properties
+#all-in-one run-command /home/REPLACE_USERNAME/cloudbench/3rd_party/workload/ibm-java-x86_64-sdk-8.0-5.5.bin -i silent -f /home/REPLACE_USERNAME/installer.properties
+
+#all-in-one run-command apt-get install -y --allow-downgrades python=2.7.11-1 python-minimal=2.7.11-1 libpython-stdlib=2.7.11-1 python2.7-dev=2.7.11-7ubuntu1 python2.7=2.7.11-7ubuntu1 python2.7-minimal=2.7.11-7ubuntu1 libpython2.7-stdlib=2.7.11-7ubuntu1 libpython2.7-minimal=2.7.11-7ubuntu1 libpython2.7-dev=2.7.11-7ubuntu1 libpython2.7=2.7.11-7ubuntu1
+#all-in-one run-command wget -N -q -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb
+#all-in-one run-command wget -N -v -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.1.1_all.deb; dpkg -i /home/REPLACE_USERNAME/cassandra*.deb
+#all-in-one run-command wget -N -v -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra-tools_2.1.1_all.deb; dpkg -i /home/REPLACE_USERNAME/cassandra-tools*.deb
+
+#all-in-one run-command echo "deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu xenial main" > /etc/apt/sources.list.d/openjdk-r-ubuntu-ppa-xenial.list; apt-get update; apt-get install -y openjdk-7-jdk; apt-get install -y openjdk-8-jdk
+
+#all-in-one run-command wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+#all-in-one run-command /bin/true; cd /home/REPLACE_USERNAME; sudo tar -xzf /home/REPLACE_USERNAME/hadoop-1.2.1.tar.gz
+
+#all-in-one run-command wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/common/hadoop-2.6.1/hadoop-2.6.1.tar.gz
+#all-in-one run-command /bin/true; cd /home/REPLACE_USERNAME; sudo tar -xzf /home/REPLACE_USERNAME/hadoop-2.6.1.tar.gz
+
+#all-in-one run-command wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/common/hadoop-2.7.5/hadoop-2.7.5.tar.gz
+#all-in-one run-command /bin/true; cd /home/REPLACE_USERNAME; sudo tar -xzf /home/REPLACE_USERNAME/hadoop-2.7.5.tar.gz
+
+##### For "all in one" image
+
 run-command chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+
+run-command cp -f /etc/hosts.original /etc/hosts

@@ -1,6 +1,6 @@
 # 36
-synthetic coremark,bonnie,btest,ddgen,fio,filebench,postmark,iperf,netperf,nuttcp,xping,unixbench
-application-stress kernbench,memtier,oldisim,wrk,wrk_lb
+synthetic coremark,bonnie,btest,ddgen,fio,filebench,postmark,iperf,netperf,nuttcp,xping,unixbench,stress
+application-stress kernbench,memtier,oldisim,wrk,wrk_lb,wkr2,wrk2_lb
 scientific hpcc,linpack,multichase,parboil,scimark
 transactional cassandra_ycsb,mongo_ycsb,redis_ycsb,open_daytrader,open_daytrader_lb,specjbb,sysbench,mongo_acmeair
 data-centric hadoop,giraph,spark
