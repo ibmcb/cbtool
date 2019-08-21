@@ -121,6 +121,7 @@ class LibcloudCmds(CommonCloudFunctions) :
     networks = False
     security_groups = False
     floating_ip_pools = False
+    global_images = False
     keys = {}
 
     '''
@@ -405,6 +406,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             vmc_name = vmc_name.replace("____",' ')
+
+            if "global_images" in vmc_defaults and str(vmc_defaults["global_images"].lower().strip() == "true" :
+                LibcloudCmds.global_images = True
 
             _key_pair_found = False
             for credentials_list in credentials.split(";"):
@@ -1852,6 +1856,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
     @trace
     def repopulate_images(self, obj_attr_list) :
+        if not LibcloudCmds.global_images :
+            LibcloudCmds.imagelist = []
+
         if not len(LibcloudCmds.imagelist) :
              LibcloudCmds.imagelist = self.get_my_driver(obj_attr_list).list_images()
 
