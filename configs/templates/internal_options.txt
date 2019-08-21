@@ -132,6 +132,16 @@ DISCOVER_HOSTS = $False
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
 FORCE_WALKTHROUGH = $True
+# For libcloud-based cloud adapters, some clouds
+# use the same images for the entire cloud
+# (Example: GCE and DigitalOcean)
+# On the other hand, clouds like Amazon do not.
+# The default behavior until now is to assume that
+# this is false (like Amazon). By setting this to
+# true, it "caches" the image list and re-uses it
+# across all VMCs so that the image list need not
+# be repopulated all the time.
+GLOBAL_IMAGES = $False
 ADDITIONAL_DISCOVERY = $EMPTY
 # Choose from VMCs in a pool in a round-robin manner.
 # Options: "random", "roundrobin", "colocate"
