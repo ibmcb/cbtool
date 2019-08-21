@@ -334,7 +334,7 @@ class CommonCloudFunctions:
             _pending_attr_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
                                                               "VM", obj_attr_list["uuid"], \
                                                               key, False)
-            
+
             if _pending_attr_list :                
                 
                 if key == "all" :
@@ -1092,7 +1092,7 @@ class CommonCloudFunctions:
         cloudconfig = "#cloud-config\n"
         cloudconfig += "ssh_pwauth: true\n"
         cloudconfig += "disable_root: false\n"
-        cloudconfig += "users:\n"
+        cloudconfig += "\nusers:\n"
         cloudconfig += "- name: " + obj_attr_list["login"] + "\n"
         if str(obj_attr_list["password"]).lower() != "false" :
             cloudconfig += "  lock-passwd: false\n"
@@ -1112,7 +1112,7 @@ class CommonCloudFunctions:
             cloudconfig += "ssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
         cloudconfig += "\n"
 
-        cloudconfig += "write_files:\n"
+        cloudconfig += "\nwrite_files:\n"
         cloudconfig += "  - path: /tmp/cb_post_boot.sh\n"
         cloudconfig += "    content: |\n"
             
@@ -1163,9 +1163,13 @@ class CommonCloudFunctions:
                         cloudconfig += "      up /etc/openvpn/client_connected.sh\n"
                 fh.close()
 
-        if obj_attr_list["userdata_post_boot"].lower() == "true" or obj_attr_list["use_vpn_ip"].lower() != "false" :
+        if obj_attr_list["userdata_post_boot"].lower() == "true" or obj_attr_list["use_vpn_ip"].lower() != "false" or obj_attr_list["cloudinit_commands"].lower() != "false" :
             cloudconfig += "\nruncmd:\n"
             cloudconfig += "  - chmod +x /tmp/cb_post_boot.sh\n"
+
+            if obj_attr_list["cloudinit_commands"].lower() != "false" :
+                for _cmd in obj_attr_list["cloudinit_commands"].split(',,,') :
+                    cloudconfig += "  - " + _cmd + '\n'
                     
             # We can't run the userdata from cloudbench until the VPN is connected,
             # so only run it if we're not using the VPN.
@@ -1184,7 +1188,7 @@ class CommonCloudFunctions:
             # cloudconfig += "  - service openvpn start\n"
                 
         # Check to see if the user requested packages to be installed for this VM role via cloud-init
-        if "cloudinit_packages" in obj_attr_list and obj_attr_list["cloudinit_packages"].lower() != "false" :
+        if obj_attr_list["cloudinit_packages"].lower() != "false" :
             cbdebug("Will instruct cloud-init to install: " + obj_attr_list["cloudinit_packages"] + " on " + obj_attr_list["log_string"], True)
             cloudconfig += """
 packages:"""
@@ -1326,26 +1330,27 @@ packages:"""
             file_name = file_name.replace('~', os.path.expanduser('~'))
 
         if file_name.count('/') and not (file_name.count("http://") or file_name.count("https://")):
-            _msg = "    Attempting to parse cloud connection file \"" + file_name + "\"..."
-            cbdebug(_msg, True)
-            _fh = open(file_name, 'r')
-            _contents = _fh.read()
-            _fh.close()
-            
-            for _line in _contents.split('\n') :
-                if len(_line) :
-                    if _line[0] != "#" :
-                        if _line[0:7] == "export " :
-                            _line = _line.replace("export ", '')
-            
-                        if _line.count("=") == 1 :
-                            _key, _value = _line.split('=')
-                            if _value.count("${") and _value.count(':') :
-                                _value = _value.split(':')[1][1:-1]
-                            _parameter_map[_key] = _value.replace('"','')     
-
-            _msg = "Done parsing cloud connection file \"" + file_name + "\"."
-            cbdebug(_msg)
+            if os.access(file_name, os.F_OK) :
+                _msg = "    Attempting to parse cloud connection file \"" + file_name + "\"..."
+                cbdebug(_msg, True)
+                _fh = open(file_name, 'r')
+                _contents = _fh.read()
+                _fh.close()
+                
+                for _line in _contents.split('\n') :
+                    if len(_line) :
+                        if _line[0] != "#" :
+                            if _line[0:7] == "export " :
+                                _line = _line.replace("export ", '')
+                
+                            if _line.count("=") == 1 :
+                                _key, _value = _line.split('=')
+                                if _value.count("${") and _value.count(':') :
+                                    _value = _value.split(':')[1][1:-1]
+                                _parameter_map[_key] = _value.replace('"','')     
+    
+                _msg = "Done parsing cloud connection file \"" + file_name + "\"."
+                cbdebug(_msg)
                     
         return _parameter_map
 
@@ -1639,17 +1644,20 @@ packages:"""
         return True
 
     @trace
-    def determine_key_name(self, obj_attr_list) :
+    def determine_key_name(self, obj_attr_list, separator = '_') :
         '''
         TBD
         '''
         if "tenant" in obj_attr_list :
-            _x = '_' + obj_attr_list["tenant"] + '_'
+            _x = separator + obj_attr_list["tenant"] + separator
         else :
-            _x = '_'
+            _x = separator
 
+        if separator != '_' :
+            obj_attr_list["key_name"] = obj_attr_list["key_name"].replace('_', separator)
+            
         if not obj_attr_list["key_name"].count(",") and not obj_attr_list["key_name"].count(obj_attr_list["username"] + '_') :
-            obj_attr_list["key_name"] = obj_attr_list["username"] + '_' + obj_attr_list["key_name"]
+            obj_attr_list["key_name"] = obj_attr_list["username"] + separator + obj_attr_list["key_name"]
 
         return obj_attr_list["key_name"].split(",")
 
