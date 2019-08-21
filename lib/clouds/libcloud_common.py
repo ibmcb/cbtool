@@ -407,7 +407,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             vmc_name = vmc_name.replace("____",' ')
 
-            if "global_images" in vmc_defaults and str(vmc_defaults["global_images"].lower().strip() == "true" :
+            if "global_images" in vmc_defaults and str(vmc_defaults["global_images"]).lower().strip() == "true" :
                 LibcloudCmds.global_images = True
 
             _key_pair_found = False
