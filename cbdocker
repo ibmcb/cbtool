@@ -17,30 +17,34 @@ fi
 CB_USER=${CB_USER:-$HOME}
 CB_DOCKER_USER=${CB_DOCKER_USER:-cbuser}
 CB_DOCKER_NETHOST=1
-CB_DOCKER_REPO=${CB_DOCKER_REPO:-cloudbench-docker-local.artifactory.swg-devops.com}
+CB_DOCKER_REPO=${CB_DOCKER_REPO:-ibmcb}
 CB_DOCKER_IMAGE=${CB_DOCKER_IMAGE:-ubuntu_cb_orchestrator}
-CB_DOCKER_TAG=${CB_DOCKER_TAG:-experimental}
+CB_DOCKER_TAG=${CB_DOCKER_TAG:-master}
 CB_DOCKER_DEBUG=0
 CB_KILL_DOCKER=0
 CB_PRIVATE_CONFIG=0
 CB_PRIVATE_DATA=0
 CB_DRY_RUN=0
+CB_DOCKER_PRECOMMAND=/bin/true
 CB_DOCKER_COMMAND="auto"
+CB_MANAGER_IP=${CB_MANAGER_IP:-"auto"}
 CB_DOCKER_EXTRA_OPTS=${CB_DOCKER_EXTRA_OPTS:-""}
 CB_DOCKER_IN_CLI=${CB_DOCKER_IN_CLI:-1}
 CB_EXECUTABLE_PARMS=" "
-CB_DOCKER_ADDITIONAL_VOLUME="none"
+CB_DOCKER_ADDITIONAL_VOLUMES="none"
+CB_DOCKER_ADDITIONAL_ENVARS="none"
 CB_DOCKER_HOST_ENTRY="none"
+CB_EXECUTABLE_NAME=cbtool
+CB_OBJECTSTORE_PORT=${CB_OBJECTSTORE_PORT:-40000}
+CB_LOGSTORE_PORT=${CB_LOGSTORE_PORT:-40001}
+CB_METRICSTORE_PORT=${CB_METRICSTORE_PORT:-40002}
+CB_FILESTORE_PORT=${CB_FILESTORE_PORT:-40003}
+CB_API_DEFAULTS_PORT=${CB_API_DEFAULTS_PORT:-40004}
+CB_GUI_DEFAULTS_PORT=${CB_GUI_DEFAULTS_PORT:-40005}
+CB_VPN_SERVER_PORT=${CB_VPN_SERVER_PORT:-40006}
+CB_CREATE_ONLY=0
 
-CB_OBJECTSTORE_PORT=${CB_OBJECTSTORE_PORT:-30000}
-CB_LOGSTORE_PORT=${CB_LOGSTORE_PORT:-30001}
-CB_METRICSTORE_PORT=${CB_METRICSTORE_PORT:-30002}
-CB_FILESTORE_PORT=${CB_FILESTORE_PORT:-30003}
-CB_API_DEFAULTS_PORT=${CB_API_DEFAULTS_PORT:-30004}
-CB_GUI_DEFAULTS_PORT=${CB_GUI_DEFAULTS_PORT:-30005}
-CB_VPN_SERVER_PORT=${CB_VPN_SERVER_PORT:-30006}
-
-CB_USAGE="Usage: $0 [-r/--repo <repository>] [-i/--image image name] [-b/--branch branch] [-c/--config config] [-e/--execute command] [-v/--volume] [-a/--add-host] [-p/--private] [-P/--propagate] [-z/--nonethost] [-d/--debug] [--reset] [-f/--soft_reset] [-x/--hard_reset] [-t/--trace tracefile] [-k/--kill] [-n/--dryrun]"
+CB_USAGE="Usage: $0 [-r/--repo <repository>] [-i/--image image name] [-b/--branch branch] [-c/--config config] [-D/--pexec command] [-e/--execute command] [-v/--volumes] [-g/--envars] [-a/--add-host] [-p/--private] [-P/--propagate] [-z/--nonethost] [-d/--debug] [--reset] [-f/--soft_reset] [-x/--hard_reset] [-t/--trace tracefile] [-k/--kill] [-n/--dryrun] [-y/--createonly] [-m/--cloudrename]"
 
 while [[ $# -gt 0 ]]
 do
@@ -79,12 +83,28 @@ do
         CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" --config $(echo $key | cut -d '=' -f 2)"
         shift
         ;;
-        -v|--volume)
-        CB_DOCKER_ADDITIONAL_VOLUME="$2"
+        -v|--volumes)
+        CB_DOCKER_ADDITIONAL_VOLUMES="$2"
         shift
         ;;
-        -v=*|--volume=*)
-        CB_DOCKER_ADDITIONAL_VOLUME=$(echo $key | cut -d '=' -f 2)
+        -v=*|--volumes=*)
+        CB_DOCKER_ADDITIONAL_VOLUMES=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;
+        -g|--envars)
+        CB_DOCKER_ADDITIONAL_ENVARS="$2"
+        shift
+        ;;
+        -g=*|--envars=*)
+        CB_DOCKER_ADDITIONAL_ENVARS=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
+        -m|--cloudrename)
+        CB_CLOUD_RENAME="$2"
+        shift
+        ;;
+        -m=*|--cloudrename=*)
+        CB_CLOUD_RENAME=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
         -a|--add-host)
@@ -105,7 +125,10 @@ do
         ;;
         -z|--nonethost)
         CB_DOCKER_NETHOST=0
-        ;;        
+        ;;
+        -y|--createonly)
+        CB_CREATE_ONLY=1
+        ;;
         -d|--debug)
         CB_DOCKER_DEBUG=1
         ;;
@@ -137,6 +160,14 @@ do
         CB_DOCKER_COMMAND=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
+        -D|--pexec)
+        CB_DOCKER_PRECOMMAND="$2"
+        shift
+        ;;
+        -D=*|--pexec=*)
+        CB_DOCKER_PRECOMMAND=$(echo $key | cut -d '=' -f 2)
+        shift        
+        ;;
         -k|--kill)
         CB_KILL_DOCKER=1
         ;;
@@ -146,10 +177,10 @@ do
         -h|--help)
         echo $CB_USAGE
         shift
-	exit 0
+        exit 0
         ;;        
         *)
-                # unknown option
+        # unknown option
         ;;
         esac
         shift
@@ -196,19 +227,19 @@ then
 
         if [[ $CB_KILL_DOCKER -gt 1  ]]
         then
-	        if [[ $(echo $CB_EXECUTABLE_PARMS | grep -c reset) -eq 0 ]]
-	        then
+            if [[ $(echo $CB_EXECUTABLE_PARMS | grep -c reset) -eq 0 ]]
+            then
                 CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" --soft_reset "
-	        fi
-	        
-	        if [[ ${CB_DOCKER_IN_CLI} -eq 0 ]]
-	        then
-	            CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" vmclist; bash"
-	        fi
-            CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/private_configs/build_cloud_config_file_from_env.sh cbuser /home/cbuser/cbtool docker; /home/$CB_DOCKER_USER/cbtool/cb $CB_EXECUTABLE_PARMS"
-	    fi
+            fi
+            
+            if [[ ${CB_DOCKER_IN_CLI} -eq 0 ]]
+            then
+                CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" vmclist; bash"
+            fi
+            CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME}/private_configs/build_cloud_config_file_from_env.sh $CB_DOCKER_USER /home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME} docker; /home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME}/cb $CB_EXECUTABLE_PARMS"
+        fi
     else
-        CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/cb"
+        CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME}/cb"
     fi
 else 
     if [[ $CB_KILL_DOCKER -gt 0  ]]
@@ -218,9 +249,10 @@ else
     fi
 fi
 
+CB_DOCKER_COMMAND=$CB_DOCKER_PRECOMMAND" ;"$CB_DOCKER_COMMAND
+
 if [[ $CB_DOCKER_DEBUG -eq 1 ]]
 then
-#    CB_DOCKER_COMMAND="bash"
     CB_DOCKER_BASE_CMDLINE="run -it "
 else
     CB_DOCKER_BASE_CMDLINE="run -itd "
@@ -242,39 +274,51 @@ then
     if [[ $CB_PRIVATE_CONFIG -eq 0 ]]
     then
         if [[ $(sudo docker volume ls | grep -c cbon_configs) -eq 0 ]]
-	    then
-	        sudo docker volume create cbon_configs
+        then
+            sudo docker volume create cbon_configs
         fi
-        #CB_DOCKER_VOL_CMDLINE=" -v $CB_BASE_DIR/configs:/home/$CB_DOCKER_USER/cbtool/configs:rw "
-        CB_DOCKER_VOL_CMDLINE=" -v cbon_configs:/home/$CB_DOCKER_USER/cbtool/configs "
+        #CB_DOCKER_VOL_CMDLINE=" -v $CB_BASE_DIR/configs:/home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME}/configs:rw "
+        CB_DOCKER_VOL_CMDLINE=" -v cbon_configs:/home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME}/configs "
     fi
     
     if [[ $CB_PRIVATE_DATA -eq 0 ]]
     then
         if [[ $(sudo docker volume ls | grep -c cbon_data) -eq 0 ]]
-	    then
-	        sudo docker volume create cbon_data
+        then
+            sudo docker volume create cbon_data
         fi
-        #CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_BASE_DIR/data:/home/$CB_DOCKER_USER/cbtool/data "
-        CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v cbon_data:/home/$CB_DOCKER_USER/cbtool/data "
+        #CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_BASE_DIR/data:/home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME}/data "
+        CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v cbon_data:/home/$CB_DOCKER_USER/${CB_EXECUTABLE_NAME}/data "
     fi
  
-    if [[ $CB_DOCKER_ADDITIONAL_VOLUME != "none" ]]
+    if [[ $CB_DOCKER_ADDITIONAL_VOLUMES != "none" ]]
     then
-        CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_DOCKER_ADDITIONAL_VOLUME "
+        for CB_VOL_ENTRY in $(echo $CB_DOCKER_ADDITIONAL_VOLUMES | sed 's/,/ /g')
+        do
+            CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v "$(echo $CB_VOL_ENTRY | sed "s^~^$HOME^g")" "
+        done
     fi
 
+    if [[ $CB_MANAGER_IP != "auto" ]]
+    then
+        CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e CB_MANAGER_IP=${CB_MANAGER_IP} "    
+    fi
+
+    CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e CB_API_DEFAULTS_PORT=${CB_API_DEFAULTS_PORT} -e CB_GUI_DEFAULTS_PORT=${CB_GUI_DEFAULTS_PORT} "
+            
     CB_DOCKER_HOST_CMDLINE=''
     if [[ $CB_DOCKER_HOST_ENTRY != "none" ]]
     then
         CB_DOCKER_HOST_CMDLINE=" --add-host $CB_DOCKER_HOST_ENTRY"
     fi
 
-    CB_DOCKER_ENV_CMDLINE=" -e CB_PRIVATE_CONFIG=$CB_PRIVATE_CONFIG -e CB_PRIVATE_DATA=$CB_PRIVATE_DATA "
+    CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e CB_PRIVATE_CONFIG=$CB_PRIVATE_CONFIG -e CB_PRIVATE_DATA=$CB_PRIVATE_DATA "
    
-    if [[ ! -z $CB_STARTUP_CLOUD ]]
+    CB_STARTUP_CLOUD=${CB_STARTUP_CLOUD:-MYSIM}
+    if [[ $CB_STARTUP_CLOUD != "NONE" ]]
     then
         CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e CB_STARTUP_CLOUD=$CB_STARTUP_CLOUD"
+        CB_CFGVAR_CLOUD_LIST=$(echo $CB_STARTUP_CLOUD | sed 's/MY//g')
     fi
  
     for store in OBJECTSTORE LOGSTORE METRICSTORE FILESTORE
@@ -290,35 +334,35 @@ then
         done
     done
     
-    for cmodel in SIM OSK EC2 VCD PLM SLR GCE GEN DO PDM PCM KUB AS OS
+    for cmodel in $CB_CFGVAR_CLOUD_LIST
     do
-        for param in ACCESS CREDENTIALS SECURITY_GROUPS INITIAL_VMCS SSH_KEY_NAME NETNAME LOGIN
+        for param in ACCESS CREDENTIALS SECURITY_GROUPS INITIAL_VMCS SSH_KEY_NAME NETNAME POOLNAME NETNAME LOGIN
         do
             cb_env_var_name=CB_${cmodel}_${param}
             cb_env_var_value=$(echo ${!cb_env_var_name})
             if [[ ! -z ${!cb_env_var_name} ]]
             then
                 CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e ${cb_env_var_name}=${!cb_env_var_name} "
-		        if [[ $param == "ACCESS" || $param == "CREDENTIALS" ]]
-		        then
+                if [[ $param == "ACCESS" || $param == "CREDENTIALS" ]]
+                then
                     cbcf=${!cb_env_var_name}
-		            eval cbcf=${cbcf}
-		            cbcf=$(echo $cbcf | cut -d ':' -f 2)
-		            if [[ -f $cbcf ]]
-		            then
+                    eval cbcf=${cbcf}
+                    cbcf=$(echo $cbcf | cut -d ':' -f 2)
+                    if [[ -f $cbcf ]]
+                    then
                         CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v ${cbcf}:${cbcf} "
                     fi 
-		        fi
+                fi
             fi
         done
     done
 
-    for obj in VMC_DEFAULTS VM_DEFAULTS AI_DEFAULTS AIDRS_DEFAULTS
+    for obj in MON_DEFAULTS VMC_DEFAULTS VM_DEFAULTS AI_DEFAULTS AIDRS_DEFAULTS
     do
-        for cmodel in EMPTY SIM PLM PDM PCM KUB NOP OSK OS CSK VCD EC2 SLR GCE GEN DO AS
+        for cmodel in EMPTY $CB_CFGVAR_CLOUD_LIST
         do
             section_exists=0
-            for param in EMPTY REMOTE_DIR_NAME RUN_NETNAME PROV_NETNAME EXECUTE_SCRIPT_NAME CHECK_BOOT_STARTED CHECK_BOOT_COMPLETE LEAVE_INSTANCE_ON_FAILURE PORTS_BASE USE_VPN_IP VPN_ONLY USE_FLOATING_IP FLOATING_POOL USE_JUMPHOST
+            for param in EMPTY REMOTE_DIR_NAME RUN_NETNAME PROV_NETNAME SECURITY_GROUPS BOOT_VOLUME_SIZE EXECUTE_SCRIPT_NAME CHECK_BOOT_STARTED CHECK_BOOT_COMPLETE TRANSFER_FILES CHECK_SSH RUN_GENERIC_SCRIPTS RUN_APPLICATION_SCRIPTS UPDATE_FREQUENCY DONT_START_LOAD_MANAGER LEAVE_INSTANCE_ON_FAILURE PORTS_BASE USE_VPN_IP USE_FLOATING_IP FLOATING_POOL EXPLICIT_VOLUME_CREATION USE_JUMPHOST JUMPHOST_IP JUMPHOST_LOGIN COLLECT_FROM_GUEST PORT VPC_NAME RESOURCE_GROUP_ID RESOURCE_GROUP_NAME ZONE IMAGE_PREFIX IMAGE_SUFFIX IMAGE_PULL_SECRETS ARCH EMULATOR FILE_IDENTIFIER INITIAL_HOSTS DISCOVER_HOSTS USE_CINDERCLIENT
             do
                 cb_env_var_name=CB_${obj}_${cmodel}_${param}
                 cb_env_var_name=$(echo $cb_env_var_name | sed 's/_EMPTY//g')
@@ -330,17 +374,34 @@ then
         done
     done
 
+    if [[ $CB_DOCKER_ADDITIONAL_ENVARS != "none" ]]
+    then
+        for CB_ENVAR_ENTRY in $(echo $CB_DOCKER_ADDITIONAL_ENVARS | sed 's/,/ /g')
+        do
+            CB_DOCKER_ENV_CMDLINE=${CB_DOCKER_ENV_CMDLINE}" -e "$(echo $CB_ENVAR_ENTRY | sed "s^~^$HOME^g" | sed "s/comma/,/g")" "
+        done
+    fi
+
     if [[ ! -z $CB_CLOUD_RENAME ]]
     then
-
         CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e CB_CLOUD_RENAME=${CB_CLOUD_RENAME} "
+        
+        if [[ $CB_CLOUD_RENAME == "AUTO" ]]
+        then
+            CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $(whoami)gucn:/home/$CB_DOCKER_USER/.gucn "
+        fi
+    fi
+    
+    if [[ $CB_CREATE_ONLY -eq 1 ]]
+    then
+        CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e CB_VM_DEFAULTS_CHECK_BOOT_COMPLETE=wait_for_0 -e CB_VM_DEFAULTS_TRANSFER_FILES=false -e CB_VM_DEFAULTS_RUN_GENERIC_SCRIPTS=false -e CB_VM_DEFAULTS_CHECK_SSH=false -e CB_VM_DEFAULTS_UPDATE_FREQUENCY=1 -e CB_AI_DEFAULTS_RUN_APPLICATION_SCRIPTS=false -e CB_AI_DEFAULTS_DONT_START_LOAD_MANAGER=true"
     fi
 
     if [[ $CB_DOCKER_REPO == "local" ]]
     then
         CB_DOCKER_IMAGE_CMDLINE=${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
     else
-        CB_DOCKER_IMAGE_CMDLINE=" "${CB_DOCKER_REPO}"/"${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
+        CB_DOCKER_IMAGE_CMDLINE=" "${CB_DOCKER_REPO}${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
     fi
     
     CB_DOCKER_EXE_CMDLINE=" bash -c \"$CB_DOCKER_COMMAND\""
