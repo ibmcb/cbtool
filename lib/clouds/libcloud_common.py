@@ -103,12 +103,12 @@ if hasattr(httplib, "httplib_log") :
     HTTPSConnection.debuglevel = 3
     httplib_log = logging.getLogger("httplib")
     httplib_log.setLevel(logging.DEBUG)
-    httplib_log.propagate = False 
+    httplib_log.propagate = False
 
     # Capture those messages to StringIO
     stream = StringIO()
     handler = logging.StreamHandler(stream)
-    for handler in httplib_log.handlers: 
+    for handler in httplib_log.handlers:
         httplib_log.removeHandler(handler)
     httplib_log.addHandler(handler)
 
@@ -117,7 +117,7 @@ class LibcloudCmds(CommonCloudFunctions) :
     locations = False
     services = False
     sizes = False
-    images = False
+    imagelist = []
     networks = False
     security_groups = False
     floating_ip_pools = False
@@ -186,7 +186,7 @@ class LibcloudCmds(CommonCloudFunctions) :
     @use_public_ips: (Optional, Default True)
             Does your cloud provide public/private IP pair
     @use_get_image: (Optional, Default True)
-            Should be set to false only if the get_image() method is not implemented for the libcloud backend.  
+            Should be set to false only if the get_image() method is not implemented for the libcloud backend.
     @verify_ssl: (Optional, Default True)
             Whether or not to have libcloud verify SSL certificates when communicating with the cloud
     @tldomain: (Optional, Default False)
@@ -219,13 +219,13 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.use_networks = use_networks
         self.use_security_groups = use_security_groups
         self.use_floating_ips = use_floating_ips
-        self.use_public_ips = use_public_ips        
+        self.use_public_ips = use_public_ips
         self.use_sizes = use_sizes
         self.use_get_image = use_get_image
         self.tldomain = tldomain
-        self.additional_rc_contents = ''        
+        self.additional_rc_contents = ''
         self.vmcreate_kwargs = {}
-        self.vvcreate_kwargs = {}        
+        self.vvcreate_kwargs = {}
         self.vmlist_args = []
         self.connauth_pamap = {}
         self.access = False
@@ -287,14 +287,14 @@ class LibcloudCmds(CommonCloudFunctions) :
 
     @trace
     def connect(self, credentials_list, obj_attr_list = False) :
-        
+
 #        if not self.access and obj_attr_list and "access" in obj_attr_list :
 #            self.access = obj_attr_list["access"]
 
         credentials = credentials_list.split(":")
         if len(credentials) != (self.num_credentials + 1) :
             _status = 8499
-            _fmsg = self.get_description() + " needs at least " 
+            _fmsg = self.get_description() + " needs at least "
             _fmsg += str(self.num_credentials) + " credentials, including an "
             _fmsg += "arbitrary tag representing the tenant. Refer to the templates for examples."
             raise CldOpsException(_fmsg, _status)
@@ -311,7 +311,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             LibcloudCmds.catalogs.cbtool = {}
 
         self.cache_mutex.acquire()
-        _hostname = "NA"        
+        _hostname = "NA"
         try :
             _status = 100
 
@@ -332,9 +332,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                 if not LibcloudCmds.locations :
                     cbdebug(" Caching " + self.get_description()  + " Locations...", True)
                     LibcloudCmds.locations = self.get_adapter(credentials_list).list_locations()
-                    
+
                 assert(LibcloudCmds.locations)
-            
+
             if self.use_sizes :
                 if not LibcloudCmds.sizes :
                     cbdebug(" Caching " + self.get_description() + " Sizes...", True)
@@ -378,7 +378,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _msg = "Error connecting " + self.get_description() + ": " + str(e)
             cbdebug(_msg, True)
             _status = 23
-            
+
         finally :
             self.cache_mutex.release()
             if _status :
@@ -415,7 +415,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
 
-            _detected_imageids = self.check_images(vmc_name, vm_templates, _local_conn)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, credentials_list)
 
             _extra_vmc_setup_complete = self.extra_vmc_setup(vmc_name, vmc_defaults, vm_defaults, vm_templates, _local_conn)
 
@@ -423,10 +423,10 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _msg = "Check the previous errors, fix it (using " + self.get_description()
                 _msg += "'s CLI or (Web) GUI"
                 _status = 1178
-                raise CldOpsException(_msg, _status) 
+                raise CldOpsException(_msg, _status)
 
             if len(_detected_imageids) :
-                _status = 0               
+                _status = 0
             else :
                 _status = 1
 
@@ -452,12 +452,12 @@ class LibcloudCmds(CommonCloudFunctions) :
         '''
         if "prov_netname" in vm_defaults :
             _prov_netname = vm_defaults["prov_netname"]
-        else :            
+        else :
             _prov_netname = vm_defaults["netname"]
-            
+
         if "run_netname" in vm_defaults :
             _prov_netname = vm_defaults["run_netname"]
-        else :            
+        else :
             _run_netname = vm_defaults["netname"]
 
         _prov_netname_found = False
@@ -467,23 +467,23 @@ class LibcloudCmds(CommonCloudFunctions) :
             for _network in LibcloudCmds.networks :
                 if _network.name == _prov_netname :
                     _prov_netname_found = True
-                    
+
                 if _network.name == _run_netname :
-                    _run_netname_found = True                    
+                    _run_netname_found = True
         else :
             _prov_netname_found = True
             _run_netname_found = True
-            
+
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates, connection) :
+    def check_images(self, vmc_name, vm_templates, credentials_list) :
         '''
         TBD
         '''
         self.common_messages("IMG", { "name": vmc_name }, "checking", 0, '')
 
-        _registered_image_list = connection.list_images()
+        _registered_image_list = self.repopulate_images({"credentials_list" : credentials_list})
 
         _registered_imageid_list = []
 
@@ -496,21 +496,21 @@ class LibcloudCmds(CommonCloudFunctions) :
             _map_name_to_id[str(_registered_image.name.encode('utf-8').strip())] = str(_registered_image.id)
             _map_name_to_id[str(_registered_image.id.encode('utf-8').strip())] = str(_registered_image.id)
 
-        for _vm_role in vm_templates.keys() :            
+        for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             _replacement_id = _imageid
             if _imageid != "to_replace" :
                 # Need to support spaces within image names.
                 # If we can't find the original name, try the same thing with spaces instead of
                 # underscores.
-                if _imageid in _map_name_to_id or _imageid.replace("_", " ") in _map_name_to_id:                     
+                if _imageid in _map_name_to_id or _imageid.replace("_", " ") in _map_name_to_id:
                     if _imageid not in _map_name_to_id :
                         _replacement_id = _imageid.replace("_", " ")
 
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_replacement_id])
                 else :
                     _map_name_to_id[_imageid] = '00' + ''.join(["%s" % randint(0, 9) for num in range(0, 5)]) + '0'
-                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
+                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
 
                 _map_id_to_name[_map_name_to_id[_replacement_id]] = _replacement_id
 
@@ -530,7 +530,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
         obj_attr_list["initial_hosts"] = ''.split(',')
         obj_attr_list["host_count"] = len(obj_attr_list["initial_hosts"])
-    
+
         return True
 
     @trace
@@ -545,9 +545,9 @@ class LibcloudCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        
+
         return [ ]
-    
+
     @trace
     def vmccleanup(self, obj_attr_list) :
         '''
@@ -560,7 +560,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             for credentials_list in obj_attr_list["credentials"].split(";"):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
-    
+
             _running_instances = True
             while _running_instances :
                 _running_instances = False
@@ -600,7 +600,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     if _running_instances :
                         sleep(int(obj_attr_list["update_frequency"]))
 
-            if self.use_volumes :    
+            if self.use_volumes :
                 _running_volumes = True
                 while _running_volumes :
                     _running_volumes = False
@@ -609,7 +609,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                         tenant = credentials[0]
                         self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
                         obj_attr_list["tenant"] = tenant
-    
+
                         _volumes = self.get_adapter(credentials_list).list_volumes()
                         for _volume in _volumes :
                             if _volume.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"].lower()) :
@@ -627,12 +627,12 @@ class LibcloudCmds(CommonCloudFunctions) :
                             else :
                                 _msg = "Cleaning up " + self.get_description() + ". Ignoring volume: " + _volume.name
                                 cbdebug(_msg)
-    
+
                         if _running_volumes :
                             sleep(int(obj_attr_list["update_frequency"]))
 
             _status = 0
-            
+
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
             cberr(_msg)
@@ -644,7 +644,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.dump_httplib_headers(credentials_list)
             _fmsg = str(msg)
             _status = 23
-    
+
         finally :
             _status, _msg = self.common_messages("VMC", obj_attr_list, "cleaned up", _status, _fmsg)
             return _status, _msg
@@ -663,25 +663,25 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
             obj_attr_list["name"] = obj_attr_list["name"].replace("____",' ')
-            
-            if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :             
+
+            if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
             else :
                 _status = 0
 
             for credentials_list in obj_attr_list["credentials"].split(";"):
                 _x, _y, _z, _hostname = self.connect(credentials_list, obj_attr_list)
-            
+
             obj_attr_list["cloud_hostname"] = _hostname + "_" + obj_attr_list["name"]
 
             # Public clouds don't really have "hostnames" - they have a single endpoint for all
             # regions and VMCs. However, in Redis this IP gets tagged
             # and must be unique, so we have to prefix this so it will be unique.
             # That makes this "cloud_ip" not a real IP, but unless we stop tagging it,
-            # it still has to be unique to every VMC. 
+            # it still has to be unique to every VMC.
             # I'm not totally sure what this means for an Openstack + Libcloud adapter,
             # but we'll cross that bridge when we get to it.
-            
+
             obj_attr_list["cloud_ip"] = _hostname + "." + gethostbyname(self.tldomain) + "_" + obj_attr_list["name"]
             obj_attr_list["arrival"] = int(time())
 
@@ -697,7 +697,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - _time_mark_prs
 
             _status = 0
-            
+
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
             _status = 2
@@ -728,15 +728,15 @@ class LibcloudCmds(CommonCloudFunctions) :
                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
 
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
-            
+
             if "cleanup_on_detach" in obj_attr_list and obj_attr_list["cleanup_on_detach"] == "True" :
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
             _time_mark_prc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_prc - _time_mark_drs
-            
+
             _status = 0
-            
+
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
@@ -746,7 +746,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 cbwarn(line, True)
             _fmsg = str(msg)
             _status = 23
-    
+
         finally :
             _status, _msg = self.common_messages("VMC", obj_attr_list, "unregistered", _status, _fmsg)
             return _status, _msg
@@ -759,14 +759,14 @@ class LibcloudCmds(CommonCloudFunctions) :
         credentials_list = False
         try :
             _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"                        
+            _fmsg = "An error has occurred, but no error message was captured"
             _nr_instances = 0
 
             for _vmc_uuid in self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC") :
                 _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                       "VMC", False, _vmc_uuid, \
                                                       False)
-                
+
                 for credentials_list in _vmc_attr_list["credentials"].split(";"):
                     _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
 
@@ -795,15 +795,15 @@ class LibcloudCmds(CommonCloudFunctions) :
         '''
 
         _registered_key_pair_objects = {}
-        for _key_pair in connection.list_key_pairs() :                        
-            registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-' 
+        for _key_pair in connection.list_key_pairs() :
+            registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-'
             if "id" in _key_pair.extra :
                 registered_key_pairs[_key_pair.name] += str(_key_pair.extra["id"])
             else :
-                registered_key_pairs[_key_pair.name] += "NA"                
+                registered_key_pairs[_key_pair.name] += "NA"
             _registered_key_pair_objects[_key_pair.name] = _key_pair
             #connection.delete_key_pair(_registered_key_pair_objects[key_name])
-            
+
         return True
 
     @trace
@@ -815,12 +815,12 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
             node = self.get_instances(obj_attr_list)
 
-            if len(node.private_ips) > 0 : 
+            if len(node.private_ips) > 0 :
                 if obj_attr_list["run_netname"].lower() == "private" :
                     obj_attr_list["run_cloud_ip"] = node.private_ips[0]
-                
+
                 if not self.use_public_ips :
-                    obj_attr_list["run_cloud_ip"] = node.private_ips[0]                    
+                    obj_attr_list["run_cloud_ip"] = node.private_ips[0]
             else :
                 if len(node.public_ips) > 0 :
                     obj_attr_list["run_cloud_ip"] = node.public_ips[0]
@@ -846,7 +846,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 else :
                     if len(node.public_ips) > 0 :
                         obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
-                                            
+
                 if not self.use_public_ips :
                     if obj_attr_list["use_floating_ip"].lower() == "true" :
                         if len(node.public_ips) > 0 :
@@ -855,7 +855,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                         if len(node.private_ips) > 0 :
                             obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
                 else :
-                    if obj_attr_list["prov_netname"].lower() == "private" : 
+                    if obj_attr_list["prov_netname"].lower() == "private" :
                         if len(node.private_ips) > 0 :
                             obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
 
@@ -920,10 +920,10 @@ class LibcloudCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"                        
+            _fmsg = "An error has occurred, but no error message was captured"
 
             _candidate_images = False
-            
+
             if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
                 if self.use_get_image :
                     try :
@@ -933,12 +933,12 @@ class LibcloudCmds(CommonCloudFunctions) :
                             cbdebug("Instead looking for: " + obj_attr_list["imageid1"].replace("_", " "), True)
                             _candidate_images = self.get_adapter(obj_attr_list["credentials_list"]).get_image(obj_attr_list["imageid1"].replace("_", " "))
                 else :
-                    for _image in self.get_adapter(obj_attr_list["credentials_list"]).list_images() :
+                    for _image in self.repopulate_images(obj_attr_list) :
                         if _image.id == obj_attr_list["imageid1"] :
                             _candidate_images = _image
                             break
             else :
-                for _image in self.get_adapter(obj_attr_list["credentials_list"]).list_images() :
+                for _image in self.repopulate_images(obj_attr_list) :
                     if _image.name == obj_attr_list["imageid1"] or _image.id == obj_attr_list["imageid1"] :
                         _candidate_images = _image
                         break
@@ -1020,7 +1020,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
             _status = 23
             _fmsg = str(e)
-            
+
         finally :
             if _status :
                 _msg = "VM placement failed: " + _fmsg
@@ -1043,7 +1043,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             if "cloud_vv_type" not in obj_attr_list :
 
                 if self.use_volumes :
-                    if "cloud_vv_type" not in obj_attr_list :            
+                    if "cloud_vv_type" not in obj_attr_list :
                         obj_attr_list["cloud_vv_type"] = "LCV"
                 else :
                     obj_attr_list["cloud_vv_type"] = "NOT SUPPORTED"
@@ -1052,12 +1052,12 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                 obj_attr_list["region"] = _region = obj_attr_list["vmc_name"]
                 obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower().replace("_", "-")
-                
+
                 obj_attr_list["last_known_state"] = "about to send volume create request"
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
                 if self.use_volumes :
-                    _mark_a = int(time())    
+                    _mark_a = int(time())
 
                     for _location in LibcloudCmds.locations :
                         if _location.id == obj_attr_list["region"] :
@@ -1072,7 +1072,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                                                       **self.vvcreate_kwargs)
 
                     self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
-    
+
                     sleep(int(obj_attr_list["update_frequency"]))
 
                     obj_attr_list["cloud_vv_uuid"] = _volume.id
@@ -1093,12 +1093,12 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
             _status = 23
             _fmsg = str(e)
-    
-        finally :                
+
+        finally :
             _status, _msg = self.common_messages("VV", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 
-    @trace        
+    @trace
     def vvdestroy(self, obj_attr_list, connection) :
         '''
         TBD
@@ -1107,7 +1107,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if str(obj_attr_list["cloud_vv_uuid"]).lower() != "not supported" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :    
+            if str(obj_attr_list["cloud_vv_uuid"]).lower() != "not supported" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
                 self.common_messages("VV", obj_attr_list, "destroying", 0, '')
 
                 _volumes = connection.list_volumes()
@@ -1123,7 +1123,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                             for line in traceback.format_exc().splitlines() :
                                 cbwarn(line, True)
                             self.dump_httplib_headers(credentials_list)
-                                
+
             _status = 0
 
         except CldOpsException, obj :
@@ -1136,8 +1136,8 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
             _status = 23
             _fmsg = str(e)
-    
-        finally :                
+
+        finally :
             _status, _msg = self.common_messages("VV", obj_attr_list, "destroyed", _status, _fmsg)
             return _status, _msg
 
@@ -1151,7 +1151,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred when creating new VM, but no error message was captured"
             _instance = False
             volume = False
-            
+
             # This is just to pass regression tests.
             test_map = dict(platinum64 = "64gb", rhodium64 = "48gb", \
                             gold64 = "32gb", silver64 = "16gb", bronze64 = "8gb",\
@@ -1159,15 +1159,15 @@ class LibcloudCmds(CommonCloudFunctions) :
                               iron64 = "2gb", iron32 = "2gb", bronze32 = "2gb",\
                                copper32 = "2gb", micro32 = "1gb", nano32 = "1gb",\
                                 pico32 = "512mb")
-            
+
             _requested_size = obj_attr_list["size"]
 
             if _requested_size in test_map :
                 _requested_size = test_map[_requested_size]
 
-            self.determine_instance_name(obj_attr_list)            
+            self.determine_instance_name(obj_attr_list)
             self.determine_key_name(obj_attr_list)
-            
+
             obj_attr_list["last_known_state"] = "about to connect to " + self.get_description() + " manager"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
@@ -1189,7 +1189,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.connect(_credentials_list, obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
 
-            _mark_a = time()           
+            _mark_a = time()
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
                 _msg += "\" is already running. It needs to be destroyed first."
@@ -1197,7 +1197,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             self.annotate_time_breakdown(obj_attr_list, "check_existing_instance_time", _mark_a)
-            
+
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -1213,20 +1213,20 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
             if obj_attr_list["userdata"] :
-                obj_attr_list["config_drive"] = True                
+                obj_attr_list["config_drive"] = True
             else :
                 obj_attr_list["config_drive"] = False
-                
+
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
-            
+
             obj_attr_list["libcloud_size_inst"] = False
 
             if self.use_ssh_keys :
                 _mark_a = time()
-        
+
                 _tmp_keys = obj_attr_list["key_name"].split(",")
                 for dontcare in range(0, 2) :
-                    _keys = []                    
+                    _keys = []
                     for _tmp_key in _tmp_keys :
                         for _key in LibcloudCmds.keys[_credentials_list] :
                             if "id" in _key.extra :
@@ -1236,10 +1236,10 @@ class LibcloudCmds(CommonCloudFunctions) :
                             else :
                                 if _key.name in _tmp_keys :
                                     _keys.append(_key.name)
-        
+
                     if len(_keys) >= len(_tmp_keys) :
                         break
-        
+
                     cbdebug("Only found " + str(len(_keys)) + " keys. Refreshing key list...", True)
                     LibcloudCmds.keys[_credentials_list] = self.get_adapter(_credentials_list).list_key_pairs()
 
@@ -1261,22 +1261,22 @@ class LibcloudCmds(CommonCloudFunctions) :
                         break
                 self.annotate_time_breakdown(obj_attr_list, "get_size_time", _mark_a)
 
-            _fip = None            
+            _fip = None
             if self.use_floating_ips :
                 obj_attr_list["cloud_floating_ip_uuid"] = "NA"
                 obj_attr_list["cloud_floating_ip"] = "NA"
                 if obj_attr_list["use_floating_ip"].lower() == "true" :
-                    
+
                     for _floating_pool in LibcloudCmds.floating_ip_pools :
                         if _floating_pool.name == obj_attr_list["floating_pool"] :
                             break
-                    
+
                     _mark_a = time()
                     _fip = self.get_adapter(_credentials_list).ex_create_floating_ip(ip_pool = _floating_pool.name)
-                    self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)                    
+                    self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
                     obj_attr_list["cloud_floating_ip_uuid"] = _fip.id
                     obj_attr_list["cloud_floating_ip"] = _fip.ip_address
- 
+
             # This needs to be empty on each creation.
             # It changes from create to create, depending
             # on which tenant is used and what the userdata
@@ -1291,14 +1291,19 @@ class LibcloudCmds(CommonCloudFunctions) :
             if "libcloud_location_inst" not in obj_attr_list :
                 raise CldOpsException("Region " + obj_attr_list["region"] + " has become unavailable. Check your configuration and try again.", 917)
 
-            _mark_a = time()            
+            _mark_a = time()
+
+            # Libcloud is not threadsafe.
+            # It clobbers this dictionary if you don't protect it.
+            _args_clone = deepcopy(self.vmcreate_kwargs)
+
             if obj_attr_list["libcloud_call_type"] == "create_node_with_mixed_arguments" :
                 _reservation = self.get_adapter(_credentials_list).create_node(
                     obj_attr_list["cloud_vm_name"],
                     obj_attr_list["libcloud_size_inst"],
                     obj_attr_list["libcloud_image_inst"],
                     obj_attr_list["libcloud_location_inst"],
-                    **self.vmcreate_kwargs
+                    **_args_clone
                     )
 
             if obj_attr_list["libcloud_call_type"] == "create_node_with_keyword_arguments_only" :
@@ -1319,7 +1324,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             if _reservation :
                 self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
-                                
+
                 cbdebug(" Reservation ID for " + obj_attr_list["log_string"] + " is: " + str(_reservation.id), True)
                 obj_attr_list["last_known_state"] = "vm created"
                 sleep(int(obj_attr_list["update_frequency"]))
@@ -1331,8 +1336,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                 if _fip :
                     _mark_a = time()
                     _fip = self.get_adapter(_credentials_list).ex_attach_floating_ip_to_node(self.get_instances(obj_attr_list), obj_attr_list["cloud_floating_ip"])
-                    self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)    
-                                        
+                    self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
+
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
                 if obj_attr_list["cloud_vv_instance"] :
@@ -1352,9 +1357,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _status = 0
 
                 if obj_attr_list["force_failure"].lower() == "true" :
-                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
-                    _status = 916                
-                
+                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
+                    _status = 916
+
             else :
                 obj_attr_list["host_name"] = "unknown"
                 obj_attr_list["last_known_state"] = "vm creation failed"
@@ -1382,17 +1387,17 @@ class LibcloudCmds(CommonCloudFunctions) :
         finally :
             if "mgt_003_provisioning_request_completed" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)
-            
+
             if "mgt_004_network_acessible" in obj_attr_list :
-                self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)            
-            
+                self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
+
             if not _status :
                 if "instance_obj" in obj_attr_list :
                     del obj_attr_list["instance_obj"]
-    
+
                 if obj_attr_list["cloud_vv_instance"] :
                     del obj_attr_list["cloud_vv_instance"]
-               
+
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 
@@ -1417,15 +1422,15 @@ class LibcloudCmds(CommonCloudFunctions) :
             if "instance_obj" in obj_attr_list :
                 if obj_attr_list["instance_obj"] :
 
-                    self.common_messages("VM", obj_attr_list, "destroying", 0, '')                    
+                    self.common_messages("VM", obj_attr_list, "destroying", 0, '')
 
                     _time_mark_drs = int(time())
 
                     if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
                         obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
-                                        
+
                     obj_attr_list["instance_obj"].destroy()
-                    
+
                     sleep(_wait)
                     del obj_attr_list["instance_obj"]
 
@@ -1434,11 +1439,11 @@ class LibcloudCmds(CommonCloudFunctions) :
                     del obj_attr_list["cloud_vv_instance"]
 
                 obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
-            
+
             else :
-    
+
                 self.common_messages("VM", obj_attr_list, "destroying", 0, '')
-    
+
                 firsttime = True
                 _time_mark_drs = int(time())
                 _instance = self.get_instances(obj_attr_list)
@@ -1455,23 +1460,23 @@ class LibcloudCmds(CommonCloudFunctions) :
                             if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
                                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
                         break
-    
+
                     if _instance.state in [ NodeState.PENDING, NodeState.STOPPED ] :
                         cbdebug(self.get_description() + " still has a pending event. Waiting to destroy...", True)
                         sleep(_wait)
-                        _curr_tries += 1                    
+                        _curr_tries += 1
                         continue
-    
+
                     try :
                         if firsttime :
                             if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
                                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
-    
+
                         _instance.destroy()
-    
+
                         if firsttime :
                             obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
-    
+
                         firsttime = False
                     except BaseHTTPError, e :
                         if e.code == 404 :
@@ -1485,14 +1490,14 @@ class LibcloudCmds(CommonCloudFunctions) :
                         for line in traceback.format_exc().splitlines() :
                             cbwarn(line, True)
                         self.dump_httplib_headers(_credentials_list)
-    
+
                     _msg = "Inside destroy. " + _errmsg
                     _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
                     cbdebug(_msg)
                     sleep(_wait)
-                    _curr_tries += 1                    
+                    _curr_tries += 1
                     cbdebug("Next try...")
-            
+
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_drc - _time_mark_drs
 
@@ -1501,7 +1506,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "vm destoyed"
 
             if self.use_floating_ips :
-                if "cloud_floating_ip" in obj_attr_list :               
+                if "cloud_floating_ip" in obj_attr_list :
                     if obj_attr_list["cloud_floating_ip"] != "NA" :
                         self.get_adapter(_credentials_list).ex_delete_floating_ip(self.get_adapter(_credentials_list).ex_get_floating_ip(obj_attr_list["cloud_floating_ip"]))
 
@@ -1517,7 +1522,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
             _fmsg = str(msg)
             _status = 23
-    
+
         finally :
             _status, _msg = self.common_messages("VM", obj_attr_list, "destroyed", _status, _fmsg)
             return _status, _msg
@@ -1537,7 +1542,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _credentials_list = obj_attr_list["credentials_list"]
             self.connect(_credentials_list)
-            
+
             _instance = self.get_instances(obj_attr_list)
 
             if _instance :
@@ -1560,11 +1565,11 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _capture_image_id = None
                 _vm_image_created = False
                 _image_instance = False
-                
+
                 while not _vm_image_created and _curr_tries < _max_tries :
 
                     if not _capture_image_id :
-                        for _image in self.get_adapter(_credentials_list).list_images() :
+                        for _image in self.repopulate_images(obj_attr_list) :
                             if _image.name == obj_attr_list["captured_image_name"] :
                                 _image_instance = _image
                                 _capture_image_id = _image.id
@@ -1727,9 +1732,9 @@ class LibcloudCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _image_instance = False
-            
+
             _fmsg = "An error has occurred, but no error message was captured"
-            
+
             self.common_messages("IMG", obj_attr_list, "deleting", 0, '')
 
             _credentials_list = self.rotate_token(obj_attr_list["cloud_name"])
@@ -1739,12 +1744,12 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.connect(_credentials_list, obj_attr_list)
 
             _image_instance = self.get_images(obj_attr_list)
-                
+
             if _image_instance :
 
-                _x = obj_attr_list["imageid1"] 
+                _x = obj_attr_list["imageid1"]
                 obj_attr_list["imageid1"] = _image_instance.id
-                
+
                 self.get_adapter(_credentials_list).delete_image(_image_instance)
 
                 _wait = int(obj_attr_list["update_frequency"])
@@ -1752,7 +1757,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _max_tries = int(obj_attr_list["update_attempts"])
 
                 _image_deleted = False
-                       
+
                 while not _image_deleted and _curr_tries < _max_tries :
 
                     _image_instance = self.get_images(obj_attr_list, False)
@@ -1764,7 +1769,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                         _curr_tries += 1
 
                 obj_attr_list["imageid1"] = _x
-                        
+
             _status = 0
 
         except Exception, e :
@@ -1773,7 +1778,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             self.dump_httplib_headers(_credentials_list)
             _status = 23
             _fmsg = str(e)
-            
+
         finally :
             _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
             return _status, _msg
@@ -1847,7 +1852,10 @@ class LibcloudCmds(CommonCloudFunctions) :
 
     @trace
     def repopulate_images(self, obj_attr_list) :
-        LibcloudCmds.images = self.get_my_driver(obj_attr_list).list_images()
+        if not len(LibcloudCmds.imagelist) :
+             LibcloudCmds.imagelist = self.get_my_driver(obj_attr_list).list_images()
+
+        return LibcloudCmds.imagelist
 
     @trace
     def repopulate_keys(self, obj_attr_list) :
@@ -1857,7 +1865,7 @@ class LibcloudCmds(CommonCloudFunctions) :
     def rotate_token(self, cloud_name) :
         '''
         TBD
-        ''' 
+        '''
         vmc_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "vmc_defaults", False)
         _credentials_lists = vmc_defaults["credentials"].split(";")
         lock = self.lock(cloud_name, "VMC", "shared_access_token_counter", "credentials_list")
