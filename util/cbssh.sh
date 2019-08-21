@@ -56,7 +56,7 @@ fi
 INFO=$($CB_EXECUTABLE $CONFIG_FILE vmshow $VMID)
 
 VMIP=$(echo "$INFO" | grep "|prov_cloud_ip" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
-VMLOGIN=$(echo "$INFO" | grep "|login" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
+VMLOGIN=$(echo "$INFO" | grep "|login" | grep -v "login=" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMKEY=$(echo "$INFO" | grep "|identity" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMSSHCONF=$(echo "$INFO" | grep "|ssh_config_file" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMSSHPORT=$(echo "$INFO" | grep "|prov_cloud_port" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
