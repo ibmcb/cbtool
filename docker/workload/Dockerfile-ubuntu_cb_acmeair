@@ -19,7 +19,7 @@ RUN apt-get install -y gradle unzip
 RUN cd /home/REPLACE_USERNAME; git clone https://github.com/blueperf/acmeair-monolithic-java.git;
 RUN echo "loader.timeout=180" > /home/REPLACE_USERNAME/acmeair-monolithic-java/src/main/resources/loader.properties; echo "loader.numCustomers=200" >> /home/REPLACE_USERNAME/acmeair-monolithic-java/src/main/resources/loader.properties 
 RUN export JAVA_HOME=/opt/ibm/java-REPLACE_ARCH1-80/jre; cd /home/REPLACE_USERNAME/acmeair-monolithic-java; mvn clean package
-RUN sudo mkdir -p /root/.m2/; sudo rsync -az /root/.m2/ /home/REPLACE_USERNAME/
+RUN sudo mkdir -p /root/.m2/; sudo rsync -az /root/.m2/ /home/REPLACE_USERNAME/; chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME
 #RUN mv /root/.gradle/ /home/REPLACE_USERNAME/
 # acmeair-install-man
 
