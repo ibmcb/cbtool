@@ -18,10 +18,14 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
+START=`provision_application_start`
+
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
 sudo sed -i --follow-symlinks "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" *_create_keyspace.cassandra
-	
-START=`provision_application_start`
+
+FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+
+check_cassandra_cluster_state ${FIRST_SEED} 1 1
 
 provision_application_stop $START
 exit 0

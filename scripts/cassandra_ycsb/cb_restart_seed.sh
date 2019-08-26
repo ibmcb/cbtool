@@ -52,7 +52,7 @@ fi
 CASSANDRA_JVM_STACK_SIZE=$(get_my_ai_attribute_with_default jvm_stack_size 1024k)
 sudo sed -i "s/Xss.*/Xss${CASSANDRA_JVM_STACK_SIZE}\"/g" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
 
-sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password
+sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password  >/dev/null 2>&1
 if [[ $? -ne 0 ]]
 then
     sudo echo "cassandra cassandra" > /tmp/jmxremote.password
@@ -82,7 +82,7 @@ then
     LINE_NUMBER=$(sudo grep -n "# Export JAVA_HOME, if set." /etc/init.d/cassandra | cut -d ':' -f 1)
     LINE_NUMBER=$((LINE_NUMBER-2))
     sudo sed -i -e "${LINE_NUMBER}i\JAVA_HOME=${JAVA_HOME}" /etc/init.d/cassandra
-    systemctl daemon-reload
+    sudo systemctl daemon-reload
 fi
 
 pos=1
@@ -118,8 +118,9 @@ sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitio
 
 SEED_RAM_PERCENTAGE=`get_my_ai_attribute_with_default seed_ram_percentage AUTO`
 
-kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
-ram=$(echo "$kb / 1024" | bc)
+check_container
+        
+ram=$(echo "$MEM_SIZE_KB / 1024" | bc)
 
 mb="false"
 
@@ -140,7 +141,7 @@ else
 	# despite Cassandra's own internal algorithms. Cassandra docs, however,
 	# believe that no more than 8GB should be used for jvm garbage collection,
 	# so we'll cap it there.
-	mb=$(echo "$kb / 1024 * ${SEED_RAM_PERCENTAGE} / 100" | bc)
+	mb=$(echo "$MEM_SIZE_KB / 1024 * ${SEED_RAM_PERCENTAGE} / 100" | bc)
 	if [ ${mb} -gt 8192 ] ; then
 		mb=8192
 	fi

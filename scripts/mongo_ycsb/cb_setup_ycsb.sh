@@ -20,5 +20,7 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
 START=`provision_application_start`
 
+check_mongodb_cluster_state ${mongos_ip} cbdrs 0 20
+
 provision_application_stop $START
 exit 0
