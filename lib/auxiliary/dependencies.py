@@ -116,6 +116,19 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
 
     return True
 
+def get_dep_key_from_docker_file(line, key_prefix, depsdict) :
+    '''
+    TBD
+    '''
+    if line.count("#") and line.count("-install-") : 
+        if line.count("ARCH") :
+            if line.split('-')[1].replace("ARCH",'') == depsdict["carch"] :
+                return key_prefix + '-' + line.replace("#",'').replace("-ARCH" + depsdict["carch"],'').strip()
+            else :
+                return False
+        else :
+            return key_prefix + '-' + line.replace("#",'').strip()
+
 def docker_file_parser(depsdict, username, options, hostname, process_manager = False) :
     '''
     TBD
@@ -139,7 +152,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                 if not _fnam.count("._processed_") and _fnam.count("Dockerfile-") and os.access(_full_fnam, os.F_OK) :            
     
                     _x_fnam = _fnam.replace("Dockerfile-",'').split('_')
-                    _key_prefix = _x_fnam[0]                
+                    _key_prefix = _x_fnam[0]
                     _f_workload = _x_fnam[2]
     
                     if len(_x_fnam) > 3 :
@@ -160,47 +173,51 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
             
                                 if _current_key :
                                     
-                                    if _line.count("#") and _line.count("-install-") :
+                                    _detected_key = get_dep_key_from_docker_file (_line, _key_prefix, depsdict) 
+                                    if _detected_key :
                                         depsdict[_current_key] = depsdict[_current_key][0:-1]
-                                        
+
                                         if _current_key.count("centos-") :
                                             depsdict[_current_key.replace("centos-","rhel-")] = depsdict[_current_key]
                                             depsdict[_current_key.replace("centos-","fedora-")] = depsdict[_current_key]                                                                                
                                         _current_key = None
     
-                                    elif _line.count("#") and _line.count("RUN") :
-                                        True
-    
                                     else :
-                                        _line = _line.replace("RUN apt-get install -y","package_install")
-                                        _line = _line.replace("RUN yum install -y","package_install")
-                                        _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
-                                        _line = _line.replace("RUN git", "git")
-                                        _line = _line.replace("; apt-get install", "; sudo apt-get install")
-                                        _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
-                                        _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
-                                        _line = _line.replace("; dpkg", "; sudo dpkg")
-                                        _line = _line.replace("; yum install", "; sudo yum install")
-                                        _line = _line.replace("; rpm", "; sudo rpm")
-                                        _line = _line.replace("; chown", "; sudo chown")
-                                        _line = _line.replace("; make install", "; sudo make install")
-                                        _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
-                                        _line = _line.replace("RUN ", "sudo ")
-                                        _line = _line.replace("ENV ", "export ")                                        
-                                        _line = _line.replace("sudo cd ", "cd ")
-                                        _line = _line.replace("sudo export", "export ")
-                                        _line = _line.replace("sudo sudo ", "sudo ")
-                                        _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
-                                        _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
-                                        _line = _line.replace("# service_stop_disable", "service_stop_disable")
-                                        _line = _line.replace("# echo", "echo")
-                                        _line = _line.replace("/home/root", "/root")
-                                        _line = _line.replace("____",' ')
-                                        depsdict[_current_key] += _line + "; "
+                                        if _line.count("#") and _line.count("RUN") :
+                                            True
+                                        else :
+                                            _line = _line.replace("RUN apt-get install -y","package_install")
+                                            _line = _line.replace("RUN yum install -y","package_install")
+                                            _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
+                                            _line = _line.replace("RUN git", "git")
+                                            _line = _line.replace("; apt install", "; sudo apt install")                                            
+                                            _line = _line.replace("; apt-get install", "; sudo apt-get install")
+                                            _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
+                                            _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
+                                            _line = _line.replace("; dpkg", "; sudo dpkg")
+                                            _line = _line.replace("; yum install", "; sudo yum install")
+                                            _line = _line.replace("; rpm", "; sudo rpm")
+                                            _line = _line.replace("; chown", "; sudo chown")
+                                            _line = _line.replace("; make install", "; sudo make install")
+                                            _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
+                                            _line = _line.replace("RUN ", "sudo ")
+                                            _line = _line.replace("ENV ", "export ")                                        
+                                            _line = _line.replace("sudo cd ", "cd ")
+                                            _line = _line.replace("sudo export", "export ")
+                                            _line = _line.replace("sudo sudo ", "sudo ")
+                                            _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
+                                            _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
+                                            _line = _line.replace("# service_stop_disable", "service_stop_disable")
+                                            _line = _line.replace("# /tmp/cb_is_java_installed.sh", "/tmp/cb_is_java_installed.sh")
+                                            _line = _line.replace("# echo", "echo")
+                                            _line = _line.replace("/home/root", "/root")
+                                            _line = _line.replace("____",' ')
+                                            depsdict[_current_key] += _line + "; "
             
                                 else :
-                                    if _line.count("#") and _line.count("-install-") :
-                                        _current_key = _key_prefix + '-' + _line.replace("#",'').strip()
+                                    _detected_key = get_dep_key_from_docker_file (_line, _key_prefix, depsdict) 
+                                    if _detected_key :
+                                        _current_key = _detected_key
                                         depsdict[_current_key] = ''
             
                         except Exception, e :
@@ -414,7 +431,7 @@ def expand_command(cmdline, depsdict, process_manager = False) :
                 if _packages.count(".deb") :
                     _command = "sudo dpkg -i PACKAGES; sudo apt-get -f install -y --force-yes --allow-unauthenticated "
                 else :
-                    _command = "sudo apt-get -q -y --force-yes --allow-unauthenticated -o Dpkg::Options::=\"--force-confnew\" install PACKAGES"
+                    _command = "sudo DEBIAN_FRONTEND=noninteractive apt-get -q -y --force-yes --allow-unauthenticated -o Dpkg::Options::=\"--force-confnew\" install PACKAGES"
                     
             elif depsdict["cdistkind"] == "rhel" or depsdict["cdistkind"] == "fedora"  :
                 if _packages.count(".rpm") :
@@ -781,11 +798,11 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
                 
         if not _status :
             if operation == "install" :
-                _msg += "DONE OK.\n"
+                _msg += "DONE OK (exit code " + str(_status) + ", std out "  + str(_result_stdout) + ", std err " + str(_result_stderr) + " ). \n"
             else :
                 _msg += compare_versions(depkey, depsdict, _result_stdout.strip())
         else :
-            _msg += "NOT OK (exit code " + str(_status) + "). "
+            _msg += "NOT OK (exit code " + str(_status) + ", std out "  + str(_result_stdout) + ", std err " + str(_result_stderr) + " ). "
 
         if _msg.count("NOT OK") :
             _status = 701
@@ -794,7 +811,7 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         _status = str(obj.status)
         _result_stderr = str(obj.msg)
         
-        _msg += "NOT OK (PMgr Exception, exit code " + str(_status) + "). "
+        _msg += "NOT OK (PMgr Exception, exit code " + str(_status) + ", " + str(_result_stderr) + " ). "
 
     except Exception, e :
         _status = 23
@@ -865,10 +882,6 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
 
             if options.wks.count(",acmeair") :
                 options.wks += ",mongo_acmeair"
-        
-        deps_file_parser(depsdict, username, options, "127.0.0.1")
-        docker_file_parser(depsdict, username, options, "127.0.0.1")
-        preparation_file_parser(depsdict, username, options, "127.0.0.1")            
 
         if "Filestore_ip" not in depsdict :
             depsdict["Filestore_ip"], depsdict["Filestore_port"], depsdict["Filestore_username"] = options.filestore.split('-')
@@ -895,7 +908,11 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             depsdict["carch1"] = "aarch64"
             depsdict["carch2"] = "aarch64"
             depsdict["carch3"] = "aarch64"
-                        
+
+        deps_file_parser(depsdict, username, options, "127.0.0.1")
+        docker_file_parser(depsdict, username, options, "127.0.0.1")
+        preparation_file_parser(depsdict, username, options, "127.0.0.1")     
+
         _missing_dep = []
         _dep_list = [0] * 5000
 
@@ -1066,7 +1083,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             _process_manager = ProcessManagement(hostname)
             _cmd = "sudo chown -R " + depsdict["username"] + ':' + depsdict["username"] + " /home/" + depsdict["username"] + '/'
             _cmd = _cmd.replace("/home/root", "/root")
-
+            
             if options.cleanupimageid :
                 _cmd += "; sudo truncate -s 0 /etc/machine-id; sudo rm -rf /var/lib/dbus/machine-id; sudo ln -s /etc/machine-id /var/lib/dbus/machine-id"
                             

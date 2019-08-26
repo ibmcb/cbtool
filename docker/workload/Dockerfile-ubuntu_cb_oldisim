@@ -7,6 +7,6 @@ RUN apt-get install -y build-essential gengetopt libgoogle-perftools-dev libunwi
 
 # oldisim-install-man
 RUN /bin/true; cd /home/REPLACE_USERNAME; git clone https://github.com/GoogleCloudPlatform/oldisim.git; cd /home/REPLACE_USERNAME/oldisim/; git submodule update --init
-RUN /bin/true; cd /home/REPLACE_USERNAME/oldisim/; ; sed -n -i 'p;23a #include <functional>' include/oldisim/FanoutManager.h; scons
+RUN /bin/true; cd /home/REPLACE_USERNAME/oldisim/; sed -n -i 'p;23a #include <functional>' oldisim/include/oldisim/FanoutManager.h; scons
 # oldisim-install-man
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

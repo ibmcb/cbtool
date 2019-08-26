@@ -78,6 +78,9 @@ do
         -v|--verbose)
         CB_VERB='--ve'
         ;;
+        -m|--multiarch)
+        CB_MULTIARCH=1
+        ;;                
         --push)
         CB_PUSH="push"
         ;;
@@ -107,12 +110,12 @@ then
 fi
 
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_CENTOS_BASE
-cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
-cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
+cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_MULTIARCH
+cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH $CB_MULTIARCH
 TMP_CB_WKS=$CB_WKS
 for CB_WKS in $(echo $TMP_CB_WKS | sed 's/,/ /g')
 do
-    cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_WKS $CB_RSYNC $CB_BRANCH
+    cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_WKS $CB_RSYNC $CB_BRANCH $CB_MULTIARCH
     
     if [[ $CB_PUSH == "push" ]]
     then

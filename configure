@@ -77,6 +77,11 @@ def main() :
                        default=_path + "/configs/", \
                        help="Dependencies configuration file customizations dir")
 
+    _parser.add_option("--utildir", \
+                       dest="utildir", \
+                       default=_path + "/util/", \
+                       help="Utility scripts dir")
+
     _parser.add_option("-r", "--role", \
                        dest = "role", \
                        default = None, \
@@ -205,9 +210,16 @@ def main() :
         logger.setLevel(ERROR)
 
     _3rd_party = options.tpdir
-    
+    _util = options.utildir
+
+    options.basedir = _path.strip().split('/')[-2]
+
     if not os.path.exists(_3rd_party) :
         os.mkdir(_3rd_party)
+
+    for _ue in [ "cb_is_hadoop_installed.sh", "cb_is_java_installed.sh"] :
+        copyfile(_util + '/' + _ue, "/tmp/" + _ue)
+        os.chmod("/tmp/" + _ue, 0755)
 
     from lib.auxiliary.dependencies import dependency_checker_installer,instance_preparation
 
@@ -252,7 +264,7 @@ def main() :
         
     if not len(options.wks) :
         _username = getpwuid(os.getuid())[0]
-    
+
         _msg = "Checking for a \"private\" configuration file for user \"" + _username
         _msg += "\" in " + _path + "/configs/" + _username + "_cloud_definitions.txt)"
         cbinfo(_msg)

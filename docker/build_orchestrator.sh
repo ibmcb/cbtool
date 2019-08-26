@@ -78,6 +78,9 @@ do
         -v|--verbose)
         CB_VERB='--ve'
         ;;
+        -m|--multiarch)
+        CB_MULTIARCH=1
+        ;;        
         --push)
         CB_PUSH="push"
         ;;
@@ -99,15 +102,12 @@ do
         shift
 done
 
-rsync -az $CB_DOCKER_BASE_DIR/../configs/cloud_definitions.txt $CB_DOCKER_BASE_DIR/orchprereqs/
-
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_CENTOS_BASE
-cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
-cb_build_orchprereqs $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
-cb_remove_images $CB_REPO orchestrator $CB_BRANCH
-cb_build_orchestrator $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
-cb_remove_images $CB_REPO installtest $CB_BRANCH
-cb_build_installtest $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
+cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_MULTIARCH
+#cb_remove_images $CB_REPO orchestrator $CB_BRANCH
+cb_build_orchestrator $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH $CB_MULTIARCH
+#cb_remove_images $CB_REPO installtest $CB_BRANCH
+cb_build_installtest $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH $CB_MULTIARCH
 
 if [[ $CB_PUSH == "push" ]]
 then
