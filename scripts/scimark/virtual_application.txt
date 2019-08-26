@@ -23,7 +23,7 @@ LICENSE = Public_Domain
 REPORTED_METRICS = throughput,fft_throughput,sor_throughput,mc_throughput,mm_throughput,lu_throughput,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an SINGLE INSTANCE and runs the Scimark 2.0 benchmark.\n
+DESCRIPTION = Deploys a SINGLE INSTANCE and runs the Scimark 2.0 benchmark.\n
 DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_\n
 DESCRIPTION +=- LOAD_LEVEL meaning: small datasize (load level 1) or large datasize (load leve 2+).\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all tests are complete.\n

@@ -16,7 +16,7 @@ kernbench-install = git
 
 ### START - Tests ###
 kernbuild-configure = gcc -v
-kernbench-configure = ls -l ~/ltp/utils/benchmark/kernbench-0.42/kernbench
+kernbench-configure = ls -l /home/REPLACE_USERNAME/ltp/utils/benchmark/kernbench-0.42/kernbench
 ### END - Tests ###
 
 ### START - Dependency versions ###
