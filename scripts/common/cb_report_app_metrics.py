@@ -35,7 +35,7 @@ for _arg in argv :
     elif _arg.count("force_conversion_") :
         _force_conversion = _arg.replace("force_conversion_",'')
     else :
-        if _arg.count(":") == 2 :                                                                                                 
+        if _arg.count(":") == 2 :
             _metric_list += _arg + ' '                                                                                    
 
 report_app_metrics(_metric_list, _sla_target_list, force_conversion = _force_conversion)

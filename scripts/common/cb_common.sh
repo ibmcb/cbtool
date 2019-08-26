@@ -116,7 +116,7 @@ function check_container {
             export LC_ALL=C
         fi
         export NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`
-        export MEM_SIZE_KB=`echo $(get_my_vm_attribute size) | cut -d '-' -f 2`
+        export MEM_SIZE_KB=`echo "$(echo $(get_my_vm_attribute size) | cut -d '-' -f 2) * 1024" | bc`
     else
         export IS_CONTAINER=0
         export NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
@@ -560,6 +560,12 @@ function mount_filesystem_on_volume {
         return 1
     fi
 
+    if [[ $(echo $MOUNTPOINT_DIR | tr '[:upper:]' '[:lower:]') == "none" ]]
+    then
+        syslog_netcat "Mountpoint \"none\" specified. Bypassing mounting"
+        return 1
+    fi
+
     if [[ -z $FILESYS_TYPE ]]
     then
         FILESYS_TYPE=ext4
@@ -884,11 +890,11 @@ function build_ai_mapping {
         vmhn=`echo $vmhn | tr '[:upper:]' '[:lower:]'`
         vmrole=`get_vm_attribute ${vmuuid} role`
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
-		# Lines were getting duplicated (presumably because the function is called more than once.
-		# Avoid adding a line twice:
-		if [ x"$(grep ${vmuuid} ${ai_mapping_file})" == x ] ; then
-			echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
-		fi
+        # Lines were getting duplicated (presumably because the function is called more than once.
+        # Avoid adding a line twice:
+        if [ x"$(grep ${vmuuid} ${ai_mapping_file})" == x ] ; then 
+            echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
+        fi
     done
 }
 
@@ -1369,8 +1375,8 @@ function replicate_to_container_if_nested {
     nest_containers_insecure_registry=`get_my_vm_attribute nest_containers_insecure_registry`
     if [ x"${nest_containers_insecure_registry}" == x"True" ] ; then
         echo "{ \"insecure-registries\" : [\"${nest_containers_repository}\"] }" > /tmp/daemon.json
-		chown root:root /tmp/daemon.json
-		sudo mv /tmp/daemon.json /etc/docker/daemon.json
+        chown root:root /tmp/daemon.json
+        sudo mv /tmp/daemon.json /etc/docker/daemon.json
     fi
 
     service_restart_enable docker
@@ -1952,14 +1958,15 @@ function haproxy_setup {
         LOAD_BALANCER_MODE=$3
     fi
 
-	NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
+    check_container
 
-	if [ ! -e /etc/ssl/private/mydomain.pem ] ; then
-	   sudo openssl genrsa -out mydomain.key 2048
-       sudo openssl req -new -key mydomain.key -out mydomain.csr -batch -verbose
-       sudo openssl x509 -req -days 365 -in mydomain.csr -signkey mydomain.key -out mydomain.crt
-       sudo bash -c "cat mydomain.key mydomain.crt >> /etc/ssl/private/mydomain.pem"
-	fi
+    if [[ ! -e /etc/ssl/private/mydomain.pem ]]
+    then
+        sudo openssl genrsa -out mydomain.key 2048
+        sudo openssl req -new -key mydomain.key -out mydomain.csr -batch -verbose
+        sudo openssl x509 -req -days 365 -in mydomain.csr -signkey mydomain.key -out mydomain.crt
+        sudo bash -c "cat mydomain.key mydomain.crt >> /etc/ssl/private/mydomain.pem
+    fi
 
     f=/tmp/haporxy.cfg
 cat << EOF > $f
