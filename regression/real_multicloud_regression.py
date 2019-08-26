@@ -18,6 +18,7 @@
 from sys import path, argv
 from time import sleep,time,strftime
 from optparse import OptionParser
+from datetime import datetime
 
 import fnmatch
 import os
@@ -28,7 +29,6 @@ import json
 
 home = os.environ["HOME"]
 username = pwd.getpwuid(os.getuid())[0]
-
 
 _path_set = False
 _cb_api_path = "NA"
@@ -124,7 +124,7 @@ def cli_named_option_parser() :
 
 for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../../")):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
-        if _path.count("/lib/auxiliary") :
+        if _path.count("cloudbench/lib/auxiliary") or _path.count("cbtool/lib/auxiliary") :
             path.append(_path.replace("/lib/auxiliary",''))
             _path_set = True
             _cb_api_path = _path
@@ -137,22 +137,28 @@ for i in range(0, 10) :
     if os.access(_cb_cli_path, os.F_OK) :
         break
 
-print "CBTOOL client API library found on \"" + _cb_api_path + "\""
-print "CBTOOL executable CLI found on \"" + _cb_cli_path + "\""
+def print_msg(message) :
+    '''
+    TBD
+    '''
+    print datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message
+
+print_msg("CBTOOL client API library found on \"" + _cb_api_path + "\"")
+print_msg("CBTOOL executable CLI found on \"" + _cb_cli_path + "\"")
     
 from lib.api.api_service_client import *
-
+    
 def check_cloud_attach(apiconn, cloud_model, time_mark) :
     '''
     TBD
     '''
     try :
-        print "## Checking if a Cloud Model \"" + cloud_model + "\" is attached to this experiment..."
+        _cloud_attached = False        
+        print_msg("## Checking if a Cloud Model \"" + cloud_model + "\" is attached to this experiment...")
         _error = False
         _fmsg = ''
-        _cloud_name = "NA"
-        
-        _cloud_attached = False
+        _cloud_name = "NA"        
+
         for _cloud in apiconn.cldlist() :
             if _cloud["model"] == cloud_model :
                 _cloud_name = _cloud["name"]
@@ -179,14 +185,14 @@ def check_cloud_attach(apiconn, cloud_model, time_mark) :
     
     finally :
         if _cloud_attached :
-            print _msg
+            print_msg(_msg)
             _result = "PASS (" + str(_cloud_attach_time).center(3,' ') + " )"
         else :
             if not _error :
-                print _msg
+                print_msg(_msg)
                 _result = "FAIL"
             else :
-                print _fmsg
+                print_msg(_fmsg)
                 _result = "FAIL"
                 
         return _result, _cloud_name
@@ -211,39 +217,39 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
 
         _model_to_imguuid = {}
         _model_to_imguuid["sim"] = "baseimg"
-        _model_to_imguuid["pcm"] = "xenial" 
-        _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
+        _model_to_imguuid["pcm"] = "bionic" 
+        _model_to_imguuid["pdm"] = "cbtoolbt-ubuntu"
         _model_to_imguuid["nop"] = "baseimg"
-        _model_to_imguuid["osk"] = "xenial3"
-        _model_to_imguuid["os"] = "xenial3"        
+        _model_to_imguuid["osk"] = "bionic-server-cloudimg-amd64"
+        _model_to_imguuid["os"] = "bionic-server-cloudimg-amd64"
         _model_to_imguuid["gen"] = "xenial3"
-        _model_to_imguuid["plm"] = "xenial"        
+        _model_to_imguuid["plm"] = "bionic"        
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
-        _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
-        _model_to_imguuid["do"] = "cloudbench-nullworkload-on-1604.051818-1"        
-        _model_to_imguuid["slr"] = "1836627"        
-        _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
-        _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB"
+        _model_to_imguuid["gce"] = "ubuntu-1804-bionic-v20190320"
+        _model_to_imguuid["do"] = "44972302"        
+        _model_to_imguuid["slr"] = "2110219"
+        _model_to_imguuid["kub"] = "cb_nullworkload"
+        _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-18_04-LTS-amd64-server-20190320-en-us-30GB"
 
         _model_to_login = {}
-        _model_to_login["sim"] = "ubuntu"
-        _model_to_login["pcm"] = "ubuntu" 
+        _model_to_login["sim"] = "cbuser"
+        _model_to_login["pcm"] = "cbuser" 
         _model_to_login["pdm"] = "cbuser"
-        _model_to_login["plm"] = "ubuntu"        
-        _model_to_login["nop"] = "ubuntu"
-        _model_to_login["osk"] = "ubuntu"
-        _model_to_login["os"] = "ubuntu"        
+        _model_to_login["plm"] = "cbuser"        
+        _model_to_login["nop"] = "cbuser"
+        _model_to_login["osk"] = "cbuser"
+        _model_to_login["os"] = "cbuser"        
         _model_to_login["gen"] = "cbuser"
-        _model_to_login["ec2"] = "ubuntu"
-        _model_to_login["gce"] = "ubuntu"
-        _model_to_login["do"] = "root"        
-        _model_to_login["slr"] = "root"
+        _model_to_login["ec2"] = "cbuser"
+        _model_to_login["gce"] = "cbuser"
+        _model_to_login["do"] = "cbuser"        
+        _model_to_login["slr"] = "cbuser"
         _model_to_login["kub"] = "cbuser"
         _model_to_login["as"] = "cbuser"
-        
+
         _model_to_command = {}
         _model_to_command["sim"] = "echo 'volume_list'"
-        _model_to_command["pcm"] = "echo NA"
+        _model_to_command["pcm"] = "vm_name sudo mount | grep '/ ' | awk '{ print \$1 }'"
         _model_to_command["pdm"] = "vm_name sudo mount | grep overlay | awk '{ print \$1 }' && sudo ls /mnt"
         _model_to_command["plm"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | cut -d ' ' -f 2 | sed 's/://g'"
         _model_to_command["nop"] = "echo NA"
@@ -282,7 +288,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             _temp_attr_list += ",cloud_vv=5"
 
         if test_case.count(", vpn") :
-            _temp_attr_list += ",use_vpn_ip=true"
+            _temp_attr_list += ",use_vpn_ip=true,ports_base=false"
 
         if test_case.count("force failure") :
             _temp_attr_list += ",force_failure=true"
@@ -296,6 +302,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         if cloud_model == "nop" :
             if _nop_cloud_ip == "self" :
                 _command = "sudo ifconfig docker0 | grep inet[[:space:]] | awk '{ print $2 }'"
+                _command = "sudo getent hosts cloudbencha | awk '{ print $1 }'"
                 _proc_h = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 _resul = _proc_h.communicate()
                 _nop_cloud_ip = _resul[0].replace('\n','')
@@ -303,7 +310,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
 
         _vms_failed = int(apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]["failed"])
             
-        print "## Testing VM Attach (" + test_case + ") using \"" + _vm_role +  "\" (" + _temp_attr_list + ")..."
+        print_msg("## Testing VM Attach (" + test_case + ") using \"" + _vm_role +  "\" (" + _temp_attr_list + ")...")
         _mark_a = time()
         _vm = apiconn.vmattach(cloud_name, _vm_role, _vm_location, _meta_tags, _size, _pause_step, _temp_attr_list)
         _create_time = int(time() - _mark_a)
@@ -325,7 +332,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         else :
             _msg += "..."
 
-        print _msg            
+        print_msg(_msg)            
         _mgt_metric = apiconn.get_latest_management_data(cloud_name, _vm["uuid"])
 #        print _mgt_metric
     
@@ -338,7 +345,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
-        print "Aborting this VM."
+        print_msg("Aborting this VM.")
     
     except Exception, msg :
         _attach_error = True
@@ -348,10 +355,10 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
 
         _vm_counters = apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]
 
-        print "###### Status after vmattach"
-        print "###### VM RESERVATIONS: " + str(_vm_counters["reservations"])
-        print "###### VM FAILED: " + str(_vm_counters["failed"])
-        print "###### VM REPORTED: " + str(_vm_counters["reported"])
+        print_msg("###### Status after vmattach")
+        print_msg("###### VM RESERVATIONS: " + str(_vm_counters["reservations"]))
+        print_msg("###### VM FAILED: " + str(_vm_counters["failed"]))
+        print_msg("###### VM REPORTED: " + str(_vm_counters["reported"]))
                        
         if not test_case.count("failure") :
 
@@ -377,7 +384,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                         _result = "FAIL"
                 else :
 
-                    print "######## VV UUID: " + str(_vm["cloud_vv_uuid"]).lower()
+                    print_msg("######## VV UUID: " + str(_vm["cloud_vv_uuid"]).lower())
                     if str(_vm["cloud_vv_uuid"]).lower() == "not supported" :
                         _result = "NA".center(49,' ')
                     elif str(_vm["cloud_vv_uuid"]).lower() != "none" :
@@ -400,7 +407,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                 _attach_error = True
 
         if not test_case.count("failure") and "uuid" in _vm :    
-            print "#### Testing VM Detach (" + test_case + ")..."
+            print_msg("#### Testing VM Detach (" + test_case + ")...")
             try :
                 _mark_a = time()                
                 apiconn.vmdetach(cloud_name, _vm["uuid"])
@@ -415,7 +422,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
                 
             except KeyboardInterrupt :
-                print "Aborting this VM."
+                print_msg("Aborting this VM.")
 
             except Exception, msg :
                 _delete_error = True
@@ -424,41 +431,41 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             if not _delete_error :    
                 _vm_counters = apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]
 
-                print "###### Status after vmdetach"
-                print "###### VM RESERVATIONS: " + str(_vm_counters["reservations"])
-                print "###### VM FAILED: " + str(_vm_counters["failed"])
-                print "###### VM REPORTED: " + str(_vm_counters["reported"])
+                print_msg("###### Status after vmdetach")
+                print_msg("###### VM RESERVATIONS: " + str(_vm_counters["reservations"]))
+                print_msg("###### VM FAILED: " + str(_vm_counters["failed"]))
+                print_msg("###### VM REPORTED: " + str(_vm_counters["reported"]))
             
                 if int(_vm_counters["reservations"]) > 0 or int(_vm_counters["reported"]) > 0:
                     _delete_error = True
-                    print "#### ERROR while testing VM Detach (" + test_case + ")"
+                    print_msg("#### ERROR while testing VM Detach (" + test_case + ")")
                     _fmsg = "VM reservations or reported is not equal zero"
                     _result = "FAIL"
                 else :
-                    print "#### Successfully tested VM Detach (" + test_case + ")"
+                    print_msg("#### Successfully tested VM Detach (" + test_case + ")")
                     if _result.count('(') :
                         _result += '/' + str(_delete_time).center(3,' ') + ')'
                     if _result.count("p=") :
                         _result = _result.center(41, ' ')                        
                     
         if test_case.count("failure") :
-            print "######### " + _fmsg            
+            print_msg("######### " + _fmsg)
             _vm_counters = apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]
 
-            print "###### Status after vmattach \"failure\""
-            print "###### VM RESERVATIONS: " + str(_vm_counters["reservations"])
-            print "###### VM FAILED: " + str(_vm_counters["failed"])
-            print "###### VM REPORTED: " + str(_vm_counters["reported"])
+            print_msg("###### Status after vmattach \"failure\"")
+            print_msg("###### VM RESERVATIONS: " + str(_vm_counters["reservations"]))
+            print_msg("###### VM FAILED: " + str(_vm_counters["failed"]))
+            print_msg("###### VM REPORTED: " + str(_vm_counters["reported"]))
         
             if int(_vm_counters["reservations"]) == 0 and int(_vm_counters["reported"]) == 0:
                 _attach_error = False
                 
         if not _attach_error and not _delete_error :
             _msg = "## Successfully tested VM Attach (" + test_case + ") using image \"" + _img_name +  "\""
-            print _msg
+            print_msg(_msg)
         else :
             _fmsg = "## ERROR while testing VM Attach (" + test_case + ") using image \"" + _img_name +  "\": " + _fmsg
-            print _fmsg
+            print_msg(_fmsg)
             
         return _result
 
@@ -475,7 +482,7 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
         if cloud_name == "NA" :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
             
-        print "## Testing VM Capture ..."
+        print_msg("## Testing VM Capture ...")
         _mark_a = time()        
         _vm = apiconn.vmcapture(cloud_name, "youngest", "regressiontest", "none", False)
         _capture_time = int(time() - _mark_a)
@@ -486,10 +493,10 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
             
         _vm_counters = apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]
 
-        print "###### Status after vmcapture"
-        print "###### VM RESERVATIONS: " + str(_vm_counters["reservations"])
-        print "###### VM FAILED: " + str(_vm_counters["failed"])
-        print "###### VM REPORTED: " + str(_vm_counters["reported"])
+        print_msg("###### Status after vmcapture")
+        print_msg("###### VM RESERVATIONS: " + str(_vm_counters["reservations"]))
+        print_msg("###### VM FAILED: " + str(_vm_counters["failed"]))
+        print_msg("###### VM REPORTED: " + str(_vm_counters["reported"]))
         
         if int(_vm_counters["reservations"]) > 0 or int(_vm_counters["reported"]) > 0:
             _error = True
@@ -506,7 +513,7 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
-        print "Aborting this VM."
+        print_msg("Aborting this VM.")
     
     except Exception, msg :
         _error = True
@@ -514,10 +521,10 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
     
     finally :
         if _error :
-            print _fmsg
+            print_msg(_fmsg)
             return "FAIL"
         else :
-            print _msg
+            print_msg(_msg)
             return "PASS (" + str(_capture_time).center(3,' ') + ')'
 
 def check_img_delete(apiconn, cloud_model, cloud_name, options) :
@@ -534,7 +541,7 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
 
         _vmc = apiconn.vmclist(cloud_name)[0]["name"]        
-        print "## Testing IMAGE Delete ... (" + _vmc + ")"
+        print_msg("## Testing IMAGE Delete ... (" + _vmc + ")")
         _mark_a = time()        
         _img = apiconn.imgdelete(cloud_name, "regressiontest", _vmc, True)
         _imgdelete_time = int(time() - _mark_a)
@@ -554,7 +561,7 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
-        print "Aborting this IMG."
+        print_msg("Aborting this IMG.")
     
     except Exception, msg :
         _error = True
@@ -562,10 +569,10 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
     
     finally :
         if _error :
-            print _fmsg
+            print_msg(_fmsg)
             return "FAIL"
         else :
-            print _msg
+            print_msg(_msg)
             return "PASS (" + str(_imgdelete_time).center(3,' ') + ')'
 
 def retriable_cloud_connection(options, actual_cloud_model, command) :
@@ -580,14 +587,14 @@ def retriable_cloud_connection(options, actual_cloud_model, command) :
     while not _api and _attempt < _attempts :
 
         try : 
-            print "Attaching Cloud Model \"" + actual_cloud_model + "\" by running the command \"" + command + "\"..."
+            print_msg("Attaching Cloud Model \"" + actual_cloud_model + "\" by running the command \"" + command + "\"...")
             _proc_h = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             _resul = _proc_h.communicate()
     
             _status = _proc_h.returncode
 
             if _status :
-                print "ERROR while attempting to attach Cloud Model \"" + actual_cloud_model + "\""
+                print_msg("ERROR while attempting to attach Cloud Model \"" + actual_cloud_model + "\"")
                 exit(_status)
     
             if options.private_results :
@@ -603,16 +610,16 @@ def retriable_cloud_connection(options, actual_cloud_model, command) :
                 except :
                     _msg = "Unable to open file containing API connection information "
                     _msg += "(" + api_file_name + ")."
-                    print _msg
+                    print_msg(_msg)
                     exit(4)
             else :
                 _msg = "Unable to locate file containing API connection information "
                 _msg += "(" + api_file_name + ")."
-                print _msg
+                print_msg(_msg)
                 exit(4)
         
             _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-            print _msg
+            print_msg(_msg)
             _api = APIClient(_api_conn_info)
             return _api
 
@@ -628,8 +635,9 @@ def retriable_execute_command(options, apiconn, cloud_name, actual_cloud_model, 
     _attempts = 60
     _attempt = 0
 
-    _volume_list = "NA"    
-    while _attempt < _attempts :    
+    _volume_list = "NA"
+    print_msg("###### Executing command \"" + command_to_model[actual_cloud_model].replace("vm_name", vm_attr_list["name"]).replace("volume_list", vm_attr_list["volume_list"]) + "\"...")
+    while _attempt < _attempts :
 
         try :
             _volume_list = apiconn.shell(cloud_name, command_to_model[actual_cloud_model].replace("vm_name", vm_attr_list["name"]).replace("volume_list", vm_attr_list["volume_list"]))["stdout"]
@@ -783,13 +791,21 @@ def main() :
     _test_results_table.add_row(_sixth_header)
 
     if _options.headeronly :
-        write_results(_options, _test_results_table, _options.cloud_models[0])
+        write_results(_options, _test_results_table, _options.cloud_models[0].replace("_cloud_definitions.txt",''))
         exit(0)
 
     _at_least_one_error = False
                                                       
     for _cloud_model in _options.cloud_models :
+        _cloud_model_file = _cloud_model
+        
+        _cloud_model_name = _cloud_model.replace("_cloud_definitions.txt",'')
+        
+        if _cloud_model_name[0:2] == "cb" :
+            _cloud_model_name = _cloud_model_name[2:]        
+
         _start = int(time())
+        
         print ''
         
         if _options.private_results :
@@ -797,11 +813,11 @@ def main() :
         else :
             _reset = " --hard_reset"
 
-        _command = _cb_cli_path + _reset + "  --config " + _options.cloud_config_dir + '/' + _cloud_model + ".txt exit"
+        _command = _cb_cli_path + _reset + "  --config " + _options.cloud_config_dir + '/' + _cloud_model_file + " exit"
         
-        _actual_cloud_model = _cloud_model.replace("file",'').replace("fip",'')
+        _actual_cloud_model = _cloud_model_name.replace("file",'').replace("fip",'')
 
-        _display_cloud_model = _cloud_model.replace("file"," (file)").replace("fip", " (fip)")
+        _display_cloud_model = _cloud_model_name.replace("file"," (file)").replace("fip", " (fip)")
         
         _mark_a = time()
         api = retriable_cloud_connection(_options, _actual_cloud_model, _command)
@@ -854,13 +870,39 @@ def main() :
             _test_cases[5] = "NA"
             _test_cases[6] = "NA"
 
-        if _cloud_model.count("file") or _cloud_model.count("fip") :
-            _test_cases[2] = "NA"
-            _test_cases[3] = "NA"
-            _test_cases[4] = "NA"
-            _test_cases[5] = "NA"
-            _test_cases[6] = "NA"
-                        
+        if _actual_cloud_model == "osk" :
+            
+            if _cloud_model_name.count("fip") :
+                _test_cases[2] = "NA"
+                _test_cases[4] = "NA"
+                _test_cases[5] = "NA"
+                _test_cases[6] = "NA"
+
+            elif _cloud_model_name.count("file") :
+                _test_cases[1] = "NA"                
+                _test_cases[2] = "NA"
+                _test_cases[3] = "NA"
+                _test_cases[4] = "NA"
+                _test_cases[5] = "NA"
+                _test_cases[6] = "NA"
+
+            else :
+                _test_cases[1] = "NA"
+                _test_cases[3] = "NA"
+
+        if _actual_cloud_model == "os" :
+            
+            if _cloud_model_name.count("fip") :
+                _test_cases[2] = "NA"
+                _test_cases[4] = "NA"
+                _test_cases[5] = "NA"
+                _test_cases[6] = "NA"
+
+            else :
+                _test_cases[1] = "NA"
+                _test_cases[3] = "NA"
+
+                                                        
         if _actual_cloud_model == "as" :
             _test_cases[2] = "NA"
             _test_cases[3] = "NA"
@@ -908,11 +950,11 @@ def main() :
 
         _test_results_table.add_row(_results_row)
 
-        write_results(_options, _test_results_table, _cloud_model)
+        write_results(_options, _test_results_table, _cloud_model_name)
 
         _error = False
 
-        _fn = "/tmp/" + _cloud_model + "_real_multicloud_regression_ecode.txt"
+        _fn = "/tmp/" + _cloud_model_name + "_real_multicloud_regression_ecode.txt"
         _fh = open(_fn, "w")             
         if _error :
             _fh.write(str(1))
