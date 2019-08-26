@@ -22,7 +22,7 @@ giraph-install = git
 java-configure = /tmp/cb_is_java_installed.sh openjdk 7
 hadoop-configure = /tmp/cb_is_hadoop_installed.sh 1
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
-giraph-configure = find ~ | grep giraph-examples | grep dependencies | grep jar
+giraph-configure = find /home/REPLACE_USERNAME | grep giraph-examples | grep dependencies | grep jar
 ### END - Tests ###
 
 ### START - Dependency versions ###

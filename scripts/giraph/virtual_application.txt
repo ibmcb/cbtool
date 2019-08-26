@@ -39,8 +39,10 @@ GIRAPHMASTER_SETUP1 = cb_config_giraph_cluster.sh
 GIRAPHSLAVE_SETUP1 = cb_config_giraph_cluster.sh
 GIRAPHMASTER_SETUP2 = cb_start_giraph_cluster.sh
 GIRAPHSLAVE_SETUP2 = cb_start_giraph_cluster.sh
-GIRAPHMASTER_RESIZE1 = cb_giraph_hadoop_cluster.sh
-GIRAPHSLAVE_RESIZE1 = cb_giraph_hadoop_cluster.sh
+GIRAPHMASTER_RESIZE1 = cb_config_giraph_cluster.sh
+GIRAPHSLAVE_RESIZE1 = cb_config_giraph_cluster.sh
+GIRAPHMASTER_RESIZE2 = cb_start_giraph_cluster.sh
+GIRAPHSLAVE_RESIZE2 = cb_start_giraph_cluster.sh
 START = cb_run_giraph.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
@@ -57,6 +59,7 @@ GIRAPHMASTER_DATA_FSTYP = ext4
 GIRAPHMASTER_DATA_DIR = /dfs
 GIRAPH_HOME = ~/giraph/
 ZOOKEEPER_HOME=~/giraph/zookeeper/zookeeper-3.4.6/
+REPLICATION_FACTOR = 3
 EDGES_PER_VERTEX = 3
 NUM_SUPERSTEPS = 3
 NUM_WORKERS_FACTOR = 1

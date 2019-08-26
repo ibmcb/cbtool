@@ -182,7 +182,8 @@ then
         ZOOKEPER_HOME=`get_my_ai_attribute_with_default zookeper_home ~/giraph/zookeeper/zookeeper-3.4.6/`
         
         eval ZOOKEPER_HOME=${ZOOKEPER_HOME}
-        ls $ZOOKEPER_HOME
+
+        ls $ZOOKEPER_HOME >/dev/null 2>&1
         if [[ $? -ne 0 ]]
         then
             syslog_netcat "ZOOKEPER_HOME directory $ZOOKEPER_HOME not found."
@@ -283,22 +284,22 @@ syslog_netcat "SPARK_HOME was determined to be $SPARK_HOME"
 
 if [[ $my_type == "hadoop" ]]
 then
-	if [[ -z ${HIBENCH_HOME} ]]
-	then
-	    HIBENCH_HOME=`get_my_ai_attribute_with_default hibench_home ~/HiBench`
-	
-	    eval HIBENCH_HOME=${HIBENCH_HOME}
-	    
-	    if [[ -f ~/.bashrc ]]
-	    then
-	        is_hibench_home_export=`grep -c "HIBENCH_HOME=${HIBENCH_HOME}" ~/.bashrc`
-	        if [[ $is_hibench_home_export -eq 0 ]]
-	        then
-	            syslog_netcat "Adding HIBENCH_HOME ($HIBENCH_HOME) to bashrc"
-	            echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> ~/.bashrc
-	        fi
-	    fi
-	fi
+    if [[ -z ${HIBENCH_HOME} ]]
+    then
+        HIBENCH_HOME=`get_my_ai_attribute_with_default hibench_home ~/HiBench`
+    
+        eval HIBENCH_HOME=${HIBENCH_HOME}
+        
+        if [[ -f ~/.bashrc ]]
+        then
+            is_hibench_home_export=`grep -c "HIBENCH_HOME=${HIBENCH_HOME}" ~/.bashrc`
+            if [[ $is_hibench_home_export -eq 0 ]]
+            then
+                syslog_netcat "Adding HIBENCH_HOME ($HIBENCH_HOME) to bashrc"
+                echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> ~/.bashrc
+            fi
+        fi
+    fi
 fi
 
 if [[ -d ${HADOOP_HOME}/sbin ]]
@@ -537,13 +538,13 @@ EOF
 </property>
 
 <property>
-	<name>dfs.client.use.datanode.hostname</name>
-	<value>true</value>
+    <name>dfs.client.use.datanode.hostname</name>
+    <value>true</value>
 </property>
 
 <property>
-	<name>dfs.datanode.use.datanode.hostname</name>
-	<value>true</value>
+    <name>dfs.datanode.use.datanode.hostname</name>
+    <value>true</value>
 </property>
 
 <property>
@@ -663,7 +664,7 @@ function update_hadoop_config_files {
 
     sudo sed -i -e "s^DFS_NAME_DIR^${DFS_NAME_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
     sudo sed -i -e "s^DFS_DATA_DIR^${DFS_DATA_DIR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
-    sudo sed -i -e "s^DFS_REPLICATION_FACTOR^${DFS_REPLICATION_FACTOR}^g" $HADOOP_CONF_DIR/hdfs-site.xml    	
+    sudo sed -i -e "s^DFS_REPLICATION_FACTOR^${DFS_REPLICATION_FACTOR}^g" $HADOOP_CONF_DIR/hdfs-site.xml
 
     syslog_netcat "Placeholders updated."    
 }
@@ -738,6 +739,16 @@ function copy_hadoop_config_files_to_etc {
     fi
 }
 export -f copy_hadoop_config_files_to_etc
+
+which cbcluster >/dev/null 2>&1
+if [[ $? -ne 0 ]]
+then
+    echo "#!/usr/bin/env bash" > /tmp/cbcluster
+    echo "export JAVA_HOME=${JAVA_HOME}" >> /tmp/cbcluster
+    echo "$HADOOP_HOME/bin/hadoop dfsadmin -report" >> /tmp/cbcluster    
+    sudo chmod 0755 /tmp/cbcluster
+    sudo mv /tmp/cbcluster /usr/local/bin/cbcluster
+fi    
 
 function get_available_nodes {
     # CDH format: Datanodes available: 4 (5 total, 1 dead)
@@ -863,7 +874,6 @@ export -f create_mapreduce_history
     
 function start_master_hadooop_services {
     syslog_netcat "Starting Hadoop Master services..."
-    DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
 
     if [[ ${hadoop_use_yarn} -eq 1 ]]
         then
@@ -990,14 +1000,11 @@ function start_slave_hadoop_services {
     if [[ ${hadoop_use_yarn} -eq 1 ]]
     then
     
-        DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`        
-    
         set -- `sudo ls -l ${DFS_NAME_DIR}`
         dfs_name_dir_owner=$5
     
         if [[ x$dfs_name_dir_owner == x ]]
         then
-#           dfs_name_dir_owner="hdfs"
             dfs_name_dir_owner=$(whoami)
             sudo chown -R $(whoami):$(whoami) ${DFS_NAME_DIR}
 

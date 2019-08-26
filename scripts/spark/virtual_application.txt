@@ -41,11 +41,13 @@ SPARKSLAVE_SETUP2 = cb_start_hadoop_cluster.sh
 SPARKMASTER_SETUP3 = cb_config_spark_cluster.sh
 SPARKSLAVE_SETUP3 = cb_config_spark_cluster.sh
 SPARKMASTER_SETUP4 = cb_start_spark_cluster.sh
-SPARKMASTER_RESIZE1 = cb_restart_hadoop_cluster.sh
-SPARKSLAVE_RESIZE1 = cb_restart_hadoop_cluster.sh
-SPARKSLAVE_RESIZE2 = cb_config_spark_cluster.sh
+SPARKMASTER_RESIZE1 = cb_config_hadoop_cluster.sh
+SPARKSLAVE_RESIZE1 = cb_config_hadoop_cluster.sh
 SPARKMASTER_RESIZE2 = cb_start_spark_cluster.sh
+SPARKSLAVE_RESIZE2 = cb_start_hadoop_cluster.sh
 SPARKMASTER_RESIZE3 = cb_config_spark_cluster.sh
+SPARKSLAVE_RESIZE3 = cb_config_spark_cluster.sh
+SPARKMASTER_RESIZE4 = cb_start_spark_cluster.sh
 START = cb_run_spark.sh
 
 # VApp-specific modifier parameters.
