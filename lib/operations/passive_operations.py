@@ -446,8 +446,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
         
                         for _obj_id in _obj_ids :
                             try :
-                                   _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, \
-                                                                _obj_id, False)
+                                _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, \
+                                                                    _obj_id, False)
                             except self.osci.ObjectStoreMgdConnException, e :
                                 if e.status == 23 :
                                     cbwarn("Could not find: " + _obj_id + ". Continuing.")

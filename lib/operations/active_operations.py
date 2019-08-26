@@ -1277,7 +1277,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                     self.osci.pending_object_set(_cn, "AI", obj_attr_list["ai"], "placement_leader", 0)
                                     placement_leader = 0
                                 else :
-                                   cbdebug("Got leader: " + str(placement_leader))
+                                    cbdebug("Got leader: " + str(placement_leader))
 
                                 if int(placement_leader) == int(obj_attr_list["placement_order"]) :
                                     cbdebug("It's my turn! " + obj_attr_list["name"])
@@ -1316,13 +1316,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _highest_vmcs.reverse()
                         for _highest_vmc in _highest_vmcs :
                             if len(_vmc_uuid_list) > 1 :
-                               for _vmc_uuid_entry_idx in range(0, len(_vmc_uuid_list)) :
-                                   _vmc_uuid_entry = _vmc_uuid_list[_vmc_uuid_entry_idx]
-                                   if _vmc_uuid_entry == _highest_vmc :
-                                       cbdebug("Removing from candidate list: " + _highest_vmc)
-                                       del _vmc_uuid_list[_vmc_uuid_entry_idx]
-                                       break
-
+                                for _vmc_uuid_entry_idx in range(0, len(_vmc_uuid_list)) :
+                                    _vmc_uuid_entry = _vmc_uuid_list[_vmc_uuid_entry_idx]
+                                    if _vmc_uuid_entry == _highest_vmc :
+                                        cbdebug("Removing from candidate list: " + _highest_vmc)
+                                        del _vmc_uuid_list[_vmc_uuid_entry_idx]
+                                        break
                         cbdebug("Scheduling for VM " + obj_attr_list["name"] + " excluding highest VM count " + str(_highest_vmcount) + " VMC " + str(_highest_vmcs))
                     assert(len(_vmc_uuid_list))
 
@@ -2577,8 +2576,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg = "Performed workload image build operation on " + obj_attr_list["log_string"]
                     _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "."
                     _msg += "You can now capture this image with \"vmcapture youngest "
-                    _msg += obj_attr_list["image_prefix"].strip() + obj_attr_list["prepare_image_name"]
-                    _msg += obj_attr_list["image_suffix"].strip() + "\" on the CLI\n"
+                    
+                    if obj_attr_list["prepare_image_name"][0:len(obj_attr_list["image_prefix"])] != obj_attr_list["image_prefix"] :
+                        obj_attr_list["prepare_image_name"] = obj_attr_list["image_prefix"].strip() + obj_attr_list["prepare_image_name"]
+                                        
+                    if obj_attr_list["prepare_image_name"][-len(obj_attr_list["image_suffix"]):] != obj_attr_list["image_suffix"] :
+                        obj_attr_list["prepare_image_name"] += obj_attr_list["image_suffix"].strip()                   
+                    
+                    _msg += obj_attr_list["prepare_image_name"] + "\" on the CLI\n"
                     cbdebug(_msg)
                     print '\n' + _msg                    
                 else :
