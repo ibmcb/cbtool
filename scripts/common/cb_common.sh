@@ -1965,7 +1965,7 @@ function haproxy_setup {
         sudo openssl genrsa -out mydomain.key 2048
         sudo openssl req -new -key mydomain.key -out mydomain.csr -batch -verbose
         sudo openssl x509 -req -days 365 -in mydomain.csr -signkey mydomain.key -out mydomain.crt
-        sudo bash -c "cat mydomain.key mydomain.crt >> /etc/ssl/private/mydomain.pem
+        sudo bash -c "cat mydomain.key mydomain.crt >> /etc/ssl/private/mydomain.pem"
     fi
 
     f=/tmp/haporxy.cfg
