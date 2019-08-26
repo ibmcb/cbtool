@@ -32,9 +32,9 @@ then
 else
     cd ${UNIXBENCH_DIR}
 	make
-    if [ $LOAD_LEVEL == "auto" ]
+    if [ $LOAD_LEVEL == "0" ]
     then
-        execute_load_generator "./Run -c $CPUS" ${OUTPUT_FILE}
+        execute_load_generator "./Run -c $NR_CPUS $LOAD_PROFILE" ${RUN_OUTPUT_FILE}
     else
         execute_load_generator "./Run -c $LOAD_LEVEL $LOAD_PROFILE" ${RUN_OUTPUT_FILE}
     fi
@@ -138,6 +138,7 @@ fi
 ~/cb_report_app_metrics.py \
 num_cores:${NUM_CORES}:num \
 dhry_result:${DHRY_RESULT}:lps \
+throughput:${DHRY_RESULT}:lps \
 dhry_index:${DHRY_INDEX}:num \
 whet_result:${WHET_RESULT}:MWIPS \
 whet_index:${WHET_INDEX}:num \
