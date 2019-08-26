@@ -106,7 +106,9 @@ then
     
     mongo_ips=`get_ips_from_role mongodb`
     
-    mongo_ips_csv=`echo ${mongo_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+    total_nodes=`echo "${mongo_ips}" | wc -w`
+
+    mongo_ips_csv=`echo "${mongo_ips}" | sed ':a;N;$!ba;s/\n/, /g'`
 
     if [[ $(cat /etc/hosts | grep -c mongo-cfg-server) -eq 0 ]]
     then    
@@ -121,3 +123,49 @@ else
     syslog_netcat "Unsupported backend type ($BACKEND_TYPE). Exiting with error"
     exit 1
 fi
+
+function check_mongodb_cluster_state {
+
+    syslog_netcat "Waiting for all nodes to become available..."
+
+    MONGOSHN=$1
+    MONGORS=$2
+    ATTEMPTS=$3
+    INTERVAL=$4
+
+    counter=0
+
+    which cbcluster >/dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "#!/usr/bin/env bash" > /tmp/cbcluster
+        echo "mongo --host ${mongos_ip}:27017 --eval \"db.printShardingStatus()\"" >> /tmp/cbcluster
+        sudo chmod 0755 /tmp/cbcluster
+        sudo mv /tmp/cbcluster /usr/local/bin/cbcluster
+    fi
+
+    if [[ $ATTEMPTS -eq 0 ]]
+    then
+        return 0
+    fi
+    
+    NODES_REGISTERED=0
+    while [[ $NODES_REGISTERED -ne $total_nodes ]]
+    do
+        syslog_netcat "Obtaining the node list for this MongoDB cluster by running \"mongo --host ${MONGOSHN}:27017 --eval \"db.printShardingStatus()\" | grep \"${MONGORS} | wc -l\"..."            
+        NODES_REGISTERED=$(mongo --host ${MONGOSHN}:27017 --eval "db.printShardingStatus()" | grep \"${MONGORS} | grep host | wc -l)                        
+
+        syslog_netcat "Nodes registered on the cluster: $NODES_REGISTERED out of $total_nodes"        
+        counter="$(( $counter + 1 ))"
+
+        sleep $INTERVAL
+    done
+
+    if [[ $counter -gt $ATTEMPTS ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+export -f check_mongodb_cluster_state

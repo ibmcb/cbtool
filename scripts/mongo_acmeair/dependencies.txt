@@ -33,10 +33,10 @@ mongo-driver-java-install = man
 ibm-java-configure = /tmp/cb_is_java_installed.sh ibm 8
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 gradle-configure = gradle -v | grep Gradle | cut -d ' ' -f 2
-acmeair-configure = ls -la ~/acmeair
+acmeair-configure = ls -la /home/REPLACE_USERNAME/acmeair
 websphere-liberty-configure = ls -la /opt/ibm/wlp
 jmeter-configure = jmeter --version | grep Version | cut -d ' ' -f 2
-acmeairdriver-configure = ls -la ~/acmeair-driver
+acmeairdriver-configure = ls -la /home/REPLACE_USERNAME/acmeair-driver
 mongo-configure =  mongod --version
 mongo-driver-java-configure = ls -la /opt/ibm/wlp/usr/shared/resources/mongodb
 ### END - Tests ###

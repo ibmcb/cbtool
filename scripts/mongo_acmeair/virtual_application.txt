@@ -35,10 +35,9 @@ MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh
 MONGODB_SETUP1 = cb_restart_mongo.sh
 MONGOS_SETUP2 = cb_restart_mongos.sh
 LIBERTY_SETUP3 = cb_restart_liberty.sh
-MONGODB_RESIZE1 = cb_modify_hosts.sh
-MONGOS_RESIZE2 = cb_modify_shard.sh
+MONGO_CFG_SERVER_RESIZE1 = cb_restart_mongo_cfg.sh
 MONGODB_RESIZE1 = cb_restart_mongo.sh
-MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
+MONGOS_RESIZE2 = cb_restart_mongos.sh
 START = cb_run_acme.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
