@@ -22,7 +22,7 @@ wrk-install = man
 git-configure = gcc -v
 git-configure = git --version
 apache-configure = apache2 -v
-wrk-configure = ls -la ~/wrk/wrk
+wrk-configure = ls -la /home/REPLACE_USERNAME/wrk/wrk
 ### END - Tests ###
 
 ### START - Dependency versions ###

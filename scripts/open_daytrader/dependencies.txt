@@ -34,10 +34,10 @@ subversion-configure = svn --version | head -n 1 | grep version | cut -d ' ' -f 
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 apache-configure = apache2 -v
 mysql-configure = mysql --version | cut -d ' ' -f 6
-daytrader-configure = ls -la ~/daytrader-parent-3.0.0/
-geronimo-configure = ls -la ~/geronimo-tomcat7-*
-geronimo-jdbc-configure = ls -la ~/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource/*.jar
-rain-wkt-configure = ls -la ~/rain-workload-toolkit/
+daytrader-configure = ls -la /home/REPLACE_USERNAME/daytrader-parent-3.0.0/
+geronimo-configure = ls -la /home/REPLACE_USERNAME/geronimo-tomcat7-*
+geronimo-jdbc-configure = ls -la /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource/*.jar
+rain-wkt-configure = ls -la /home/REPLACE_USERNAME/rain-workload-toolkit/
 ### END - Tests ###
 
 ### START - Dependency versions ###

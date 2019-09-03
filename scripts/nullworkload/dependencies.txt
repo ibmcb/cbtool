@@ -16,7 +16,7 @@ haproxy-install = pm
 
 ### START - Tests ###
 haproxy-configure = sudo haproxy -v
-sshconfig-configure = cat ~/.ssh/config | grep StrictHostKeyChecking && cat ~/.ssh/config | grep UserKnownHostsFile 
+sshconfig-configure = cat /home/REPLACE_USERNAME/.ssh/config | grep StrictHostKeyChecking && cat /home/REPLACE_USERNAME/.ssh/config | grep UserKnownHostsFile 
 ### END - Tests ###
 
 ### START - Dependency versions ###

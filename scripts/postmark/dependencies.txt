@@ -13,7 +13,7 @@ postmark-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-postmark-configure = ls -la ~/postmark
+postmark-configure = ls -la /home/REPLACE_USERNAME/postmark
 ### END - Tests ###
 
 ### START - Dependency versions ###

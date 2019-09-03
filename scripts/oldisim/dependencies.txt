@@ -16,7 +16,7 @@ oldisim-install = man
 
 ### START - Tests ###
 scons-configure = scons --version | grep "engine: v" | awk '{ print $2 }' | sed 's/v//g' | cut -d '.' -f 1,2,3
-oldisim-configure = ls ~/oldisim/
+oldisim-configure = ls /home/REPLACE_USERNAME/oldisim/
 ### END - Tests ###
 
 ### START - Dependency versions ###
