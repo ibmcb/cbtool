@@ -45,7 +45,9 @@ util/pydevd
 util/pydevm
 util/graveyard
 util/experimental
-util/*.sh
+util/libvirt
+util/cpc
+util/oprofile
 util/*.pm
 util/*.py
 util/plot/*

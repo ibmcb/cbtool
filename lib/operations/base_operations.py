@@ -1169,7 +1169,7 @@ class BaseObjectOperations :
 
                         _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] 
                         _generic_boot_cmd += "/scripts/common/cb_post_boot.sh"
-                        
+
                         if _role_tmp.count("check:") :
                             _role_tmp = _role_tmp.replace("check:",'')
                             
@@ -1179,26 +1179,38 @@ class BaseObjectOperations :
                                 obj_attr_list["imageid1"], obj_attr_list["login"] = _role_tmp.split(':')
                                 obj_attr_list["check_ssh"] = "true"                                
                                 obj_attr_list["transfer_files"] = "false"
+
                             elif _role_tmp.count(':') >= 2 :
                                 obj_attr_list["check_ssh"] = "true"                                
                                 obj_attr_list["transfer_files"] = "true"
 
                                 if _role_tmp.count(':') == 2 :                                                  
                                     obj_attr_list["imageid1"], obj_attr_list["login"], obj_attr_list["prepare_workload"] = _role_tmp.split(':')
+                                    obj_attr_list["run_generic_scripts"] = "true"
 
                                 if _role_tmp.count(':') == 3 : 
                                     obj_attr_list["imageid1"], obj_attr_list["login"], obj_attr_list["prepare_workload"], x = _role_tmp.split(':')
                                     obj_attr_list["run_generic_scripts"] = "true"
 
+                                self.pre_populate_host_info(obj_attr_list)
+
                                 _build_maps = self.osci.get_object(obj_attr_list["cloud_name"],\
                                                                   "GLOBAL", False, "build", \
                                                                   False)
-                                                                
+
                                 _type2imgid = str2dic(_build_maps["type2imgid"])
                                 _imgid2types = str2dic(_build_maps["imgid2types"])
 
-                                obj_attr_list["prepare_image_name"] = _type2imgid[obj_attr_list["prepare_workload"]]
-                                obj_attr_list["prepare_workload_names"] = _imgid2types[obj_attr_list["prepare_image_name"]]
+                                if obj_attr_list["prepare_workload"] not in _type2imgid :
+                                    obj_attr_list["prepare_image_name"] = "cb_" + obj_attr_list["prepare_workload"]
+                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload"]                                    
+                                    _msg = "Could not find a corresponding image name to automatically "
+                                    _msg += " configure the AI type \"" + obj_attr_list["prepare_image_name"] + "\"."
+                                    cbwarn(_msg, True)
+                                else :
+                                    obj_attr_list["prepare_image_name"] = _type2imgid[obj_attr_list["prepare_workload"]]
+                                    obj_attr_list["prepare_workload_names"] = _imgid2types[obj_attr_list["prepare_image_name"]]
+
                                 if not obj_attr_list["prepare_workload_names"].count("nullworkload") :
                                     obj_attr_list["prepare_workload_names"] = "nullworkload+" + obj_attr_list["prepare_workload_names"]
                                     obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload_names"].replace('+',',')
@@ -1643,19 +1655,19 @@ class BaseObjectOperations :
                     True
 
             elif transaction == "schedule" :
-               '''
-               We don't lock here because pre_attach_vm needs to be serialized
-               during the scheduling process and has already taken the lock.
-               '''
-               _scheduled_vms = self.osci.update_object_attribute(_cloud_name, "VMC", obj_attr_list["vmc"], False, "scheduled_vms", 1, counter = True, lock = False)
-               cbdebug("Increased count for " + obj_attr_list["vmc"] + " VM " + obj_attr_list["name"] + " up to: " + str(_scheduled_vms))
+                '''
+                We don't lock here because pre_attach_vm needs to be serialized
+                during the scheduling process and has already taken the lock.
+                '''
+                _scheduled_vms = self.osci.update_object_attribute(_cloud_name, "VMC", obj_attr_list["vmc"], False, "scheduled_vms", 1, counter = True, lock = False)
+                cbdebug("Increased count for " + obj_attr_list["vmc"] + " VM " + obj_attr_list["name"] + " up to: " + str(_scheduled_vms))
 
             elif transaction == "deschedule" :
-               _vmc_lock = self.osci.acquire_lock(_cloud_name, "VMC", "vmc_placement", "vmc_placement", 1)
-               assert(_vmc_lock)
-               _scheduled_vms = self.osci.update_object_attribute(_cloud_name, "VMC", obj_attr_list["vmc"], False, "scheduled_vms", -1, counter = True, lock = False)
-               cbdebug("Dropped count for " + obj_attr_list["vmc"] + " VM " + obj_attr_list["name"] + " down to: " + str(_scheduled_vms))
-               self.osci.release_lock(_cloud_name, "VMC", "vmc_placement", _vmc_lock)
+                _vmc_lock = self.osci.acquire_lock(_cloud_name, "VMC", "vmc_placement", "vmc_placement", 1)
+                assert(_vmc_lock)
+                _scheduled_vms = self.osci.update_object_attribute(_cloud_name, "VMC", obj_attr_list["vmc"], False, "scheduled_vms", -1, counter = True, lock = False)
+                cbdebug("Dropped count for " + obj_attr_list["vmc"] + " VM " + obj_attr_list["name"] + " down to: " + str(_scheduled_vms))
+                self.osci.release_lock(_cloud_name, "VMC", "vmc_placement", _vmc_lock)
 
             elif transaction == "migrate" :
                 vmc = obj_attr_list["destination_vmc"]
