@@ -22,7 +22,7 @@ unixbench-install = git
 git-configure = gcc -v
 git-configure = git --version
 perl-configure = perl -v -e 'require Time::HiRes'
-unixbench-configure = ls -la ~/byte-unixbench/UnixBench/Run
+unixbench-configure = ls -la /home/REPLACE_USERNAME/byte-unixbench/UnixBench/Run
 ### END - Tests ###
 
 ### START - Dependency versions ###
