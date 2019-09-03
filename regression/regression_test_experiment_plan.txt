@@ -370,9 +370,9 @@ echo ################################################################## [TEST] 9
 imgdelete
 echo ################################################################### [TEST] 93: END imgdelete ###################################################################
 echo 
-echo ########################################################### [TEST] 94: START cldattach sim TESTCLOUD ###########################################################
-cldattach sim TESTCLOUD
-echo ############################################################ [TEST] 94: END cldattach sim TESTCLOUD ############################################################
+echo ############################################################# [TEST] 94: START cldattach sim MYSIM #############################################################
+cldattach sim MYSIM
+echo ############################################################## [TEST] 94: END cldattach sim MYSIM ##############################################################
 echo 
 echo ################################################################## [TEST] 95: START cldattach ##################################################################
 cldattach
@@ -730,9 +730,9 @@ echo #################################################################### [TEST]
 echo
 echo ##################################################################### [TEST] 183: END echo #####################################################################
 echo 
-echo ############################################################ [TEST] 184: START shell TESTCLOUD date ############################################################
-shell TESTCLOUD date
-echo ############################################################# [TEST] 184: END shell TESTCLOUD date #############################################################
+echo ############################################################## [TEST] 184: START shell MYSIM date ##############################################################
+shell MYSIM date
+echo ############################################################### [TEST] 184: END shell MYSIM date ###############################################################
 echo 
 echo ################################################################## [TEST] 185: START cldlist ###################################################################
 cldlist
@@ -740,963 +740,963 @@ clddefault none
 clddefault
 echo ################################################################### [TEST] 185: END cldlist ####################################################################
 echo 
-echo ######################################################### [TEST] 186: START roleshow TESTCLOUD tinyvm ##########################################################
-roleshow TESTCLOUD tinyvm
-echo ########################################################## [TEST] 186: END roleshow TESTCLOUD tinyvm ###########################################################
-echo 
-echo ###################################################### [TEST] 187: START typeshow TESTCLOUD ibm_daytrader ######################################################
-typeshow TESTCLOUD ibm_daytrader
-echo ####################################################### [TEST] 187: END typeshow TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ####################################################### [TEST] 188: START patternshow TESTCLOUD simplehd #######################################################
-patternshow TESTCLOUD simplehd
-echo ######################################################## [TEST] 188: END patternshow TESTCLOUD simplehd ########################################################
-echo 
-echo ############################################################# [TEST] 189: START viewlist TESTCLOUD #############################################################
-viewlist TESTCLOUD
-echo ############################################################## [TEST] 189: END viewlist TESTCLOUD ##############################################################
-echo 
-echo ########################################################### [TEST] 190: START cldshow TESTCLOUD all ############################################################
-cldshow TESTCLOUD all
-echo ############################################################ [TEST] 190: END cldshow TESTCLOUD all #############################################################
-echo 
-echo ############################################# [TEST] 191: START cldalter TESTCLOUD time experiment_id=REGRESSION_A #############################################
-cldalter TESTCLOUD time experiment_id=REGRESSION_A
-echo ############################################## [TEST] 191: END cldalter TESTCLOUD time experiment_id=REGRESSION_A ##############################################
-echo 
-echo ######################################################## [TEST] 192: START expid TESTCLOUD REGRESSION_B ########################################################
-expid TESTCLOUD REGRESSION_B
-echo ######################################################### [TEST] 192: END expid TESTCLOUD REGRESSION_B #########################################################
-echo 
-echo ############################################################## [TEST] 193: START stats TESTCLOUD ###############################################################
-stats TESTCLOUD
-echo ############################################################### [TEST] 193: END stats TESTCLOUD ################################################################
-echo 
-echo ########################################################### [TEST] 194: START waitfor TESTCLOUD 10s ############################################################
-waitfor TESTCLOUD 10s
-echo ############################################################ [TEST] 194: END waitfor TESTCLOUD 10s #############################################################
-echo 
-echo ####################################################### [TEST] 195: START vmcattach TESTCLOUD simzone_a ########################################################
-vmcattach TESTCLOUD simzone_a
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_a
-stats TESTCLOUD
-echo ######################################################## [TEST] 195: END vmcattach TESTCLOUD simzone_a #########################################################
-echo 
-echo ####################################################### [TEST] 196: START vmccleanup TESTCLOUD simzone_a #######################################################
-vmccleanup TESTCLOUD simzone_a
-echo ######################################################## [TEST] 196: END vmccleanup TESTCLOUD simzone_a ########################################################
-echo 
-echo #################################################### [TEST] 197: START vmcattach TESTCLOUD simzone_b async #####################################################
-vmcattach TESTCLOUD simzone_b async
-waitfor TESTCLOUD 16s
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_b update_attempts,update_frequency
-stats TESTCLOUD
-echo ##################################################### [TEST] 197: END vmcattach TESTCLOUD simzone_b async ######################################################
-echo 
-echo #################################### [TEST] 198: START vmcattach TESTCLOUD simzone_c update_attempts=78,update_frequency=3 #####################################
-vmcattach TESTCLOUD simzone_c update_attempts=78,update_frequency=3
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
-stats TESTCLOUD
-echo ##################################### [TEST] 198: END vmcattach TESTCLOUD simzone_c update_attempts=78,update_frequency=3 ######################################
-echo 
-echo ################################# [TEST] 199: START vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async #################################
-vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async
-waitfor TESTCLOUD 16s
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_d update_attempts,update_frequency
-stats TESTCLOUD
-echo ################################## [TEST] 199: END vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async ##################################
-echo 
-echo ####################################################### [TEST] 200: START vmcdetach TESTCLOUD simzone_d ########################################################
-vmcdetach TESTCLOUD simzone_d
-vmcdetach TESTCLOUD simzone_c
-vmcdetach TESTCLOUD simzone_b
-vmclist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################## [TEST] 200: END vmcdetach TESTCLOUD simzone_d #########################################################
-echo 
-echo #################################################### [TEST] 201: START vmcdetach TESTCLOUD simzone_a async #####################################################
-vmcdetach TESTCLOUD simzone_a async
-waitfor TESTCLOUD 16s
-vmclist TESTCLOUD
-stats TESTCLOUD
-echo ##################################################### [TEST] 201: END vmcdetach TESTCLOUD simzone_a async ######################################################
-echo 
-echo ########################################################## [TEST] 202: START vmcattach TESTCLOUD all ###########################################################
-vmcattach TESTCLOUD all
-vmclist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 202: END vmcattach TESTCLOUD all ############################################################
-echo 
-echo ########################################################## [TEST] 203: START vmcattach TESTCLOUD all ###########################################################
-vmcattach TESTCLOUD all
-vmclist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 203: END vmcattach TESTCLOUD all ############################################################
-echo 
-echo ####################################################### [TEST] 204: START vmcdetach TESTCLOUD simzone_a ########################################################
-vmcdetach TESTCLOUD simzone_a
-vmclist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################## [TEST] 204: END vmcdetach TESTCLOUD simzone_a #########################################################
-echo 
-echo ########################################################## [TEST] 205: START vmcdetach TESTCLOUD all ###########################################################
-vmcdetach TESTCLOUD all
-vmclist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 205: END vmcdetach TESTCLOUD all ############################################################
-echo 
-echo ###################################### [TEST] 206: START vmcattach TESTCLOUD update_attempts=312,update_frequency=12 all #######################################
-vmcattach TESTCLOUD update_attempts=312,update_frequency=12 all
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
-stats TESTCLOUD
-echo ####################################### [TEST] 206: END vmcattach TESTCLOUD update_attempts=312,update_frequency=12 all ########################################
-echo 
-echo ####################################################### [TEST] 207: START vmcdetach TESTCLOUD all async ########################################################
-vmcdetach TESTCLOUD all async
-waitfor TESTCLOUD 20s
-vmclist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################## [TEST] 207: END vmcdetach TESTCLOUD all async #########################################################
-echo 
-echo ####################################################### [TEST] 208: START vmcattach TESTCLOUD all async ########################################################
-vmcattach TESTCLOUD all async
-waitfor TESTCLOUD 30s
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
-stats TESTCLOUD
-echo ######################################################## [TEST] 208: END vmcattach TESTCLOUD all async #########################################################
-echo 
-echo ############################################ [TEST] 209: START vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE #############################################
-vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE
-vmcshow TESTCLOUD simzone_a replication_vmcs
-echo ############################################# [TEST] 209: END vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE ##############################################
-echo 
-echo ############################################################# [TEST] 210: START hostlist TESTCLOUD #############################################################
-hostlist TESTCLOUD
-echo ############################################################## [TEST] 210: END hostlist TESTCLOUD ##############################################################
-echo 
-echo ###################################################### [TEST] 211: START hostshow TESTCLOUD simhosta3 all ######################################################
-hostshow TESTCLOUD simhosta3 all
-echo ####################################################### [TEST] 211: END hostshow TESTCLOUD simhosta3 all #######################################################
-echo 
-echo #################################################### [TEST] 212: START hostfail TESTCLOUD simhostc2 stonith ####################################################
-hostfail TESTCLOUD simhostc2 stonith
-echo ##################################################### [TEST] 212: END hostfail TESTCLOUD simhostc2 stonith #####################################################
-echo 
-echo ################################################### [TEST] 213: START hostrepair TESTCLOUD simhostc2 stonith ###################################################
-hostrepair TESTCLOUD simhostc2 stonith
-echo #################################################### [TEST] 213: END hostrepair TESTCLOUD simhostc2 stonith ####################################################
-echo 
-echo ############################################################# [TEST] 214: START poollist TESTCLOUD #############################################################
-poollist TESTCLOUD
-echo ############################################################## [TEST] 214: END poollist TESTCLOUD ##############################################################
-echo 
-echo ###################################################### [TEST] 215: START viewshow TESTCLOUD VMC pool sut #######################################################
-viewshow TESTCLOUD VMC pool sut
-echo ####################################################### [TEST] 215: END viewshow TESTCLOUD VMC pool sut ########################################################
-echo 
-echo ######################################################### [TEST] 216: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_1 vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ########################################################## [TEST] 216: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ############################################################## [TEST] 217: START vmlist TESTCLOUD ##############################################################
-vmlist TESTCLOUD
-echo ############################################################### [TEST] 217: END vmlist TESTCLOUD ###############################################################
-echo 
-echo ######################################################### [TEST] 218: START vmshow TESTCLOUD vm_1 all ##########################################################
-vmshow TESTCLOUD vm_1 all
-echo ########################################################## [TEST] 218: END vmshow TESTCLOUD vm_1 all ###########################################################
-echo 
-echo ######################################################## [TEST] 219: START vmattach TESTCLOUD tinyvm lg ########################################################
-vmattach TESTCLOUD tinyvm lg
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_2 vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ######################################################### [TEST] 219: END vmattach TESTCLOUD tinyvm lg #########################################################
-echo 
-echo #################################################### [TEST] 220: START vmattach TESTCLOUD tinyvm simhostb1 #####################################################
-vmattach TESTCLOUD tinyvm simhostb1
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_3 vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ##################################################### [TEST] 220: END vmattach TESTCLOUD tinyvm simhostb1 ######################################################
-echo 
-echo ################################################## [TEST] 221: START vmattach TESTCLOUD db2 auto a:b,x:y,r:2 ###################################################
-vmattach TESTCLOUD db2 auto a:b,x:y,r:2
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_4 vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ################################################### [TEST] 221: END vmattach TESTCLOUD db2 auto a:b,x:y,r:2 ####################################################
-echo 
-echo ################################# [TEST] 222: START vmattach TESTCLOUD netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT #################################
-vmattach TESTCLOUD netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_5 vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ################################## [TEST] 222: END vmattach TESTCLOUD netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT ##################################
-echo 
-echo ########################################################## [TEST] 223: START vmcapture TESTCLOUD vm_2 ##########################################################
-vmcapture TESTCLOUD vm_2
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 223: END vmcapture TESTCLOUD vm_2 ###########################################################
-echo 
-echo ###################################################### [TEST] 224: START vmattach TESTCLOUD tinyvm async #######################################################
-vmattach TESTCLOUD tinyvm async
-waitfor TESTCLOUD 1s
-vmlist TESTCLOUD pending
-waitfor TESTCLOUD 16s
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ####################################################### [TEST] 224: END vmattach TESTCLOUD tinyvm async ########################################################
-echo 
-echo ##################################################### [TEST] 225: START vmattach TESTCLOUD tinyvm async=2 ######################################################
-vmattach TESTCLOUD tinyvm async=2
-waitfor TESTCLOUD 1s
-vmlist TESTCLOUD pending
-waituntil TESTCLOUD VM ARRIVED=8 increasing 1
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ###################################################### [TEST] 225: END vmattach TESTCLOUD tinyvm async=2 #######################################################
-echo 
-echo ################################################## [TEST] 226: START rolealter TESTCLOUD db2 size=platinum64 ###################################################
-rolealter TESTCLOUD db2 size=platinum64
-echo ################################################### [TEST] 226: END rolealter TESTCLOUD db2 size=platinum64 ####################################################
-echo 
-echo ################################################ [TEST] 227: START vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async ################################################
-vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async
-waitfor TESTCLOUD 1s
-vmlist TESTCLOUD pending
-waitfor TESTCLOUD 16s
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ################################################# [TEST] 227: END vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async #################################################
-echo 
-echo ########################################## [TEST] 228: START vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async ##########################################
-vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async
-waitfor TESTCLOUD 1s
-vmlist TESTCLOUD pending
-waitfor TESTCLOUD 16s
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ########################################### [TEST] 228: END vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async ###########################################
-echo 
-echo ################################## [TEST] 229: START vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async ###################################
-vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async
-waitfor TESTCLOUD 16s
-vmlist TESTCLOUD
-vmshow TESTCLOUD vm_11 vmc_name,vmc_pool,host_name,meta_tags,size
-stats TESTCLOUD
-echo ################################### [TEST] 229: END vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async ####################################
-echo 
-echo ################################# [TEST] 230: START vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async #################################
-vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async
-waitfor TESTCLOUD 16s
-msgpub TESTCLOUD VM staging vm_12;continue;something
-waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ################################## [TEST] 230: END vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async ##################################
-echo 
-echo ########################################### [TEST] 231: START shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution ############################################
-shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution
-cldalter TESTCLOUD vm_defaults execute_script_name=/home/cbfrgsc/repos/cloudbench//regression/scripts/execute_on_staging.sh
-vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async
-waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
-shell TESTCLOUD ls /tmp/cb*_was_used_on_execution
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ############################################ [TEST] 231: END shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution #############################################
-echo 
-echo ######################### [TEST] 232: START vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async #########################
-vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async
-waitfor TESTCLOUD 16s
-msgpub TESTCLOUD VM starting 11111111-1111-1111-1111-111111111111 has started
-waitfor TESTCLOUD 16s
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################## [TEST] 232: END vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async ##########################
-echo 
-echo ######################################################### [TEST] 233: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 233: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 234: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 234: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 235: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 235: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 236: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 236: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 237: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 237: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 238: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 238: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 239: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 239: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 240: START vmattach TESTCLOUD tinyvm ##########################################################
-vmattach TESTCLOUD tinyvm
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 240: END vmattach TESTCLOUD tinyvm ###########################################################
-echo 
-echo ######################################################### [TEST] 241: START vmlist TESTCLOUD finished ##########################################################
-vmlist TESTCLOUD finished
-echo ########################################################## [TEST] 241: END vmlist TESTCLOUD finished ###########################################################
-echo 
-echo ########################################################## [TEST] 242: START vmlist TESTCLOUD failed  ##########################################################
-vmlist TESTCLOUD failed 
-echo ########################################################### [TEST] 242: END vmlist TESTCLOUD failed  ###########################################################
-echo 
-echo ############################################################ [TEST] 243: START stateshow TESTCLOUD #############################################################
-stateshow TESTCLOUD
-echo ############################################################# [TEST] 243: END stateshow TESTCLOUD ##############################################################
-echo 
-echo ##################################################### [TEST] 244: START vmrunstate TESTCLOUD vm_3 suspend ######################################################
-vmrunstate TESTCLOUD vm_3 suspend
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ###################################################### [TEST] 244: END vmrunstate TESTCLOUD vm_3 suspend #######################################################
-echo 
-echo ##################################################### [TEST] 245: START vmrunstate TESTCLOUD vm_3 attached #####################################################
-vmrunstate TESTCLOUD vm_3 attached
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ###################################################### [TEST] 245: END vmrunstate TESTCLOUD vm_3 attached ######################################################
-echo 
-echo ########################################################### [TEST] 246: START vmfail TESTCLOUD vm_3 ############################################################
-vmfail TESTCLOUD vm_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ############################################################ [TEST] 246: END vmfail TESTCLOUD vm_3 #############################################################
-echo 
-echo ########################################################## [TEST] 247: START vmrepair TESTCLOUD vm_3 ###########################################################
-vmrepair TESTCLOUD vm_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 247: END vmrepair TESTCLOUD vm_3 ############################################################
-echo 
-echo ########################################################### [TEST] 248: START vmsave TESTCLOUD vm_3 ############################################################
-vmsave TESTCLOUD vm_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ############################################################ [TEST] 248: END vmsave TESTCLOUD vm_3 #############################################################
-echo 
-echo ########################################################## [TEST] 249: START vmrestore TESTCLOUD vm_3 ##########################################################
-vmrestore TESTCLOUD vm_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 249: END vmrestore TESTCLOUD vm_3 ###########################################################
-echo 
-echo ########################################################## [TEST] 250: START vmdetach TESTCLOUD vm_4 ###########################################################
-vmdetach TESTCLOUD vm_4
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 250: END vmdetach TESTCLOUD vm_4 ############################################################
-echo 
-echo ####################################################### [TEST] 251: START vmdetach TESTCLOUD vm_5 async ########################################################
-vmdetach TESTCLOUD vm_5 async
-waitfor TESTCLOUD 10s
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################## [TEST] 251: END vmdetach TESTCLOUD vm_5 async #########################################################
-echo 
-echo ######################################################### [TEST] 252: START vmdetach TESTCLOUD oldest ##########################################################
-vmdetach TESTCLOUD oldest
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 252: END vmdetach TESTCLOUD oldest ###########################################################
-echo 
-echo ######################################################## [TEST] 253: START vmdetach TESTCLOUD youngest #########################################################
-vmdetach TESTCLOUD youngest
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################### [TEST] 253: END vmdetach TESTCLOUD youngest ##########################################################
-echo 
-echo ######################################################### [TEST] 254: START vmdetach TESTCLOUD random ##########################################################
-vmdetach TESTCLOUD random
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 254: END vmdetach TESTCLOUD random ###########################################################
-echo 
-echo ########################################################### [TEST] 255: START vmdetach TESTCLOUD all ###########################################################
-vmdetach TESTCLOUD all
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ############################################################ [TEST] 255: END vmdetach TESTCLOUD all ############################################################
-echo 
-echo ######################################################### [TEST] 256: START vmattach TESTCLOUD norole ##########################################################
-vmattach TESTCLOUD norole
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 256: END vmattach TESTCLOUD norole ###########################################################
-echo 
-echo ######################################################## [TEST] 257: START vmattach TESTCLOUD willfail #########################################################
-vmattach TESTCLOUD willfail
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################### [TEST] 257: END vmattach TESTCLOUD willfail ##########################################################
-echo 
-echo ##################################################### [TEST] 258: START vmattach TESTCLOUD willfail async ######################################################
-vmattach TESTCLOUD willfail async
-waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ###################################################### [TEST] 258: END vmattach TESTCLOUD willfail async #######################################################
-echo 
-echo ######################################################### [TEST] 259: START vmlist TESTCLOUD finished ##########################################################
-vmlist TESTCLOUD finished
-echo ########################################################## [TEST] 259: END vmlist TESTCLOUD finished ###########################################################
-echo 
-echo ########################################################## [TEST] 260: START vmlist TESTCLOUD failed  ##########################################################
-vmlist TESTCLOUD failed 
-echo ########################################################### [TEST] 260: END vmlist TESTCLOUD failed  ###########################################################
-echo 
-echo ###################################################### [TEST] 261: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ####################################################### [TEST] 261: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ############################################################## [TEST] 262: START ailist TESTCLOUD ##############################################################
-ailist TESTCLOUD
-echo ############################################################### [TEST] 262: END ailist TESTCLOUD ###############################################################
-echo 
-echo ######################################################### [TEST] 263: START aishow TESTCLOUD ai_1 all ##########################################################
-aishow TESTCLOUD ai_1 all
-echo ########################################################## [TEST] 263: END aishow TESTCLOUD ai_1 all ###########################################################
-echo 
-echo #################################################### [TEST] 264: START aialter TESTCLOUD ai_1 mode=scalable ####################################################
-aialter TESTCLOUD ai_1 mode=scalable
-aishow TESTCLOUD ai_1 mode
-echo ##################################################### [TEST] 264: END aialter TESTCLOUD ai_1 mode=scalable #####################################################
-echo 
-echo ###################################################### [TEST] 265: START aiattach TESTCLOUD hadoop async #######################################################
-aiattach TESTCLOUD hadoop async
-waitfor TESTCLOUD 30s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_2 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ####################################################### [TEST] 265: END aiattach TESTCLOUD hadoop async ########################################################
-echo 
-echo ########################## [TEST] 266: START aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ###########################
-aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ########################### [TEST] 266: END aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ############################
-echo 
-echo ##################################################### [TEST] 267: START airunstate TESTCLOUD ai_3 suspend ######################################################
-airunstate TESTCLOUD ai_3 suspend
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ###################################################### [TEST] 267: END airunstate TESTCLOUD ai_3 suspend #######################################################
-echo 
-echo ##################################################### [TEST] 268: START airunstate TESTCLOUD ai_3 attached #####################################################
-airunstate TESTCLOUD ai_3 attached
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ###################################################### [TEST] 268: END airunstate TESTCLOUD ai_3 attached ######################################################
-echo 
-echo ########################################################### [TEST] 269: START aifail TESTCLOUD ai_3 ############################################################
-aifail TESTCLOUD ai_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ############################################################ [TEST] 269: END aifail TESTCLOUD ai_3 #############################################################
-echo 
-echo ########################################################## [TEST] 270: START airepair TESTCLOUD ai_3 ###########################################################
-airepair TESTCLOUD ai_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 270: END airepair TESTCLOUD ai_3 ############################################################
-echo 
-echo ########################################################### [TEST] 271: START aisave TESTCLOUD ai_3 ############################################################
-aisave TESTCLOUD ai_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ############################################################ [TEST] 271: END aisave TESTCLOUD ai_3 #############################################################
-echo 
-echo ########################################################## [TEST] 272: START airestore TESTCLOUD ai_3 ##########################################################
-airestore TESTCLOUD ai_3
-stateshow TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 272: END airestore TESTCLOUD ai_3 ###########################################################
-echo 
-echo ###################### [TEST] 273: START aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  #######################
-aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
-waitfor TESTCLOUD 18s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_4 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ####################### [TEST] 273: END aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ########################
-echo 
-echo ################################ [TEST] 274: START aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64 ################################
-aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_5 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ################################# [TEST] 274: END aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64 #################################
-echo 
-echo ####################### [TEST] 275: START aiattach TESTCLOUD hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async ########################
-aiattach TESTCLOUD hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
-waitfor TESTCLOUD 18s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_6 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ######################## [TEST] 275: END aiattach TESTCLOUD hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async #########################
-echo 
-echo ####################################################### [TEST] 276: START airesize TESTCLOUD ai_1 was +1 #######################################################
-airesize TESTCLOUD ai_1 was +1
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ######################################################## [TEST] 276: END airesize TESTCLOUD ai_1 was +1 ########################################################
-echo 
-echo ####################################################### [TEST] 277: START airesize TESTCLOUD ai_1 was -1 #######################################################
-airesize TESTCLOUD ai_1 was -1
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD
-echo ######################################################## [TEST] 277: END airesize TESTCLOUD ai_1 was -1 ########################################################
-echo 
-echo ###################################################### [TEST] 278: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ####################################################### [TEST] 278: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ######################################################### [TEST] 279: START vmcapture TESTCLOUD vm_29 ##########################################################
-vmcapture TESTCLOUD vm_29
-stats TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 279: END vmcapture TESTCLOUD vm_29 ###########################################################
-echo 
-echo ######################################################## [TEST] 280: START vmcapture TESTCLOUD youngest ########################################################
-vmcapture TESTCLOUD youngest
-stats TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################### [TEST] 280: END vmcapture TESTCLOUD youngest #########################################################
-echo 
-echo ###################################################### [TEST] 281: START vmcapture TESTCLOUD vm_41 async #######################################################
-vmcapture TESTCLOUD vm_41 async
-waitfor TESTCLOUD 25s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ####################################################### [TEST] 281: END vmcapture TESTCLOUD vm_41 async ########################################################
-echo 
-echo ###################################################### [TEST] 282: START vmcapture TESTCLOUD oldest async ######################################################
-vmcapture TESTCLOUD oldest async
-waitfor TESTCLOUD 25s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ####################################################### [TEST] 282: END vmcapture TESTCLOUD oldest async #######################################################
-echo 
-echo ############################################ [TEST] 283: START aiattach TESTCLOUD ibm_daytrader load_balancer=true #############################################
-aiattach TESTCLOUD ibm_daytrader load_balancer=true
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_8 load_balancer,sut
-stats TESTCLOUD
-echo ############################################# [TEST] 283: END aiattach TESTCLOUD ibm_daytrader load_balancer=true ##############################################
-echo 
-echo ###################################################### [TEST] 284: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_9 load_balancer,sut
-stats TESTCLOUD
-echo ####################################################### [TEST] 284: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ###################################################### [TEST] 285: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_10 load_balancer,sut
-stats TESTCLOUD
-echo ####################################################### [TEST] 285: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ###################################################### [TEST] 286: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_11 load_balancer,sut
-stats TESTCLOUD
-echo ####################################################### [TEST] 286: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ###################################################### [TEST] 287: START typeshow TESTCLOUD ibm_daytrader ######################################################
-typeshow TESTCLOUD ibm_daytrader
-echo ####################################################### [TEST] 287: END typeshow TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ############################################ [TEST] 288: START typealter TESTCLOUD ibm_daytrader load_balancer=true ############################################
-typealter TESTCLOUD ibm_daytrader load_balancer=true
-typeshow TESTCLOUD ibm_daytrader
-echo ############################################# [TEST] 288: END typealter TESTCLOUD ibm_daytrader load_balancer=true #############################################
-echo 
-echo ###################################################### [TEST] 289: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_12 load_balancer,sut
-stats TESTCLOUD
-echo ####################################################### [TEST] 289: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ###################################################### [TEST] 290: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_13 load_balancer,sut
-stats TESTCLOUD
-echo ####################################################### [TEST] 290: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo #################################################### [TEST] 291: START aiattach TESTCLOUD netperf async=4:2 ####################################################
-aiattach TESTCLOUD netperf async=4:2
-echo ##################################################### [TEST] 291: END aiattach TESTCLOUD netperf async=4:2 #####################################################
-echo 
-echo ############################################### [TEST] 292: START waituntil TESTCLOUD AI ARRIVED=17 increasing 2 ###############################################
-waituntil TESTCLOUD AI ARRIVED=17 increasing 2
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ################################################ [TEST] 292: END waituntil TESTCLOUD AI ARRIVED=17 increasing 2 ################################################
-echo 
-echo ###################################################### [TEST] 293: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ####################################################### [TEST] 293: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ################################################### [TEST] 294: START aiattach TESTCLOUD ibmderby_tradelite ####################################################
-aiattach TESTCLOUD ibmderby_tradelite
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo #################################################### [TEST] 294: END aiattach TESTCLOUD ibmderby_tradelite #####################################################
-echo 
-echo ########################################################## [TEST] 295: START aiattach TESTCLOUD hpcc ###########################################################
-aiattach TESTCLOUD hpcc
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 295: END aiattach TESTCLOUD hpcc ############################################################
-echo 
-echo ######################################################## [TEST] 296: START aiattach TESTCLOUD coremark #########################################################
-aiattach TESTCLOUD coremark
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################### [TEST] 296: END aiattach TESTCLOUD coremark ##########################################################
-echo 
-echo ######################################################## [TEST] 297: START aiattach TESTCLOUD filebench ########################################################
-aiattach TESTCLOUD filebench
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################### [TEST] 297: END aiattach TESTCLOUD filebench #########################################################
-echo 
-echo ########################################################## [TEST] 298: START aidetach TESTCLOUD ai_12 ##########################################################
-aidetach TESTCLOUD ai_12
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################### [TEST] 298: END aidetach TESTCLOUD ai_12 ###########################################################
-echo 
-echo ####################################################### [TEST] 299: START aidetach TESTCLOUD ai_13 async #######################################################
-aidetach TESTCLOUD ai_13 async
-waituntil TESTCLOUD AI RESERVATIONS=16 decreasing 5
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################## [TEST] 299: END aidetach TESTCLOUD ai_13 async ########################################################
-echo 
-echo ######################################################### [TEST] 300: START aidetach TESTCLOUD oldest ##########################################################
-aidetach TESTCLOUD oldest
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 300: END aidetach TESTCLOUD oldest ###########################################################
-echo 
-echo ######################################################## [TEST] 301: START aidetach TESTCLOUD youngest #########################################################
-aidetach TESTCLOUD youngest
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################### [TEST] 301: END aidetach TESTCLOUD youngest ##########################################################
-echo 
-echo ###################################################### [TEST] 302: START aiattach TESTCLOUD ibm_daytrader ######################################################
-aiattach TESTCLOUD ibm_daytrader
-aiattach TESTCLOUD netperf
-aiattach TESTCLOUD hpcc
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ####################################################### [TEST] 302: END aiattach TESTCLOUD ibm_daytrader #######################################################
-echo 
-echo ######################################################### [TEST] 303: START aicapture TESTCLOUD ai_10 ##########################################################
-aicapture TESTCLOUD ai_10
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 303: END aicapture TESTCLOUD ai_10 ###########################################################
-echo 
-echo ######################################################### [TEST] 304: START aicapture TESTCLOUD oldest #########################################################
-aicapture TESTCLOUD oldest
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 304: END aicapture TESTCLOUD oldest ##########################################################
-echo 
-echo ##################################################### [TEST] 305: START aicapture TESTCLOUD youngest async #####################################################
-aicapture TESTCLOUD youngest async
-waituntil TESTCLOUD AI CAPTURING=0
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ###################################################### [TEST] 305: END aicapture TESTCLOUD youngest async ######################################################
-echo 
-echo ######################################################### [TEST] 306: START aidetach TESTCLOUD random ##########################################################
-aidetach TESTCLOUD random
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 306: END aidetach TESTCLOUD random ###########################################################
-echo 
-echo ########################### [TEST] 307: START aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async ############################
-aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async
-waitfor TESTCLOUD 40s
-msgpub TESTCLOUD VM staging ai_26;continue;something
-waituntil TESTCLOUD AI ARRIVING=0 decreasing 1
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ############################ [TEST] 307: END aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async #############################
-echo 
-echo ########################################### [TEST] 308: START shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution ############################################
-shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution
-cldalter TESTCLOUD ai_defaults execute_script_name=/home/cbfrgsc/repos/cloudbench//regression/scripts/execute_on_staging.sh
-aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted
-shell TESTCLOUD ls /tmp/cb*_was_used_on_execution
-waitfor TESTCLOUD 25s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ############################################ [TEST] 308: END shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution #############################################
-echo 
-echo ############################################### [TEST] 309: START aiattach TESTCLOUD hadoop save_on_attach=true ################################################
-aiattach TESTCLOUD hadoop save_on_attach=true
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-stateshow TESTCLOUD
-echo ################################################ [TEST] 309: END aiattach TESTCLOUD hadoop save_on_attach=true #################################################
-echo 
-echo ######################################################### [TEST] 310: START airestore TESTCLOUD ai_28 ##########################################################
-airestore TESTCLOUD ai_28
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-stateshow TESTCLOUD
-echo ########################################################## [TEST] 310: END airestore TESTCLOUD ai_28 ###########################################################
-echo 
-echo ######################################################### [TEST] 311: START aiattach TESTCLOUD notype ##########################################################
-aiattach TESTCLOUD notype
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 311: END aiattach TESTCLOUD notype ###########################################################
-echo 
-echo ########################################################### [TEST] 312: START aidetach TESTCLOUD all ###########################################################
-aidetach TESTCLOUD all
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ############################################################ [TEST] 312: END aidetach TESTCLOUD all ############################################################
-echo 
-echo ################################# [TEST] 313: START typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail ##################################
-typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail
-aiattach TESTCLOUD ibm_daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ################################## [TEST] 313: END typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail ###################################
-echo 
-echo ######################################################### [TEST] 314: START vmlist TESTCLOUD finished ##########################################################
-vmlist TESTCLOUD finished
-echo ########################################################## [TEST] 314: END vmlist TESTCLOUD finished ###########################################################
-echo 
-echo ########################################################## [TEST] 315: START vmlist TESTCLOUD failed  ##########################################################
-vmlist TESTCLOUD failed 
-echo ########################################################### [TEST] 315: END vmlist TESTCLOUD failed  ###########################################################
-echo 
-echo ################################################## [TEST] 316: START patternalter TESTCLOUD simplenw iait=10 ###################################################
-patternalter TESTCLOUD simplenw iait=10
-patternshow TESTCLOUD simplenw
-echo ################################################### [TEST] 316: END patternalter TESTCLOUD simplenw iait=10 ####################################################
-echo 
-echo ################################################# [TEST] 317: START aidrsattach TESTCLOUD simplenw lifetime=40 #################################################
-aidrsattach TESTCLOUD simplenw lifetime=40
-aidrslist TESTCLOUD
-aidrsshow TESTCLOUD aidrs_1 iait,lifetime,max_ais
-stats TESTCLOUD
-echo ################################################## [TEST] 317: END aidrsattach TESTCLOUD simplenw lifetime=40 ##################################################
-echo 
-echo ############################################################ [TEST] 318: START aidrslist TESTCLOUD #############################################################
-aidrslist TESTCLOUD
-echo ############################################################# [TEST] 318: END aidrslist TESTCLOUD ##############################################################
-echo 
-echo ###################################################### [TEST] 319: START aidrsshow TESTCLOUD aidrs_1 all #######################################################
-aidrsshow TESTCLOUD aidrs_1 all
-echo ####################################################### [TEST] 319: END aidrsshow TESTCLOUD aidrs_1 all ########################################################
-echo 
-echo ################################################## [TEST] 320: START aidrsalter TESTCLOUD aidrs_1 max_ais=20 ###################################################
-aidrsalter TESTCLOUD aidrs_1 max_ais=20
-echo ################################################### [TEST] 320: END aidrsalter TESTCLOUD aidrs_1 max_ais=20 ####################################################
-echo 
-echo ############################################### [TEST] 321: START waituntil TESTCLOUD AI ARRIVED=30 increasing 5 ###############################################
-waituntil TESTCLOUD AI ARRIVED=30 increasing 5
-aidrslist TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ################################################ [TEST] 321: END waituntil TESTCLOUD AI ARRIVED=30 increasing 5 ################################################
-echo 
-echo #################################################### [TEST] 322: START statealter TESTCLOUD aidrs_1 stopped ####################################################
-statealter TESTCLOUD aidrs_1 stopped
-echo ##################################################### [TEST] 322: END statealter TESTCLOUD aidrs_1 stopped #####################################################
-echo 
-echo ################################################### [TEST] 323: START waituntil TESTCLOUD AI =0 decreasing 1 ###################################################
-waituntil TESTCLOUD AI =0 decreasing 1
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo #################################################### [TEST] 323: END waituntil TESTCLOUD AI =0 decreasing 1 ####################################################
-echo 
-echo ####################################################### [TEST] 324: START aidrsdetach TESTCLOUD aidrs_1 ########################################################
-aidrsdetach TESTCLOUD aidrs_1
-aidrslist TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################## [TEST] 324: END aidrsdetach TESTCLOUD aidrs_1 #########################################################
-echo 
-echo ####################################################### [TEST] 325: START aidrsattach TESTCLOUD simplenw #######################################################
-aidrsattach TESTCLOUD simplenw
-aidrsalter TESTCLOUD aidrs_2 max_ais=5
-aidrsalter TESTCLOUD aidrs_2 iait=6
-aidrsshow TESTCLOUD aidrs_2 all
-aidrslist TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ######################################################## [TEST] 325: END aidrsattach TESTCLOUD simplenw ########################################################
-echo 
-echo ############################################################ [TEST] 326: START waitfor TESTCLOUD 1m ############################################################
-waitfor TESTCLOUD 1m
-aidrsshow TESTCLOUD aidrs_2 all
-aidrslist TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ############################################################# [TEST] 326: END waitfor TESTCLOUD 1m #############################################################
-echo 
-echo ######################################################### [TEST] 327: START aidrsdetach TESTCLOUD all ##########################################################
-aidrsdetach TESTCLOUD all
-aidetach TESTCLOUD all
-aidrslist TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-echo ########################################################## [TEST] 327: END aidrsdetach TESTCLOUD all ###########################################################
-echo 
-echo ########################################## [TEST] 328: START vmcattach TESTCLOUD simzone_source initial_hosts=source ###########################################
-vmcattach TESTCLOUD simzone_source initial_hosts=source
-hostlist TESTCLOUD
-vmcattach TESTCLOUD simzone_dest initial_hosts=dest
-hostlist TESTCLOUD
-echo ########################################### [TEST] 328: END vmcattach TESTCLOUD simzone_source initial_hosts=source ############################################
-echo 
-echo ################################################## [TEST] 329: START vmattach TESTCLOUD tinyvm simzone_source ##################################################
-vmattach TESTCLOUD tinyvm simzone_source
-stats TESTCLOUD
-vmlist TESTCLOUD
-echo ################################################### [TEST] 329: END vmattach TESTCLOUD tinyvm simzone_source ###################################################
-echo 
-echo ##################################################### [TEST] 330: START vmmigrate TESTCLOUD youngest dest ######################################################
-vmmigrate TESTCLOUD youngest dest
-stats TESTCLOUD
-vmlist TESTCLOUD
-echo ###################################################### [TEST] 330: END vmmigrate TESTCLOUD youngest dest #######################################################
-echo 
-echo ################################################# [TEST] 331: START vmmigrate TESTCLOUD youngest source async ##################################################
-vmmigrate TESTCLOUD youngest source async
-waitfor TESTCLOUD 10s
-stats TESTCLOUD
-vmlist TESTCLOUD
-echo ################################################## [TEST] 331: END vmmigrate TESTCLOUD youngest source async ###################################################
-echo 
-echo ##################################################### [TEST] 332: START vmprotect TESTCLOUD youngest dest ######################################################
-vmprotect TESTCLOUD youngest dest
-stats TESTCLOUD
-vmlist TESTCLOUD
-echo ###################################################### [TEST] 332: END vmprotect TESTCLOUD youngest dest #######################################################
-echo 
-echo ################################################# [TEST] 333: START vmprotect TESTCLOUD youngest source async ##################################################
-vmprotect TESTCLOUD youngest source async
-waitfor TESTCLOUD 10s
-stats TESTCLOUD
-vmlist TESTCLOUD
-echo ################################################## [TEST] 333: END vmprotect TESTCLOUD youngest source async ###################################################
+echo ########################################################### [TEST] 186: START roleshow MYSIM tinyvm ############################################################
+roleshow MYSIM tinyvm
+echo ############################################################ [TEST] 186: END roleshow MYSIM tinyvm #############################################################
+echo 
+echo ######################################################## [TEST] 187: START typeshow MYSIM ibm_daytrader ########################################################
+typeshow MYSIM ibm_daytrader
+echo ######################################################### [TEST] 187: END typeshow MYSIM ibm_daytrader #########################################################
+echo 
+echo ######################################################### [TEST] 188: START patternshow MYSIM simplehd #########################################################
+patternshow MYSIM simplehd
+echo ########################################################## [TEST] 188: END patternshow MYSIM simplehd ##########################################################
+echo 
+echo ############################################################### [TEST] 189: START viewlist MYSIM ###############################################################
+viewlist MYSIM
+echo ################################################################ [TEST] 189: END viewlist MYSIM ################################################################
+echo 
+echo ############################################################# [TEST] 190: START cldshow MYSIM all ##############################################################
+cldshow MYSIM all
+echo ############################################################## [TEST] 190: END cldshow MYSIM all ###############################################################
+echo 
+echo ############################################### [TEST] 191: START cldalter MYSIM time experiment_id=REGRESSION_A ###############################################
+cldalter MYSIM time experiment_id=REGRESSION_A
+echo ################################################ [TEST] 191: END cldalter MYSIM time experiment_id=REGRESSION_A ################################################
+echo 
+echo ########################################################## [TEST] 192: START expid MYSIM REGRESSION_B ##########################################################
+expid MYSIM REGRESSION_B
+echo ########################################################### [TEST] 192: END expid MYSIM REGRESSION_B ###########################################################
+echo 
+echo ################################################################ [TEST] 193: START stats MYSIM #################################################################
+stats MYSIM
+echo ################################################################# [TEST] 193: END stats MYSIM ##################################################################
+echo 
+echo ############################################################# [TEST] 194: START waitfor MYSIM 10s ##############################################################
+waitfor MYSIM 10s
+echo ############################################################## [TEST] 194: END waitfor MYSIM 10s ###############################################################
+echo 
+echo ######################################################### [TEST] 195: START vmcattach MYSIM simzone_a ##########################################################
+vmcattach MYSIM simzone_a
+vmclist MYSIM
+vmcshow MYSIM simzone_a
+stats MYSIM
+echo ########################################################## [TEST] 195: END vmcattach MYSIM simzone_a ###########################################################
+echo 
+echo ######################################################### [TEST] 196: START vmccleanup MYSIM simzone_a #########################################################
+vmccleanup MYSIM simzone_a
+echo ########################################################## [TEST] 196: END vmccleanup MYSIM simzone_a ##########################################################
+echo 
+echo ###################################################### [TEST] 197: START vmcattach MYSIM simzone_b async #######################################################
+vmcattach MYSIM simzone_b async
+waitfor MYSIM 16s
+vmclist MYSIM
+vmcshow MYSIM simzone_b update_attempts,update_frequency
+stats MYSIM
+echo ####################################################### [TEST] 197: END vmcattach MYSIM simzone_b async ########################################################
+echo 
+echo ###################################### [TEST] 198: START vmcattach MYSIM simzone_c update_attempts=78,update_frequency=3 #######################################
+vmcattach MYSIM simzone_c update_attempts=78,update_frequency=3
+vmclist MYSIM
+vmcshow MYSIM simzone_c update_attempts,update_frequency
+stats MYSIM
+echo ####################################### [TEST] 198: END vmcattach MYSIM simzone_c update_attempts=78,update_frequency=3 ########################################
+echo 
+echo ################################### [TEST] 199: START vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 async ###################################
+vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 async
+waitfor MYSIM 16s
+vmclist MYSIM
+vmcshow MYSIM simzone_d update_attempts,update_frequency
+stats MYSIM
+echo #################################### [TEST] 199: END vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 async ####################################
+echo 
+echo ######################################################### [TEST] 200: START vmcdetach MYSIM simzone_d ##########################################################
+vmcdetach MYSIM simzone_d
+vmcdetach MYSIM simzone_c
+vmcdetach MYSIM simzone_b
+vmclist MYSIM
+stats MYSIM
+echo ########################################################## [TEST] 200: END vmcdetach MYSIM simzone_d ###########################################################
+echo 
+echo ###################################################### [TEST] 201: START vmcdetach MYSIM simzone_a async #######################################################
+vmcdetach MYSIM simzone_a async
+waitfor MYSIM 16s
+vmclist MYSIM
+stats MYSIM
+echo ####################################################### [TEST] 201: END vmcdetach MYSIM simzone_a async ########################################################
+echo 
+echo ############################################################ [TEST] 202: START vmcattach MYSIM all #############################################################
+vmcattach MYSIM all
+vmclist MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 202: END vmcattach MYSIM all ##############################################################
+echo 
+echo ############################################################ [TEST] 203: START vmcattach MYSIM all #############################################################
+vmcattach MYSIM all
+vmclist MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 203: END vmcattach MYSIM all ##############################################################
+echo 
+echo ######################################################### [TEST] 204: START vmcdetach MYSIM simzone_a ##########################################################
+vmcdetach MYSIM simzone_a
+vmclist MYSIM
+stats MYSIM
+echo ########################################################## [TEST] 204: END vmcdetach MYSIM simzone_a ###########################################################
+echo 
+echo ############################################################ [TEST] 205: START vmcdetach MYSIM all #############################################################
+vmcdetach MYSIM all
+vmclist MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 205: END vmcdetach MYSIM all ##############################################################
+echo 
+echo ######################################## [TEST] 206: START vmcattach MYSIM update_attempts=312,update_frequency=12 all #########################################
+vmcattach MYSIM update_attempts=312,update_frequency=12 all
+vmclist MYSIM
+vmcshow MYSIM simzone_c update_attempts,update_frequency
+stats MYSIM
+echo ######################################### [TEST] 206: END vmcattach MYSIM update_attempts=312,update_frequency=12 all ##########################################
+echo 
+echo ######################################################### [TEST] 207: START vmcdetach MYSIM all async ##########################################################
+vmcdetach MYSIM all async
+waitfor MYSIM 20s
+vmclist MYSIM
+stats MYSIM
+echo ########################################################## [TEST] 207: END vmcdetach MYSIM all async ###########################################################
+echo 
+echo ######################################################### [TEST] 208: START vmcattach MYSIM all async ##########################################################
+vmcattach MYSIM all async
+waitfor MYSIM 30s
+vmclist MYSIM
+vmcshow MYSIM simzone_c update_attempts,update_frequency
+stats MYSIM
+echo ########################################################## [TEST] 208: END vmcattach MYSIM all async ###########################################################
+echo 
+echo ############################################## [TEST] 209: START vmcalter MYSIM simzone_a replication_vmcs=TESTE ###############################################
+vmcalter MYSIM simzone_a replication_vmcs=TESTE
+vmcshow MYSIM simzone_a replication_vmcs
+echo ############################################### [TEST] 209: END vmcalter MYSIM simzone_a replication_vmcs=TESTE ################################################
+echo 
+echo ############################################################### [TEST] 210: START hostlist MYSIM ###############################################################
+hostlist MYSIM
+echo ################################################################ [TEST] 210: END hostlist MYSIM ################################################################
+echo 
+echo ######################################################## [TEST] 211: START hostshow MYSIM simhosta3 all ########################################################
+hostshow MYSIM simhosta3 all
+echo ######################################################### [TEST] 211: END hostshow MYSIM simhosta3 all #########################################################
+echo 
+echo ###################################################### [TEST] 212: START hostfail MYSIM simhostc2 stonith ######################################################
+hostfail MYSIM simhostc2 stonith
+echo ####################################################### [TEST] 212: END hostfail MYSIM simhostc2 stonith #######################################################
+echo 
+echo ##################################################### [TEST] 213: START hostrepair MYSIM simhostc2 stonith #####################################################
+hostrepair MYSIM simhostc2 stonith
+echo ###################################################### [TEST] 213: END hostrepair MYSIM simhostc2 stonith ######################################################
+echo 
+echo ############################################################### [TEST] 214: START poollist MYSIM ###############################################################
+poollist MYSIM
+echo ################################################################ [TEST] 214: END poollist MYSIM ################################################################
+echo 
+echo ######################################################## [TEST] 215: START viewshow MYSIM VMC pool sut #########################################################
+viewshow MYSIM VMC pool sut
+echo ######################################################### [TEST] 215: END viewshow MYSIM VMC pool sut ##########################################################
+echo 
+echo ########################################################### [TEST] 216: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+vmshow MYSIM vm_1 vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo ############################################################ [TEST] 216: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ################################################################ [TEST] 217: START vmlist MYSIM ################################################################
+vmlist MYSIM
+echo ################################################################# [TEST] 217: END vmlist MYSIM #################################################################
+echo 
+echo ########################################################### [TEST] 218: START vmshow MYSIM vm_1 all ############################################################
+vmshow MYSIM vm_1 all
+echo ############################################################ [TEST] 218: END vmshow MYSIM vm_1 all #############################################################
+echo 
+echo ########################################################## [TEST] 219: START vmattach MYSIM tinyvm lg ##########################################################
+vmattach MYSIM tinyvm lg
+vmlist MYSIM
+vmshow MYSIM vm_2 vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo ########################################################### [TEST] 219: END vmattach MYSIM tinyvm lg ###########################################################
+echo 
+echo ###################################################### [TEST] 220: START vmattach MYSIM tinyvm simhostb1 #######################################################
+vmattach MYSIM tinyvm simhostb1
+vmlist MYSIM
+vmshow MYSIM vm_3 vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo ####################################################### [TEST] 220: END vmattach MYSIM tinyvm simhostb1 ########################################################
+echo 
+echo #################################################### [TEST] 221: START vmattach MYSIM db2 auto a:b,x:y,r:2 #####################################################
+vmattach MYSIM db2 auto a:b,x:y,r:2
+vmlist MYSIM
+vmshow MYSIM vm_4 vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo ##################################################### [TEST] 221: END vmattach MYSIM db2 auto a:b,x:y,r:2 ######################################################
+echo 
+echo ################################### [TEST] 222: START vmattach MYSIM netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT ###################################
+vmattach MYSIM netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT
+vmlist MYSIM
+vmshow MYSIM vm_5 vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo #################################### [TEST] 222: END vmattach MYSIM netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT ####################################
+echo 
+echo ############################################################ [TEST] 223: START vmcapture MYSIM vm_2 ############################################################
+vmcapture MYSIM vm_2
+vmlist MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 223: END vmcapture MYSIM vm_2 #############################################################
+echo 
+echo ######################################################## [TEST] 224: START vmattach MYSIM tinyvm async #########################################################
+vmattach MYSIM tinyvm async
+waitfor MYSIM 1s
+vmlist MYSIM pending
+waitfor MYSIM 16s
+vmlist MYSIM
+stats MYSIM
+echo ######################################################### [TEST] 224: END vmattach MYSIM tinyvm async ##########################################################
+echo 
+echo ####################################################### [TEST] 225: START vmattach MYSIM tinyvm async=2 ########################################################
+vmattach MYSIM tinyvm async=2
+waitfor MYSIM 1s
+vmlist MYSIM pending
+waituntil MYSIM VM ARRIVED=8 increasing 1
+vmlist MYSIM
+stats MYSIM
+echo ######################################################## [TEST] 225: END vmattach MYSIM tinyvm async=2 #########################################################
+echo 
+echo #################################################### [TEST] 226: START rolealter MYSIM db2 size=platinum64 #####################################################
+rolealter MYSIM db2 size=platinum64
+echo ##################################################### [TEST] 226: END rolealter MYSIM db2 size=platinum64 ######################################################
+echo 
+echo ################################################## [TEST] 227: START vmattach MYSIM db2 SUT A:B,X:Y,R:2 async ##################################################
+vmattach MYSIM db2 SUT A:B,X:Y,R:2 async
+waitfor MYSIM 1s
+vmlist MYSIM pending
+waitfor MYSIM 16s
+vmlist MYSIM
+vmshow MYSIM vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo ################################################### [TEST] 227: END vmattach MYSIM db2 SUT A:B,X:Y,R:2 async ###################################################
+echo 
+echo ############################################ [TEST] 228: START vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 async ############################################
+vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 async
+waitfor MYSIM 1s
+vmlist MYSIM pending
+waitfor MYSIM 16s
+vmlist MYSIM
+vmshow MYSIM vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo ############################################# [TEST] 228: END vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 async #############################################
+echo 
+echo #################################### [TEST] 229: START vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG async #####################################
+vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG async
+waitfor MYSIM 16s
+vmlist MYSIM
+vmshow MYSIM vm_11 vmc_name,vmc_pool,host_name,meta_tags,size
+stats MYSIM
+echo ##################################### [TEST] 229: END vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG async ######################################
+echo 
+echo ################################### [TEST] 230: START vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete async ###################################
+vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete async
+waitfor MYSIM 16s
+msgpub MYSIM VM staging vm_12;continue;something
+waituntil MYSIM VM ARRIVING=0 decreasing 1
+vmlist MYSIM
+stats MYSIM
+echo #################################### [TEST] 230: END vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete async ####################################
+echo 
+echo ############################################# [TEST] 231: START shell MYSIM rm -rf /tmp/cb*_was_used_on_execution ##############################################
+shell MYSIM rm -rf /tmp/cb*_was_used_on_execution
+cldalter MYSIM vm_defaults execute_script_name=~/repos/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
+vmattach MYSIM tinyvm auto empty iron32 execute_provision_complete async
+waituntil MYSIM VM ARRIVING=0 decreasing 1
+shell MYSIM ls /tmp/cb*_was_used_on_execution
+vmlist MYSIM
+stats MYSIM
+echo ############################################## [TEST] 231: END shell MYSIM rm -rf /tmp/cb*_was_used_on_execution ###############################################
+echo 
+echo ########################### [TEST] 232: START vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting async ###########################
+vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting async
+waitfor MYSIM 16s
+msgpub MYSIM VM starting 11111111-1111-1111-1111-111111111111 has started
+waitfor MYSIM 16s
+vmlist MYSIM
+stats MYSIM
+echo ############################ [TEST] 232: END vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting async ############################
+echo 
+echo ########################################################### [TEST] 233: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 233: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 234: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 234: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 235: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 235: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 236: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 236: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 237: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 237: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 238: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 238: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 239: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 239: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 240: START vmattach MYSIM tinyvm ############################################################
+vmattach MYSIM tinyvm
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 240: END vmattach MYSIM tinyvm #############################################################
+echo 
+echo ########################################################### [TEST] 241: START vmlist MYSIM finished ############################################################
+vmlist MYSIM finished
+echo ############################################################ [TEST] 241: END vmlist MYSIM finished #############################################################
+echo 
+echo ############################################################ [TEST] 242: START vmlist MYSIM failed  ############################################################
+vmlist MYSIM failed 
+echo ############################################################# [TEST] 242: END vmlist MYSIM failed  #############################################################
+echo 
+echo ############################################################## [TEST] 243: START stateshow MYSIM ###############################################################
+stateshow MYSIM
+echo ############################################################### [TEST] 243: END stateshow MYSIM ################################################################
+echo 
+echo ####################################################### [TEST] 244: START vmrunstate MYSIM vm_3 suspend ########################################################
+vmrunstate MYSIM vm_3 suspend
+stateshow MYSIM
+stats MYSIM
+echo ######################################################## [TEST] 244: END vmrunstate MYSIM vm_3 suspend #########################################################
+echo 
+echo ####################################################### [TEST] 245: START vmrunstate MYSIM vm_3 attached #######################################################
+vmrunstate MYSIM vm_3 attached
+stateshow MYSIM
+stats MYSIM
+echo ######################################################## [TEST] 245: END vmrunstate MYSIM vm_3 attached ########################################################
+echo 
+echo ############################################################# [TEST] 246: START vmfail MYSIM vm_3 ##############################################################
+vmfail MYSIM vm_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################## [TEST] 246: END vmfail MYSIM vm_3 ###############################################################
+echo 
+echo ############################################################ [TEST] 247: START vmrepair MYSIM vm_3 #############################################################
+vmrepair MYSIM vm_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 247: END vmrepair MYSIM vm_3 ##############################################################
+echo 
+echo ############################################################# [TEST] 248: START vmsave MYSIM vm_3 ##############################################################
+vmsave MYSIM vm_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################## [TEST] 248: END vmsave MYSIM vm_3 ###############################################################
+echo 
+echo ############################################################ [TEST] 249: START vmrestore MYSIM vm_3 ############################################################
+vmrestore MYSIM vm_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 249: END vmrestore MYSIM vm_3 #############################################################
+echo 
+echo ############################################################ [TEST] 250: START vmdetach MYSIM vm_4 #############################################################
+vmdetach MYSIM vm_4
+vmlist MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 250: END vmdetach MYSIM vm_4 ##############################################################
+echo 
+echo ######################################################### [TEST] 251: START vmdetach MYSIM vm_5 async ##########################################################
+vmdetach MYSIM vm_5 async
+waitfor MYSIM 10s
+vmlist MYSIM
+stats MYSIM
+echo ########################################################## [TEST] 251: END vmdetach MYSIM vm_5 async ###########################################################
+echo 
+echo ########################################################### [TEST] 252: START vmdetach MYSIM oldest ############################################################
+vmdetach MYSIM oldest
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 252: END vmdetach MYSIM oldest #############################################################
+echo 
+echo ########################################################## [TEST] 253: START vmdetach MYSIM youngest ###########################################################
+vmdetach MYSIM youngest
+vmlist MYSIM
+stats MYSIM
+echo ########################################################### [TEST] 253: END vmdetach MYSIM youngest ############################################################
+echo 
+echo ########################################################### [TEST] 254: START vmdetach MYSIM random ############################################################
+vmdetach MYSIM random
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 254: END vmdetach MYSIM random #############################################################
+echo 
+echo ############################################################# [TEST] 255: START vmdetach MYSIM all #############################################################
+vmdetach MYSIM all
+vmlist MYSIM
+stats MYSIM
+echo ############################################################## [TEST] 255: END vmdetach MYSIM all ##############################################################
+echo 
+echo ########################################################### [TEST] 256: START vmattach MYSIM norole ############################################################
+vmattach MYSIM norole
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 256: END vmattach MYSIM norole #############################################################
+echo 
+echo ########################################################## [TEST] 257: START vmattach MYSIM willfail ###########################################################
+vmattach MYSIM willfail
+vmlist MYSIM
+stats MYSIM
+echo ########################################################### [TEST] 257: END vmattach MYSIM willfail ############################################################
+echo 
+echo ####################################################### [TEST] 258: START vmattach MYSIM willfail async ########################################################
+vmattach MYSIM willfail async
+waituntil MYSIM VM ARRIVING=0 decreasing 1
+vmlist MYSIM
+stats MYSIM
+echo ######################################################## [TEST] 258: END vmattach MYSIM willfail async #########################################################
+echo 
+echo ########################################################### [TEST] 259: START vmlist MYSIM finished ############################################################
+vmlist MYSIM finished
+echo ############################################################ [TEST] 259: END vmlist MYSIM finished #############################################################
+echo 
+echo ############################################################ [TEST] 260: START vmlist MYSIM failed  ############################################################
+vmlist MYSIM failed 
+echo ############################################################# [TEST] 260: END vmlist MYSIM failed  #############################################################
+echo 
+echo ######################################################## [TEST] 261: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_1 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ######################################################### [TEST] 261: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ################################################################ [TEST] 262: START ailist MYSIM ################################################################
+ailist MYSIM
+echo ################################################################# [TEST] 262: END ailist MYSIM #################################################################
+echo 
+echo ########################################################### [TEST] 263: START aishow MYSIM ai_1 all ############################################################
+aishow MYSIM ai_1 all
+echo ############################################################ [TEST] 263: END aishow MYSIM ai_1 all #############################################################
+echo 
+echo ###################################################### [TEST] 264: START aialter MYSIM ai_1 mode=scalable ######################################################
+aialter MYSIM ai_1 mode=scalable
+aishow MYSIM ai_1 mode
+echo ####################################################### [TEST] 264: END aialter MYSIM ai_1 mode=scalable #######################################################
+echo 
+echo ######################################################## [TEST] 265: START aiattach MYSIM hadoop async #########################################################
+aiattach MYSIM hadoop async
+waitfor MYSIM 30s
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_2 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ######################################################### [TEST] 265: END aiattach MYSIM hadoop async ##########################################################
+echo 
+echo ############################ [TEST] 266: START aiattach MYSIM ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE #############################
+aiattach MYSIM ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_3 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ############################# [TEST] 266: END aiattach MYSIM ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ##############################
+echo 
+echo ####################################################### [TEST] 267: START airunstate MYSIM ai_3 suspend ########################################################
+airunstate MYSIM ai_3 suspend
+stateshow MYSIM
+stats MYSIM
+echo ######################################################## [TEST] 267: END airunstate MYSIM ai_3 suspend #########################################################
+echo 
+echo ####################################################### [TEST] 268: START airunstate MYSIM ai_3 attached #######################################################
+airunstate MYSIM ai_3 attached
+stateshow MYSIM
+stats MYSIM
+echo ######################################################## [TEST] 268: END airunstate MYSIM ai_3 attached ########################################################
+echo 
+echo ############################################################# [TEST] 269: START aifail MYSIM ai_3 ##############################################################
+aifail MYSIM ai_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################## [TEST] 269: END aifail MYSIM ai_3 ###############################################################
+echo 
+echo ############################################################ [TEST] 270: START airepair MYSIM ai_3 #############################################################
+airepair MYSIM ai_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 270: END airepair MYSIM ai_3 ##############################################################
+echo 
+echo ############################################################# [TEST] 271: START aisave MYSIM ai_3 ##############################################################
+aisave MYSIM ai_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################## [TEST] 271: END aisave MYSIM ai_3 ###############################################################
+echo 
+echo ############################################################ [TEST] 272: START airestore MYSIM ai_3 ############################################################
+airestore MYSIM ai_3
+stateshow MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 272: END airestore MYSIM ai_3 #############################################################
+echo 
+echo ######################## [TEST] 273: START aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  #########################
+aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
+waitfor MYSIM 18s
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_4 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ######################### [TEST] 273: END aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ##########################
+echo 
+echo ################################## [TEST] 274: START aiattach MYSIM netperf netclient_pref_pool=SUT,netclient_size=platinum64 ##################################
+aiattach MYSIM netperf netclient_pref_pool=SUT,netclient_size=platinum64
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_5 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ################################### [TEST] 274: END aiattach MYSIM netperf netclient_pref_pool=SUT,netclient_size=platinum64 ###################################
+echo 
+echo ######################### [TEST] 275: START aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async ##########################
+aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
+waitfor MYSIM 18s
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_6 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ########################## [TEST] 275: END aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async ###########################
+echo 
+echo ######################################################### [TEST] 276: START airesize MYSIM ai_1 was +1 #########################################################
+airesize MYSIM ai_1 was +1
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_1 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ########################################################## [TEST] 276: END airesize MYSIM ai_1 was +1 ##########################################################
+echo 
+echo ######################################################### [TEST] 277: START airesize MYSIM ai_1 was -1 #########################################################
+airesize MYSIM ai_1 was -1
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_1 detach_parallelism,ssh_key_name,sut
+stats MYSIM
+echo ########################################################## [TEST] 277: END airesize MYSIM ai_1 was -1 ##########################################################
+echo 
+echo ######################################################## [TEST] 278: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ######################################################### [TEST] 278: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ########################################################### [TEST] 279: START vmcapture MYSIM vm_29 ############################################################
+vmcapture MYSIM vm_29
+stats MYSIM
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 279: END vmcapture MYSIM vm_29 #############################################################
+echo 
+echo ########################################################## [TEST] 280: START vmcapture MYSIM youngest ##########################################################
+vmcapture MYSIM youngest
+stats MYSIM
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ########################################################### [TEST] 280: END vmcapture MYSIM youngest ###########################################################
+echo 
+echo ######################################################## [TEST] 281: START vmcapture MYSIM vm_41 async #########################################################
+vmcapture MYSIM vm_41 async
+waitfor MYSIM 25s
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ######################################################### [TEST] 281: END vmcapture MYSIM vm_41 async ##########################################################
+echo 
+echo ######################################################## [TEST] 282: START vmcapture MYSIM oldest async ########################################################
+vmcapture MYSIM oldest async
+waitfor MYSIM 25s
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ######################################################### [TEST] 282: END vmcapture MYSIM oldest async #########################################################
+echo 
+echo ############################################## [TEST] 283: START aiattach MYSIM ibm_daytrader load_balancer=true ###############################################
+aiattach MYSIM ibm_daytrader load_balancer=true
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_8 load_balancer,sut
+stats MYSIM
+echo ############################################### [TEST] 283: END aiattach MYSIM ibm_daytrader load_balancer=true ################################################
+echo 
+echo ######################################################## [TEST] 284: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_9 load_balancer,sut
+stats MYSIM
+echo ######################################################### [TEST] 284: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ######################################################## [TEST] 285: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_10 load_balancer,sut
+stats MYSIM
+echo ######################################################### [TEST] 285: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ######################################################## [TEST] 286: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_11 load_balancer,sut
+stats MYSIM
+echo ######################################################### [TEST] 286: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ######################################################## [TEST] 287: START typeshow MYSIM ibm_daytrader ########################################################
+typeshow MYSIM ibm_daytrader
+echo ######################################################### [TEST] 287: END typeshow MYSIM ibm_daytrader #########################################################
+echo 
+echo ############################################## [TEST] 288: START typealter MYSIM ibm_daytrader load_balancer=true ##############################################
+typealter MYSIM ibm_daytrader load_balancer=true
+typeshow MYSIM ibm_daytrader
+echo ############################################### [TEST] 288: END typealter MYSIM ibm_daytrader load_balancer=true ###############################################
+echo 
+echo ######################################################## [TEST] 289: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_12 load_balancer,sut
+stats MYSIM
+echo ######################################################### [TEST] 289: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ######################################################## [TEST] 290: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+aishow MYSIM ai_13 load_balancer,sut
+stats MYSIM
+echo ######################################################### [TEST] 290: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ###################################################### [TEST] 291: START aiattach MYSIM netperf async=4:2 ######################################################
+aiattach MYSIM netperf async=4:2
+echo ####################################################### [TEST] 291: END aiattach MYSIM netperf async=4:2 #######################################################
+echo 
+echo ################################################# [TEST] 292: START waituntil MYSIM AI ARRIVED=17 increasing 2 #################################################
+waituntil MYSIM AI ARRIVED=17 increasing 2
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ################################################## [TEST] 292: END waituntil MYSIM AI ARRIVED=17 increasing 2 ##################################################
+echo 
+echo ######################################################## [TEST] 293: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ######################################################### [TEST] 293: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ##################################################### [TEST] 294: START aiattach MYSIM ibmderby_tradelite ######################################################
+aiattach MYSIM ibmderby_tradelite
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ###################################################### [TEST] 294: END aiattach MYSIM ibmderby_tradelite #######################################################
+echo 
+echo ############################################################ [TEST] 295: START aiattach MYSIM hpcc #############################################################
+aiattach MYSIM hpcc
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 295: END aiattach MYSIM hpcc ##############################################################
+echo 
+echo ########################################################## [TEST] 296: START aiattach MYSIM coremark ###########################################################
+aiattach MYSIM coremark
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ########################################################### [TEST] 296: END aiattach MYSIM coremark ############################################################
+echo 
+echo ########################################################## [TEST] 297: START aiattach MYSIM filebench ##########################################################
+aiattach MYSIM filebench
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ########################################################### [TEST] 297: END aiattach MYSIM filebench ###########################################################
+echo 
+echo ############################################################ [TEST] 298: START aidetach MYSIM ai_12 ############################################################
+aidetach MYSIM ai_12
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################# [TEST] 298: END aidetach MYSIM ai_12 #############################################################
+echo 
+echo ######################################################### [TEST] 299: START aidetach MYSIM ai_13 async #########################################################
+aidetach MYSIM ai_13 async
+waituntil MYSIM AI RESERVATIONS=16 decreasing 5
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ########################################################## [TEST] 299: END aidetach MYSIM ai_13 async ##########################################################
+echo 
+echo ########################################################### [TEST] 300: START aidetach MYSIM oldest ############################################################
+aidetach MYSIM oldest
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 300: END aidetach MYSIM oldest #############################################################
+echo 
+echo ########################################################## [TEST] 301: START aidetach MYSIM youngest ###########################################################
+aidetach MYSIM youngest
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ########################################################### [TEST] 301: END aidetach MYSIM youngest ############################################################
+echo 
+echo ######################################################## [TEST] 302: START aiattach MYSIM ibm_daytrader ########################################################
+aiattach MYSIM ibm_daytrader
+aiattach MYSIM netperf
+aiattach MYSIM hpcc
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ######################################################### [TEST] 302: END aiattach MYSIM ibm_daytrader #########################################################
+echo 
+echo ########################################################### [TEST] 303: START aicapture MYSIM ai_10 ############################################################
+aicapture MYSIM ai_10
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 303: END aicapture MYSIM ai_10 #############################################################
+echo 
+echo ########################################################### [TEST] 304: START aicapture MYSIM oldest ###########################################################
+aicapture MYSIM oldest
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 304: END aicapture MYSIM oldest ############################################################
+echo 
+echo ####################################################### [TEST] 305: START aicapture MYSIM youngest async #######################################################
+aicapture MYSIM youngest async
+waituntil MYSIM AI CAPTURING=0
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ######################################################## [TEST] 305: END aicapture MYSIM youngest async ########################################################
+echo 
+echo ########################################################### [TEST] 306: START aidetach MYSIM random ############################################################
+aidetach MYSIM random
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 306: END aidetach MYSIM random #############################################################
+echo 
+echo ############################# [TEST] 307: START aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted async ##############################
+aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted async
+waitfor MYSIM 40s
+msgpub MYSIM VM staging ai_26;continue;something
+waituntil MYSIM AI ARRIVING=0 decreasing 1
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################## [TEST] 307: END aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted async ###############################
+echo 
+echo ############################################# [TEST] 308: START shell MYSIM rm -rf /tmp/cb*_was_used_on_execution ##############################################
+shell MYSIM rm -rf /tmp/cb*_was_used_on_execution
+cldalter MYSIM ai_defaults execute_script_name=~/repos/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
+aiattach MYSIM ibm_daytrader default default none none execute_all_vms_booted
+shell MYSIM ls /tmp/cb*_was_used_on_execution
+waitfor MYSIM 25s
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################## [TEST] 308: END shell MYSIM rm -rf /tmp/cb*_was_used_on_execution ###############################################
+echo 
+echo ################################################# [TEST] 309: START aiattach MYSIM hadoop save_on_attach=true ##################################################
+aiattach MYSIM hadoop save_on_attach=true
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+stateshow MYSIM
+echo ################################################## [TEST] 309: END aiattach MYSIM hadoop save_on_attach=true ###################################################
+echo 
+echo ########################################################### [TEST] 310: START airestore MYSIM ai_28 ############################################################
+airestore MYSIM ai_28
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+stateshow MYSIM
+echo ############################################################ [TEST] 310: END airestore MYSIM ai_28 #############################################################
+echo 
+echo ########################################################### [TEST] 311: START aiattach MYSIM notype ############################################################
+aiattach MYSIM notype
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 311: END aiattach MYSIM notype #############################################################
+echo 
+echo ############################################################# [TEST] 312: START aidetach MYSIM all #############################################################
+aidetach MYSIM all
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################## [TEST] 312: END aidetach MYSIM all ##############################################################
+echo 
+echo ################################### [TEST] 313: START typealter MYSIM ibm_daytrader sut=client_ibm_daytrader->was->willfail ####################################
+typealter MYSIM ibm_daytrader sut=client_ibm_daytrader->was->willfail
+aiattach MYSIM ibm_daytrader
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo #################################### [TEST] 313: END typealter MYSIM ibm_daytrader sut=client_ibm_daytrader->was->willfail #####################################
+echo 
+echo ########################################################### [TEST] 314: START vmlist MYSIM finished ############################################################
+vmlist MYSIM finished
+echo ############################################################ [TEST] 314: END vmlist MYSIM finished #############################################################
+echo 
+echo ############################################################ [TEST] 315: START vmlist MYSIM failed  ############################################################
+vmlist MYSIM failed 
+echo ############################################################# [TEST] 315: END vmlist MYSIM failed  #############################################################
+echo 
+echo #################################################### [TEST] 316: START patternalter MYSIM simplenw iait=10 #####################################################
+patternalter MYSIM simplenw iait=10
+patternshow MYSIM simplenw
+echo ##################################################### [TEST] 316: END patternalter MYSIM simplenw iait=10 ######################################################
+echo 
+echo ################################################### [TEST] 317: START aidrsattach MYSIM simplenw lifetime=40 ###################################################
+aidrsattach MYSIM simplenw lifetime=40
+aidrslist MYSIM
+aidrsshow MYSIM aidrs_1 iait,lifetime,max_ais
+stats MYSIM
+echo #################################################### [TEST] 317: END aidrsattach MYSIM simplenw lifetime=40 ####################################################
+echo 
+echo ############################################################## [TEST] 318: START aidrslist MYSIM ###############################################################
+aidrslist MYSIM
+echo ############################################################### [TEST] 318: END aidrslist MYSIM ################################################################
+echo 
+echo ######################################################## [TEST] 319: START aidrsshow MYSIM aidrs_1 all #########################################################
+aidrsshow MYSIM aidrs_1 all
+echo ######################################################### [TEST] 319: END aidrsshow MYSIM aidrs_1 all ##########################################################
+echo 
+echo #################################################### [TEST] 320: START aidrsalter MYSIM aidrs_1 max_ais=20 #####################################################
+aidrsalter MYSIM aidrs_1 max_ais=20
+echo ##################################################### [TEST] 320: END aidrsalter MYSIM aidrs_1 max_ais=20 ######################################################
+echo 
+echo ################################################# [TEST] 321: START waituntil MYSIM AI ARRIVED=30 increasing 5 #################################################
+waituntil MYSIM AI ARRIVED=30 increasing 5
+aidrslist MYSIM
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ################################################## [TEST] 321: END waituntil MYSIM AI ARRIVED=30 increasing 5 ##################################################
+echo 
+echo ###################################################### [TEST] 322: START statealter MYSIM aidrs_1 stopped ######################################################
+statealter MYSIM aidrs_1 stopped
+echo ####################################################### [TEST] 322: END statealter MYSIM aidrs_1 stopped #######################################################
+echo 
+echo ##################################################### [TEST] 323: START waituntil MYSIM AI =0 decreasing 1 #####################################################
+waituntil MYSIM AI =0 decreasing 1
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ###################################################### [TEST] 323: END waituntil MYSIM AI =0 decreasing 1 ######################################################
+echo 
+echo ######################################################### [TEST] 324: START aidrsdetach MYSIM aidrs_1 ##########################################################
+aidrsdetach MYSIM aidrs_1
+aidrslist MYSIM
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ########################################################## [TEST] 324: END aidrsdetach MYSIM aidrs_1 ###########################################################
+echo 
+echo ######################################################### [TEST] 325: START aidrsattach MYSIM simplenw #########################################################
+aidrsattach MYSIM simplenw
+aidrsalter MYSIM aidrs_2 max_ais=5
+aidrsalter MYSIM aidrs_2 iait=6
+aidrsshow MYSIM aidrs_2 all
+aidrslist MYSIM
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ########################################################## [TEST] 325: END aidrsattach MYSIM simplenw ##########################################################
+echo 
+echo ############################################################## [TEST] 326: START waitfor MYSIM 1m ##############################################################
+waitfor MYSIM 1m
+aidrsshow MYSIM aidrs_2 all
+aidrslist MYSIM
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################### [TEST] 326: END waitfor MYSIM 1m ###############################################################
+echo 
+echo ########################################################### [TEST] 327: START aidrsdetach MYSIM all ############################################################
+aidrsdetach MYSIM all
+aidetach MYSIM all
+aidrslist MYSIM
+ailist MYSIM
+vmlist MYSIM
+stats MYSIM
+echo ############################################################ [TEST] 327: END aidrsdetach MYSIM all #############################################################
+echo 
+echo ############################################ [TEST] 328: START vmcattach MYSIM simzone_source initial_hosts=source #############################################
+vmcattach MYSIM simzone_source initial_hosts=source
+hostlist MYSIM
+vmcattach MYSIM simzone_dest initial_hosts=dest
+hostlist MYSIM
+echo ############################################# [TEST] 328: END vmcattach MYSIM simzone_source initial_hosts=source ##############################################
+echo 
+echo #################################################### [TEST] 329: START vmattach MYSIM tinyvm simzone_source ####################################################
+vmattach MYSIM tinyvm simzone_source
+stats MYSIM
+vmlist MYSIM
+echo ##################################################### [TEST] 329: END vmattach MYSIM tinyvm simzone_source #####################################################
+echo 
+echo ####################################################### [TEST] 330: START vmmigrate MYSIM youngest dest ########################################################
+vmmigrate MYSIM youngest dest
+stats MYSIM
+vmlist MYSIM
+echo ######################################################## [TEST] 330: END vmmigrate MYSIM youngest dest #########################################################
+echo 
+echo ################################################### [TEST] 331: START vmmigrate MYSIM youngest source async ####################################################
+vmmigrate MYSIM youngest source async
+waitfor MYSIM 10s
+stats MYSIM
+vmlist MYSIM
+echo #################################################### [TEST] 331: END vmmigrate MYSIM youngest source async #####################################################
+echo 
+echo ####################################################### [TEST] 332: START vmprotect MYSIM youngest dest ########################################################
+vmprotect MYSIM youngest dest
+stats MYSIM
+vmlist MYSIM
+echo ######################################################## [TEST] 332: END vmprotect MYSIM youngest dest #########################################################
+echo 
+echo ################################################### [TEST] 333: START vmprotect MYSIM youngest source async ####################################################
+vmprotect MYSIM youngest source async
+waitfor MYSIM 10s
+stats MYSIM
+vmlist MYSIM
+echo #################################################### [TEST] 333: END vmprotect MYSIM youngest source async #####################################################
 echo 
 echo ############################################################# [TEST] 334: START reserved for vmcrs #############################################################
 reserved for vmcrs
@@ -1770,94 +1770,94 @@ echo ############################################################# [TEST] 351: S
 reserved for firs
 echo ############################################################## [TEST] 351: END reserved for firs ###############################################################
 echo 
-echo ########################################################### [TEST] 352: START monlist TESTCLOUD HOST ###########################################################
-monlist TESTCLOUD HOST
-echo ############################################################ [TEST] 352: END monlist TESTCLOUD HOST ############################################################
+echo ############################################################# [TEST] 352: START monlist MYSIM HOST #############################################################
+monlist MYSIM HOST
+echo ############################################################## [TEST] 352: END monlist MYSIM HOST ##############################################################
 echo 
-echo #################################################### [TEST] 353: START monextract TESTCLOUD HOST management ####################################################
-monextract TESTCLOUD HOST management
-shell TESTCLOUD cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/HOST*man*REGRESSION*
-echo ##################################################### [TEST] 353: END monextract TESTCLOUD HOST management #####################################################
+echo ###################################################### [TEST] 353: START monextract MYSIM HOST management ######################################################
+monextract MYSIM HOST management
+shell MYSIM cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/HOST*man*REGRESSION*
+echo ####################################################### [TEST] 353: END monextract MYSIM HOST management #######################################################
 echo 
-echo ######################################################## [TEST] 354: START monextract TESTCLOUD HOST os ########################################################
-monextract TESTCLOUD HOST os
-shell TESTCLOUD cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*
-echo ######################################################### [TEST] 354: END monextract TESTCLOUD HOST os #########################################################
+echo ########################################################## [TEST] 354: START monextract MYSIM HOST os ##########################################################
+monextract MYSIM HOST os
+shell MYSIM cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*
+echo ########################################################### [TEST] 354: END monextract MYSIM HOST os ###########################################################
 echo 
-echo ##################################################### [TEST] 355: START monextract TESTCLOUD VM management #####################################################
-monextract TESTCLOUD VM management
-shell TESTCLOUD cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/VM*man*REGRESSION*
-echo ###################################################### [TEST] 355: END monextract TESTCLOUD VM management ######################################################
+echo ####################################################### [TEST] 355: START monextract MYSIM VM management #######################################################
+monextract MYSIM VM management
+shell MYSIM cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/VM*man*REGRESSION*
+echo ######################################################## [TEST] 355: END monextract MYSIM VM management ########################################################
 echo 
-echo ######################################################### [TEST] 356: START monextract TESTCLOUD VM os #########################################################
-monextract TESTCLOUD VM os
-shell TESTCLOUD cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/VM_runtime_os_*REGRESSION*
-echo ########################################################## [TEST] 356: END monextract TESTCLOUD VM os ##########################################################
+echo ########################################################### [TEST] 356: START monextract MYSIM VM os ###########################################################
+monextract MYSIM VM os
+shell MYSIM cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/VM_runtime_os_*REGRESSION*
+echo ############################################################ [TEST] 356: END monextract MYSIM VM os ############################################################
 echo 
-echo ######################################################## [TEST] 357: START monextract TESTCLOUD VM app #########################################################
-monextract TESTCLOUD VM app
-shell TESTCLOUD cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/VM_runtime_app_*REGRESSION*
-echo ######################################################### [TEST] 357: END monextract TESTCLOUD VM app ##########################################################
+echo ########################################################## [TEST] 357: START monextract MYSIM VM app ###########################################################
+monextract MYSIM VM app
+shell MYSIM cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/VM_runtime_app_*REGRESSION*
+echo ########################################################### [TEST] 357: END monextract MYSIM VM app ############################################################
 echo 
-echo ################################# [TEST] 358: START shell TESTCLOUD rm -rf /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/* #################################
-shell TESTCLOUD rm -rf /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/*
-shell TESTCLOUD find /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/
-echo ################################## [TEST] 358: END shell TESTCLOUD rm -rf /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/* ##################################
+echo ################################## [TEST] 358: START shell MYSIM rm -rf ~/repos/cloudbench/regression/..//data/REGRESSION_B/* ##################################
+shell MYSIM rm -rf ~/repos/cloudbench/regression/..//data/REGRESSION_B/*
+shell MYSIM find ~/repos/cloudbench/regression/..//data/REGRESSION_B/
+echo ################################### [TEST] 358: END shell MYSIM rm -rf ~/repos/cloudbench/regression/..//data/REGRESSION_B/* ###################################
 echo 
-echo ########################################################## [TEST] 359: START monextract TESTCLOUD all ##########################################################
-monextract TESTCLOUD all
-shell TESTCLOUD ls -la /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B
-echo ########################################################### [TEST] 359: END monextract TESTCLOUD all ###########################################################
+echo ############################################################ [TEST] 359: START monextract MYSIM all ############################################################
+monextract MYSIM all
+shell MYSIM ls -la ~/repos/cloudbench/regression/..//data/REGRESSION_B
+echo ############################################################# [TEST] 359: END monextract MYSIM all #############################################################
 echo 
 echo ############################################################ [TEST] 360: START reserved for monplot ############################################################
 reserved for monplot
 echo ############################################################# [TEST] 360: END reserved for monplot #############################################################
 echo 
-echo ############################################################## [TEST] 361: START vmdev TESTCLOUD ###############################################################
-vmdev TESTCLOUD
-echo ############################################################### [TEST] 361: END vmdev TESTCLOUD ################################################################
+echo ################################################################ [TEST] 361: START vmdev MYSIM #################################################################
+vmdev MYSIM
+echo ################################################################# [TEST] 361: END vmdev MYSIM ##################################################################
 echo 
-echo ############################################################# [TEST] 362: START vmundev TESTCLOUD ##############################################################
-vmundev TESTCLOUD
-echo ############################################################## [TEST] 362: END vmundev TESTCLOUD ###############################################################
+echo ############################################################### [TEST] 362: START vmundev MYSIM ################################################################
+vmundev MYSIM
+echo ################################################################ [TEST] 362: END vmundev MYSIM #################################################################
 echo 
-echo ############################################################## [TEST] 363: START appdev TESTCLOUD ##############################################################
-appdev TESTCLOUD
-echo ############################################################### [TEST] 363: END appdev TESTCLOUD ###############################################################
+echo ################################################################ [TEST] 363: START appdev MYSIM ################################################################
+appdev MYSIM
+echo ################################################################# [TEST] 363: END appdev MYSIM #################################################################
 echo 
-echo ############################################################# [TEST] 364: START appundev TESTCLOUD #############################################################
-appundev TESTCLOUD
-echo ############################################################## [TEST] 364: END appundev TESTCLOUD ##############################################################
+echo ############################################################### [TEST] 364: START appundev MYSIM ###############################################################
+appundev MYSIM
+echo ################################################################ [TEST] 364: END appundev MYSIM ################################################################
 echo 
-echo ############################################################ [TEST] 365: START appnoload TESTCLOUD #############################################################
-appnoload TESTCLOUD
-echo ############################################################# [TEST] 365: END appnoload TESTCLOUD ##############################################################
+echo ############################################################## [TEST] 365: START appnoload MYSIM ###############################################################
+appnoload MYSIM
+echo ############################################################### [TEST] 365: END appnoload MYSIM ################################################################
 echo 
-echo ############################################################# [TEST] 366: START appload TESTCLOUD ##############################################################
-appload TESTCLOUD
-echo ############################################################## [TEST] 366: END appload TESTCLOUD ###############################################################
+echo ############################################################### [TEST] 366: START appload MYSIM ################################################################
+appload MYSIM
+echo ################################################################ [TEST] 366: END appload MYSIM #################################################################
 echo 
-echo ################################################### [TEST] 367: START vmcapture TESTCLOUD youngest imgtstabc ###################################################
-vmcapture TESTCLOUD youngest imgtstabc
-echo #################################################### [TEST] 367: END vmcapture TESTCLOUD youngest imgtstabc ####################################################
+echo ##################################################### [TEST] 367: START vmcapture MYSIM youngest imgtstabc #####################################################
+vmcapture MYSIM youngest imgtstabc
+echo ###################################################### [TEST] 367: END vmcapture MYSIM youngest imgtstabc ######################################################
 echo 
-echo ################################################## [TEST] 368: START imgdelete TESTCLOUD imgtstabc simzone_a ###################################################
-imgdelete TESTCLOUD imgtstabc simzone_a
-echo ################################################### [TEST] 368: END imgdelete TESTCLOUD imgtstabc simzone_a ####################################################
+echo #################################################### [TEST] 368: START imgdelete MYSIM imgtstabc simzone_a #####################################################
+imgdelete MYSIM imgtstabc simzone_a
+echo ##################################################### [TEST] 368: END imgdelete MYSIM imgtstabc simzone_a ######################################################
 echo 
-echo ############################################################## [TEST] 369: START stats TESTCLOUD ###############################################################
-stats TESTCLOUD
-reset TESTCLOUD VM,AI
-stats TESTCLOUD
-echo ############################################################### [TEST] 369: END stats TESTCLOUD ################################################################
+echo ################################################################ [TEST] 369: START stats MYSIM #################################################################
+stats MYSIM
+reset MYSIM VM,AI
+stats MYSIM
+echo ################################################################# [TEST] 369: END stats MYSIM ##################################################################
 echo 
-echo ############################################################ [TEST] 370: START clddetach TESTCLOUD #############################################################
-clddetach TESTCLOUD
-echo ############################################################# [TEST] 370: END clddetach TESTCLOUD ##############################################################
+echo ############################################################## [TEST] 370: START clddetach MYSIM ###############################################################
+clddetach MYSIM
+echo ############################################################### [TEST] 370: END clddetach MYSIM ################################################################
 echo 
-echo ########################################################## [TEST] 371: START cldattach sim TESTCLOUD ###########################################################
-cldattach sim TESTCLOUD
-echo ########################################################### [TEST] 371: END cldattach sim TESTCLOUD ############################################################
+echo ############################################################ [TEST] 371: START cldattach sim MYSIM #############################################################
+cldattach sim MYSIM
+echo ############################################################# [TEST] 371: END cldattach sim MYSIM ##############################################################
 echo 
 echo ################################################################# [TEST] 372: START cldattach ##################################################################
 cldattach
@@ -2494,7 +2494,7 @@ echo ####################################### [TEST] 507: END vmattach tinyvm aut
 echo 
 echo ################################################ [TEST] 508: START shell rm -rf /tmp/cb*_was_used_on_execution #################################################
 shell rm -rf /tmp/cb*_was_used_on_execution
-cldalter vm_defaults execute_script_name=/home/cbfrgsc/repos/cloudbench//regression/scripts/execute_on_staging.sh
+cldalter vm_defaults execute_script_name=~/repos/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 vmattach tinyvm auto empty iron32 execute_provision_complete async
 waituntil VM ARRIVING=0 decreasing 1
 shell ls /tmp/cb*_was_used_on_execution
@@ -3008,7 +3008,7 @@ echo ################################# [TEST] 584: END aiattach ibm_daytrader de
 echo 
 echo ################################################ [TEST] 585: START shell rm -rf /tmp/cb*_was_used_on_execution #################################################
 shell rm -rf /tmp/cb*_was_used_on_execution
-cldalter ai_defaults execute_script_name=/home/cbfrgsc/repos/cloudbench//regression/scripts/execute_on_staging.sh
+cldalter ai_defaults execute_script_name=~/repos/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 aiattach ibm_daytrader default default none none execute_all_vms_booted
 shell ls /tmp/cb*_was_used_on_execution
 waitfor 25s
@@ -3260,37 +3260,37 @@ echo ################################################################# [TEST] 62
 echo 
 echo ######################################################### [TEST] 630: START monextract HOST management #########################################################
 monextract HOST management
-shell cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/HOST*man*REGRESSION*
+shell cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/HOST*man*REGRESSION*
 echo ########################################################## [TEST] 630: END monextract HOST management ##########################################################
 echo 
 echo ############################################################# [TEST] 631: START monextract HOST os #############################################################
 monextract HOST os
-shell cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*
+shell cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*
 echo ############################################################## [TEST] 631: END monextract HOST os ##############################################################
 echo 
 echo ########################################################## [TEST] 632: START monextract VM management ##########################################################
 monextract VM management
-shell cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/VM*man*REGRESSION*
+shell cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/VM*man*REGRESSION*
 echo ########################################################### [TEST] 632: END monextract VM management ###########################################################
 echo 
 echo ############################################################## [TEST] 633: START monextract VM os ##############################################################
 monextract VM os
-shell cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/VM_runtime_os_*REGRESSION*
+shell cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/VM_runtime_os_*REGRESSION*
 echo ############################################################### [TEST] 633: END monextract VM os ###############################################################
 echo 
 echo ############################################################# [TEST] 634: START monextract VM app ##############################################################
 monextract VM app
-shell cat /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/VM_runtime_app_*REGRESSION*
+shell cat ~/repos/cloudbench/regression/..//data/REGRESSION_B/VM_runtime_app_*REGRESSION*
 echo ############################################################## [TEST] 634: END monextract VM app ###############################################################
 echo 
-echo ###################################### [TEST] 635: START shell rm -rf /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/* ######################################
-shell rm -rf /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/*
-shell find /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/
-echo ####################################### [TEST] 635: END shell rm -rf /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B/* #######################################
+echo ##################################### [TEST] 635: START shell rm -rf ~/repos/cloudbench/regression/..//data/REGRESSION_B/* #####################################
+shell rm -rf ~/repos/cloudbench/regression/..//data/REGRESSION_B/*
+shell find ~/repos/cloudbench/regression/..//data/REGRESSION_B/
+echo ###################################### [TEST] 635: END shell rm -rf ~/repos/cloudbench/regression/..//data/REGRESSION_B/* ######################################
 echo 
 echo ############################################################### [TEST] 636: START monextract all ###############################################################
 monextract all
-shell ls -la /home/cbfrgsc/repos/cloudbench//data/REGRESSION_B
+shell ls -la ~/repos/cloudbench/regression/..//data/REGRESSION_B
 echo ################################################################ [TEST] 636: END monextract all ################################################################
 echo 
 echo ############################################################ [TEST] 637: START reserved for monplot ############################################################

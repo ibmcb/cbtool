@@ -38,7 +38,7 @@ home = os.path.expanduser("~")
 
 _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
 
-def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
+def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, cloud_name, override_cb_dir) :
     '''
     TBD
     '''
@@ -90,9 +90,13 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
                 for _subline_number, _subline_contents in enumerate(_sublines) :
                     if _subline_number == 0 :
                         _aux = _subline_contents
+                        _aux = _aux.replace("TESTCLOUD", cloud_name)
                         _reg_tst_expl_fh.write("echo " + (" [TEST] " + str(_counter) + ": START " + _aux + ' ').center(160,"#") + '\n')
+                        
                     if len(_subline_contents) :
+                        _subline_contents = _subline_contents.replace("TESTCLOUD", cloud_name)
                         _reg_tst_expl_fh.write(_subline_contents.lstrip() + '\n')
+                        
                 if _counter > 100000 :
                     _reg_tst_expl_fh.write("pause " + '\n')                     
                 _reg_tst_expl_fh.write("echo " + (" [TEST] " + str(_counter) + ": END " + _aux + ' ').center(160,"#") + '\n')
@@ -101,9 +105,13 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
     _reg_tst_expl_fh.write("exit\n")
     _reg_tst_expl_fh.write("echo " + (" [TEST] " + str(_counter + 1) + ": END exit ").center(80,"#") + '\n')
     _reg_tst_expl_fh.close()
-    
+
     _msg = str(_counter) + " test cases written to the experiment plan file."
-    _msg += " Now run it with the command \"" + _path + "/../cb --soft_reset --trace regression/"
+    _msg += " Now run it with the command \"export CB_STARTUP_CLOUD=MYSIM; export CB_CLOUD_RENAME=" + cloud_name + "; "
+    _msg += "export CB_API_DEFAULTS_FILE_IDENTIFIER=_sim; export CB_SIM_INITIAL_VMCS=simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg; "
+    _msg += "export CB_VMC_DEFAULTS_SIM_HOSTS_PER_VMC=15; export CB_VMC_DEFAULTS_SIM_HOSTS_CPU=200000; "
+    _msg += "export CB_VMC_DEFAULTS_SIM_HOSTS_MEM_PER_CORE=10000000; export CB_ATTACH_STARTUP_CLOUD=0" + _path + "/../configs/build_cloud_config_file_from_env.sh;" 
+    _msg += _path + "/../cb --soft_reset --trace regression/"
     _msg += reg_tst_expl_fn + " 2>&1 > regression_test_output.txt\""
     print _msg
 
@@ -193,7 +201,7 @@ def mask_contents(contents, which) :
         contents[_line_number] = \
                 re.sub("[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+", 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', _line_contents)
 
-def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, reg_tst_sup_out_fn, reg_tst_val_fn) :
+def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, reg_tst_sup_out_fn, cloud_name, reg_tst_val_fn) :
     '''
     TBD
     '''
@@ -435,7 +443,7 @@ def main() :
     _reg_tst_val_fn = "main.html"
 
     if len(argv) < 2 :
-        print "Usage: regression_test make|validate [regression test output filename]"
+        print "Usage: regression_test make|validate [cloud name] [regression test output filename]"
         exit(1)
 
     else :
@@ -462,14 +470,26 @@ def main() :
             
             if argv[1] == "make" :
                 if len(argv) > 2 :
-                    _override_cb_dir = argv[2]
+                    _cloud_name = argv[2]
+                else:
+                    _cloud_name = "TESTCLOUD"
+
+                if len(argv) > 3 :
+                    _override_cb_dir = argv[3]
                 else :
                     _override_cb_dir = None
-                globals()[argv[1] + "_regression_test"](_file_contents[_reg_tst_fn], _reg_tst_expl_fn, _override_cb_dir)
+
+                globals()[argv[1] + "_regression_test"](_file_contents[_reg_tst_fn], _reg_tst_expl_fn, _cloud_name, _override_cb_dir)
 
             elif argv[1] == "validate" :
+
                 if len(argv) == 3 :
-                    _reg_tst_out_fn = argv[2]
+                    _cloud_name = argv[2]
+                else:
+                    _cloud_name = "TESTCLOUD"
+                
+                if len(argv) == 4 :
+                    _reg_tst_out_fn = argv[3]
                 else :
                     _reg_tst_out_fn = path[0] + "/regression_test_output.txt"
 
@@ -488,6 +508,7 @@ def main() :
                 globals()[argv[1] + "_regression_test"](_file_contents[_reg_tst_expl_fn], \
                                                         _file_contents[_reg_tst_gold_fn], \
                                                         _reg_tst_out_contents, \
+                                                        _cloud_name, \
                                                         _reg_tst_val_fn)
     
         else :

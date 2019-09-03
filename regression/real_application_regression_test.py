@@ -19,6 +19,7 @@
 from sys import path, argv
 from time import sleep, time, strftime
 from optparse import OptionParser
+from datetime import datetime
 
 import fnmatch
 import os
@@ -26,23 +27,6 @@ import pwd
 
 home = os.environ["HOME"]
 username = pwd.getpwuid(os.getuid())[0]
-
-api_file_name = "/tmp/cb_api_" + username
-if os.access(api_file_name, os.F_OK) :    
-    try :
-        _fd = open(api_file_name, 'r')
-        api_conn_info = _fd.read()
-        _fd.close()
-    except :
-        _msg = "Unable to open file containing API connection information "
-        _msg += "(" + api_file_name + ")."
-        print _msg
-        exit(4)
-else :
-    _msg = "Unable to locate file containing API connection information "
-    _msg += "(" + api_file_name + ")."
-    print _msg
-    exit(4)
 
 _path_set = False
 
@@ -58,13 +42,18 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 
 from lib.api.api_service_client import *
 
-_msg = "Connecting to API daemon (" + api_conn_info + ")..."
-print _msg
-api = APIClient(api_conn_info)
-
 #---------------------------------- END CB API ---------------------------------
 
 import prettytable
+
+def print_msg(message, newline = True) :
+    '''
+    TBD
+    '''
+    if newline :
+        print datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message
+    else :
+        print datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message,        
 
 def get_type_list(options) :
     '''
@@ -105,12 +94,58 @@ def cli_postional_argument_parser() :
     '''
 
     if len(argv) < 2 :
-        print "./" + argv[0] + " <AI type1>,...,<AI typeN>"
+        print_msg("./" + argv[0] + " <AI type1>,...,<AI typeN>")
         exit(1)
 
     _options, args = cli_named_option_parser()
             
     return _options
+
+def retriable_cloud_connection(options, cloud_model, command) :
+    '''
+    TBD
+    '''
+    
+    _api = False
+    _attempts = 3
+    _attempt = 0
+    
+    while not _api and _attempt < _attempts :
+
+        try : 
+    
+            if cloud_model != "auto" :
+                api_file_name = "/tmp/cb_api_" + username + '_' + cloud_model            
+            else :
+                api_file_name = "/tmp/cb_api_" + username
+
+            if os.access(api_file_name, os.F_OK) :    
+                try :
+                    _fd = open(api_file_name, 'r')
+                    _api_conn_info = _fd.read()
+                    _fd.close()
+                except :
+                    _msg = "Unable to open file containing API connection information "
+                    _msg += "(" + api_file_name + ")."
+                    print_msg(_msg)
+                    exit(4)
+            else :
+                _msg = "Unable to locate file containing API connection information "
+                _msg += "(" + api_file_name + ")."
+                print_msg(_msg)
+                exit(4)
+        
+            _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+            print_msg(_msg)
+            _api = APIClient(_api_conn_info)
+            return _api
+
+        except :
+            _api = False
+            _attempt += 1
+            sleep(10)
+
+
 
 def cli_named_option_parser() :
     '''
@@ -126,21 +161,24 @@ def cli_named_option_parser() :
     parser.add_option("-w", "--wait", dest="wait", default = 900, help="How long to wait before declaring the test a failure (seconds)")
     parser.add_option("-i", "--interval", dest="interval", default = 30, help="Interval between attempts to obtain application performance samples (seconds)")
     parser.add_option("-s", "--samples", dest="samples", default = 2, help="How many application performance samples are required?")
+    parser.add_option("-c", "--cloud_model", dest="cloud_model", default = "auto", help="Which cloud model should be used")        
     parser.add_option("--noheader", dest = "noheader", action = "store_true", help = "Do not print header")
     parser.add_option("--headeronly", dest = "headeronly", action = "store_true", help = "Print only header")
     (options, args) = parser.parse_args()
 
     return options, args
 
-def main(apiconn) :
+def main() :
     '''
     TBD
     '''
     if len(argv) < 2 :
-        print "./" + argv[0] + "--types <AI type1>,...,<AI typeN> --build [IMAGENAME or IMAGEID] --wait [S] --interval [S] --samples [N]"
+        print_msg("./" + argv[0] + "--types <AI type1>,...,<AI typeN> --build [IMAGENAME or IMAGEID] --wait [S] --interval [S] --samples [N]")
         exit(1)
 
     _options = cli_postional_argument_parser()
+
+    apiconn = retriable_cloud_connection(_options, str(_options.cloud_model).lower(), "/bin/true")
     
     try :
         cloud_attrs = apiconn.cldlist()[0]
@@ -148,6 +186,7 @@ def main(apiconn) :
         cloud_model = cloud_attrs["model"]
     except :
         _msg = "ERROR: Unable to connect to API and get a list of attached clouds"
+        print_msg(_msg)
         exit(1)
 
     _exit_code = 0
@@ -203,7 +242,7 @@ def main(apiconn) :
             _start = int(time())
 
             if _actual_type != "build:none:" :
-                _mgt_pass, _rt_pass, _rt_missing, _sut = deploy_virtual_application(api, \
+                _mgt_pass, _rt_pass, _rt_missing, _sut = deploy_virtual_application(apiconn, \
                                                                                     _actual_type, \
                                                                                     _hypervisor_type, \
                                                                                     _options.samples, \
@@ -304,18 +343,18 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
         if hypervisor_type :
             _msg = "Set hypervisor type to \"" + hypervisor_type + "\" on cloud \""
             _msg += cloud_name + "\"..."
-            print _msg
+            print_msg(_msg)
             _vapp = apiconn.cldalter(cloud_name, "vm_defaults", "hypervisor_type", hypervisor_type)
 
         _msg = "Creating a new Virtual Application Instance with type \"" 
         _msg += _actual_application_type + "\" on cloud \"" + cloud_name + "\"..."
-        print _msg
+        print_msg(_msg)
         _vapp = apiconn.appattach(cloud_name, _actual_application_type, temp_attr_list = _temp_attr_list_str)
 
         _sut = _vapp["sut"]
         
         _msg = "    Virtual Application \"" + _vapp["name"] + "\" deployed successfully"    
-        print _msg
+        print_msg(_msg)
 
         _vm_name_list = []
         _vm_uuid_list = []
@@ -326,14 +365,14 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             _vm_uuid_list.append(_vm_uuid)
             
         _msg = "    Checking reported provisioning metrics on instances " + ','.join(_vm_name_list) + "..." 
-        print _msg
+        print_msg(_msg)
         
         # Get some data from the monitoring system
         for _vm_uuid in _vm_uuid_list :
             for _management_metrics in apiconn.get_latest_management_data(cloud_name, _vm_uuid) :
                 for _metric in _crt_m :
                     _msg = "        Checking metric \"" + _metric + "\"..."
-                    print _msg,
+                    print_msg(_msg, False)
                     if _metric not in _management_metrics :
                         print "NOK"
                     else :
@@ -347,12 +386,12 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                                 _management_metrics_pass += ' ' + _management_metrics[_metric]
 
         _msg = "    Reported provisioning metrics OK" 
-        print _msg
+        print_msg(_msg)
 
         if _management_metrics_pass :
             _msg = "    Checking for at least " + str(runtime_samples) + " application"
             _msg += " performance metric samples..."
-            print _msg
+            print_msg(_msg)
             _initial_time = int(time())
             _curr_time = 0
             _collected_samples = 0
@@ -372,7 +411,7 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                                 _metric = "app_" + _metric
     
                             _msg = "        Checking metric \"" + _metric + "\"..."
-                            print _msg,                
+                            print_msg(_msg, False)                
                             if _metric not in _runtime_metrics :
                                 if _metric not in _runtime_missing_metrics :
                                     _runtime_missing_metrics.append(_metric)
@@ -417,12 +456,12 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
 
                             _aux_run_time_metrics = _aux_run_time_metrics[0:-1]
                                     
-                    print "---------------------------------------- Sample " + str(_collected_samples)                                    
+                    print_msg("---------------------------------------- Sample " + str(_collected_samples))
                 except :
                     _curr_time = int(time()) - _initial_time                    
                     _msg = "        No application performance metrics reported after "
                     _msg += str(_curr_time) + " seconds"
-                    print _msg
+                    print_msg(_msg)
 
                 _curr_time = int(time()) - _initial_time
                 sleep(check_interval)
@@ -437,14 +476,14 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                 if not _runtime_metrics_problem :
                     _runtime_metrics_pass = _aux_run_time_metrics[0:-1]                     
                     _msg = "    Reported application performance metrics OK"
-                    print _msg
+                    print_msg(_msg)
                 else :
                     _msg = "    Reported application performance metrics NOK: " + _runtime_metrics_problem
-                    print _msg
+                    print_msg(_msg)
                                         
         if "uuid" in _vapp :
             _msg = "    Destroying Virtual Application \"" + _vapp["name"] + "\"..."
-            print _msg
+            print_msg(_msg)
             apiconn.appdetach(cloud_name, _vapp["uuid"])
 
         _msg = "    Checking reported deprovisioning metrics..." 
@@ -465,24 +504,24 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
 
         if _management_metrics_pass :
             _msg = "    Reported deprovisioning metrics OK" 
-            print _msg
+            print_msg(_msg)
 
         _vapp = None
 
     except APIException, obj :
         error = True
-        print "API Problem (" + str(obj.status) + "): " + obj.msg
+        print_msg("API Problem (" + str(obj.status) + "): " + obj.msg)
     
     except APINoSuchMetricException, obj :
         error = True
-        print "API Problem (" + str(obj.status) + "): " + obj.msg
+        print_msg("API Problem (" + str(obj.status) + "): " + obj.msg)
     
     except KeyboardInterrupt :
-        print "Aborting this APP."
+        print_msg("Aborting this APP.")
     
     except Exception, msg :
         error = True
-        print "Problem during experiment: " + str(msg)
+        print_msg("Problem during experiment: " + str(msg))
     
     finally :
         if _vapp is not None :
@@ -492,24 +531,24 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                     
                 if "uuid" in _vapp :
                     _msg = "Attempting to destroy Virtual Application \"" + _vapp["name"] + "\" again..."
-                    print _msg,             
+                    print_msg(_msg, False)             
                     apiconn.appdetach(cloud_name, _vapp["uuid"])
                     print "DONE"
                     
             except APIException, obj :
-                print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
+                print_msg("Error finishing up: (\" + str(obj.status) + \"): " + obj.msg)
         else :
             try :            
                 for _vapp in apiconn.applist(cloud_name) :
                     if _vapp["type"] == _actual_application_type :
                         _msg = "Attempting to destroy Virtual Application \"" + _vapp["name"] + "\" again..."
-                        print _msg,             
+                        print_msg(_msg, False) 
                         apiconn.appdetach(cloud_name, _vapp["uuid"])                    
                         print "DONE"
                         
             except APIException, obj :
-                print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
+                print_msg("Error finishing up: (" + str(obj.status) + "): " + obj.msg)
 
         return _management_metrics_pass, _runtime_metrics_pass, _runtime_missing_metrics, _sut
-    
-main(api)
+
+main()

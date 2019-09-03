@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-CB_TEST_LEVEL="lowest"
-CB_ADAPTERS="fast"
 CB_RESET=0
 CB_SLEEP=15
 CB_WORKLOADS="none"
-CB_USAGE="Usage: $0 [-l/--level test level] [-w/--workloads] [-s/--sleep] [-r/--reset]"
+CB_USAGE="Usage: $0 [-w/--workloads] [-s/--sleep] [-r/--reset]"
+CB_MODEL="auto"
 
 if [ $0 != "-bash" ] ; then
     pushd `dirname "$0"` 2>&1 > /dev/null
@@ -21,15 +20,7 @@ while [[ $# -gt 0 ]]
 do
     key="$1"
 
-    case $key in
-        -l|--level)
-        CB_TEST_LEVEL="$2"
-        shift
-        ;;
-        -l=*|--level=*)
-        CB_TEST_LEVEL=$(echo $key | cut -d '=' -f 2)
-        shift
-        ;;        
+    case $key in 
         -w|--workloads)
         CB_WORKLOADS="$2"
         shift
@@ -38,6 +29,14 @@ do
         CB_WORKLOADS=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
+        -c|--cloud_model)
+        CB_MODEL="$2"
+        shift
+        ;;
+        -c=*|--cloud_model=*)
+        CB_MODEL=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
         -s|--sleep)
         CB_SLEEP="$2"
         shift
@@ -88,12 +87,14 @@ else
     fi
 fi
 
+pushd $CB_CURR_DIR/.. >/dev/null 2>&1 
 if [[ $CB_WORKLOADS != "none" ]]
 then
     wlist=''
     wcount=0
     ./cb --soft_reset exit
-    time ./regression/real_application_regression_test.py --headeronly
+    time ./regression/real_application_regression_test.py --cloud_model $CB_MODEL --headeronly
+    popd
     for workload in $CB_WORKLOADS
     do  
         sudo tmux kill-session -t cb${workload} > /dev/null 2>&1
@@ -101,7 +102,7 @@ then
         sudo tmux new -d -s cb${workload}
         sudo tmux send-keys -t cb${workload} "su - ${USER}" Enter
         sudo tmux send-keys -t cb${workload} "cd ~/$CB_ACTUAL_DIR" Enter
-        sudo tmux send-keys -t cb${workload} "time ./regression/real_application_regression_test.py --types ${workload} --noheader" Enter
+        sudo tmux send-keys -t cb${workload} "time ./regression/real_application_regression_test.py --cloud_model $CB_MODEL --types ${workload} --noheader" Enter
     
         actual_workloads=$(echo $workload | sed 's/fake/nullworkload/g')
         for alias in $(sudo cat ~/$CB_ACTUAL_DIR/util/workloads_alias_mapping.txt | grep "synthetic \|application-stress \|scientific \|transactional \|data-centric " | awk '{ print $1}')

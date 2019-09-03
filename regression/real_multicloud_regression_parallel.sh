@@ -73,19 +73,25 @@ then
         sudo tmux kill-session -t $i > /dev/null 2>&1
     done
 fi
-
+    
 if [[ $CB_ADAPTERS == "all" ]]
 then
-    CB_ADAPTERS="sim pdm plm pcm kub osk,oskfile,oskfip nop osl,oslfip ec2 gce do as slr"
+    CB_ADAPTERS="sim pdm plm pcm kub osk,oskfile,oskfip nop ec2 gce do as slr"	
+#    CB_ADAPTERS="sim pdm plm pcm kub osk,oskfile,oskfip nop osl,oslfip ec2 gce do as slr"
+elif [[ $CB_ADAPTERS == "single" ]]
+then
+    CB_ADAPTERS="sim plm pdm pcm nop"
 elif [[ $CB_ADAPTERS == "private" ]]
 then
-    CB_ADAPTERS="sim plm pdm pcm kub osk,oskfile,oskfip nop osl,oslfip"
+    CB_ADAPTERS="sim plm pdm pcm kub osk,oskfile,oskfip nop"
+#    CB_ADAPTERS="sim plm pdm pcm kub osk,oskfile,oskfip nop osl,oslfip"    
 elif [[ $CB_ADAPTERS == "public" ]]
 then
     CB_ADAPTERS="ec2 gce do as slr"
 elif [[ $CB_ADAPTERS == "libcloud" ]]
 then
-    CB_ADAPTERS="osl,oslfip do as"
+#    CB_ADAPTERS="osl,oslfip do as"	
+    CB_ADAPTERS="do as"
 elif [[ $CB_ADAPTERS == "fast" ]]
 then
     CB_ADAPTERS="sim nop"
@@ -95,11 +101,13 @@ CB_ADAPTERS=$(echo $CB_ADAPTERS | sed 's/do[[:space:]]/dozz /g' | sed 's/as[[:sp
 
 alist=''
 acount=0
+pushd $CB_CURR_DIR/..
 time ./regression/real_multicloud_regression.py configs/softlayer_ris a0 lowest private headeronly
+popd
 for adapter in $CB_ADAPTERS
 do
     adapter=$(echo $adapter | sed 's/zz//g')
-    actual_user=$(echo $adapter | cut -d ',' -f 1 | sed 's/fip//g' | sed 's/file//g')
+    actual_user=$(echo $adapter | cut -d ',' -f 1 | sed 's/fip//g' | sed 's/file//g' | sed 's/osl/os/g')
     adapter=$(echo $adapter | sed 's/osl/os/g')
     actual_adapter=$(echo $adapter | cut -d ',' -f 1)
     
@@ -110,8 +118,8 @@ do
     sudo tmux send-keys -t cb${actual_user} "sudo chown -R cb${actual_user}:cb${actual_user} /home/cb${actual_user}" Enter    
     sudo tmux send-keys -t cb${actual_user} "su - cb${actual_user}" Enter
     sudo tmux send-keys -t cb${actual_user} "cd ~/$CB_ACTUAL_DIR" Enter
-    sudo tmux send-keys -t cb${actual_user} "~/cbsync.sh" Enter
-    sudo tmux send-keys -t cb${actual_user} "time ./regression/real_multicloud_regression.py configs/softlayer_ris ${adapter} ${CB_TEST_LEVEL} private noheader" Enter
+    sudo tmux send-keys -t cb${actual_user} "cbsync" Enter
+    sudo tmux send-keys -t cb${actual_user} "time ./regression/real_multicloud_regression.py configs $(echo cb${adapter}_cloud_definitions.txt | sed 's/,/,cb/g' | sed 's/,/_cloud_definitions.txt,/g') ${CB_TEST_LEVEL} private noheader" Enter
     
     alist=$adapter' '$alist
 done
