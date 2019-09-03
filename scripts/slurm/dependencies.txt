@@ -1,0 +1,43 @@
+### START - Dependency installation order ###
+slurm-components-order = 85
+munge-order = 86
+mariadb-order = 87
+slurm-order = 88
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+slurm-components-install = man
+munge-install = pm
+mariadb-install = pm
+slurm-install = pm
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+slurm-components-configure = ls /home/REPLACE_USERNAME/ubuntu-slurm/
+munge-configure = munge -V | cut -d ' ' -f 1 | sed 's/munge-//g'
+mariadb-configure = mysql --version | cut -d ' ' -f 4
+slurm-configure = sudo dpkg -l | grep slurm | cut -d ' ' -f 3 | sed 's/slurm-//g'
+### END - Tests ###
+
+### START - Dependency versions ###
+slurm-components-ver = ANY
+munge-ver = 0.4
+mariadb-ver = 10
+slurm-ver = 16
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###

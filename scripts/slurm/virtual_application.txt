@@ -1,0 +1,48 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : SLURM] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = slurmcontroller->2_x_slurmcompute
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = slurmcontroller
+LOAD_MANAGER_ROLE = slurmcontroller
+METRIC_AGGREGATOR_ROLE = slurmcontroller
+CAPTURE_ROLE = slurmcontroller
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I2
+LOAD_DURATION = 60
+CATEGORY = scientific
+PROFILES = default
+REFERENCE = https://slurm.schedmd.com/
+LICENSE = Public_Domain
+REPORTED_METRICS = completion_time,errors,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys a Slurm cluster (1 controller instance and N compute instances).\n
+DESCRIPTION +=The master node also runs the "XXXX" benchmark, which is used\n
+DESCRIPTION +=to submit spark jobs to the cluster.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: TBD1 (tbd tbd tbd), \n
+DESCRIPTION +=    and TBD2 (tbd tbd tbd)\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: although the specifics vary by load profile,\n
+DESCRIPTION +=    it basically represents "amount of data" generated and processed\n
+DESCRIPTION +=    by the job.\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when the slurm job\n
+DESCRIPTION +=    is completed.\n
+SLURMCONTROLLER_SETUP1 = cb_config_slurm_cluster.sh
+SLURMCOMPUTE_SETUP1 = cb_config_slurm_cluster.sh
+SLURMCONTROLLER_SETUP2 = cb_start_slurm_cluster.sh
+SLURMCOMPUTE_SETUP2 = cb_start_slurm_cluster.sh
+START = cb_run_slurm.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
