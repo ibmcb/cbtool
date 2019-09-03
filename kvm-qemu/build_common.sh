@@ -1,25 +1,50 @@
 #!/usr/bin/env bash
+if [[ $(whoami) != "root" ]]
+then
+    echo "Please run the kvm-qemu image builder as root"
+    exit 1
+fi
+
+echo "Making sure all dependencies are in place..."
+for _dep in ps bc git ifconfig netstat wget rsync dpkg qemu-img virt-customize virsh libvirtd
+do
+    which ${_dep}
+    if [[ $? -ne 0 ]]
+    then
+        echo "Dependency ${_dep} not installed. Please install it, and the proceed"
+        echo "Usually, just running \"sudo apt -y install git bc libguestfs-tools libvirt-clients rsync wget qemu-utils libvirt-dev numactl libvirt-bin virtinst virt-manager virt-viewer python-libvirt qemu-kvm qemu-system qemu-system-arm qemu-efi\" should be enough."
+        exit 1
+    fi
+done
 
 CB_KVMQEMU_BIMG_DIR=NONE
 CB_KVMQEMU_UBUNTU_BASE=https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-$(uname -m | sed 's/ppc64le/ppc64el/g' | sed 's/x86_64/amd64/g').img
 CB_KVMQEMU_CENTOS_BASE=https://cloud.centos.org/centos/7/images/CentOS-7-$(uname -m)-GenericCloud-1808.qcow2
 CB_ALLINONE=0
+CB_PRESERVE_ON_ERROR=0
 CB_DISTROS="ubuntu"
 CB_USERNAME="cbuser"
-CB_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+git rev-parse --abbrev-ref HEAD > /dev/null 2>&1
+if [[ $? -eq 0 ]]
+then
+    CB_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+else
+    CB_BRANCH="master"
+fi
 CB_WKS="all"
 CB_VERB=''
 CB_BASE_IMAGE_SKIP=1
 CB_NULLWORKLOAD_IMAGE_SKIP=1
 CB_KVMQEMU_BIMG_SIZE=50G 
 CB_KVMQEMU_URIS_LIST=archive.canonical.com,archive.ubuntu.com,security.ubuntu.com,download.docker.com,pypi.org,files.pythonhosted.org,github.ibm.com,pypi.python.org,
-CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,dl.google.com,packages.cloud.google.com,apt.kubernetes.io,storage.googleapis.com,github.com,storage.cloud.google.com,s3.amazonaws.com,
+CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,dl.google.com,packages.cloud.google.com,apt.kubernetes.io,storage.googleapis.com,github.com,storage.cloud.google.com,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,storage.googleapis.com,pkg.cfssl.org,ports.ubuntu.com,github-production-release-asset-2e65be.s3.amazonaws.com,ppa.launchpad.net,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,launchpadlibrarian.net,piccolo.link,nuttcp.net,fossies.org,dev.mysql.com,download.forge.ow2.org,dl.bintray.com,sourceforge.net,
-CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,downloads.sourceforge.net,ayera.dl.sourceforge.net,cytranet.dl.sourceforge.net,superb-sea2.dl.sourceforge.net,newcontinuum.dl.sourceforge.net,
+CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,downloads.sourceforge.net,ayera.dl.sourceforge.net,cytranet.dl.sourceforge.net,superb-sea2.dl.sourceforge.net,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,cfhcable.dl.sourceforge.net,versaweb.dl.sourceforge.net,astuteinternet.dl.sourceforge.net,ibm.biz,archive.apache.org,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,managedway.dl.sourceforge.net,akamai.bintray.com,cdn.kernel.org,dualstack.k.shared.global.fastly.net,ftp.us.debian.org,
-CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,repo.maven.apache.org,www.nas.nasa.gov,math.nist.gov,svn.apache.org,cdn.mysql.com
+CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,repo.maven.apache.org,www.nas.nasa.gov,math.nist.gov,svn.apache.org,cdn.mysql.com,download.schedmd.com,ftp.ports.debian.org,
+CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,master.dl.sourceforge.net,cran.us.r-project.org,s3.amazonaws.com,newcontinuum.dl.sourceforge.net
 
 if [ $0 != "-bash" ] ; then
     pushd `dirname "$0"` 2>&1 > /dev/null
@@ -29,15 +54,25 @@ if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
 
-sudo ls -la /home/${CB_USERNAME}/.ssh > /dev/null 2>&1
-if [[ $? -ne 0 ]]
-then
-    echo "Unable to find /home/${CB_USERNAME}/.ssh. Copying it from $HOME/.ssh..."
-    sudo mkdir -p /home/${CB_USERNAME}/
-    sudo rsync -avz $HOME/.ssh/ /home/${CB_USERNAME}/.ssh/
-fi
+export CB_BASE_DIR=$(echo $CB_KVMQEMU_S_DIR | sed 's/kvm-qemu//g' | rev | cut -d '/' -f 2 | rev)
+export CB_KVMQEMU_HOME=$HOME
 
-CB_RSYNC_ADDR=$(sudo ifconfig docker0 | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')
+#
+#
+#
+#
+#
+#
+
+#
+#
+#
+#
+#
+#
+
+CB_RSYNC_IFACE=$(sudo netstat -rn | grep UG | grep ^0.0.0.0 | awk '{ print $8 }')
+CB_RSYNC_ADDR=$(sudo ifconfig $CB_RSYNC_IFACE | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')
 for pi in $(sudo netstat -puntel | grep rsync | grep tcp[[:space:]] | awk '{ print $9 }' | sed 's^/rsync^^g')
 do
     if [[ $(echo $(sudo ps aux | grep $pi | grep -c $(whoami)_rsync.conf)) -ne 0 ]]
@@ -165,21 +200,25 @@ function create_base_images {
             sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +${CB_KVMQEMU_BIMG_ACTUAL_SIZE}G
             sudo virt-customize -a cb_base_${CB_KVMQEMU_BIMG} --run-command "growpart /dev/sda 1; resize2fs /dev/sda1"
     
+#           sudo qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 15G
+#           sudo virt-resize --expand /dev/sda1 $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
+    
+#           cp -f $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
+#           sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +18G
+    
             cp -f $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
             sudo sed -i "s^REPLACE_USERNAME^${CB_USERNAME}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
             sudo sed -i "s^REPLACE_BRANCH^${CB_BRANCH}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
             sudo sed -i "s^REPLACE_PATH^${CB_KVMQEMU_S_DIR}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
-    
+            sudo sed -i "s^REPLACE_HOME^${CB_KVMQEMU_HOME}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
+                    
             if [[ $CB_ALLINONE -ne 0 ]]
             then
                 sudo sed -i "s^#all-in-one ^^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
+                sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_                    
+            else 
+                sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude 3rd_party/workload/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
             fi
-
-            sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
-            if [[ ! -z $CB_DROPBOX ]]
-            then
-                sudo sed -i "s^REPLACE_DROPBOX^${CB_DROPBOX}^g"  $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
-            fi       
     
             sudo virt-customize -a cb_base_${CB_KVMQEMU_BIMG} $CB_VERB --hostname cbinst --commands-from-file $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
 
@@ -264,33 +303,38 @@ function create_workload_images {
                      fi
                 fi
                 
-                rsync -a rsync://$CB_RSYNC_DIRECT/util/cbsync.sh > /dev/null 2>&1
+                rsync -a rsync://$CB_RSYNC_DIRECT/util/cbrsync.sh > /dev/null 2>&1
                 if [[ $? -eq 0 ]]
                 then
-                    CMD="cd /home/${CB_USERNAME}; rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/ /home/${CB_USERNAME}/cbtool/;"
+                    if [[ $CB_ALLINONE -ne 0 ]]
+                    then
+                        CMD="cd /home/${CB_USERNAME}; rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude old_data/ --include=configs/cloud_definitions.txt --include configs/build*.sh --include configs/generated/ --include=configs/templates/ --exclude=configs/* --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/ /home/${CB_USERNAME}/$CB_BASE_DIR/;"
+                    else
+                        CMD="cd /home/${CB_USERNAME}; rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude 3rd_party/workload/ --exclude 3rd_party/workload/ --exclude old_data/ --include=configs/cloud_definitions.txt --include configs/build*.sh --include configs/generated/ --include=configs/templates/ --exclude=configs/* --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/ /home/${CB_USERNAME}/$CB_BASE_DIR/;"                        
+                    fi
                 else
                     CMD=""
                 fi
-
-                CMD=$CMD"sudo -u $CB_USERNAME /home/$CB_USERNAME/cbtool/install -r workload --wks ${_CB_WKS} --filestore $CB_RSYNC"
+                
+                CMD=$CMD"chown -R ${CB_USERNAME}:${CB_USERNAME} /home/${CB_USERNAME};"
+                CMD=$CMD"sudo -u $CB_USERNAME /home/$CB_USERNAME/$CB_BASE_DIR/install -r workload --wks ${_CB_WKS} --cleanupimageid --filestore $CB_RSYNC"
                 echo "######### Creating workload image \"${CB_KVMQEMU_WIMG_FN}\" by executing the command \"$CMD\""
                 sudo virt-customize -m 4096 -a ${CB_KVMQEMU_WIMG_FN} $CB_VERB --hostname cbinst \
                 --run-command "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections" \
                 --upload /tmp/cache_resolve_dns:/root/cache_resolve_dns \
-                --run-command "sed -i '/^#CBSTART/,/^#CBEND/{//p;d;}' /etc/hosts" \
-                --run-command "sed -i '/^#CB/d' /etc/hosts" \
-                --run-command "echo \"#CBSTART: Added by cbtool\" >> /etc/hosts" \
-                --run-command "cat /root/cache_resolve_dns >> /etc/hosts" \
-                --run-command "echo \"#CBEND: Added by cbtool\" >> /etc/hosts" \
-                --run-command "hostname cbinst" \
-                --run-command "echo \$(ip -o addr list | grep eth0 | grep inet[[:space:]] | awk '{ print \$4 }' | cut -d '/' -f 1) cbinst >> /etc/hosts" \
+                --run-command "sudo -u $CB_USERNAME /usr/local/bin/tempconfigetchosts" \
                 --run-command "$CMD" \
-                --run-command "sed -i '/cbinst/d' /etc/hosts"
+                --run-command "sudo -u $CB_USERNAME /home/$CB_USERNAME/$CB_BASE_DIR/configure -r workload --wks ${_CB_WKS}" \
+                --run-command "sudo -u $CB_USERNAME /usr/local/bin/preinjectkeys /home/${CB_USERNAME}/$CB_BASE_DIR $CB_USERNAME" \
+                --run-command "sudo cp -f /etc/hosts.original /etc/hosts"
                 COUT=$?
                 if [[ $COUT -ne 0 ]]
                 then
                     echo "############## ERROR: workload image \"${CB_KVMQEMU_WIMG_FN}\" failed while executing command \"$CMD\""
-                    sudo rm -rf ${CB_KVMQEMU_WIMG_FN}
+                    if [[ $CB_PRESERVE_ON_ERROR -ne 1 ]]
+                    then
+                        sudo rm -rf ${CB_KVMQEMU_WIMG_FN}
+                    fi
                     sudo cat /tmp/cb_kvm_failed | grep "${CB_KVMQEMU_WIMG_FN}" > /dev/null 2>&1
                     if [[ $? -ne 0 ]]
                     then
@@ -345,9 +389,30 @@ function create_orchestrator_images {
              fi            
         fi                            
 
-        CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cbtool/install -r orchestrator"
-        echo "####### Creating orchestrator image \"${CB_KVMQEMU_OIMG_FN}\" by executing the command \"$CMD\""
-        sudo virt-customize -a ${CB_KVMQEMU_OIMG_FN} $CB_VERB --run-command "$CMD"
+        rsync -a rsync://$CB_RSYNC_DIRECT/util/cbrsync.sh > /dev/null 2>&1
+        if [[ $? -eq 0 ]]
+        then
+            if [[ $CB_ALLINONE -ne 0 ]]
+            then
+                CMD="cd /home/${CB_USERNAME}; rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude old_data/ --include=configs/cloud_definitions.txt --include configs/build*.sh --include configs/generated/ --include=configs/templates/ --exclude=configs/* --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/ /home/${CB_USERNAME}/$CB_BASE_DIR/;"
+            else
+                CMD="cd /home/${CB_USERNAME}; rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude 3rd_party/workload/ --exclude 3rd_party/workload/ --exclude old_data/ --include=configs/cloud_definitions.txt --include configs/build*.sh --include configs/generated/ --include=configs/templates/ --exclude=configs/* --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/ /home/${CB_USERNAME}/$CB_BASE_DIR/;"                        
+            fi
+        else
+            CMD=""
+        fi
+
+        CMD=$CMD"chown -R ${CB_USERNAME}:${CB_USERNAME} /home/${CB_USERNAME};"
+        CMD=$CMD"sudo -u $CB_USERNAME /home/$CB_USERNAME/$CB_BASE_DIR/install -r orchestrator"
+        echo "####### Creating orchestrator image \"${CB_KVMQEMU_OIMG_FN}\" by executing the command \"$CMD\""        
+        sudo virt-customize -a ${CB_KVMQEMU_OIMG_FN} $CB_VERB --hostname cbinst \
+        --run-command "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections" \
+        --upload /tmp/cache_resolve_dns:/root/cache_resolve_dns \
+        --run-command "sudo -u $CB_USERNAME /usr/local/bin/tempconfigetchosts" \
+        --run-command "$CMD" \
+        --run-command "sudo -u $CB_USERNAME /usr/local/bin/preinjectkeys /home/${CB_USERNAME}/$CB_BASE_DIR $CB_USERNAME" \
+        --run-command "/usr/local/bin/installrlibs" \
+        --run-command "sudo cp -f /etc/hosts.original /etc/hosts"
         COUT=$?
         if [[ $COUT -ne 0 ]]
         then
