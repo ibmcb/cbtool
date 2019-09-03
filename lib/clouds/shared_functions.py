@@ -1182,10 +1182,9 @@ class CommonCloudFunctions:
                 cloudconfig += "  - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn\n"
                 cloudconfig += "  - mv /tmp/cbvpn.conf " + conf_destination + "\n"
                 cloudconfig += "  - mkdir -p /var/log/openvpn\n"
-                cloudconfig += "  - openvpn --daemon --config " + conf_destination + "\n"
-
-            # cloudconfig += "  - systemctl start openvpn@" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.service\n"
-            # cloudconfig += "  - service openvpn start\n"
+                #cloudconfig += "  - openvpn --daemon --config " + conf_destination + "\n"
+                cloudconfig += "  - systemctl start openvpn@" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.service\n"
+                cloudconfig += "  - service openvpn start\n"
                 
         # Check to see if the user requested packages to be installed for this VM role via cloud-init
         if obj_attr_list["cloudinit_packages"].lower() != "false" :
