@@ -1920,8 +1920,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _time_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
                     
-                    _obj_attr_list["data_file_location"] = _space_attr_list["data_working_dir"] + '/' + _criteria["expid"]
-
+                    _obj_attr_list["data_working_dir"] = _space_attr_list["data_working_dir"]                   
+                    _obj_attr_list["data_file_location"] = _obj_attr_list["data_working_dir"] + '/' + _criteria["expid"]
+                    _obj_attr_list["base_dir"] = _space_attr_list["base_dir"]
+                    
                     _filestor_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], \
                                                                "GLOBAL", False, "filestore", \
                                                                False)
@@ -2064,7 +2066,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _collection_name = _metric_type + '_' + _obj_type.upper() + '_' + _obj_attr_list["username"]
                         filters = []
                         if _metric_type != "runtime_os" :
-                           filters.append(("time", 1))
+                            filters.append(("time", 1))
                         _runtime_metric_list = self.msci.find_document(_collection_name, _criteria, True, filters)
 
                         _empty = True
@@ -2115,6 +2117,33 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _fd.write(_csv_contents_line[:-1] + '\n')
 
                     _fd.close()
+
+                    _dtb1 = ''
+                    _dtb2 = ''
+                    if "time_breakdown_keys" in _obj_attr_list :
+                        _dtbc = _obj_attr_list["time_breakdown_keys"][0:-1].split(',')
+                        _dtbc.sort()
+                        _dtb1 = " --breakdown " + ','.join(_dtbc)        
+                        _dtb2 = " --breakdown " + ','.join(reversed(_dtbc))
+
+                    _plot_fn = _obj_attr_list["data_file_location"] + '/' 
+                    _plot_fn += "plot.sh" 
+                    _plot_fd = open(_plot_fn, 'w', 0)
+                                
+                    _plot_fd.write("#!/bin/bash\n")
+                    _plot_fd.write("if [ $0 != \"-bash\" ] ; then\n")
+                    _plot_fd.write("    pushd `dirname \"$0\"` 2>&1 > /dev/null\n")
+                    _plot_fd.write("fi\n")
+                    _plot_fd.write("CB_BASE_DIR=$(pwd)\n")
+                    _plot_fd.write("if [ $0 != \"-bash\" ] ; then\n")
+                    _plot_fd.write("    popd 2>&1 > /dev/null\n")
+                    _plot_fd.write("fi\n")
+                    _plot_fd.write("CB_EXPID=$(echo $CB_BASE_DIR | rev | cut -d '/' -f 1 | rev)\n")
+                    _plot_fd.write("CB_BASE_DIR=$(readlink -f $CB_BASE_DIR/../../)\n")
+                    _plot_fd.write("$CB_BASE_DIR/util/plot/cbplotgen.R --directory $CB_BASE_DIR/data  --expid " + _criteria["expid"] + " --cleanup --provisionmetrics --runtimemetrics " + _dtb1 + '\n')
+                    _plot_fd.write("#$CB_BASE_DIR/util/plot/cbplotgen.R --directory $CB_BASE_DIR/data  --expid " + _criteria["expid"] + " --cleanup --provisionmetrics --runtimemetrics " + _dtb2 + '\n')                    
+                    _plot_fd.close()
+                    os.chmod(_plot_fn, 0755)
 
                     if _empty :
                         _msg = "No samples of " + _metric_type + " metrics for "
@@ -2700,7 +2729,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             for _ai_type in sorted(_tmp_dict[_category]) :
                                 _list += "  " + _ai_type + '\n'
                     else :
-                        _list = ", ".join(_result)
+                        _list = "\n".join(sorted(list(_result)))
                         
                     _vmc_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
 
@@ -2814,9 +2843,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                             _key.count("_meta_tag") or \
                                             _key.count("_size") or \
                                             _key.count("_netname")) :
-                                        _key = _key.replace(obj_attr_list["attribute_name"] + '_', '')
+                                        _key = _key.replace(obj_attr_list["attribute_name"] + '_', '', 1)
                                     else :
-                                        _key = _key.replace(obj_attr_list["attribute_name"] + '_', '',1)
+                                        _key = _key.replace(obj_attr_list["attribute_name"] + '_', '', 1)
                                     _result[_key] = _value
                                     
                                     # A trick to display the AI definition
@@ -2983,7 +3012,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _smsg += " was modified:\n"
 
                     _fmsg = "The attribute \"" + _p_obj_attrib + "\" on "
-                    _fmsg += obj_attr_list["specified_attribute"]
+                    _fmsg += obj_attr_list["specified_attribute"] + " "
                     _fmsg += obj_attr_list["object_type"] 
                     _fmsg += " could not be modified modified:\n"
 
@@ -2994,11 +3023,17 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                        False)
 
                     # This is just an ugly hack. The global object "vm_templates"
-                    # is stored on a manner very different from any other object
+                    # is stored in a manner very different from any other object
                     if obj_attr_list["global_object"] == "vm_templates" :
+
                         _obj_attrib = _p_obj_attrib
+                        if obj_attr_list["specified_attribute"] not in _old_values :
+                            _old_values[obj_attr_list["specified_attribute"]] = _obj_attrib + ":non-existent"
+                            self.osci.add_to_list(obj_attr_list["cloud_name"], "GLOBAL", "vm_roles", obj_attr_list["specified_attribute"])
+
                         _old_values = _old_values[obj_attr_list["specified_attribute"]]
                         _old_values = str2dic(_old_values)
+
                         _current_values = copy.deepcopy(_old_values)
 
                     if not _obj_attrib in _old_values :
@@ -3006,6 +3041,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     # Ugly hack continues here.
                     if obj_attr_list["global_object"] == "vm_templates" :
+
                         _current_values[_obj_attrib] = _obj_value
                         _current_values = dic2str(_current_values)
 
