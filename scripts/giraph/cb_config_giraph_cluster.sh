@@ -54,21 +54,6 @@ JVM_HEAP_MEM_MB=`get_my_ai_attribute_with_default jvm_heap_mem_mb 200`
 eval JVM_HEAP_MEM_MB=${JVM_HEAP_MEM_MB}
 syslog_netcat "JVM heap size in MB is ${JVM_HEAP_MEM_MB}"
 
-if [[ ${hadoop_use_yarn} -eq 1 ]]
-then
-	syslog_netcat "Hadoop will be configured to use MRv2 (YARN)"
-	syslog_netcat "Switching to the \"yarn\" branch in Hibench on ${HIBENCH_HOME}"
-	cd ${HIBENCH_HOME}
-	git checkout yarn
-	cd ~
-else
-	syslog_netcat "Hadoop will be configured to use MRv1"
-	syslog_netcat "Switching to the \"dev\" branch in Hibench on ${HIBENCH_HOME}"
-	cd ${HIBENCH_HOME}
-	git checkout dev
-	cd ~	
-fi
-
 check_write_access
 
 disable_ip_version_six

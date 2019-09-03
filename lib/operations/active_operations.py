@@ -1277,7 +1277,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                     self.osci.pending_object_set(_cn, "AI", obj_attr_list["ai"], "placement_leader", 0)
                                     placement_leader = 0
                                 else :
-                                   cbdebug("Got leader: " + str(placement_leader))
+                                    cbdebug("Got leader: " + str(placement_leader))
 
                                 if int(placement_leader) == int(obj_attr_list["placement_order"]) :
                                     cbdebug("It's my turn! " + obj_attr_list["name"])
@@ -4729,6 +4729,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
                             obj_attr_list["parallel_operations"][_vm_counter]["base_type"] = obj_attr_list["base_type"]
                             obj_attr_list["parallel_operations"][_vm_counter]["mode"] = obj_attr_list["mode"]
+                            obj_attr_list["parallel_operations"][_vm_counter]["placement_order"] = _vm_counter                            
                             obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] +\
                              ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' +\
                               _size + ' ' + _attach_action + ' ' + _extra_parms + _cloud_ip

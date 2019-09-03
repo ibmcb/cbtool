@@ -40,14 +40,14 @@ gatk4-input-install = man
 ibm-java-configure = /tmp/cb_is_java_installed.sh ibm 8
 scala-configure = scala -version 2>&1 | awk '{ print $5 }'
 hadoop-configure = /tmp/cb_is_hadoop_installed.sh 2
-spark-configure = ls ~/spark* | head -n 1 | cut -d '/' -f 4 | cut -d '-' -f 2
+spark-configure = ls /home/REPLACE_USERNAME/spark* | head -n 1 | cut -d '/' -f 4 | cut -d '-' -f 2
 gradle-configure = gradle -v | grep Gradle | cut -d ' ' -f 2
 numpy-configure = python -c "import numpy; print str(numpy.__version__).strip()"
 git-lfs-configure = git lfs version | cut -d ' ' -f 1 | sed 's^git-lfs/^^g'
-spark-perf-configure = ls -la ~/spark-perf
-sparkbench-configure = ls -la ~/spark-bench*
-gatk4-configure = ls ~/gatk-* | head -n1 | sed 's/\.zip//g' | cut -d '/' -f 4 | cut -d '-' -f 2
-gatk4-input-configure = ls -la ~/GATK4-small-input
+spark-perf-configure = ls -la /home/REPLACE_USERNAME/spark-perf
+sparkbench-configure = ls -la /home/REPLACE_USERNAME/spark-bench*
+gatk4-configure = ls /home/REPLACE_USERNAME/gatk-* | head -n1 | sed 's/\.zip//g' | cut -d '/' -f 4 | cut -d '-' -f 2
+gatk4-input-configure = ls -la /home/REPLACE_USERNAME/GATK4-small-input
 ### END - Tests ###
 
 ### START - Dependency versions ###
