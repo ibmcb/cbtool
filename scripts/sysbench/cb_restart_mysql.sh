@@ -36,18 +36,18 @@ START=`provision_application_start`
 SERVICES[1]="mysql"
 SERVICES[2]="mysqld"
 
+linux_distribution
+
 if [[ ${MYSQL_DATA_DIR} != "/var/lib/mysql"  && ! -L /var/lib/mysql ]]
 then
     syslog_netcat "Relocating MySQL base directory..."
-	service_stop_disable ${SERVICES[${LINUX_DISTRO}]}
+    service_stop_disable ${SERVICES[${LINUX_DISTRO}]}
     ${SUDO_CMD} rsync -az --delete --inplace /var/lib/mysql/ ${MYSQL_DATA_DIR}/
     ${SUDO_CMD} rm -rf /var/lib/mysql
     ${SUDO_CMD} ln -s ${MYSQL_DATA_DIR} /var/lib/mysql        
 fi    
 
 ${SUDO_CMD} sed -i "s^bind-address.*^bind-address            = $my_ip_addr^g" ${MYSQL_CONF_FILE}
-
-linux_distribution
 
 # Set mysql's memory cache size to be a percentage of main memory
 mb=$(echo "$MEM_SIZE_KB / 1024 * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
