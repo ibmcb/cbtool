@@ -19,11 +19,11 @@ ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = /tmp/cb_is_java_installed.sh openjdk 7
+java-configure = /tmp/cb_is_java_installed.sh openjdk 8
 cassandra-configure = which cassandra
 cassandra-tools-configure = which token-generator
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
-ycsb-configure = ls -la ~/YCSB
+ycsb-configure = ls -la /home/REPLACE_USERNAME/YCSB
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -49,7 +49,7 @@ rhel-oraclejava-preinstall-man = package_install java-1.7.0-openjdk
 rhel-oraclejava-install-man = sudo rpm -Uvh URL; sudo alternatives --install /usr/bin/java java /usr/java/latest/jre/bin/java 200000
 fedora-oraclejava-preinstall-man = package_install java-1.7.0-openjdk
 fedora-oraclejava-install-man = sudo rpm -Uvh URL; sudo alternatives --install /usr/bin/java java /usr/java/latest/jre/bin/java 200000
-ubuntu-oraclejava-preinstall-man = wget -N -P ~ URL
+ubuntu-oraclejava-preinstall-man = wget -N -P /home/REPLACE_USERNAME URL
 ubuntu-oraclejava-install-man = tar -xf jdk-7u51-linux-x64.tar.gz; sudo mkdir -p /usr/lib/jvm; sudo mv ./jdk1.7.0_51/ /usr/lib/jvm/jdk1.7.0_51/; sudo ln -s /usr/lib/jvm/jdk1.7.0_51 /usr/lib/jvm/latest
 ubuntu-oraclejava-postinstall-man = sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.7.0_51/bin/java" 1; sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.7.0_51/bin/javac" 1; sudo update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/lib/jvm/jdk1.7.0_51/bin/javaws" 1
 

@@ -17,10 +17,10 @@ ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = /tmp/cb_is_java_installed.sh openjdk 7
+java-configure = /tmp/cb_is_java_installed.sh openjdk 8
 mongo-configure =  mongod --version
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
-ycsb-configure = ls -la ~/YCSB
+ycsb-configure = ls -la /home/REPLACE_USERNAME/YCSB
 ### END - Tests ###
 
 ### START - Dependency versions ###

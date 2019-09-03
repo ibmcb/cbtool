@@ -81,9 +81,9 @@ then
     my_token=${token[$MY_IP]}
     syslog_netcat "Cassandra token is \"${my_token}\""
         
-    cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+    cassandra_ips_csv=`echo "${cassandra_ips}" | sed ':a;N;$!ba;s/\n/, /g'`
 
-    seed_ips_csv=`echo ${seed_ips} | sed 's/ /,/g'`
+    seed_ips_csv=`echo "${seed_ips}" | sed ':a;N;$!ba;s/\n/, /g' | tr -d ' '`
 
     if [[ -z $cassandra_ips ]]
     then
@@ -117,7 +117,7 @@ then
         MONGODB_EXECUTABLE=$(which mongod)
     fi
     
-    sudo ls /etc/mongodb.conf
+    sudo ls /etc/mongodb.conf > /dev/null 2>&1
     if [[ $? -eq 0 ]]
     then
         MONGODB_CONF_FILE=/etc/mongodb.conf
@@ -141,7 +141,9 @@ then
     
     mongo_ips=`get_ips_from_role mongodb`
     
-    mongo_ips_csv=`echo ${mongo_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+    total_nodes=`echo "${mongo_ips}" | wc -w`
+
+    mongo_ips_csv=`echo "${mongo_ips}" | sed ':a;N;$!ba;s/\n/, /g'`
 
     if [[ $(cat /etc/hosts | grep -c mongo-cfg-server) -eq 0 ]]
     then    
@@ -165,7 +167,7 @@ then
         exit 1
     fi    
 
-    redis_ips_csv=`echo ${redis_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+    redis_ips_csv=`echo "${redis_ips}" | sed ':a;N;$!ba;s/\n/, /g'`
                 
 else 
     syslog_netcat "Unsupported backend type ($BACKEND_TYPE). Exiting with error"
@@ -324,10 +326,21 @@ function check_cassandra_cluster_state {
     has_system_keyspace=$($CCLI -f ${CCLIN}_list_keyspace.cassandra | sed 's/system_traces//g' | grep -c [[:space:]]system)
 
     NODETOOLAUTH="-u cassandra -pw cassandra" 
-           
+
+    which cbcluster >/dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "#!/usr/bin/env bash" > /tmp/cbcluster
+        echo "export JAVA_HOME=${JAVA_HOME}" >> /tmp/cbcluster
+        echo "nodetool $NODETOOLAUTH -h ${NODETOOLHN} status" >> /tmp/cbcluster    
+        sudo chmod 0755 /tmp/cbcluster
+        sudo mv /tmp/cbcluster /usr/local/bin/cbcluster
+    fi                
+
+    NODES_REGISTERED=0    
+                                                   
     while [[ ($NODES_REGISTERED -ne $total_nodes || $has_system_keyspace -ne 1) && "$counter" -le "$ATTEMPTS" ]]
     do
-        NODES_REGISTERED=0    
         syslog_netcat "Obtaining the node list for this Cassandra cluster by running \"nodetool $NODETOOLAUTH -h ${NODETOOLHN} status\"..."            
         for NODEIP in $(nodetool $NODETOOLAUTH -h ${NODETOOLHN} status | tail -n +6 | grep -v "Non-system" | awk '{ print $2 }')
         do
@@ -354,6 +367,52 @@ function check_cassandra_cluster_state {
     fi
 }
 export -f check_cassandra_cluster_state
+
+function check_mongodb_cluster_state {
+
+    syslog_netcat "Waiting for all nodes to become available..."
+
+    MONGOSHN=$1
+    MONGORS=$2
+    ATTEMPTS=$3
+    INTERVAL=$4
+
+    counter=0
+
+    which cbcluster >/dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "#!/usr/bin/env bash" > /tmp/cbcluster
+        echo "mongo --host ${mongos_ip}:27017 --eval \"db.printShardingStatus()\"" >> /tmp/cbcluster
+        sudo chmod 0755 /tmp/cbcluster
+        sudo mv /tmp/cbcluster /usr/local/bin/cbcluster
+    fi
+
+    if [[ $ATTEMPTS -eq 0 ]]
+    then
+        return 0
+    fi
+    
+    NODES_REGISTERED=0
+    while [[ $NODES_REGISTERED -ne $total_nodes ]]
+    do
+        syslog_netcat "Obtaining the node list for this MongoDB cluster by running \"mongo --host ${MONGOSHN}:27017 --eval \"db.printShardingStatus()\" | grep \"${MONGORS} | wc -l\"..."            
+        NODES_REGISTERED=$(mongo --host ${MONGOSHN}:27017 --eval "db.printShardingStatus()" | grep \"${MONGORS} | grep host | wc -l)                        
+
+        syslog_netcat "Nodes registered on the cluster: $NODES_REGISTERED out of $total_nodes"        
+        counter="$(( $counter + 1 ))"
+
+        sleep $INTERVAL
+    done
+
+    if [[ $counter -gt $ATTEMPTS ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+export -f check_mongodb_cluster_state
 
 function show_cassandra_cluster_schema {
 
