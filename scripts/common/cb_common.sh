@@ -1397,7 +1397,8 @@ function replicate_to_container_if_nested {
     # the correct priveleges, then run the entrypoint script already provided
     # which then starts SSH on its own. Because we're using host networking, everything
     # works as-is without any changes.
-    sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo mkdir ${userpath}/$username; sudo cp -a ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chmod 755 ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"
+    CMD='sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo mkdir ${userpath}/$username; sudo cp -a ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chmod 755 ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"'
+    eval $CMD
 
     syslog_netcat "Container started, settling..."
 
@@ -1411,6 +1412,14 @@ function replicate_to_container_if_nested {
             ((ATTEMPTS=ATTEMPTS-1))
             if [ ${ATTEMPTS} -gt 0 ] ; then
                 syslog_netcat "Still waiting on container startup. Attempts left: ${ATTEMPTS}"
+               if [ x"$rc" == x"1" ] ; then
+                       syslog_netcat "Recreating container..."
+                        # Sometimes ssh doesn't go down or gets restarted. Try again.
+                        service_stop_disable sshd
+                        sudo docker rm cbnested
+                       eval $CMD
+                       syslog_netcat "Recreated."
+               fi
                 sleep 2
                 continue
             else
