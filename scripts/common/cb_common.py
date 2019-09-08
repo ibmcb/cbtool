@@ -546,7 +546,10 @@ def is_number(val) :
     '''
     try:
         _val = float(val)
-        return _val
+        if _val == 0.0 :
+            return True
+        else :
+            return _val
     
     except ValueError:
         return False
