@@ -107,7 +107,7 @@ RUN apt-get install -y ganglia-monitor; sudo ln -s /usr/sbin/gmond /usr/local/bi
 # gmond-install-pm
 
 # rsyslog-install-pm
-RUN apt-get install -y rsyslog; sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd; mkdir -p /var/log/cloudbench
+RUN apt-get install -y rsyslog; sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd; sudo mkdir -p /var/log/cloudbench
 # rsyslog-install-pm
 
 # rsyslog-filter-pm
