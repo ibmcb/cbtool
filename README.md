@@ -9,7 +9,7 @@ Subscribe to our mailing list:
 - Development: https://groups.google.com/forum/#!forum/cbtool-devel
 
 
-## New! CloudBench is now released as a component of [SPEC Cloud IaaS 2016](http://spec.org/cloud_iaas2016)
+## New! CloudBench is now released as a component of [SPEC Cloud IaaS 2018](http://spec.org/cloud_iaas2018)
 
 ## To get started:
 
