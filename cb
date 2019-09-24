@@ -142,6 +142,12 @@ def main() :
                 break
             except KeyboardInterrupt :
                 print ("CTRL-D or quit to exit")
-    readline.write_history_file(os.path.expanduser("~") + "/.cb_history")
+    readline.write_history_file(_history + ".tmp")
+    _history_fh = open(_history + ".tmp")
+    _history_contents = _history_fh.read()
+    _history_fh.close()
+    _history_fh = open(_history, 'w')
+    _history_fh.write(_history_contents)
+    _history_fh.close()
     
 main()
