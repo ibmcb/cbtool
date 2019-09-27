@@ -275,6 +275,10 @@ PAUSE_AFTER_RUN = $False
 # This allows the tester to prevent the load manager from doing anything
 # upon initial startup
 PAUSE_AFTER_ATTACHED = $False
+# It's common for a load balancer to accept traffic from the internet but
+# balance it on the private network. Let's support that.
+# By default, we assume all LB traffic stays on the private network.
+USE_PUBLIC_LB_NETWORK=$False
 
 [AIDRS_DEFAULTS]
 USERNAME = $MAIN_USERNAME

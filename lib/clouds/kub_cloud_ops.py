@@ -593,6 +593,7 @@ class KubCmds(CommonCloudFunctions) :
                     service.reload()
                     if "loadBalancer" in service.obj["status"] and "ingress" in service.obj["status"]["loadBalancer"] :
                         obj_attr_list["prov_cloud_ip"] = service.obj["status"]["loadBalancer"]["ingress"][0]["ip"]
+                        obj_attr_list["public_cloud_ip"] = service.obj["status"]["loadBalancer"]["ingress"][0]["ip"]
                         # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
                         cbdebug("Found external IP: " + obj_attr_list["prov_cloud_ip"], True)
                     else :
