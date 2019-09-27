@@ -1354,6 +1354,11 @@ function replicate_to_container_if_nested {
         return 1
     fi
 
+    if [ -e /.dockerenv ] ; then
+        syslog_netcat "The container did startup. Continuing to use it..."
+        return 1
+    fi
+
     nest_containers_enabled=`get_my_vm_attribute nest_containers_enabled`
 
     if [ x"${nest_containers_enabled}" != x"True" ] ; then
