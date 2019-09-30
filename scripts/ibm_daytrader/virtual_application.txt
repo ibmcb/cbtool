@@ -12,6 +12,7 @@ LOAD_BALANCER_TARGET_PORTS = 9080
 LOAD_BALANCER_TARGET_URL = daytrader
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = client_ibm_daytrader
@@ -48,7 +49,7 @@ DB2_SETUP1 = cb_restart_db2.sh
 WAS_SETUP2 = cb_restart_was.sh
 WAS_RESET1 = cb_restart_was.sh
 DB2_RESET1 = cb_restart_db2.sh
-START = cb_run_daytrader.sh
+CLIENT_IBM_DAYTRADER_START1 = cb_run_daytrader.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto

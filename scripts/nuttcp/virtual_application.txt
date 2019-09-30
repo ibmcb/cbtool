@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = nuttcpclient->nuttcpserver
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = nuttcpclient
@@ -31,7 +32,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: number of parallel client threads.\n
 DESCRIPTION +=  - LOAD_DURATION meaning: maximum length of time to run.\n
 NUTTCPCLIENT_SETUP1 = cb_check_nuttcp_client.sh
 NUTTCPSERVER_SETUP1 = cb_check_nuttcp_server.sh
-START = cb_run_nuttcp.sh
+NUTTCPCLIENT_START1 = cb_run_nuttcp.sh
 
 # VApp-specific modifier parameters. 
 TRAFFIC_DIRECTION=r

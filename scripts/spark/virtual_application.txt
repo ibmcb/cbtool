@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = sparkmaster->2_x_sparkslave
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = sparkmaster
@@ -48,7 +49,7 @@ SPARKSLAVE_RESIZE2 = cb_start_hadoop_cluster.sh
 SPARKMASTER_RESIZE3 = cb_config_spark_cluster.sh
 SPARKSLAVE_RESIZE3 = cb_config_spark_cluster.sh
 SPARKMASTER_RESIZE4 = cb_start_spark_cluster.sh
-START = cb_run_spark.sh
+SPARKMASTER_START1 = cb_run_spark.sh
 
 # VApp-specific modifier parameters.
 JAVA_HOME = auto

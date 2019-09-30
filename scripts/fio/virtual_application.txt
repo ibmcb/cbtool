@@ -6,6 +6,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = fio 
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = fio
@@ -28,7 +29,7 @@ DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: number of jobs running in parallel.\n
 DESCRIPTION +=  - LOAD_DURATION meaning:  maximum length of time to run.\n
 FIO_SETUP1 = cb_start_fio.sh
-START = cb_run_fio.sh
+FIO_START1 = cb_run_fio.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 FIO_ENGINE = sync

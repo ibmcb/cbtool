@@ -6,6 +6,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = kernbench
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = kernbench
@@ -28,7 +29,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: number of jobs running in parallel, curren
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when a specific\n
 DESCRIPTION +=    number of I/O operations is reached.\n
 KERNBENCH_SETUP1 = cb_start_kernbench.sh
-START = cb_run_kernbench.sh
+KERNBENCH_START1 = cb_run_kernbench.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 # NR_CPUS = auto means use kernbench "optimal runs": 4*cpu

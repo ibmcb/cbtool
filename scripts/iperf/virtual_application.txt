@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = iperfclient->iperfserver
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = iperfclient
@@ -31,7 +32,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: number of parallel client threads.\n
 DESCRIPTION +=  - LOAD_DURATION meaning: maximum length of time to run.\n
 IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
 IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
-START = cb_run_iperf.sh
+IPERFCLIENT_START1 = cb_run_iperf.sh
 
 # VApp-specific modifier parameters.
 TRAFFIC_MSS=auto

@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = bonnie
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = bonnie
@@ -34,8 +35,8 @@ DESCRIPTION +=    simply uses all the available RAM (and a file twice as large).
 DESCRIPTION +=  - LOAD_LEVEL meaning: concurrency (parameter -c).\n 
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all I/O \n
 DESCRIPTION +=    operations are complete.\n
-BTEST_SETUP1 = cb_restart_bonnie.sh
-START = cb_run_bonnie.sh
+BONNIE_SETUP1 = cb_restart_bonnie.sh
+BONNIE_START1 = cb_run_bonnie.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 BONNIE_DATA_DIR = /btestdir

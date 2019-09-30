@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = postmark
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = postmark
@@ -28,7 +29,7 @@ DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (does not mean anything
 DESCRIPTION +=- LOAD_LEVEL meaning: number of transactions ("set transactions").\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all transactions are finished.\n
 POSTMARK_SETUP1 = cb_start_postmark.sh
-START = cb_run_postmark.sh
+POSTMARK_START1 = cb_run_postmark.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 POSTMARK_DATA_DIR = /postmarkdir

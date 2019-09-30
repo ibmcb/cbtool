@@ -67,7 +67,7 @@ class ProcessManagement :
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
                        debug_cmd = False, raise_exception = True, step = None, \
-                       tell_me_if_stderr_contains = False, port = None, check_stderr_len = True) :
+                       tell_me_if_stderr_contains = False, port = None, check_stderr_len = True, ssh_keepalive = True) :
         '''
         TBD
         '''
@@ -112,7 +112,10 @@ class ProcessManagement :
 
             if self.connection_timeout :
                 _connection_timeout = " -o ConnectTimeout=" + str(self.connection_timeout) + ' '
-                _established_timeout = " -o ServerAliveCountMax=1 -o ServerAliveInterval=" + str(self.connection_timeout) + ' '
+                if ssh_keepalive :
+                    _established_timeout = " -o ServerAliveCountMax=1 -o ServerAliveInterval=" + str(self.connection_timeout) + ' '
+                else :
+                    _established_timeout = ""
             else :
                 _connection_timeout = ''
                 _established_timeout = ''
@@ -220,7 +223,8 @@ class ProcessManagement :
                                  port = 22, \
                                  remaining_time = 100000, \
                                  osci = False, \
-                                 get_hostname_using_key = False):
+                                 get_hostname_using_key = False,
+                                 ssh_keepalive = True):
         '''
         TBD
         '''
@@ -247,7 +251,8 @@ class ProcessManagement :
                                                                               raise_exception_on_error, \
                                                                               step = step,
                                                                               tell_me_if_stderr_contains = tell_me_if_stderr_contains, \
-                                                                              port = port)
+                                                                              port = port,
+                                                                              ssh_keepalive = ssh_keepalive)
 
             except ProcessManagement.ProcessManagementException, obj :
                 if obj.status == "90001" :
@@ -305,7 +310,7 @@ class ProcessManagement :
     def parallel_run_os_command(self, cmdline_list, override_hostname_or_uuid_list, port_list, \
                                 total_attempts, retry_interval, \
                                 execute_parallelism, really_execute = True, \
-                                debug_cmd = False, step = None, remaining_time = 100000, osci = False, get_hostname_using_key = False) :
+                                debug_cmd = False, step = None, remaining_time = 100000, osci = False, get_hostname_using_key = False, ssh_keepalive = True) :
         '''
         TBD
         '''
@@ -342,7 +347,8 @@ class ProcessManagement :
                                                       port_list[_index], \
                                                       remaining_time,
                                                       osci = osci,
-                                                      get_hostname_using_key = get_hostname_using_key
+                                                      get_hostname_using_key = get_hostname_using_key,
+                                                      ssh_keepalive = ssh_keepalive
                                                       )
                     else :
                         _status = 0
@@ -367,7 +373,8 @@ class ProcessManagement :
                                               port_list[_index], \
                                               remaining_time, \
                                               osci = osci, \
-                                              get_hostname_using_key = get_hostname_using_key)
+                                              get_hostname_using_key = get_hostname_using_key,
+                                              ssh_keepalive = ssh_keepalive)
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''

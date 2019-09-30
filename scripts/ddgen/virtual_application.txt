@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = ddgen
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = ddgen
@@ -38,7 +39,7 @@ DESCRIPTION +=    amount of data to an instance's disk, and then capturing the\n
 DESCRIPTION +=    instance onto a new image, the cloud "capture" performance\n
 DESCRIPTION +=    can be measured.
 DDGEN_SETUP1 = cb_check_dd_utility.sh
-START = cb_run_ddgen.sh
+DDGEN_START1 = cb_run_ddgen.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 BLOCK_SIZE=64K

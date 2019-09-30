@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = ycsb->redis
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = ycsb
@@ -39,7 +40,7 @@ DESCRIPTION += the VM running YCSB will automatically direct requests to these
 DESCRIPTION += new nodes.
 REDIS_SETUP1 = cb_restart_redis.sh
 YCSB_SETUP2 = cb_setup_ycsb.sh
-START = cb_run_ycsb.sh
+YCSB_START1 = cb_run_ycsb.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto

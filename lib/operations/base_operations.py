@@ -2184,7 +2184,16 @@ class BaseObjectOperations :
             
             if "load_balancer" not in obj_attr_list :
                 obj_attr_list["load_balancer"] = "false"
+
+            if "load_generator_sources" not in obj_attr_list :
+                obj_attr_list["load_generator_sources"] = 1
             
+            _lg_sources = int(str(obj_attr_list["load_generator_sources"]))
+            if _lg_sources > 1 :
+                for _tier_nr in range(0, len(_tiers)) :
+                    if _tiers[_tier_nr].split("_x_")[1] == obj_attr_list["load_generator_role"] :
+                        _tiers[_tier_nr] = str(_lg_sources) + "_x_" + obj_attr_list["load_generator_role"]
+
             if obj_attr_list["load_balancer"].strip().lower() == "true" :
                 for _tier_nr in range(0, len(_tiers)) :
                     if _tiers[_tier_nr].split("_x_")[1] == obj_attr_list["load_generator_role"] :
@@ -2464,7 +2473,7 @@ class BaseObjectOperations :
                 return True
 
     @trace
-    def parallel_vm_config_for_ai(self, cloud_name, ai_uuid, operation) :
+    def parallel_vm_config_for_ai(self, cloud_name, ai_uuid, operation, cmd_params = "") :
         '''
         TBD
         '''
@@ -2685,7 +2694,7 @@ class BaseObjectOperations :
                     _msg = "QEMU Scraper will NOT be automatically"
                     _msg += " started during the deployment of "
                     _msg += _ai_attr_list["log_string"] + "..."                
-                    cbdebug(_msg, True)
+                    cbdebug(_msg)
 
                 _lmr = False
 
@@ -2699,7 +2708,9 @@ class BaseObjectOperations :
     
                         if _command_key in _ai_attr_list :
                             if len(_ai_attr_list[_command_key]) > 1 :
-                                _command = "~/" + _ai_attr_list[_command_key]
+                                if cmd_params != "" :
+                                    cmd_params = " " + cmd_params
+                                _command = "~/" + _ai_attr_list[_command_key] + cmd_params
                                 _found = True
                             else :
                                 _command = "/bin/true"
@@ -2714,7 +2725,7 @@ class BaseObjectOperations :
                             break
                         else :
                             if "dont_start_load_manager" in _ai_attr_list \
-                            and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                                and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                                 _lmr = True
 
                             else :
@@ -2756,6 +2767,7 @@ class BaseObjectOperations :
                     
                     if _actual_attempts > 0 :
                         _application_start = int(time())                        
+                        _ssh_keepalive = False if operation == "start" else True
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                             _vm_uuids, \
                                                                             _vm_pns, \
@@ -2767,13 +2779,14 @@ class BaseObjectOperations :
                                                                             _num, \
                                                                             _smallest_remaining_time, \
                                                                             osci = self.osci, \
-                                                                            get_hostname_using_key = _which_key)
+                                                                            get_hostname_using_key = _which_key,
+                                                                            ssh_keepalive = _ssh_keepalive)
                         
                         sleep(float(_ai_attr_list["post_application_scripts_delay"]))
                         _application_spent_time = int(time()) - _application_start                        
                         _total_application_spent_time += _application_spent_time
                         
-                        _msg = "The application-specific \"setup\" scripts for " + _ai_attr_list["log_string"]
+                        _msg = "The application-specific \"" + operation + "\" scripts for " + _ai_attr_list["log_string"]
                         _msg += " completed with status " + str(_status) + " after "
                         _msg += str(_application_spent_time) + '/' + str(_total_application_spent_time) + " seconds"
                         cbdebug(_msg)

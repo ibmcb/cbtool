@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = btest
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = btest
@@ -33,7 +34,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads (parameter -T).\n
 DESCRIPTION +=  - LOAD_DURATION meaning: maximum alloted time for the execution\n
 DESCRIPTION +=    of all I/O operations.\n
 BTEST_SETUP1 = cb_restart_btest.sh
-START = cb_run_btest.sh
+BTEST_START1 = cb_run_btest.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 BTEST_DATA_DIR = /btestdir

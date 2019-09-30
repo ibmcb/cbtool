@@ -12,6 +12,7 @@ LOAD_BALANCER_TARGET_PORTS = 8080,9080
 LOAD_BALANCER_TARGET_URL = daytrader
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = client_open_daytrader
@@ -48,7 +49,7 @@ MYSQL_SETUP1 = cb_restart_mysql.sh
 GERONIMO_SETUP2 = cb_restart_tomcat.sh
 MYSQL_RESET1 = cb_restart_mysql.sh
 GERONIMO_RESET2 = cb_restart_tomcat.sh
-START = cb_run_daytrader.sh
+CLIENT_OPEN_DAYTRADER_START1 = cb_run_daytrader.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto

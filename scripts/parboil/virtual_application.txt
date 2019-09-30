@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = parboil
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = parboil
@@ -38,7 +39,7 @@ DESCRIPTION += , e.g., "1" for "default size" in "histo" and "2+" for "large siz
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the \n
 DESCRIPTION += computational problem is solved.\n
 PARBOIL_SETUP1 = cb_setup_parboil.sh
-START = cb_run_parboil.sh
+PARBOIL_START1 = cb_run_parboil.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 PARBOIL_DIR = ~/parboil

@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = giraphmaster->3_x_giraphslave
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = giraphmaster
@@ -43,7 +44,7 @@ GIRAPHMASTER_RESIZE1 = cb_config_giraph_cluster.sh
 GIRAPHSLAVE_RESIZE1 = cb_config_giraph_cluster.sh
 GIRAPHMASTER_RESIZE2 = cb_start_giraph_cluster.sh
 GIRAPHSLAVE_RESIZE2 = cb_start_giraph_cluster.sh
-START = cb_run_giraph.sh
+GIRAPHMASTER_START1 = cb_run_giraph.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto
