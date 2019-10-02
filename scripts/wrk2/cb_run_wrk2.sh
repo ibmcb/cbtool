@@ -56,6 +56,8 @@ unit=$(echo "${lat}" | grep -oE "[a-z]+")
 val=$(echo "${lat}" | sed -e "s/[a-z]\+//g")
 if [ x"${unit}" == xs ] ; then
 	lat=$(echo "${val}*1000" | bc -l)ms
+elif [ x"${unit}" == xm ] ; then
+	lat=$(echo "${val}*1000*60" | bc -l)ms
 fi
 
 tp=$(cat ${RUN_OUTPUT_FILE} | grep Req/Sec | awk '{ print $2 }')
