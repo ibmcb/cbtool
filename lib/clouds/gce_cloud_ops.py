@@ -498,6 +498,7 @@ class GceCmds(CommonCloudFunctions) :
                        
             _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"]
             _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"]
+            obj_attr_list["public_cloud_ip"] = _public_ip_address
                         
             if obj_attr_list["run_netname"] == "private" :
                 obj_attr_list["cloud_hostname"] = _private_hostname

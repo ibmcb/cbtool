@@ -844,6 +844,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             _msg += " Private IP = " + str(node.private_ips)
             cbdebug(_msg)
 
+            if len(node.public_ips) > 0 :
+                obj_attr_list["public_cloud_ip"] = node.public_ips[0]
+
             if len(node.private_ips) > 0 :
                 if obj_attr_list["prov_netname"].lower() == "private" :
                     obj_attr_list["prov_cloud_ip"] = node.private_ips[0]

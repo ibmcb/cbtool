@@ -451,6 +451,9 @@ class SlrCmds(CommonCloudFunctions) :
         elif obj_attr_list["prov_netname"] == "public" :
             _key = ''
 
+        if ("primaryIpAddress" in instance) :
+            obj_attr_list["public_cloud_ip"] = instance["primaryIpAddress"]
+
         if ("primary" + _key + "IpAddress") in instance :
             obj_attr_list["prov_cloud_ip"] = instance["primary" + _key + "IpAddress"]
             obj_attr_list["run_cloud_ip"] = instance["primary" + _key + "IpAddress"]

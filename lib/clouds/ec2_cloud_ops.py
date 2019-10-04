@@ -440,6 +440,8 @@ class Ec2Cmds(CommonCloudFunctions) :
             _private_ip_address = '{0}'.format(obj_attr_list["instance_obj"].private_ip_address)
             _public_hostname = '{0}'.format(obj_attr_list["instance_obj"].public_dns_name)
             _public_hostname, _public_ip_address = hostname2ip(_public_hostname)
+            obj_attr_list["public_cloud_ip"] = _public_ip_address
+
             if obj_attr_list["run_netname"] == "private" :
                 obj_attr_list["cloud_hostname"] = _private_hostname
                 obj_attr_list["run_cloud_ip"] = _private_ip_address
