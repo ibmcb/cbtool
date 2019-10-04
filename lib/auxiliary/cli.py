@@ -674,8 +674,8 @@ class CBCLI(Cmd) :
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
             _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
             _base_cmd += " --operation=cloud-api"
-            _base_cmd += " --apiport=" + self.cld_attr_lst["api_defaults"]["port"]
-            _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
+            _base_cmd += " --apiport=" + self.cld_attr_lst["api_defaults"]["bind_port"]
+            _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["bind_hostname"]
             _base_cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
             _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["api_facility"]
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]

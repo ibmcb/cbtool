@@ -72,6 +72,16 @@ class KubCmds(CommonCloudFunctions) :
 
     @trace
     def connect(self, access, credentials, vmc_name, extra_parms = {}, diag = False, generate_rc = False) :
+
+        _context = False
+        _taint = False
+
+        if vmc_name.lower() != "none" :
+            if vmc_name.count(":") :
+                _context, _taint = vmc_name.split(":")
+            else :
+                _context = vmc_name
+
         # We need to handle multiple VMCs simultaneously in a thread-safe manner.
         try :
             getattr(KubCmds.catalogs, "kubeconn")
@@ -97,10 +107,15 @@ class KubCmds(CommonCloudFunctions) :
                             kubeyaml = extra_parms["kubeyaml"]
 
                     if kubeyaml :
-                        KubCmds.catalogs.kubeconn[vmc_name] = pykube.HTTPClient(pykube.KubeConfig(kubeyaml))
+                        _kube_config = pykube.KubeConfig(kubeyaml)
                     else :
-                        KubCmds.catalogs.kubeconn[vmc_name] = pykube.HTTPClient(pykube.KubeConfig.from_file(access))                        
+                        _kube_config = pykube.KubeConfig.from_file(access)
 
+                    if _context :
+                        cbdebug("Setting current context to: " + _context)
+                        _kube_config.set_current_context(_context)
+
+                    KubCmds.catalogs.kubeconn[vmc_name] = pykube.HTTPClient(_kube_config)
                 # When k8s clusters are created on demand, they often have not been fully bootstrapped and so
                 # the k8s API isn't fully ready yet. This is common. So, we just need to retry a few times
                 # until the k8s cluster is fully ready.
@@ -329,6 +344,9 @@ class KubCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+            _allowed_namespace = obj_attr_list["namespace"]
+            if _allowed_namespace == "none" :
+                _allowed_namespace = None
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
             _wait = int(obj_attr_list["update_frequency"])
@@ -349,13 +367,19 @@ class KubCmds(CommonCloudFunctions) :
                 _msg = "No such connection. Unregistered."
                 return 0, _msg 
             kubeconn = KubCmds.catalogs.kubeconn[obj_attr_list["name"]]
+
             for _abstraction_type in [ "service", "deployment", "replicaset", "pod", "pvc" ] :
                 for _item in pykube.objects.Namespace.objects(kubeconn) :
                     _namespace = _item.name
                     if _namespace in ["kube-public", "kube-system"] :
                         continue
                     _running_instances = True
+
+                    if _allowed_namespace != _namespace :
+                        cbdebug("Namespace " + _namespace + " not allowed. Skipping.")
+                        continue
         
+                    cbdebug("Checking namespace: " + _namespace)
                     while _running_instances and _curr_tries < _max_tries :
                         _running_instances = False
     
@@ -400,6 +424,8 @@ class KubCmds(CommonCloudFunctions) :
                                     # Otherwise, if it's a permanent k8s cluster, send a normal delete.
                                     # If the delete gets stuck, the user needs to investiage.
                                     _object.delete()
+                            else :
+                                cbdebug("Skipping object: " + _object_name)
 
                                     
                         sleep(_wait)
@@ -587,6 +613,7 @@ class KubCmds(CommonCloudFunctions) :
                 _address = obj_attr_list["k8s_instance"]["status"]["podIP"]
 
                 obj_attr_list["run_cloud_ip"] = _address
+                obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] + "_" + obj_attr_list["name"]
 
                 if obj_attr_list["netname"] == "public" :
                     service = pykube.Service(KubCmds.catalogs.kubeconn[obj_attr_list["vmc_name"]], { "kind": "Service", "apiVersion": "v1",  "metadata": { "name": obj_attr_list["cloud_vm_name"]}})
@@ -610,9 +637,10 @@ class KubCmds(CommonCloudFunctions) :
                         obj_attr_list["prov_cloud_ip"] = obj_attr_list["host_cloud_ip"]
                     else :
                         obj_attr_list["prov_cloud_ip"] = obj_attr_list["run_cloud_ip"]
+                        # In the case of direct access to the IP, do not manipulate cloud_ip
+                        obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
                 # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
-                obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] + "_" + obj_attr_list["name"]
                 obj_attr_list["cloud_mac"] = "NA"
                 
                 return True
@@ -991,6 +1019,17 @@ class KubCmds(CommonCloudFunctions) :
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                          obj_attr_list["vmc_name"], obj_attr_list)
 
+            _context = False
+            _taint = False
+            _node_name = False
+
+            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
+            cbdebug("Pool is: " + _vmc_attr_list["pool"])
+            if _vmc_attr_list["pool"].count(",") :
+                _taint, _node_name = _vmc_attr_list["pool"].split(",")
+            else :
+                _taint = _vmc_attr_list["pool"]
+
             self.determine_instance_name(obj_attr_list)
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower()
             obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()
@@ -1062,27 +1101,52 @@ class KubCmds(CommonCloudFunctions) :
                                            "name": obj_attr_list["cloud_vm_name"], \
                                            "image": obj_attr_list["imageid1"], \
                                            "imagePullPolicy" : obj_attr_list["image_pull_policy"], \
+                                           "securityContext" : {"privileged" : True, "capabilities" : {"add" : ["IPC_LOCK", "SYS_ADMIN"] }},
                                         }
                                      ], 
                                    "imagePullSecrets" : _image_pull_secrets,
-                                   "affinity": { 
-                                     "podAntiAffinity" : {
-                                       "requiredDuringSchedulingIgnoredDuringExecution" : [
-                                         { "labelSelector": {
-                                             "matchExpressions": [
-                                               { "key" : "ai",
-                                                "operator" : "In",
-                                                "values" : [obj_attr_list["ai"]]
-                                               }
-                                             ] 
-                                           },
-                                          "topologyKey" : "kubernetes.io/hostname"
-                                        }
-                                      ]                                       
-                                     }
-                                  }
                                  }
                        }
+
+                # We want to refine this over time, but we have two scheduling options:
+                # 1. [default] Anti Affinity (don't place the VMs from the same AI in the same place)
+                #      [USER-DEFINED]
+                #      KUB_INITIAL_VMCS = default # use the default namespace, no taints or node names
+                # 2. Forced placement (_taint and _node_name are set in the INITAL_VMCS, like this:
+                #      [USER-DEFINED]
+                #      KUB_INITIAL_VMCS = namespace:taint;nodeName # It's kind of gross. We can make it better later.
+                #
+                # The 2nd options requires that you go "taint" the nodes that you want isolated
+                # so that containers from other tenants (or yourself) don't land on in unwanted places.
+
+                if not _taint and not _node_name :
+                    _obj["spec"]["affinity"] = {
+                                         "podAntiAffinity" : {
+                                           "requiredDuringSchedulingIgnoredDuringExecution" : [
+                                             { "labelSelector": {
+                                                 "matchExpressions": [
+                                                   { "key" : "ai",
+                                                    "operator" : "In",
+                                                    "values" : [obj_attr_list["ai"]]
+                                                   }
+                                                 ]
+                                               },
+                                              "topologyKey" : "kubernetes.io/hostname"
+                                            }
+                                          ]
+                                         }
+                                      }
+                else :
+                    cbdebug("Using taint: " + str(_taint) + " and node name: " + str(_node_name))
+                    if _taint :
+                        _obj["spec"]["tolerations"] = [ {
+                                                        "effect" : "NoSchedule",
+                                                        "key" : _taint,
+                                                        "operator" : "Exists"
+                                                    }
+                                                  ]
+                    if _node_name :
+                        _obj["spec"]["nodeName"] = _node_name
 
             if obj_attr_list["abstraction"] == "replicaset" :
                 _obj = { "apiVersion": "extensions/v1beta1", \
