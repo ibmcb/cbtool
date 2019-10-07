@@ -108,7 +108,7 @@ function check_container {
 
     # If we're using nesting (workload container inside a VM),
     # we still want to mount external volumes in the container.
-    if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]] && [[ x"${nest_containers_enabled}" != x"True" ]]
+    if [ -e /.dockerenv ] && [[ x"${nest_containers_enabled}" != x"True" ]]
     then
         export IS_CONTAINER=1
         if [[ -z $LC_ALL ]]

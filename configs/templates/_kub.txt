@@ -4,18 +4,21 @@ KUB_ACCESS = need_to_be_configured_by_user
 KUB_KEY_NAME = cbtool_rsa
 KUB_SSH_KEY_NAME = cbtool_rsa
 KUB_LOGIN = need_to_be_configured_by_user
-KUB_INITIAL_VMCS = need_to_be_configured_by_user
+KUB_INITIAL_VMCS = none
 KUB_NETNAME = need_to_be_configured_by_user
+KUB_NAMESPACE = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 KUB_ACCESS_DOC = Please enter the full path to the kubernetes configuration file
 KUB_ACCESS_DEFAULT = tcp://<address>:2375
+KUB_NAMESPACE_DEFAULT = default
+KUB_NAMESPACE_DOC = Namespace to use
 KUB_LOGIN_DOC = $LOGIN_DOC
 KUB_LOGIN_DEFAULT = klabuser
 KUB_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 KUB_SSH_KEY_NAME_DEFAULT = id_rsa.private
-KUB_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
-KUB_INITIAL_VMCS_DEFAULT = world:sut
+KUB_INITIAL_VMCS_DOC = Kubernetes context (multiple clusters)
+KUB_INITIAL_VMCS_DEFAULT = none
 KUB_NETNAME_DOC = "Please enter the name of the network that will connect all created Containers"
 KUB_NETNAME_DEFAULT = private
 
@@ -37,6 +40,7 @@ ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
 HOST_USER_ROOT = $False
+NAMESPACE = $KUB_NAMESPACE
 
 [VM_DEFAULTS : KUB_CLOUDCONFIG]
 ACCESS = $Empty
@@ -63,7 +67,7 @@ SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $True
-NAMESPACE = default
+NAMESPACE = $KUB_NAMESPACE
 ABSTRACTION = pod
 REPLICAS = 1
 PORTS_BASE = 10000
@@ -82,7 +86,7 @@ RUN_APPLICATION_SCRIPTS = $True
 LOGIN = $KUB_LOGIN
 SSH_KEY_NAME = $KUB_SSH_KEY_NAME
 ATTACH_PARALLELISM = 5
-NAMESPACE = default
+NAMESPACE = $KUB_NAMESPACE
 ABSTRACTION = pod
 PORTS_BASE = 10000
 
@@ -166,3 +170,5 @@ XPINGRECEIVER =  size:1-256, imageid1:cb_xping
 XPINGSENDER =  size:1-256, imageid1:cb_xping
 YATINYVM = size:1-256, imageid1:cb_nullworkload
 YCSB = size:2-4096, imageid1:cb_ycsb
+TPCC = size:2-4096, imageid1:cb_tpcc
+KERNBENCH = size:2-4096, imageid1:cb_kernbench

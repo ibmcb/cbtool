@@ -4,10 +4,11 @@ DOK8S_ACCESS = https://api.digitalocean.com/v2
 DOK8S_KEY_NAME = cbtool_rsa
 DOK8S_SSH_KEY_NAME = cbtool_rsa
 DOK8S_LOGIN = need_to_be_configured_by_user
-DOK8S_INITIAL_VMCS = need_to_be_configured_by_user
+DOK8S_INITIAL_VMCS = none
 DOK8S_NETNAME = need_to_be_configured_by_user
 DOK8S_CREDENTIALS = need_to_be_configured_by_user
 DOK8S_CLUSTERS = need_to_be_configured_by_user
+DOK8S_NAMESPACE = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 DOK8S_ACCESS_DOC = Please enter the full path to the kubernetes configuration file
@@ -17,7 +18,9 @@ DOK8S_LOGIN_DEFAULT = klabuser
 DOK8S_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 DOK8S_SSH_KEY_NAME_DEFAULT = id_rsa.private
 DOK8S_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
-DOK8S_INITIAL_VMCS_DEFAULT = world:sut
+DOK8S_INITIAL_VMCS_DEFAULT = none
+DOK8S_NAMESPACE_DEFAULT = default
+DOK8S_NAMESPACE_DOC = Namespace to use
 DOK8S_NETNAME_DOC = "Please enter the name of the network that will connect all created Containers"
 DOK8S_NETNAME_DEFAULT = private
 DOK8S_CREDENTIALS_DOC = DigitalOcean Bearer Tokens
@@ -44,6 +47,7 @@ ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
 HOST_USER_ROOT = $False
+NAMESPACE = $DOK8S_NAMESPACE
 
 [VM_DEFAULTS : DOK8S_CLOUDCONFIG]
 ACCESS = $Empty
@@ -69,7 +73,7 @@ SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $True
-NAMESPACE = default
+NAMESPACE = $DOK8S_NAMESPACE
 ABSTRACTION = pod
 REPLICAS = 1
 PORTS_BASE = 10000
@@ -89,7 +93,7 @@ RUN_APPLICATION_SCRIPTS = $True
 LOGIN = $DOK8S_LOGIN
 SSH_KEY_NAME = $DOK8S_SSH_KEY_NAME
 ATTACH_PARALLELISM = 5
-NAMESPACE = default
+NAMESPACE = $DOK8S_NAMESPACE
 ABSTRACTION = pod
 PORTS_BASE = 10000
 
