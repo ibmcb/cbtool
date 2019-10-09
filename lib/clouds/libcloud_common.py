@@ -565,9 +565,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             for credentials_list in obj_attr_list["credentials"].split(";"):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
 
-            _running_instances = True
-            while _running_instances :
-                _running_instances = False
+            _existing_instances = True
+            while _existing_instances :
+                _existing_instances = False
                 for credentials_list in obj_attr_list["credentials"].split(";"):
                     credentials = credentials_list.split(":")
                     tenant = credentials[0]
@@ -580,6 +580,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                         if _reservation.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) :
                             if _reservation.state in [ NodeState.PENDING, NodeState.STOPPED ] :
                                 cbdebug("Instance " + _reservation.name + " still has a pending event. waiting to destroy...")
+                                if _reservation.state == NodeState.STOPPED :
+                                    cbdebug("Instance is stopped: " + _reservation.name + " . CB will not destroy stopped instances. Please investigate why it is stopped.", True)
+                                _existing_instances = True
                                 continue
 
                             try :
@@ -596,12 +599,12 @@ class LibcloudCmds(CommonCloudFunctions) :
                                 for line in traceback.format_exc().splitlines() :
                                     cbwarn(line, True)
                                 self.dump_httplib_headers(credentials_list)
-                            _running_instances = True
+                            _existing_instances = True
                         else :
                             _msg = "Cleaning up " + self.get_description() + ".  Ignoring instance: " + _reservation.name
                             cbdebug(_msg)
 
-                    if _running_instances :
+                    if _existing_instances :
                         sleep(int(obj_attr_list["update_frequency"]))
 
             if self.use_volumes :
@@ -1469,7 +1472,10 @@ class LibcloudCmds(CommonCloudFunctions) :
                         break
 
                     if _instance.state in [ NodeState.PENDING, NodeState.STOPPED ] :
-                        cbdebug(self.get_description() + " still has a pending event. Waiting to destroy...", True)
+                        if _instance.state == NodeState.STOPPED :
+                            cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") is stopped. CB will not destroy stopped instances. Please investigate why it is stopped.", True)
+                        else :
+                            cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") still has a pending event. Waiting to destroy...", True)
                         sleep(_wait)
                         _curr_tries += 1
                         continue
