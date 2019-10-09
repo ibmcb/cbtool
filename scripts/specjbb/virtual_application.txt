@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = specjbb
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = specjbb
@@ -30,7 +31,7 @@ DESCRIPTION += default (1000). Used only with the "preset" load profile.\n
 DESCRIPTION +=- LOAD_DURATION meaning: parameter specjbb.controller.preset.duration 
 DESCRIPTION += ("preset" load profile only).\n
 SPECJBB_SETUP1 = cb_setup_specjbb.sh
-START = cb_run_specjbb.sh
+SPECJBB_START1 = cb_run_specjbb.sh
 
 # VApp-specific modifier parameters.
 JAVA_HOME = auto

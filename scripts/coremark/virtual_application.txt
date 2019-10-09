@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = coremark
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = coremark
@@ -36,7 +37,7 @@ DESCRIPTION +=    memory effects. During initial setup, the benchmark is compile
 DESCRIPTION +=    to run on a specific number of CPUs (this number may vary, since\n 
 DESCRIPTION +=    instances can be resized by the cloud).\n
 COREMARK_SETUP1 = cb_setup_cmk.sh
-START = cb_run_coremark.sh
+COREMARK_START1 = cb_run_coremark.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 LOAD_FACTOR = 10000

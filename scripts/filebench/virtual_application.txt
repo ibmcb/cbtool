@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = filebench
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = filebench
@@ -35,7 +36,7 @@ DESCRIPTION +=  - COMMENT: One of the "Synthetic" Workloads. The filebench\n
 DESCRIPTION +=    benchmark, due its internal timing idiosyncrasies, might not\n
 DESCRIPTION +=    be able to fully stress the disk I/O capacity of a single instance.
 FILEBENCH_SETUP1 = cb_start_filebench.sh
-START = cb_run_filebench.sh
+FILEBENCH_START1 = cb_run_filebench.sh
 
 # VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
 FILEBENCH_DATA_DIR = /fstore

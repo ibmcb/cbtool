@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = scimark
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = scimark
@@ -27,7 +28,7 @@ DESCRIPTION = Deploys a SINGLE INSTANCE and runs the Scimark 2.0 benchmark.\n
 DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_\n
 DESCRIPTION +=- LOAD_LEVEL meaning: small datasize (load level 1) or large datasize (load leve 2+).\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all tests are complete.\n
-START = cb_run_scimark.sh
+SCIMARK_START1 = cb_run_scimark.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto

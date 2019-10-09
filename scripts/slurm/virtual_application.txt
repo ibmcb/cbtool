@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = slurmcontroller->2_x_slurmcompute
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = slurmcontroller
@@ -37,7 +38,7 @@ SLURMCONTROLLER_SETUP1 = cb_config_slurm_cluster.sh
 SLURMCOMPUTE_SETUP1 = cb_config_slurm_cluster.sh
 SLURMCONTROLLER_SETUP2 = cb_start_slurm_cluster.sh
 SLURMCOMPUTE_SETUP2 = cb_start_slurm_cluster.sh
-START = cb_run_slurm.sh
+SLURMCONTROLLER_START1 = cb_run_slurm.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 

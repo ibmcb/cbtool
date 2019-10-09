@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = netclient->netserver
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = netclient
@@ -31,7 +32,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: not applicable/not used.\n
 DESCRIPTION +=  - LOAD_DURATION meaning: maximum length of time to run.\n
 NETCLIENT_SETUP1 = cb_check_netperf_client.sh
 NETSERVER_SETUP1 = cb_check_netperf_server.sh
-START = cb_run_netperf.sh
+NETCLIENT_START1 = cb_run_netperf.sh
 
 # VApp-specific modifier parameters. 
 SEND_BUFFER_SIZE=auto

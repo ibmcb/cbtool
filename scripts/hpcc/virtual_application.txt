@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = fen_hpc->3_x_cn_hpc
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = fen_hpc
@@ -41,7 +42,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: multiplier for the size of computational p
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
 FEN_HPC_SETUP1 = cb_config_hpcc.sh
 CN_HPC_SETUP1 = cb_config_hpcc.sh
-START = cb_run_hpcc.sh
+FEN_HPC_START1 = cb_run_hpcc.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 MAX_N_SIZE_PER_NODE = 40

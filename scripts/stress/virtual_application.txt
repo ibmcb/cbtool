@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = stress
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = stress
@@ -29,7 +30,7 @@ DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: number "stressor" threads.\n 
 DESCRIPTION +=  - LOAD_DURATION meaning: maximum length of time to run.\n
 STRESS_SETUP1 = cb_check_stress.sh
-START = cb_run_stress.sh
+STRESS_START1 = cb_run_stress.sh
 
 # VApp-specific modifier parameters.
 

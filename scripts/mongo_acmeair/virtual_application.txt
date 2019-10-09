@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = acmeair->liberty->mongos->mongo_cfg_server->3_x_mongodb
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = acmeair
@@ -38,7 +39,7 @@ LIBERTY_SETUP3 = cb_restart_liberty.sh
 MONGO_CFG_SERVER_RESIZE1 = cb_restart_mongo_cfg.sh
 MONGODB_RESIZE1 = cb_restart_mongo.sh
 MONGOS_RESIZE2 = cb_restart_mongos.sh
-START = cb_run_acme.sh
+ACMEAIR_START1 = cb_run_acme.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto

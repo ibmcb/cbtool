@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = tinyvm
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = tinyvm
@@ -39,7 +40,7 @@ DESCRIPTION +=    Application (fake) performance samples are reported back to\n
 DESCRIPTION +=    CB's Metric Store, makes it also an interesting "sanity check".
 TINYVM_SETUP1 = cb_start_nothing.sh
 TINYVM_RESET1 = cb_reset_nothing.sh
-START = cb_run_nothing.sh
+TINYVM_START1 = cb_run_nothing.sh
 
 TINYVM_DATA_DIR = /nulltest
 TINYVM_DATA_FSTYP = ext4

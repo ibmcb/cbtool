@@ -12,11 +12,12 @@ LOAD_BALANCER_TARGET_PORTS = 80
 LOAD_BALANCER_TARGET_URL = 
 LOAD_BALANCER_PORT = 80
 LOAD_BALANCER_URL =
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = wrk2
-LOAD_MANAGER_ROLE = wrk2
-METRIC_AGGREGATOR_ROLE = wrk2
+LOAD_MANAGER_ROLE = wrk2 
+METRIC_AGGREGATOR_ROLE = wrk2 
 CAPTURE_ROLE = nodejs 
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I800
@@ -41,7 +42,8 @@ LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh
 # These are always executed
 NODEJS_SETUP1 = cb_restart_nodejs.sh
-START = cb_run_wrk2.sh
+TINYVM_SETUP1 = cb_start_nothing.sh
+WRK2_START1 = cb_run_wrk2.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 # Requests/s. The primary motivation for using wrk2 over wrk.

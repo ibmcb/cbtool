@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = sysbench->mysql
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = sysbench
@@ -30,7 +31,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on sysbench (parameter -
 DESCRIPTION +=  - LOAD_DURATION meaning: for how long should sysbench run.\n
 
 MYSQL_SETUP1 = cb_restart_mysql.sh
-START = cb_run_sysbench.sh
+SYSBENCH_START1 = cb_run_sysbench.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 MYSQL_DATA_DIR = /sysbench

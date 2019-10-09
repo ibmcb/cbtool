@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = memtier->1_x_redis
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = memtier
@@ -28,7 +29,7 @@ DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads (parameter -t)\n 
 DESCRIPTION +=  - LOAD_DURATION meaning: maximum time to run (parameter --test-time)\n
 REDIS_SETUP1 = cb_restart_redis.sh
-START = cb_run_memtier.sh
+MEMTIER_START1 = cb_run_memtier.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 RATIO = 5:10

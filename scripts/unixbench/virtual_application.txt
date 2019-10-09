@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = unixbench
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = unixbench
@@ -30,7 +31,7 @@ DESCRIPTION +=description, consult the USAGE file)\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: number of parallel copies (parameter -c).\n 
 DESCRIPTION +=If you want to use all available CPUs, just set the value "10000".\n
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all tests are completed.\n
-START = cb_run_unixbench.sh
+UNIXBENCH_START1 = cb_run_unixbench.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 

@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = linpack
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = linpack
@@ -43,7 +44,7 @@ DESCRIPTION +=  - LOAD_LEVEL meaning: problem size (square root of the matrix si
 DESCRIPTION +=    multiplied by the LOAD_FACTOR.\n 
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
 DESCRIPTION +=  - COMMENT: For clustered (multi-instance) linpack execution, please use HPCC.
-START = cb_run_linpack.sh
+LINPACK_START1 = cb_run_linpack.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 LOAD_FACTOR = 5000

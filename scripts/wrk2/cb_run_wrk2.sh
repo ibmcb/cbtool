@@ -50,6 +50,16 @@ execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 cd ~
 
 lat=$(cat ${RUN_OUTPUT_FILE} | grep Latency | awk '{ print $2 }')
+
+# wrk2 likes to switch units on us from milliseconds to seconds. Let's keep it consistent.
+unit=$(echo "${lat}" | grep -oE "[a-z]+")
+val=$(echo "${lat}" | sed -e "s/[a-z]\+//g")
+if [ x"${unit}" == xs ] ; then
+	lat=$(echo "${val}*1000" | bc -l)ms
+elif [ x"${unit}" == xm ] ; then
+	lat=$(echo "${val}*1000*60" | bc -l)ms
+fi
+
 tp=$(cat ${RUN_OUTPUT_FILE} | grep Req/Sec | awk '{ print $2 }')
 tp_stddev=$(cat ${RUN_OUTPUT_FILE} | grep Req/Sec | awk '{ print $3 }')
 tptotal=$(cat ${RUN_OUTPUT_FILE} | grep Requests/sec | awk '{ print $2 }')
@@ -57,6 +67,7 @@ connecterrors=$(cat ${RUN_OUTPUT_FILE} | grep "errors" | awk '{ print $4 }' | gr
 readerrors=$(cat ${RUN_OUTPUT_FILE} | grep "errors" | awk '{ print $6 }' | grep -oE "[0-9]+")
 writeerrors=$(cat ${RUN_OUTPUT_FILE} | grep "errors" | awk '{ print $8 }' | grep -oE "[0-9]+")
 timeouts=$(cat ${RUN_OUTPUT_FILE} | grep "errors" | awk '{ print $10 }' | grep -oE "[0-9]+")
+
 
 ~/cb_report_app_metrics.py \
 $(format_for_report latency $lat) \

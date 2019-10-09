@@ -5235,35 +5235,47 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                              object_uuid, \
                                              "current_reset_status", \
                                              _reset_status) 
+    
+                # The change we're making here is that we now kick off the workload over
+                # SSH to support multiple load generators running simultaneously.
+                if not _reset_status :
+                    _cmd_params = ''
+                    _cmd_params += str(_ai_attr_list["current_load_profile"]) + ' '                    
+                    _cmd_params += str(_ai_attr_list["current_load_level"]) + ' '
+                    _cmd_params += str(_ai_attr_list["current_load_duration"]) + ' '
+                    _cmd_params += str(_ai_attr_list["current_load_id"]) + ' '
+                    _cmd_params += str(_sla_runtime_targets)
 
-                if not _reset_status and _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] :
-                    _cmd = "~/" + _ai_attr_list["start"] + ' '
-                    _cmd += str(_ai_attr_list["current_load_profile"]) + ' '                    
-                    _cmd += str(_ai_attr_list["current_load_level"]) + ' '
-                    _cmd += str(_ai_attr_list["current_load_duration"]) + ' '
-                    _cmd += str(_ai_attr_list["current_load_id"]) + ' '
-                    _cmd += str(_sla_runtime_targets)
-    
-                    _load_level_time = 0
-    
-                    # You cannot Popen() with a PIPE unless you plan on emptying
-                    # the pipe. The OS pipe has a limited buffer size and if you
-                    # don't empty it, the process will block on write() to the PIPE.
-                    _proc_h = Popen(_cmd, shell=True)
-                    # _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    
-                    if _proc_h.pid :
-                        _msg = "Load generating command \"" + _cmd + "\" "
-                        _msg += " was successfully started."
-                        _msg += "The process id is " + str(_proc_h.pid) + "."
-                        cbdebug(_msg)
-                    
-                        _msg = "Waiting for the load generating process to "
-                        _msg += "terminate."
-                        cbdebug(_msg)
+                    # We still preserve the original behavior for the vast majority of cases
+                    # by simply opening a local fork/exec to run the workload when SSH
+                    # is not needed.
+                    if _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] and int(str(_ai_attr_list["load_generator_sources"])) == 1 :
+                        _script_key = _ai_attr_list["load_manager_role"].lower() + "_start1"
+                        _cmd = "~/" + _ai_attr_list[_script_key] + ' ' + _cmd_params
+        
+                        _proc_h = Popen(_cmd, shell=True)
+        
+                        if _proc_h.pid :
+                            _msg = "Local load generating command \"" + _cmd + "\" "
+                            _msg += " was successfully started."
+                            _msg += "The process id is " + str(_proc_h.pid) + "."
+                            cbdebug(_msg)
+                        
+                            _msg = "Waiting for the load generating process to "
+                            _msg += "terminate."
+                            cbdebug(_msg)
 
-                        #waitpid(-1, 0)
-                        _proc_h.wait()
+                            _proc_h.wait()
+                    else :
+                        # Otherwise, if multiple load generator roles are defined, then
+                        # we need to start those over SSH
+                        _start_status, _fmsg = self.parallel_vm_config_for_ai(cloud_name, \
+                                                                    object_uuid, \
+                                                                    "start", cmd_params = _cmd_params)
+                        if not _start_status :
+                            cbdebug("Remote load generator completed.")
+                        else : 
+                            cberr("Remote load generator start failed: " + _fmsg)
 
                     if str(_ai_attr_list["pause_after_run"]).lower() == "true" :
                         cbdebug("Run complete. Pausing myself")

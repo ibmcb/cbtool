@@ -7,6 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = 1_x_oldisimdriver->1_x_oldisimlb->1_x_oldisimroot->2_x_oldisimleaf
 LOAD_BALANCER_SUPPORTED = $False
+LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $False
 REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = oldisimdriver
@@ -31,7 +32,7 @@ DESCRIPTION +=  - LOAD_DURATION meaning: Time to wait for the execution of queri
 OLDISIMLEAF_SETUP1 = cb_restart_oldisim.sh
 OLDISIMROOT_SETUP2 = cb_restart_oldisim.sh
 OLDISIMLB_SETUP3 = cb_restart_oldisim.sh
-START = cb_run_oldisim.sh
+OLDISIMDRIVER_START1 = cb_run_oldisim.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 OLDISIM_DIR = ~/oldisim

@@ -221,7 +221,7 @@ class RedisMgdConn :
                     for _key_suffix in ["load_profile", "sut", \
                                         "load_generator_role", "load_manager_role",\
                                         "metric_aggregator_role", "capture_role",\
-                                        "start", "load_profile", "load_level",\
+                                        "load_profile", "load_level",\
                                         "load_duration", "profiles", "category" ] :
 
                         if _actual_ai_type_name + '_' + _key_suffix not in cloud_kv_list["ai_templates"] :
