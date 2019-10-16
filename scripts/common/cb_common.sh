@@ -1722,13 +1722,22 @@ function setup_passwordless_ssh {
     REMOTE_DIR_NAME=$(get_my_vm_attribute remote_dir_name)
     SSH_KEY_NAME=$(echo ${SSH_KEY_NAME} | rev | cut -d '/' -f 1 | rev)
 
-    syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
+    syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa with the contents from \"~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME\" to be the same on all VMs.."
     #sudo chmod 0600 ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME
     sudo find ~ -name $SSH_KEY_NAME -exec chmod 0600 {} \;
     sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
     sudo chmod 0600 ~/.ssh/id_rsa
     sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub > ~/.ssh/id_rsa.pub
-    sudo chmod 0600 ~/.ssh/id_rsa.pub
+    sudo chmod 0644 ~/.ssh/id_rsa.pub
+
+    touch ~/.ssh/authorized_keys    
+    PKC=$(cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub)
+    grep "$PKC" ~/.ssh/authorized_keys > /dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "$PKC" >> ~/.ssh/authorized_keys
+        sudo chmod 0644 ~/.ssh/authorized_keys
+    fi
 
     if [[ $(cat ~/.ssh/config | grep -c StrictHostKeyChecking) -eq 0 ]]
     then
