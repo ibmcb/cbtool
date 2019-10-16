@@ -69,7 +69,7 @@ class SlrCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            
+
             _username, _api_key, _api_type = authentication_data.split('-')
             if access.lower().count("private") :
                 self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
@@ -79,24 +79,23 @@ class SlrCmds(CommonCloudFunctions) :
                 self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
                                                                 api_key= _api_key.strip(), \
                                                                 endpoint_url = SoftLayer.API_PUBLIC_ENDPOINT)            
-    
+
             _resp = self.slconn.call('Account', 'getObject')
-            
-            _regions = SoftLayer.MessagingManager(self.slconn).get_endpoints()
-            _region = region
-            if region in _regions :
-                if access.lower() in _regions[region] :
-                    _region = _regions[region][access.lower()]            
+
+            _datacenters = SoftLayer.VSManager(self.slconn).get_create_options()['datacenters']
+            for _dcitem in _datacenters :
+                if region == _dcitem['template']['datacenter']['name'] :
+                    _region = _dcitem['template']['datacenter']['name']
 
             _msg = "Selected region is " + str(region) +  " (" + _region + ")"
-            
+
             if _api_type.lower().count("baremetal") :
                 self.nodeman = SoftLayer.HardwareManager(self.slconn)
             else :
                 self.nodeman = SoftLayer.VSManager(self.slconn)
-    
+
             self.sshman = SoftLayer.SshKeyManager(self.slconn)
-                
+
             self.imageman = SoftLayer.ImageManager(self.slconn)
 
             _status = 0
@@ -451,9 +450,6 @@ class SlrCmds(CommonCloudFunctions) :
         elif obj_attr_list["prov_netname"] == "public" :
             _key = ''
 
-        if ("primaryIpAddress" in instance) :
-            obj_attr_list["public_cloud_ip"] = instance["primaryIpAddress"]
-
         if ("primary" + _key + "IpAddress") in instance :
             obj_attr_list["prov_cloud_ip"] = instance["primary" + _key + "IpAddress"]
             obj_attr_list["run_cloud_ip"] = instance["primary" + _key + "IpAddress"]
@@ -619,9 +615,12 @@ class SlrCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        if len(imageid) == 7 and is_number(imageid) :
+        if len(imageid) == 7 and is_number(imageid) :            
             return True
-
+        
+        if len(imageid) == 36 and imageid.count('-') == 4 :
+            return True
+        
         return False
 
     @trace
@@ -697,7 +696,7 @@ class SlrCmds(CommonCloudFunctions) :
                 return True
 
     @trace
-    def vvcreate(self, obj_attr_list) :
+    def vvcreate(self, obj_attr_list, kwargs) :
         '''
         TBD
         '''
@@ -711,8 +710,10 @@ class SlrCmds(CommonCloudFunctions) :
             if "cloud_vv" in obj_attr_list :
 
                 obj_attr_list["last_known_state"] = "about to send volume create request"
-    
-                obj_attr_list["cloud_vv_uuid"] = "NOT SUPPORTED"
+
+#                kwargs["disks"].append(obj_attr_list["cloud_vv"])
+                
+                obj_attr_list["cloud_vv_uuid"] = "IMPLICIT"
 
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
@@ -739,7 +740,7 @@ class SlrCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if str(obj_attr_list["cloud_vv_uuid"]).lower() != "not supported" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :    
+            if str(obj_attr_list["cloud_vv_uuid"]).lower() != "not supported" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "implicit" :    
                 self.common_messages("VV", obj_attr_list, "destroying", 0, '')
                                 
             _status = 0
@@ -795,11 +796,28 @@ class SlrCmds(CommonCloudFunctions) :
             self.get_networks(obj_attr_list)
 
             obj_attr_list["config_drive"] = False
-            
-            _vcpus,_vmemory = obj_attr_list["size"].split('-')
-            
-            obj_attr_list["vcpus"] = _vcpus
-            obj_attr_list["vmemory"] = _vmemory
+
+            _kwargs = { "hourly": True, \
+                        "domain": "softlayer.com", \
+                        "hostname": obj_attr_list["cloud_vm_name"], \
+                        "datacenter": obj_attr_list["vmc_name"], \
+                        "image_id" : obj_attr_list["boot_globalid_imageid1"], \
+                        "nic_speed" : int(obj_attr_list["nic_speed"]), \
+                        'local_disk': True, \
+                        } 
+
+            if obj_attr_list["size"].count('-') :            
+                _vcpus,_vmemory = obj_attr_list["size"].split('-')
+                
+                obj_attr_list["vcpus"] = _vcpus
+                obj_attr_list["vmemory"] = _vmemory
+
+                _kwargs["cpus"] = int(obj_attr_list["vcpus"])
+                _kwargs["memory"] = int(obj_attr_list["vmemory"])
+            else :
+                _kwargs["flavor"] = obj_attr_list["size"]
+
+            self.vvcreate(obj_attr_list, _kwargs)
             
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = \
@@ -809,23 +827,20 @@ class SlrCmds(CommonCloudFunctions) :
 
             _key_id = self.sshman.list_keys(label = obj_attr_list["key_name"])[0]["id"]
 
-            _kwargs = { "cpus": int(obj_attr_list["vcpus"]), \
-                        "memory": int(obj_attr_list["vmemory"]), \
-                        "hourly": True, \
-                        "domain": "softlayer.com", \
-                        "hostname": obj_attr_list["cloud_vm_name"], \
-                        "datacenter": obj_attr_list["vmc_name"], \
-                        "image_id" : obj_attr_list["boot_globalid_imageid1"], \
-                        "ssh_keys" : [ int(_key_id) ], \
-                        "nic_speed" : int(obj_attr_list["nic_speed"])}
+            _kwargs["ssh_keys"] = [ int(_key_id) ]
 
             if len(obj_attr_list["private_vlan"]) > 2 :
                 _kwargs["private_vlan"] = int(obj_attr_list["private_vlan"])
+
+            if len(obj_attr_list["private_subnet"]) > 2 :
+                _kwargs["private_subnet"] = int(obj_attr_list["private_subnet"])
 
             if obj_attr_list["private_network_only"].lower() == "true" :
                 _kwargs["private"] = True
 
             self.pre_vmcreate_process(obj_attr_list)
+
+            _kwargs["userdata"] = self.populate_cloudconfig(obj_attr_list)
                 
             _instance = self.nodeman.create_instance(**_kwargs)
 
