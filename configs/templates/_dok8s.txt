@@ -110,6 +110,7 @@ LOGIN = $DOK8S_LOGIN
 SSH_KEY_NAME = $DOK8S_SSH_KEY_NAME
 
 [VM_TEMPLATES : DOK8S_CLOUDCONFIG]
+<<<<<<< HEAD
 ACMEAIR = size:2-4096, imageid1:cb_acmeair
 APACHE = size:2-4096, imageid1:cb_wrk
 BONNIE = size:2-2048, imageid1:cb_bonnie
@@ -178,3 +179,6 @@ XPINGSENDER =  size:1-256, imageid1:cb_xping
 YATINYVM = size:1-256, imageid1:cb_nullworkload
 YCSB = size:2-4096, imageid1:cb_ycsb
 TPCC = size:2-4096, imageid1:cb_tpcc
+
+[SIZE_TEMPLATES : DOK8S_CLOUDCONFIG]
+X-Y=X-Y
