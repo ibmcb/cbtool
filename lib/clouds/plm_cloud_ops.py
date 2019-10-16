@@ -56,7 +56,7 @@ class PlmCmds(CommonCloudFunctions) :
         self.additional_rc_contents = ''
 
         self.vhw_config = {}
-        self.vhw_config["pico32"] = { "vcpus" : "1", "vmem" : "192", "vstorage" : "2048", "vnics" : "1" }
+        self.vhw_config["pico32"] = { "vcpus" : "1", "vmem" : "256", "vstorage" : "2048", "vnics" : "1" }
         self.vhw_config["nano32"] = { "vcpus" : "1", "vmem" : "512", "vstorage" : "61440", "vnics" : "1" }
         self.vhw_config["micro32"] = { "vcpus" : "1", "vmem" : "1024", "vstorage" : "61440", "vnics" : "1" }
         self.vhw_config["copper32"] = { "vcpus" : "1", "vmem" : "2048", "vstorage" : "61440", "vnics" : "1" }
