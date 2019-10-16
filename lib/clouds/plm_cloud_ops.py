@@ -346,19 +346,31 @@ class PlmCmds(CommonCloudFunctions) :
                                 
                             _domain.undefine()
 
-                    _storage_pool_list = [ obj_attr_list["poolname"] ]
-                    for _storage_pool in _storage_pool_list :
-                        _storage_pool_handle = self.lvirtconn[_endpoint].storagePoolLookupByName(_storage_pool)                
-                        _volume_list = _storage_pool_handle.listVolumes()
+                sleep(_wait)
 
-                        for _volume in _volume_list :
-                            if _volume.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
-                                
-                                _msg = "Removing volume : " 
-                                _msg += self.generate_random_uuid(_volume) + " (" + str(_volume) + ")"
-                                cbdebug(_msg, True)                                
-                                
-                                _storage_pool_handle.storageVolLookupByName(_volume).delete(0)
+                _curr_tries += 1
+
+            self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
+            
+            _curr_tries = 0    
+            _created_volumes = True
+            while _created_volumes and _curr_tries < _max_tries :
+
+                _created_volumes = False
+
+                _storage_pool_list = [ obj_attr_list["poolname"] ]
+                for _storage_pool in _storage_pool_list :
+                    _storage_pool_handle = self.lvirtconn[_endpoint].storagePoolLookupByName(_storage_pool)                
+                    _volume_list = _storage_pool_handle.listVolumes()
+
+                    for _volume in _volume_list :
+                        if _volume.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                            _created_volumes = True
+                            _msg = "Removing volume : " 
+                            _msg += self.generate_random_uuid(_volume) + " (" + str(_volume) + ")"
+                            cbdebug(_msg, True)                                
+                            
+                            _storage_pool_handle.storageVolLookupByName(_volume).delete(0)
                             
                 sleep(_wait)
 
@@ -652,7 +664,7 @@ class PlmCmds(CommonCloudFunctions) :
                 obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(_candidate_images[0])
                 _volume_data = _storage_pool_handle.storageVolLookupByName(_candidate_images[0])
                 obj_attr_list["boot_volume_snapshot_path"] = _volume_data.path()
-
+                obj_attr_list["boot_volume_snapshot_size"] = int(_storage_pool_handle.storageVolLookupByName(obj_attr_list["imageid1"]).info()[1])/(1024*1024)
                 _xml_contents = _volume_data.XMLDesc(0)
                 _xml_doc = libxml2.parseDoc(_xml_contents)
                 _xml_ctx = _xml_doc.xpathNewContext()
@@ -694,6 +706,14 @@ class PlmCmds(CommonCloudFunctions) :
             _network_handle = self.lvirtconn[obj_attr_list["host_cloud_ip"]].networkLookupByName(obj_attr_list["netname"])
 
             obj_attr_list["network_bridge_name"] = _network_handle.bridgeName()
+
+            obj_attr_list["extra_vnics"] = []
+            if str(obj_attr_list["extra_netnames"]).lower() != "false" :
+                for _exn in obj_attr_list["extra_netnames"].split(',') :
+                    _network_handle = self.lvirtconn[obj_attr_list["host_cloud_ip"]].networkLookupByName(_exn)
+        
+                    _exbn = _network_handle.bridgeName()
+                    obj_attr_list["extra_vnics"].append([_exn, _exbn])
 
             _status = 0
 
@@ -925,6 +945,7 @@ class PlmCmds(CommonCloudFunctions) :
 
             _mark_a = time()
             self.generate_mac_addr(obj_attr_list)
+
             self.ship_cloud_init_iso(obj_attr_list)  
             _xml_file = self.generate_libvirt_vm_template(obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "ship_cloudinit_iso_time", _mark_a)
@@ -945,7 +966,7 @@ class PlmCmds(CommonCloudFunctions) :
             _mark_a = time()
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 self.configure_port_mapping(obj_attr_list, "setup")
-                self.annotate_time_breakdown(obj_attr_list, "container_port_mapping_time", _mark_a)
+                self.annotate_time_breakdown(obj_attr_list, "domain_port_mapping_time", _mark_a)
 
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22" :
@@ -1339,8 +1360,8 @@ class PlmCmds(CommonCloudFunctions) :
         if boot :
             obj_attr_list["cloud_vv_data_name"] = obj_attr_list["cloud_vv_name"]
             obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].replace("-vv","-vbv")
-            if "override_boot_vv_size" in obj_attr_list :
-                _xml_file += "\t<capacity unit=\"G\">" + str(int(obj_attr_list["override_boot_vv_size"])) + "</capacity>\n"
+            if int(obj_attr_list["boot_volume_snapshot_size"]) > int(self.vhw_config[obj_attr_list["size"]]["vstorage"]) :
+                _xml_file += "\t<capacity unit=\"M\">" + str(int(obj_attr_list["boot_volume_snapshot_size"])) + "</capacity>\n"
             else :
                 _xml_file += "\t<capacity unit=\"M\">" + str(int(self.vhw_config[obj_attr_list["size"]]["vstorage"])) + "</capacity>\n"                
         else :
@@ -1433,7 +1454,7 @@ class PlmCmds(CommonCloudFunctions) :
         _geniso_cmd += "genisoimage -output " + _iso_fn
         _geniso_cmd += " -volid cidata -joliet -rock user-data meta-data; "
         _geniso_cmd += "scp " +  _cloud_init_instance_path + '/' + _iso_fn
-        _geniso_cmd += " root@" + obj_attr_list["host_cloud_ip"] + ":/tmp/" + _iso_fn
+        _geniso_cmd += ' ' + obj_attr_list["host_remote_user"] + "@" + obj_attr_list["host_cloud_ip"] + ":" + obj_attr_list["host_remote_dir"] + _iso_fn
 
         _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_geniso_cmd)
 
@@ -1473,9 +1494,11 @@ class PlmCmds(CommonCloudFunctions) :
         # Form the 1st two parts of the MAC address 
         _mac_prefix = "52:54:00"
         bytes_needed = (17 - len(_mac_prefix)) / 3 - 1
-        unique_mac_selector_key = obj_attr_list["cloud_vm_name"]
-        selector_byte = sha256(unique_mac_selector_key).hexdigest()[-2:]
-        mac = _mac_prefix  + ":" + selector_byte 
+        unique_mac_selector_key = obj_attr_list["cloud_vm_name"] + obj_attr_list["experiment_id"]
+        selector_hd = sha256(unique_mac_selector_key).hexdigest()
+        selector_pos = randint(0,len(selector_hd)-2)
+        selector_byte = selector_hd[selector_pos:selector_pos+2]
+        mac = _mac_prefix  + ":" + selector_byte
 
         for x in range(0, bytes_needed) :
             byte = ((int(obj_attr_list["counter"]) >> (8 * ((bytes_needed - 1) - x))) & 0xff)
@@ -1488,7 +1511,6 @@ class PlmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-
         if obj_attr_list["hypervisor"] == "xen" :
             _xml_template = "<domain type='xen' "
         else :
@@ -1500,7 +1522,7 @@ class PlmCmds(CommonCloudFunctions) :
         _xml_template += "\t<memory>" + str(int(self.vhw_config[obj_attr_list["size"]]["vmem"]) * 1024) + "</memory>\n"
         _xml_template += "\t<currentMemory>" + str(int(self.vhw_config[obj_attr_list["size"]]["vmem"]) * 1024) + "</currentMemory>\n"
 
-        if obj_attr_list["arch"] == "ppc64" :
+        if obj_attr_list["arch"] == "ppc64" or obj_attr_list["arch"] == "ppc64le" :
             _xml_template += "\t<vcpu placement='static'>" + str(int(self.vhw_config[obj_attr_list["size"]]["vcpus"])) + "</vcpu>\n"
             _xml_template += "\t<resource>\n"
             _xml_template += "\t\t<partition>/machine</partition>\n"
@@ -1513,7 +1535,7 @@ class PlmCmds(CommonCloudFunctions) :
         if obj_attr_list["hypervisor"] == "xen" :
             _xml_template += "\t\t<type arch='x86_64' machine='xenfv'>hvm</type>\n"
         else :
-            if obj_attr_list["arch"] == "ppc64" :
+            if obj_attr_list["arch"] == "ppc64" or obj_attr_list["arch"] == "ppc64le" :
                 _xml_template += "\t\t<type arch='ppc64' machine='pseries'>hvm</type>\n"
             else :
                 _xml_template += "\t\t<type arch='x86_64' machine='pc'>hvm</type>\n"
@@ -1541,7 +1563,7 @@ class PlmCmds(CommonCloudFunctions) :
         _xml_template += "\t\t<emulator>" + obj_attr_list["emulator"] + "</emulator>\n"
 
         _disk_number = 0
-        for _volume in obj_attr_list["volume_list"].split(',') + [ "cloud-init" + ':' + "/tmp/" + obj_attr_list["cloud_vm_name"] + ".iso:" + "raw" + ':' + "none" + ':' + "none" ] :
+        for _volume in obj_attr_list["volume_list"].split(',') + [ "cloud-init" + ':' + obj_attr_list["host_remote_dir"] + obj_attr_list["cloud_vm_name"] + ".iso:" + "raw" + ':' + "none" + ':' + "none" ] :
             if _volume.count(':') == 4 :
                 _vol_name, _vol_path, _vol_format, _backing_path, _backing_format = _volume.split(':')
 
@@ -1567,7 +1589,7 @@ class PlmCmds(CommonCloudFunctions) :
                 _xml_template += "\t\t</disk>\n"
                 _disk_number += 1
 
-        if obj_attr_list["arch"] == "ppc64" :
+        if obj_attr_list["arch"] == "ppc64" or obj_attr_list["arch"] == "ppc64le" :
             _xml_template += "\t\t<controller type='usb' index='0'>\n"
             _xml_template += "\t\t\t<alias name='usb0'/>\n"
             _xml_template += "\t\t</controller>\n"
@@ -1588,7 +1610,17 @@ class PlmCmds(CommonCloudFunctions) :
 
         _xml_template += "\t\t</interface>\n"
 
-        if obj_attr_list["arch"]  == "ppc64" :
+        for _vnic in obj_attr_list["extra_vnics"] :
+            _xml_template += "\t\t<interface type='bridge'>\n"
+            _xml_template += "\t\t\t<source bridge='" + _vnic[1] + "'/>\n"
+#            _xml_template += "\t\t\t<mac address='" + str(obj_attr_list["cloud_vm_mac"]) + "'/>\n"
+            
+            if obj_attr_list["netmode"] == "virtio" :
+                _xml_template += "\t\t\t<model type='virtio'/>\n"
+    
+            _xml_template += "\t\t</interface>\n"
+            
+        if obj_attr_list["arch"]  == "ppc64" or obj_attr_list["arch"] == "ppc64le" :
             _port = str(30000 + int(obj_attr_list["counter"]))
             
             _xml_template += "\t\t<serial type='tcp'>\n"
@@ -1619,20 +1651,23 @@ class PlmCmds(CommonCloudFunctions) :
             _xml_template += "\t\t<input type='mouse' bus='ps2'/>\n"
             _xml_template += "\t\t<graphics type='vnc' port='-1' autoport='yes' listen='" + obj_attr_list["host_cloud_ip"] + "' keymap='en-us'/>\n"
             _xml_template += "\t\t<video>\n"
-            _xml_template += "\t\t\t<model type='cirrus' vram='9216' heads='1'/>\n"
+            if obj_attr_list["arch"]  == "x86_64" :
+                _xml_template += "\t\t\t<model type='cirrus' vram='9216' heads='1'/>\n"
+            else :
+                _xml_template += "\t\t\t<model type='vga' vram='9216' heads='1'/>\n"
             _xml_template += "\t\t</video>\n"
 
         if obj_attr_list["hypervisor"] == "xen" :
             _xml_template += "\t\t<memballoon model='xen'/>\n"
         else :
-            if obj_attr_list["arch"]  == "ppc64" :
+            if obj_attr_list["arch"]  == "ppc64" or obj_attr_list["arch"] == "ppc64le" :
                 True
             else :
                 _xml_template += "\t\t<memballoon model='virtio'/>\n"
         
         _xml_template += "\t</devices>\n"
 
-        if obj_attr_list["arch"]  == "ppc64" :
+        if obj_attr_list["arch"]  == "ppc64" or obj_attr_list["arch"] == "ppc64le" :
             _xml_template += "\t<seclabel type='none'/>\n"
 
         _xml_template += "</domain>\n"
