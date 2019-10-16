@@ -1089,6 +1089,10 @@ class CommonCloudFunctions:
             #cbdebug("Skipping userdata: " + str(obj_attr_list["userdata"]), True)
             return None
 
+        obj_attr_list["cloudinit_keys"] += ',' + obj_attr_list["pubkey_contents"] 
+
+        obj_attr_list["cloudinit_keys"] = obj_attr_list["cloudinit_keys"].replace("____",' ').split(',')
+
         cloudconfig = "#cloud-config\n"
         cloudconfig += "ssh_pwauth: true\n"
         cloudconfig += "disable_root: false\n"
@@ -1105,11 +1109,17 @@ class CommonCloudFunctions:
         cloudconfig += "  sudo: ALL=(ALL) NOPASSWD:ALL\n"
 
         if obj_attr_list["userdata_ssh"].lower() == "true" :        
-            cloudconfig += "  ssh_authorized_keys:\n   - " + obj_attr_list["pubkey_contents"]
+            cloudconfig += "  ssh_authorized_keys:\n"
+            for _k in obj_attr_list["cloudinit_keys"] : 
+                if len(_k) > 370 :
+                    cloudconfig += "   - " + _k + '\n'
 
         if obj_attr_list["userdata_ssh"].lower() == "true" :
             cloudconfig += "\n\n"
-            cloudconfig += "ssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
+            cloudconfig += "  ssh_authorized_keys:\n"
+            for _k in obj_attr_list["cloudinit_keys"] : 
+                if len(_k) > 370 :
+                    cloudconfig += "   - " + _k + '\n'
         cloudconfig += "\n"
 
         cloudconfig += "\nwrite_files:\n"
@@ -1168,8 +1178,8 @@ class CommonCloudFunctions:
             cloudconfig += "  - chmod +x /tmp/cb_post_boot.sh\n"
 
             if obj_attr_list["cloudinit_commands"].lower() != "false" :
-                for _cmd in obj_attr_list["cloudinit_commands"].split(',,,') :
-                    cloudconfig += "  - " + _cmd + '\n'
+                for _cmd in obj_attr_list["cloudinit_commands"].split(';') :
+                    cloudconfig += "  - " + _cmd.replace("____",' ') + '\n'
                     
             # We can't run the userdata from cloudbench until the VPN is connected,
             # so only run it if we're not using the VPN.
