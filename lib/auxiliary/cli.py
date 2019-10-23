@@ -41,7 +41,7 @@ from time import time
 
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO
 from logging.handlers import logging, SysLogHandler, RotatingFileHandler
-from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter, AntiMsgFilter, STATUS
+from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter, AntiMsgFilter, STATUS, ReconnectingNewlineSysLogHandler
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.data_ops import message_beautifier, dic2str, is_valid_temp_attr_list, create_restart_script
 from lib.remote.process_management import ProcessManagement
@@ -535,9 +535,14 @@ class CBCLI(Cmd) :
         if options.logdest == "console" :
             hdlr = StreamHandler(stdout)
         elif options.logdest == "syslog" :
-            hdlr = SysLogHandler(address = (options.syslogn, int(options.syslogp)), \
-                                 facility=_syslog_selector[str(options.syslogf)],
-                                 socktype = socket.SOCK_DGRAM)
+            if self.cld_attr_lst["logstore"]["protocol"] == "TCP" :
+                hdlr = ReconnectingNewlineSysLogHandler(address = (options.syslogn, int(options.syslogp)), \
+                                     facility=_syslog_selector[str(options.syslogf)],
+                                     socktype = socket.SOCK_STREAM)
+            else :
+                hdlr = SysLogHandler(address = (options.syslogn, int(options.syslogp)), \
+                                     facility=_syslog_selector[str(options.syslogf)],
+                                     socktype = socket.SOCK_DGRAM)
         else :
             hdlr = RotatingFileHandler(options.logdest, maxBytes=20971520, \
                                        backupCount=20)
