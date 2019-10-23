@@ -2728,8 +2728,15 @@ class BaseObjectOperations :
                             break
                         else :
                             if "dont_start_load_manager" in _ai_attr_list \
-                                and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
-                                _lmr = True
+                            and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                                _lmr = _ai_attr_list["load_manager_role"]
+                                
+                                _msg = "Adding the startup of the load manager, in \"debug mode\" only, to the "
+                                _msg += "list of commands. It will be executed on the "
+                                _msg += "VM with the role \"" + _lmr + "\""
+                                cbdebug(_msg)
+                                
+                                _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh debug"
 
                             else :
                                 # This needs to be done only once, at the AI's
