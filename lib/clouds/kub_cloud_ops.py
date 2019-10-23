@@ -1115,7 +1115,7 @@ class KubCmds(CommonCloudFunctions) :
                 #      KUB_INITIAL_VMCS = default # use the default namespace, no taints or node names
                 # 2. Forced placement (_taint and _node_name are set in the INITAL_VMCS, like this:
                 #      [USER-DEFINED]
-                #      KUB_INITIAL_VMCS = namespace:taint;nodeName # It's kind of gross. We can make it better later.
+                #      KUB_INITIAL_VMCS = cluster:taint;nodeName # It's kind of gross. We can make it better later.
                 #
                 # The 2nd options requires that you go "taint" the nodes that you want isolated
                 # so that containers from other tenants (or yourself) don't land on in unwanted places.
