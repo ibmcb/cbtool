@@ -27,7 +27,7 @@ fi
 
 # Get all parameters to connect to the datastore
 cloudname=`cat ~/cb_os_parameters.txt | grep "#OSCN" | cut -d "-" -f 2`
-oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | cut -d "-" -f 2`
+oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | sed "s/OSHN-//g"` # hostnames with `-` in the name weren't working.
 osportnumber=`cat ~/cb_os_parameters.txt | grep "#OSPN" | cut -d "-" -f 2`
 osdatabasenumber=`cat ~/cb_os_parameters.txt | grep "#OSDN" | cut -d "-" -f 2`
 osinstance=`cat ~/cb_os_parameters.txt | grep "#OSOI" | sed 's/#OSOI-//g'`

@@ -603,7 +603,8 @@ def reset(global_objects, soft = True) :
 
         _msg = "    Flushing Log Store..."
         print _msg,
-        _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
+        if global_objects["logstore"]["usage"].lower() != "shared" :
+            _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
         _file_list = []
         _file_list.append("operations.log")
         _file_list.append("report.log")
@@ -616,7 +617,8 @@ def reset(global_objects, soft = True) :
         _file_list.append("subscribe.log")
 
         for _fn in  _file_list :
-            _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
+            if global_objects["logstore"]["usage"].lower() != "shared" :
+                _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
             _proc_man.run_os_command("touch " + _log_dir + '/' + _logstore_username + '_' + _fn)
         _status, _msg = syslog_logstore_setup(global_objects, "check")
         
