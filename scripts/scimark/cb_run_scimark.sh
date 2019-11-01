@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
+SCIMARK_HOME=`get_my_ai_attribute_with_default scimark_home "~"`
 
 set_load_gen $@
 
 set_java_home
 
-cd ~
+cd ${SCIMARK_HOME}
 
-SCIMARK_DIR="~/jnt"
+SCIMARK_DIR="${SCIMARK_HOME}/jnt"
 eval SCIMARK_DIR=${SCIMARK_DIR}
 
 CBUSERLOGIN=`get_my_ai_attribute login`

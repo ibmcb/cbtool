@@ -1,0 +1,88 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : TPCC] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = tpcc->mysql
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = tpcc
+LOAD_MANAGER_ROLE = tpcc
+METRIC_AGGREGATOR_ROLE = tpcc
+CAPTURE_ROLE = mysql
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I5
+LOAD_DURATION = 30
+CATEGORY = transactional
+PROFILES = default
+REFERENCE = https://github.com/Percona-Lab/sysbench-tpcc
+LICENSE = Apache_v2
+REPORTED_METRICS = throughput,latency,95_latency,queries,datagen_time,datagen_size,completion_time,errors,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys an instance running the sysbench (TPC-C) load generator and\n
+DESCRIPTION +=one instance running MySQL database.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on sysbench (parameter --num-threads).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: for how long should sysbench run.\n
+
+MYSQL_SETUP1 = cb_restart_mysql.sh
+MYSQL_RESET1 = cb_reset_mysql.sh
+START = cb_run_sysbench.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+MYSQL_DATA_DIR = /sysbench
+MYSQL_DATA_FSTYP = ext4
+MYSQL_DATABASE_NAME = sysbenchdb
+MYSQL_ROOT_PASSWORD = temp4now
+MYSQL_NONROOT_USER = sysbench
+MYSQL_NONROOT_PASSWORD = sysbench
+# Scale is the number of warehouses
+SCALE = 100
+# Tables is the number of table sets
+TABLES = 1
+# 100 warehouses with 1 table set produces about 10GB of data in 
+# non-compressed InnoDB tables (so 100 warehouses with 10 table sets gives about 100GB).
+
+# Probably ubuntu-specific. May need to override for CentOS
+MYSQL_CONF_FILE = /etc/mysql/mysql.conf.d/mysqld.cnf
+# Default to 60% of main memory
+MYSQL_RAM_PERCENTAGE = 60
+
+# Default Ubuntu values
+
+# innodb_io_capacity should be set to approximately the number of I/O
+# operations that the system can perform per second. Ideally, keep the setting
+# as low as practical, but not so low that background activities fall behind.
+# If the value is too high, data is removed from the buffer pool and insert
+# buffer too quickly for caching to provide a significant benefit.
+MYSQL_INNODB_IO_CAPACITY = 200
+
+# The combined size of the log files (innodb_log_file_size * innodb_log_files_in_group (= 2))
+# should be large enough that the server can smooth out peaks and troughs in
+# workload activity, which often means that there is enough redo log space to
+# handle more than an hour of write activity. The larger the value, the less
+# checkpoint flush activity is required in the buffer pool, saving disk I/O.
+MYSQL_INNODB_LOG_FILE_SIZE = 48M
+
+# A large query cache size leads to significant performance degradation. This
+# is because of cache overhead and locking. Cacheable queries take out an
+# exclusive lock on MySQL’s query cache. In addition, any insert, update,
+# delete, or other modifications to a table causes any relevant entries in the
+# query cache to be flushed.
+MYSQL_QUERY_CACHE_SIZE = 16M
+
+# The maximum size of internal in-memory temporary tables.
+MYSQL_TMP_TABLE_SIZE = 16M
+
+# The number of open tables for all threads. Increasing this value increases
+# the number of file descriptors that mysqld requires.
+MYSQL_TABLE_OPEN_CACHE = 2000
+
+# Install Percona Monitoring and Management
+MYSQL_ENABLE_PMM_CLIENT = False
+# Connect the Percona Monitoring and Management client to this server IP:port
+MYSQL_PMM_SERVER = 0.0.0.0:80

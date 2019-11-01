@@ -113,7 +113,7 @@ RUN ln -s $(sudo which rsyslogd) /usr/local/bin/rsyslogd
 # rsyslog-install-pm
 
 # apache-install-pm
-RUN yum____-y____install____httpd; /bin/true
+RUN yum -y install httpd; /bin/true
 # apache-install-pm
 
 # redis-install-pm
