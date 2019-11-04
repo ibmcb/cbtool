@@ -33,6 +33,7 @@ MYSQL_TMP_TABLE_SIZE=`get_my_ai_attribute_with_default mysql_tmp_table_size 16M`
 MYSQL_TABLE_OPEN_CACHE=`get_my_ai_attribute_with_default mysql_table_open_cache 2000`
 MYSQL_ENABLE_PMM_CLIENT=`get_my_ai_attribute_with_default mysql_enable_pmm_client False`
 MYSQL_PMM_SERVER=`get_my_ai_attribute_with_default mysql_pmm_server 0.0.0.0:80`
+LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 NETSTAT_CMD=`which netstat`
@@ -49,10 +50,10 @@ then
 	service_stop_disable ${SERVICES[${LINUX_DISTRO}]}
     ${SUDO_CMD} rsync -az --delete --inplace /var/lib/mysql/ ${MYSQL_DATA_DIR}/
     ${SUDO_CMD} rm -rf /var/lib/mysql
-    ${SUDO_CMD} ln -s ${MYSQL_DATA_DIR} /var/lib/mysql        
-fi    
+    ${SUDO_CMD} ln -s ${MYSQL_DATA_DIR} /var/lib/mysql
+fi
 
-${SUDO_CMD} sed -i "s^bind-address.*^bind-address            = $my_ip_addr^g" ${MYSQL_CONF_FILE}
+${SUDO_CMD} sed -i "s^bind-address.*^bind-address            = ${LOAD_GENERATOR_TARGET_IP}^g" ${MYSQL_CONF_FILE}
 
 ${SUDO_CMD} sed -i '/innodb_io_capacity/d' ${MYSQL_CONF_FILE}
 ${SUDO_CMD} sed -i '/innodb_log_file_size/d' ${MYSQL_CONF_FILE}
@@ -112,7 +113,7 @@ do
 
 		provision_application_stop $START
 		exit 0
-	else 
+	else
 		let ATTEMPTS=ATTEMPTS-1
 		syslog_netcat "Trying to start MySQL"
 		service_stop_disable ${SERVICES[${LINUX_DISTRO}]}

@@ -40,7 +40,7 @@ then
 
     START_GENERATION=$(get_time)
 
-    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the Sysbench load profile \"${LOAD_PROFILE}\"" 
+    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the Sysbench load profile \"${LOAD_PROFILE}\""
 	GEN_COMMAND_LINE="${TPCC_PATH}/tpcc.lua ${CONN_STR} --scale=${SCALE} --tables=${TABLES} --threads=${LOAD_LEVEL} prepare"
     syslog_netcat "Command line is: ${GEN_COMMAND_LINE}"
     if [[ x"${log_output_command}" == x"true" ]]
@@ -50,21 +50,20 @@ then
             syslog_netcat "$line"
             echo $line >> $GEN_OUTPUT_FILE
         done
-        ERROR=$?        
+        ERROR=$?
     else
         syslog_netcat "Command output will NOT be shown"
         $GEN_COMMAND_LINE 2>&1 >> $GEN_OUTPUT_FILE
         ERROR=$?
     fi
     END_GENERATION=$(get_time)
-    update_app_errors $ERROR        
+    update_app_errors $ERROR
 
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     update_app_datagentime ${DATA_GENERATION_TIME}
 	update_app_datagensize $((${SCALE} * ${TABLES}))
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the Sysbench load profile \"${LOAD_PROFILE}\""
-    
 fi
 
 CMDLINE="${TPCC_PATH}/tpcc.lua ${CONN_STR} --scale=${SCALE} --tables=${TABLES} --threads=${LOAD_LEVEL} --time=${LOAD_DURATION} run"

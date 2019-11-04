@@ -46,7 +46,7 @@ update_mysql_setting()
 }
 
 # Check if mysql has the right cache size or update it.
-kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2) 
+kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
 mb=$(echo "$kb / 1024 * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
 
 update_mysql_setting innodb_buffer_pool_size ${mb}M
