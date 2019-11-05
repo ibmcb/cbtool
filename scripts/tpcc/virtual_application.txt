@@ -1,14 +1,14 @@
 # Parameters for this Virtual Application (Application Instance - AI) type should
-# be set on YOUR private configuration configuration file, including the ones 
+# be set on YOUR private configuration configuration file, including the ones
 # commented.
 
-[AI_TEMPLATES : TPCC] 
+[AI_TEMPLATES : TPCC]
 
 # Attributes MANDATORY for all Virtual Applications
 SUT = tpcc->mysql
 LOAD_BALANCER_SUPPORTED = $False
 RESIZE_SUPPORTED = $True
-REGENERATE_DATA = $False 
+REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = tpcc
 LOAD_MANAGER_ROLE = tpcc
 METRIC_AGGREGATOR_ROLE = tpcc
@@ -26,12 +26,12 @@ REPORTED_METRICS = throughput,latency,95_latency,queries,datagen_time,datagen_si
 DESCRIPTION =Deploys an instance running the sysbench (TPC-C) load generator and\n
 DESCRIPTION +=one instance running MySQL database.\n
 DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_\n
-DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on sysbench (parameter --num-threads).\n 
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on sysbench (parameter --num-threads).\n
 DESCRIPTION +=  - LOAD_DURATION meaning: for how long should sysbench run.\n
 
 MYSQL_SETUP1 = cb_restart_mysql.sh
 MYSQL_RESET1 = cb_reset_mysql.sh
-START = cb_run_sysbench.sh
+START1 = cb_run_sysbench.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 MYSQL_DATA_DIR = /sysbench
@@ -44,7 +44,7 @@ MYSQL_NONROOT_PASSWORD = sysbench
 SCALE = 100
 # Tables is the number of table sets
 TABLES = 1
-# 100 warehouses with 1 table set produces about 10GB of data in 
+# 100 warehouses with 1 table set produces about 10GB of data in
 # non-compressed InnoDB tables (so 100 warehouses with 10 table sets gives about 100GB).
 
 # Probably ubuntu-specific. May need to override for CentOS
