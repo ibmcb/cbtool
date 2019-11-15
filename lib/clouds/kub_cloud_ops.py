@@ -111,7 +111,7 @@ class KubCmds(CommonCloudFunctions) :
                     else :
                         _kube_config = pykube.KubeConfig.from_file(access)
 
-                    if _context :
+                    if _context and len(_kube_config.doc["clusters"]) > 1 :
                         cbdebug("Setting current context to: " + _context)
                         _kube_config.set_current_context(_context)
 
@@ -728,7 +728,7 @@ class KubCmds(CommonCloudFunctions) :
                 for _x in _instances :
                     _instances = _x
 
-            if obj_type == "pod" and hasattr(_instances, "obj") :
+            if obj_type == "pod" and hasattr(_instances, "obj") and "nodeName" in _instances.obj["spec"] :
                 obj_attr_list["node"] = _instances.obj["spec"]["nodeName"]
 
             _status = 0
@@ -1022,12 +1022,12 @@ class KubCmds(CommonCloudFunctions) :
 
             _context = False
             _taint = False
-            _node_name = False
+            _node_name_or_label = False
 
             _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
             cbdebug("Pool is: " + _vmc_attr_list["pool"])
             if _vmc_attr_list["pool"].count(",") :
-                _taint, _node_name = _vmc_attr_list["pool"].split(",")
+                _taint, _node_name_or_label = _vmc_attr_list["pool"].split(",")
             else :
                 _taint = _vmc_attr_list["pool"]
 
@@ -1113,32 +1113,49 @@ class KubCmds(CommonCloudFunctions) :
                 # 1. [default] Anti Affinity (don't place the VMs from the same AI in the same place)
                 #      [USER-DEFINED]
                 #      KUB_INITIAL_VMCS = default # use the default namespace, no taints or node names
-                # 2. Forced placement (_taint and _node_name are set in the INITAL_VMCS, like this:
+                # 2. Forced placement (_taint and _node_name_or_label are set in the INITAL_VMCS, like this:
+                #      [VMC_DEFAULTS]
+                #      K8S_PLACEMENT_OPTION = nodeName
                 #      [USER-DEFINED]
-                #      KUB_INITIAL_VMCS = cluster:taint;nodeName # It's kind of gross. We can make it better later.
+                #      KUB_INITIAL_VMCS = cluster:taint;nodeName
+                # 3. Labeled placement (_taint and _node_name_or_label is a label instead of a nodeName)
+                #      [VMC_DEFAULTS]
+                #      K8S_PLACEMENT_OPTION = nodeSelector
+                #      [USER-DEFINED]
+                #      KUB_INITIAL_VMCS = cluster:taint;nodeLabelKey=nodeLabelValue
                 #
                 # The 2nd options requires that you go "taint" the nodes that you want isolated
                 # so that containers from other tenants (or yourself) don't land on in unwanted places.
+                # The 3rd option requires that you go "label" the nodes that you want isolated.
 
-                if not _taint and not _node_name :
+                if _vmc_attr_list["k8s_placement_option"].lower() == "nodeselector" or (not _taint and not _node_name_or_label) :
+                    # If nodeName's are used, we do not want to block scheduling between two component
+                    # roles of the same AI. We only want to do this when using nodeSelectors.
                     _obj["spec"]["affinity"] = {
                                          "podAntiAffinity" : {
-                                           "requiredDuringSchedulingIgnoredDuringExecution" : [
-                                             { "labelSelector": {
-                                                 "matchExpressions": [
-                                                   { "key" : "ai",
-                                                    "operator" : "In",
-                                                    "values" : [obj_attr_list["ai"]]
-                                                   }
-                                                 ]
-                                               },
-                                              "topologyKey" : "kubernetes.io/hostname"
+                                           # Preferred, not required. Still let the containers go through
+                                           # if the number of nodes is small.
+                                           "preferredDuringSchedulingIgnoredDuringExecution" : [
+                                             {
+                                                 "weight" : 100,
+                                                 "podAffinityTerm" : {
+                                                     "labelSelector": {
+                                                         "matchExpressions": [
+                                                           { "key" : "ai",
+                                                            "operator" : "In",
+                                                            "values" : [obj_attr_list["ai"]]
+                                                           }
+                                                         ]
+                                                     },
+                                                     "topologyKey" : "kubernetes.io/hostname"
+                                                 }
                                             }
                                           ]
                                          }
                                       }
-                else :
-                    cbdebug("Using taint: " + str(_taint) + " and node name: " + str(_node_name))
+
+                if _taint or _node_name_or_label :
+                    cbdebug("Using taint: " + str(_taint) + " and node name: " + str(_node_name_or_label))
                     if _taint :
                         _obj["spec"]["tolerations"] = [ {
                                                         "effect" : "NoSchedule",
@@ -1146,8 +1163,12 @@ class KubCmds(CommonCloudFunctions) :
                                                         "operator" : "Exists"
                                                     }
                                                   ]
-                    if _node_name :
-                        _obj["spec"]["nodeName"] = _node_name
+                    if _node_name_or_label :
+                        if _vmc_attr_list["k8s_placement_option"].lower() == "nodename" :
+                            _obj["spec"]["nodeName"] = _node_name_or_label
+                        else :
+                            _nodeSelectorKey, _nodeSelectorValue = _node_name_or_label.split("=")
+                            _obj["spec"]["nodeSelector"] = {_nodeSelectorKey : _nodeSelectorValue}
 
             if obj_attr_list["abstraction"] == "replicaset" :
                 _obj = { "apiVersion": "extensions/v1beta1", \
