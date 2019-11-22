@@ -111,6 +111,7 @@ SSH_KEY_NAME = $DOK8S_SSH_KEY_NAME
 
 [VM_TEMPLATES : DOK8S_CLOUDCONFIG]
 <<<<<<< HEAD
+<<<<<<< HEAD
 ACMEAIR = size:2-4096, imageid1:cb_acmeair
 APACHE = size:2-4096, imageid1:cb_wrk
 BONNIE = size:2-2048, imageid1:cb_bonnie
