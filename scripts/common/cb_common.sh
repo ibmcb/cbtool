@@ -1276,15 +1276,29 @@ function configure_firewall {
         if [[ ${LINUX_DISTRO} -eq 1 ]]
         then
             syslog_netcat "Enabling firewall via ufw commands..."
-            sudo ufw --force enable
-            sudo ufw allow 22
-            sudo ufw allow $(get_my_vm_attribute ${prov_cloud_port})
-        fi
+            sudo ufw --force enable >/dev/null 2>&1
+            sudo ufw allow 22 >/dev/null 2>&1
+            sudo ufw allow $(get_my_vm_attribute ${prov_cloud_port}) >/dev/null 2>&1
     
-        for i in $(cat /etc/hosts | grep -v 127.0.0.1 | awk '{ print $1 }')
-        do
-            sudo ufw allow from $i 
-        done
+            for i in $(cat /etc/hosts | grep -v 127.0.0.1 | awk '{ print $1 }')
+            do
+                sudo ufw allow from $i 
+            done
+        fi
+
+        if [[ ${LINUX_DISTRO} -eq 2 ]]
+        then
+            syslog_netcat "Enabling firewall via firewall-cmd commands..."
+            _Z=public
+            sudo systemctl start firewalld
+            firewall-cmd --zone ${_Z} --add-port 22/tcp >/dev/null 2>&1
+            firewall-cmd --zone ${_Z} --add-port $(get_my_vm_attribute ${prov_cloud_port})/tcp >/dev/null 2>&1
+    
+            for i in $(cat /etc/hosts | grep -v 127.0.0.1 | awk '{ print $1 }')
+            do
+                firewall-cmd --zone ${_Z} --add-rich-rule="rule family='ipv4' source address=$i accept" 
+            done
+        fi        
     fi
 }
 export -f configure_firewall
