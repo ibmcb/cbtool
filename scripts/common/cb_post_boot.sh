@@ -79,6 +79,9 @@ else
     post_boot_steps False
     UTC_LOCAL_OFFSET=$(python -c "from time import timezone, localtime, altzone; _ulo = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1; print _ulo")
     put_my_pending_vm_attribute utc_offset_on_vm $UTC_LOCAL_OFFSET
+
+    set_nic_mtu
+
     syslog_netcat "Updating \"post_boot_executed\" to \"true\""
     put_my_vm_attribute post_boot_executed true
     provision_generic_stop  
