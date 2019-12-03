@@ -1121,7 +1121,6 @@ if [ x"$default" != x ] ; then
     hn="${hn}_${self}"
 fi
 
-
 function syslog_netcat {
     # I'm modifying this slightly. There's nothing wrong with logging in scalable mode,
     # except that we should not be calling slow functions in scalable mode. We still
@@ -1150,7 +1149,15 @@ function refresh_hosts_file {
     fi
 
     syslog_netcat "Refreshing hosts file ... "
-    sudo bash -c "rm -f /etc/hosts; echo '127.0.0.1    localhost' >> /etc/hosts; cat ${ai_mapping_file} >> /etc/hosts"
+    echo '127.0.0.1    localhost' > /tmp/hosts
+    echo "${my_ip_addr}   $(hostname)" >> /tmp/hosts
+    for i in objectstore metricstore filestore api vpn_server
+    do
+        echo "$(get_my_vm_attribute ${i}_host)     cb$(echo $i | sed 's/store//g' | sed 's/_server//g') cb${i:0:1}s" >> /tmp/hosts
+    done
+    cat ${ai_mapping_file} >> /tmp/hosts
+    sudo rm -f /etc/hosts
+    sudo mv /tmp/hosts  /etc/hosts
 }
 
 function provision_application_start {
@@ -1257,6 +1264,44 @@ function security_configuration {
     fi
 }
 export -f security_configuration
+
+function configure_firewall {
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
+
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then
+        if [[ ${LINUX_DISTRO} -eq 1 ]]
+        then
+            syslog_netcat "Enabling firewall via ufw commands..."
+            sudo ufw --force enable >/dev/null 2>&1
+            sudo ufw allow 22 >/dev/null 2>&1
+            sudo ufw allow $(get_my_vm_attribute ${prov_cloud_port}) >/dev/null 2>&1
+    
+            for i in $(cat /etc/hosts | grep -v 127.0.0.1 | awk '{ print $1 }')
+            do
+                sudo ufw allow from $i 
+            done
+        fi
+
+        if [[ ${LINUX_DISTRO} -eq 2 ]]
+        then
+            syslog_netcat "Enabling firewall via firewall-cmd commands..."
+            _Z=public
+            sudo systemctl start firewalld
+            firewall-cmd --zone ${_Z} --add-port 22/tcp >/dev/null 2>&1
+            firewall-cmd --zone ${_Z} --add-port $(get_my_vm_attribute ${prov_cloud_port})/tcp >/dev/null 2>&1
+    
+            for i in $(cat /etc/hosts | grep -v 127.0.0.1 | awk '{ print $1 }')
+            do
+                firewall-cmd --zone ${_Z} --add-rich-rule="rule family='ipv4' source address=$i accept" 
+            done
+        fi        
+    fi
+}
+export -f configure_firewall
 
 function start_redis {
 

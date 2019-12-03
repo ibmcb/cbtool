@@ -1551,6 +1551,12 @@ class BaseObjectOperations :
         _log_store = self.osci.get_object(obj_attr_list["cloud_name"], \
                                              "GLOBAL", False, \
                                              "logstore", False)
+        
+        _api_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                       "GLOBAL", \
+                                                       False, \
+                                                       "api_defaults", \
+                                                       False)
 
         obj_attr_list["filestore_host"] = _filestor_attr_list["hostname"]
         obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
@@ -1577,6 +1583,12 @@ class BaseObjectOperations :
         obj_attr_list["objectstore_timeout"] = self.osci.timout
                 
         obj_attr_list["objectstore_protocol"] = "TCP"         
+
+        obj_attr_list["api_host"] = _api_attr_list["hostname"]
+        obj_attr_list["api_port"] = _api_attr_list["port"]
+
+        obj_attr_list["objectstore_dbid"] = self.osci.dbid
+        obj_attr_list["objectstore_timeout"] = self.osci.timout
 
         if obj_attr_list["login"] != "root" :
             obj_attr_list["remote_dir_home"] = "/home/" + obj_attr_list["login"]

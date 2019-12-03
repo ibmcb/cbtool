@@ -69,6 +69,12 @@ then
     sudo virsh net-undefine default >/dev/null 2>&1
 fi
 
+configure_firewall=$(get_my_vm_attribute configure_firewall)
+if [[ $(echo $configure_firewall | tr '[:upper:]' '[:lower:]') == "true" ]]
+then
+    configure_firewall
+fi
+
 post_boot_executed=`get_my_vm_attribute post_boot_executed`
 
 if [[ x"${post_boot_executed}" == x"true" ]]
