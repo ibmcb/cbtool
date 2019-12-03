@@ -27,13 +27,7 @@ TRAFFIC_DIRECTION=$(get_my_ai_attribute_with_default traffic_direction r)
 TRAFFIC_MSS=$(get_my_ai_attribute_with_default traffic_mss auto)
 TRAFFIC_WINDOW=$(get_my_ai_attribute_with_default traffic_window auto)
 RATE_LIMIT=$(get_my_ai_attribute_with_default rate_limit none)
-IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
 EXTERNAL_TARGET=$(get_my_ai_attribute_with_default external_target none)
-    
-if [[ ${IF_MTU} != "auto" ]]
-then
-    sudo ifconfig $my_if mtu ${IF_MTU}
-fi
 
 nuttcp=$(which nuttcp)
 

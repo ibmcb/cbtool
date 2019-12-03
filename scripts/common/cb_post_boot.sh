@@ -93,6 +93,8 @@ else
         put_my_vm_attribute extra_cloud_ips $EXTRA_NICS_WITH_IP
     fi
 
+    set_nic_mtu
+
     syslog_netcat "Updating \"post_boot_executed\" to \"true\""
     put_my_vm_attribute post_boot_executed true
     provision_generic_stop  

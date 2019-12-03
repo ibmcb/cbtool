@@ -25,13 +25,7 @@ LOAD_GENERATOR_TARGET_IP=$(get_my_ai_attribute load_generator_target_ip)
 
 PACKET_SIZE=$(get_my_ai_attribute_with_default packet_size auto)
 PACKET_TTL=$(get_my_ai_attribute_with_default packet_ttl auto)
-IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
 EXTERNAL_TARGET=$(get_my_ai_attribute_with_default external_target none)
-    
-if [[ ${IF_MTU} != "auto" ]]
-then
-    sudo ifconfig $my_if mtu ${IF_MTU}
-fi
 
 ping=$(which ping)
 
