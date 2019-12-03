@@ -1160,6 +1160,10 @@ class BaseObjectOperations :
                                                              "GLOBAL", False, \
                                                              "vm_templates", False)
 
+                        _size_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                             "GLOBAL", False, \
+                                                             "size_templates", False)
+
                         if str(obj_attr_list["build"]).lower() == "true" :
                             _role_tmp = "check:" + obj_attr_list["imageid1"] + ':' + obj_attr_list["login"] + ':' + obj_attr_list["type"] + ":build"
                         else :
@@ -1259,6 +1263,12 @@ class BaseObjectOperations :
                             del obj_attr_list["login"]
 
                         obj_attr_list.update(_vm_template_attr_list)
+                        
+                        if "size" in obj_attr_list :
+                            if obj_attr_list["size"] in _size_templates :
+                                _osize = obj_attr_list["size"]
+                                obj_attr_list["size"] = _size_templates[obj_attr_list["size"]]
+                                cbdebug("VM size \"" + _osize + "\" (vcpus-vmem GB) mapped to cloud-specific flavor \""  + obj_attr_list["size"] + "\".", True)                        
 
                         if str(obj_attr_list["userdata_post_boot"]).lower() == "true" \
                         or str(obj_attr_list["userdata_ssh"]).lower() == "true" :
