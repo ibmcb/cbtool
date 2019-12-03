@@ -613,7 +613,7 @@ class KubCmds(CommonCloudFunctions) :
                 _address = obj_attr_list["k8s_instance"]["status"]["podIP"]
 
                 obj_attr_list["run_cloud_ip"] = _address
-                obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] + "_" + obj_attr_list["name"]
+                obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
                 if obj_attr_list["netname"] == "public" :
                     service = pykube.Service(KubCmds.catalogs.kubeconn[obj_attr_list["vmc_name"]], { "kind": "Service", "apiVersion": "v1",  "metadata": { "name": obj_attr_list["cloud_vm_name"]}})

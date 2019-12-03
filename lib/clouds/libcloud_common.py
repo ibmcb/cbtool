@@ -682,13 +682,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_hostname"] = _hostname + "_" + obj_attr_list["name"]
 
             # Public clouds don't really have "hostnames" - they have a single endpoint for all
-            # regions and VMCs. However, in Redis this IP gets tagged
-            # and must be unique, so we have to prefix this so it will be unique.
-            # That makes this "cloud_ip" not a real IP, but unless we stop tagging it,
-            # it still has to be unique to every VMC.
-            # I'm not totally sure what this means for an Openstack + Libcloud adapter,
-            # but we'll cross that bridge when we get to it.
-
+            # regions and VMCs.
             obj_attr_list["cloud_ip"] = _hostname + "." + gethostbyname(self.tldomain) + "_" + obj_attr_list["name"]
             obj_attr_list["arrival"] = int(time())
 
