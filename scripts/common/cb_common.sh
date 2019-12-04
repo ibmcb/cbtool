@@ -2380,9 +2380,9 @@ function run_dhcp_additional_nics {
     then
         NICS_WITH_IP=$(sudo ip -o addr list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo[[:space:]]')
         syslog_netcat "Making sure all NICs on this instance have IPs configured ..."
-        for NIC in $(sudo ip -o link list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo:[[:space:]]' | awk '{ print $2 }')
+        for NIC in $(sudo ip -o link list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo:[[:space:]]' | awk '{ print $2 }' | sed 's/://g')
         do
-            echo "$NICS_WITH_IP" | grep $NIC > /dev/null 2>&1
+            echo "$NICS_WITH_IP" | grep $NIC[[:space:]] > /dev/null 2>&1
             if [[ $? -ne 0 ]]
             then
                 NIC=$(echo $NIC | sed 's/://g')
