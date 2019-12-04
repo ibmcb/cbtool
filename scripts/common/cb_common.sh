@@ -2432,3 +2432,22 @@ function run_dhcp_additional_nics {
     fi
 }
 export -f run_dhcp_additional_nics
+
+function set_nic_mtu {
+    IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
+    if [[ ${IF_MTU} != "auto" ]]
+    then
+        syslog_netcat "Setting MTU for interface \"${my_if}\" to \"${IF_MTU}\" ..."                
+        sudo ifconfig $my_if mtu ${IF_MTU}
+        _NEW_MTU=$(ifconfig $my_if | grep mtu | awk '{ print $4 }')
+        if [[ ${_NEW_MTU} != ${IF_MTU} ]]
+        then
+            syslog_netcat "ERROR: unable to set correct MTU (${IF_MTU}) for \"${my_if}\"!"
+            exit 1
+        else
+            syslog_netcat "Correct MTU (${IF_MTU}) set for \"${my_if}\"!"
+        fi
+    fi
+
+}
+export -f set_nic_mtu
