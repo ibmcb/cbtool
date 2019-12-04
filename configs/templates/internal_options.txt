@@ -452,7 +452,7 @@ OPENSTACK_M += procstat_nova-scheduler_cpu, procstat_nova-scheduler_mem
  
 APP_M = app_load_id, app_load_profile, app_load_level, app_datagen_size, 
 APP_M += app_datagen_time, app_throughput, app_latency, app_loss, app_jitter,
-APP_M += app_bandwidth, app_errors, app_completion_time, app_sla_runtime, app_iterations
+APP_M += app_bandwidth, app_errors, app_completion_time, app_quiescent_time, app_sla_runtime, app_iterations
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP_OS, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP_APP, VM_ID2, APP_M
@@ -513,7 +513,6 @@ MANAGEMENT_IP = 127.0.0.1
 MANAGEMENT_PORT = 1195
 
 [VM_TEMPLATES]
-ALL_IN_ONE_IMAGE=$False
 ACMEAIR = size:04-2048, eclipsed_size:08-4096, imageid1:cb_acmeair
 APACHE = size:04-2048, eclipsed_size:08-4096, imageid1:cb_wrk
 BONNIE = size:02-2048, imageids:1, imageid1:cb_bonnie
@@ -583,6 +582,7 @@ SPECJBB = size:08-4096, eclipsed_size:08-4096, imageids:1, imageid1:cb_specjbb
 STRESS = size:08-4096, imageids:1, imageid1:cb_stress
 SYSBENCH = size:01-2048, imageid1:cb_sysbench
 TINYVM = size:01-512, imageids:1, imageid1:cb_nullworkload
+TPCC = size:04-8192, imageids:1, imageid1:cb_tpcc
 UNIXBENCH = size:02-2048, imageids:1, imageid1:cb_unixbench
 WAS = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_daytrader
 WINDOWS = size:02-2048, imageids:1, imageid1:cb_windows
