@@ -27,19 +27,12 @@ netperf=$(which netperf)
 
 LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
-
 SEND_BUFFER_SIZE=$(get_my_ai_attribute_with_default send_buffer_size auto)
 RECV_BUFFER_SIZE=$(get_my_ai_attribute_with_default recv_buffer_size auto)
 CLIENT_BUFFER_SIZE=$(get_my_ai_attribute_with_default client_buffer_size auto)
 SERVER_BUFFER_SIZE=$(get_my_ai_attribute_with_default server_buffer_size auto)
 REQUEST_RESPONSE_SIZE=$(get_my_ai_attribute_with_default request_response_size auto)
-IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
 EXTERNAL_TARGET=$(get_my_ai_attribute_with_default external_target none)
-    
-if [[ ${IF_MTU} != "auto" ]]
-then
-    sudo ifconfig $my_if mtu ${IF_MTU}
-fi
 
 declare -A CMDLINE_START
 

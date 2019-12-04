@@ -25,14 +25,8 @@ LOAD_GENERATOR_TARGET_IP=$(get_my_ai_attribute load_generator_target_ip)
 
 TRAFFIC_MSS=$(get_my_ai_attribute_with_default traffic_mss auto)
 RATE_LIMIT=$(get_my_ai_attribute_with_default rate_limit auto)
-IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
 BUFFER_LENGTH=$(get_my_ai_attribute_with_default buffer_length auto)
 EXTERNAL_TARGET=$(get_my_ai_attribute_with_default external_target none)
-
-if [[ ${IF_MTU} != "auto" ]]
-then
-    sudo ifconfig $my_if mtu ${IF_MTU}
-fi
 
 iperf=$(which iperf)
 
