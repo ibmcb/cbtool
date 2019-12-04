@@ -58,6 +58,7 @@ then
     setup_rclocal_restarts
 fi
 
+run_dhcp_additional_nics
 refresh_hosts_file
 automount_data_dirs
 fix_ulimit
@@ -85,6 +86,13 @@ else
     post_boot_steps False
     UTC_LOCAL_OFFSET=$(python -c "from time import timezone, localtime, altzone; _ulo = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1; print _ulo")
     put_my_pending_vm_attribute utc_offset_on_vm $UTC_LOCAL_OFFSET
+
+    EXTRA_NICS_WITH_IP=$(sudo ip -o addr list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo[[:space:]]' | grep -v [[:space:]]$my_if[[:space:]] | awk '{ print $2"-"$4}' | cut -d '/' -f 1 | sed ':a;N;$!ba;s/\n/,/g')
+    if [[ ! -z $EXTRA_NICS_WITH_IP ]]
+    then
+        put_my_vm_attribute extra_cloud_ips $EXTRA_NICS_WITH_IP
+    fi
+
     syslog_netcat "Updating \"post_boot_executed\" to \"true\""
     put_my_vm_attribute post_boot_executed true
     provision_generic_stop  

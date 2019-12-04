@@ -742,7 +742,7 @@ function mount_remote_filesystem {
 }
 export -f mount_remote_filesystem
 
-my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
+my_if=$(netstat -rn | grep UG | awk '{ print $8 }' | head -1)
 my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
 my_remote_dir=`get_my_vm_attribute remote_dir_name`
@@ -1116,7 +1116,7 @@ NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
 hn=$(uname -n)
 default=$(/sbin/ip route | grep default)
 if [ x"$default" != x ] ; then
-    interface=$(echo "$default" | sed -e 's/.* dev \+//g' | sed -e "s/ .*//g")
+    interface=$(echo "$default" | sed -e 's/.* dev \+//g' | sed -e "s/ .*//g" | tail -1)
     self=$(/sbin/ifconfig $interface | grep -oE "inet addr:[0-9]+.[0-9]+.[0-9]+.[0-9]+" | sed -e "s/inet addr\://g" | tr "." "-")
     hn="${hn}_${self}"
 fi
@@ -1970,8 +1970,6 @@ function setup_rclocal_restarts {
 }
 
 function automount_data_dirs {
-    #    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
-    #    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
 
     check_container
 
@@ -2082,7 +2080,7 @@ defaults
   timeout connect     10s
   timeout client      1m
   timeout server      1m
-  timeout check 	  10s
+  timeout check       10s
   timeout http-keep-alive 300s
   http-reuse safe
   errorfile 400 /etc/haproxy/errors/400.http
@@ -2416,3 +2414,27 @@ function common_metrics {
     echo $mtr_str
 }
 export -f common_metrics
+
+function run_dhcp_additional_nics {
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
+
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then
+        NICS_WITH_IP=$(sudo ip -o addr list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo[[:space:]]')
+        syslog_netcat "Making sure all NICs on this instance have IPs configured ..."
+        for NIC in $(sudo ip -o link list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo:[[:space:]]' | awk '{ print $2 }' | sed 's/://g')
+        do
+            echo "$NICS_WITH_IP" | grep $NIC[[:space:]] > /dev/null 2>&1
+            if [[ $? -ne 0 ]]
+            then
+                NIC=$(echo $NIC | sed 's/://g')
+                syslog_netcat "NIC \"$NIC\" seems unconfigured: running dhclient against it"
+                sudo dhclient $NIC
+            fi
+        done
+    fi
+}
+export -f run_dhcp_additional_nics
