@@ -355,7 +355,7 @@ class GceCmds(CommonCloudFunctions) :
             _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"], obj_attr_list["name"])
 
             obj_attr_list["cloud_hostname"] = _hostname + "-" + obj_attr_list["name"]
-            obj_attr_list["cloud_ip"] = gethostbyname(_hostname.split('/')[2]) + "-" + obj_attr_list["name"]
+            obj_attr_list["cloud_ip"] = gethostbyname(_hostname.split('/')[2])
             obj_attr_list["arrival"] = int(time())
 
             if str(obj_attr_list["discover_hosts"]).lower() == "true" :

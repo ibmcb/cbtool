@@ -336,12 +336,6 @@ function get_time {
         echo -n $time | cut -d " " -f 1
 }
 
-function get_vm_uuid_from_ip {
-    uip=$(echo $1 | cut -d '-' -f 1)
-    fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
-    echo $fqon | cut -d ':' -f 4
-}
-
 function get_hash {
     object_type=$1
     key_name=$2

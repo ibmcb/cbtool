@@ -95,7 +95,7 @@ AI = BYUSERNAME, BYTYPE, BYAIDRS
 AIDRS = BYUSERNAME, BYPATTERN
 VMCRS = BYUSERNAME, BYPATTERN, BYSCOPE
 FIRS = BYUSERNAME, BYPATTERN, BYSCOPE
-MANDATORY_TAGS = name, cloud_hostname, cloud_ip
+MANDATORY_TAGS = name, cloud_hostname
 CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached, regression, walkthrough
 GET_VM_LIST = $False
 
