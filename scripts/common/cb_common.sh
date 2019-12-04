@@ -2371,17 +2371,25 @@ function common_metrics {
 export -f common_metrics
 
 function run_dhcp_additional_nics {
-    NICS_WITH_IP=$(sudo ip -o addr list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo[[:space:]]')
-    syslog_netcat "Making sure all NICs on this instance have IPs configured ..."
-    for NIC in $(sudo ip -o link list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo:[[:space:]]' | awk '{ print $2 }')
-    do
-        echo "$NICS_WITH_IP" | grep $NIC > /dev/null 2>&1
-        if [[ $? -ne 0 ]]
-        then
-            NIC=$(echo $NIC | sed 's/://g')
-            syslog_netcat "NIC \"$NIC\" seems unconfigured: running dhclient against it"
-            sudo dhclient $NIC
-        fi
-    done            
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
+
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then
+        NICS_WITH_IP=$(sudo ip -o addr list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo[[:space:]]')
+        syslog_netcat "Making sure all NICs on this instance have IPs configured ..."
+        for NIC in $(sudo ip -o link list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo:[[:space:]]' | awk '{ print $2 }')
+        do
+            echo "$NICS_WITH_IP" | grep $NIC > /dev/null 2>&1
+            if [[ $? -ne 0 ]]
+            then
+                NIC=$(echo $NIC | sed 's/://g')
+                syslog_netcat "NIC \"$NIC\" seems unconfigured: running dhclient against it"
+                sudo dhclient $NIC
+            fi
+        done
+    fi
 }
 export -f run_dhcp_additional_nics
