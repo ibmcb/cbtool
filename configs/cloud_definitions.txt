@@ -33,6 +33,7 @@ CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
 CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
 CLOUDOPTION_MYOS = cldattach os, vmcattach all
 CLOUDOPTION_MYAS = cldattach as, vmcattach all
+CLOUDOPTION_MYDOK8S = cldattach dok8s, vmcattach all
 
 # START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------

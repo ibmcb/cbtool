@@ -30,6 +30,10 @@ COLLECT_FROM_HOST = $False
 COLLECT_FROM_GUEST = $False
 
 [VMC_DEFAULTS : KUB_CLOUDCONFIG]
+# Options:
+# 1. KUB_INITIAL_VMCS = default # use the default namespace, no taints, node names, or nodeSelectors
+# 2. KUB_INITIAL_VMCS = cluster:taint;nodeName # use nodeNames
+# 3. KUB_INITIAL_VMCS = cluster:taint;nodeLabelKey=nodeLabelValue # use nodeSelectors
 INITIAL_VMCS = $KUB_INITIAL_VMCS
 DISCOVER_HOSTS = $False
 ACCESS = $Empty
@@ -41,6 +45,14 @@ MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
 HOST_USER_ROOT = $False
 NAMESPACE = $KUB_NAMESPACE
+# We now support two different kinds of tagetted placement:
+# nodeNames send pods to specific places
+# nodeSelectors are more flexible because you can associated
+# nodes to a group all associated with the same label. In those
+# cases, CB need not know anything about the nodes themselves.
+# In both cases the INITIAL_VMCs list needs can be rather complex
+# for specifying the actual nodeName or nodeSelector key/value.
+K8S_PLACEMENT_OPTION = nodeSelector # two choices: Use nodeNames or nodeSelectors
 
 [VM_DEFAULTS : KUB_CLOUDCONFIG]
 ACCESS = $Empty
