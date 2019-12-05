@@ -565,6 +565,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             for credentials_list in obj_attr_list["credentials"].split(";"):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
 
+            _wait = int(obj_attr_list["update_frequency"])
             _existing_instances = True
             while _existing_instances :
                 _existing_instances = False
@@ -604,10 +605,11 @@ class LibcloudCmds(CommonCloudFunctions) :
                             _msg = "Cleaning up " + self.get_description() + ".  Ignoring instance: " + _reservation.name
                             cbdebug(_msg)
 
-                    if _existing_instances :
-                        sleep(int(obj_attr_list["update_frequency"]))
+                if _existing_instances :
+                    _wait = self.backoff(obj_attr_list, _wait)
 
             if self.use_volumes :
+                _wait = int(obj_attr_list["update_frequency"])
                 _running_volumes = True
                 while _running_volumes :
                     _running_volumes = False
@@ -636,8 +638,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                                 cbdebug(_msg)
 
                         if _running_volumes :
-                            sleep(int(obj_attr_list["update_frequency"]))
-
+                            _wait = self.backoff(obj_attr_list, _wait)
             _status = 0
 
         except CldOpsException, obj :

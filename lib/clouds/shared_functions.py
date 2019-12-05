@@ -1735,7 +1735,7 @@ packages:"""
             else:
                 cbwarn(obj_attr_list["name"] + ": Problem with instance destroy, trying again...", True)
 
-            sleep(_wait)
+            _wait = self.backoff(obj_attr_list, _wait)
 
             _status, _fmsg = self.vmdestroy_repeat_and_check(obj_attr_list)
 
@@ -2072,3 +2072,13 @@ packages:"""
         finally :
             _status, _msg = self.common_messages("AI", obj_attr_list, "undefined", _status, _fmsg)
             return _status, _msg
+
+    @trace
+    def backoff(self, obj_attr_list, delay) :
+        # Sleep and simply double the delay
+        sleep(delay)
+        if "max_backoff" in obj_attr_list and str(obj_attr_list["max_backoff"]).lower() != "false" :
+            delay = min(delay * 2, int(obj_attr_list["max_backoff"]))
+            cbdebug("Backoff increased to " + str(delay) + " seconds.", True) 
+        return delay
+
