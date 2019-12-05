@@ -150,6 +150,11 @@ ADDITIONAL_DISCOVERY = $EMPTY
 # Colocate will make sure that all VMs of the same AI go to the same VMC
 # You can also do "colocate,roundrobin" or "colocate,random" which will do both at the same time
 PLACEMENT_METHOD = roundrobin 
+# Crude backoff mechanism at startup time,
+# currently only implemented within the libcloud adapter.
+# A similar mechanism (using the same code) is also
+# available separately (below) for vmdetach
+MAX_BACKOFF = $False
 
 [VM_DEFAULTS]
 DETACH_ATTEMPTS = 1
@@ -231,6 +236,14 @@ PASSWORD = $False # Disabled
 CLOUDINIT_PACKAGES = $False
 CLOUDINIT_COMMANDS = $False
 CLOUDINIT_KEYS = $Empty
+# This backoff is cloud-agnostic. It's implemented
+# for vmdestroy() in the face of errors of the
+# cloud. If true, in coordination with the variable
+# DETACH_ATTEMPTS, we will not only attempt to
+# retry the detach forever, but we will also backoff
+# by doubling the wait interval to the following
+# maximum value (in seconds)
+MAX_BACKOFF = $False
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
