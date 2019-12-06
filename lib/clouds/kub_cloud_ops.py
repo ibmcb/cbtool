@@ -37,6 +37,16 @@ from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip, check_url, NetworkException
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
+# `extensions/v1beta1` is not allowed after k8s 1.16+
+k8s_version = "apps/v1"
+pykube.objects.DaemonSet.version = k8s_version
+pykube.objects.Deployment.version = k8s_version
+pykube.objects.ReplicaSet.version = k8s_version
+pykube.objects.StatefulSet.version = k8s_version
+pykube.objects.PodSecurityPolicy.version = k8s_version
+pykube.objects.Ingress.version = k8s_version
+pykube.objects.ThirdPartyResource.version = k8s_version
+
 class KubCmds(CommonCloudFunctions) :
     catalogs = threading.local()
 
@@ -1171,7 +1181,7 @@ class KubCmds(CommonCloudFunctions) :
                             _obj["spec"]["nodeSelector"] = {_nodeSelectorKey : _nodeSelectorValue}
 
             if obj_attr_list["abstraction"] == "replicaset" :
-                _obj = { "apiVersion": "extensions/v1beta1", \
+                _obj = { "apiVersion": k8s_version, \
                          "kind": "ReplicaSet", \
                          "id": obj_attr_list["cloud_rs_name"], \
                          "metadata": { "name": obj_attr_list["cloud_rs_name"], \
@@ -1202,7 +1212,7 @@ class KubCmds(CommonCloudFunctions) :
                 obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_rs_name"] + ',' + "role:master,tier:backend" 
 
             if obj_attr_list["abstraction"] == "deployment" :
-                _obj = { "apiVersion": "extensions/v1beta1", \
+                _obj = { "apiVersion": k8s_version, \
                          "kind": "Deployment", \
                          "id": obj_attr_list["cloud_d_name"], \
                          "metadata": { "name": obj_attr_list["cloud_d_name"], \
