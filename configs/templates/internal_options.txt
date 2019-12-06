@@ -51,7 +51,7 @@ INITIAL_VMCS_DOC += the point at\nwhich hypervisors are grouped together in a ty
 [SETUP]
 GLOBAL_OBJECT_LIST = setup,logstore,metricstore,filestore,dash_defaults,mon_defaults,
 GLOBAL_OBJECT_LIST += vpn,space,time,vmc_defaults,vm_defaults,ai_defaults,
-GLOBAL_OBJECT_LIST += aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,container_templates,
+GLOBAL_OBJECT_LIST += aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,size_templates,container_templates,
 GLOBAL_OBJECT_LIST += ai_templates,aidrs_templates,vmcrs_templates,fi_templates,
 GLOBAL_OBJECT_LIST += firs_templates,query,admission_control,api_defaults,gui_defaults,build
 
@@ -131,7 +131,7 @@ DETACH_PARALLELISM = 20
 DISCOVER_HOSTS = $False
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
-FORCE_WALKTHROUGH = $True
+FORCE_WALKTHROUGH = $False
 # For libcloud-based cloud adapters, some clouds
 # use the same images for the entire cloud
 # (Example: GCE and DigitalOcean)
@@ -466,7 +466,7 @@ OPENSTACK_M += procstat_nova-scheduler_cpu, procstat_nova-scheduler_mem
  
 APP_M = app_load_id, app_load_profile, app_load_level, app_datagen_size, 
 APP_M += app_datagen_time, app_throughput, app_latency, app_loss, app_jitter,
-APP_M += app_bandwidth, app_errors, app_completion_time, app_sla_runtime, app_iterations
+APP_M += app_bandwidth, app_errors, app_completion_time, app_quiescent_time, app_sla_runtime, app_iterations
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP_OS, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP_APP, VM_ID2, APP_M
@@ -526,7 +526,140 @@ NETMASK = 255.255.0.0
 MANAGEMENT_IP = 127.0.0.1
 MANAGEMENT_PORT = 1195
 
-[AI_TEMPLATES]
+[VM_TEMPLATES]
+ACMEAIR = size:04-2048, eclipsed_size:08-4096, imageid1:cb_acmeair
+APACHE = size:04-2048, eclipsed_size:08-4096, imageid1:cb_wrk
+BONNIE = size:02-2048, imageids:1, imageid1:cb_bonnie
+BTEST = size:02-2048, imageids:1, imageid1:cb_btest
+CAFFE = size:08-4096, imageids:1, imageid1:cb_caffe
+CASSANDRA = size:04-16384, eclipsed_size:08-16384, imageid1:cb_ycsb
+CHECK = size:01-1024, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:01-1024, imageids:1, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:01-1024, imageids:1, imageid1:cb_open_daytrader
+CLIENT_RUBIS = size:01-1024, imageid1:cb_rubis
+CLIENT_TRADELITE = size:01-1024, imageids:1, imageid1:cb_tradelite
+CLIENT_WINDOWS = size:01-512, imageids:1, imageid1:cb_windows
+CN_HPC = size:01-2560, imageids:1, imageid1:cb_hpcc
+COREMARK = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_coremark
+DB2 = size:01-2048, lb_size:08-4096, eclipsed_size:08-4096, imageids:1, imageid1:cb_daytrader
+DDGEN = size:01-2560, imageids:1, imageid1:cb_ddgen
+DRIVER_COREMARK = size:01-512, imageids:1, imageid1:cb_coremark
+DRIVER_DAYTRADER = size:01-1024, imageids:1, imageid1:cb_daytrader
+DRIVER_FILEBENCH = size:01-512, imageids:1, imageid1:cb_filebench
+DRIVER_FIO = size:01-512, imageids:1, imageid1:cb_fio
+DRIVER_HADOOP = size:01-512, imageids:1, imageid1:cb_hadoop
+DRIVER_NETPERF = size:01-512, imageids:1, imageid1:cb_netperf
+DRIVER_TRADELITE = size:01-1024, imageids:1, imageid1:cb_tradelite
+FEN_HPC = size:01-2560, imageids:1, imageid1:cb_hpcc
+FILEBENCH = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_filebench
+FIO = size:02-2048, imageids:1, imageid1:cb_fio
+GERONIMO = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_open_daytrader
+GIRAPHMASTER = size:01-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_giraph
+GIRAPHSLAVE = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_giraph
+HADOOPMASTER = size:04-16384, eclipsed_size:08-16384, imageids:1, imageid1:cb_hadoop
+HADOOPSLAVE = size:04-16384, eclipsed_size:08-16384, imageids:1, imageid1:cb_hadoop
+IPERFCLIENT = size:02-2048, imageid1:cb_iperf
+IPERFSERVER = size:02-2048, imageid1:cb_iperf
+LB = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_nullworkload
+LIBERTY = size:04-2048, eclipsed_size:08-4096, imageid1:cb_acmeair
+LINPACK = size:01-2560, imageids:1, imageid1:cb_linpack
+MEMTIER = size:01-2048, imageid1:cb_memtier
+MONGO_CFG_SERVER = size:01-2048, imageid1:cb_ycsb
+MONGODB = size:04-2048, eclipsed_size:08-4096, imageid1:cb_ycsb
+MONGOS = size:04-2048, eclipsed_size:08-4096, imageid1:cb_ycsb
+MULTICHASE = size:01-2048, imageids:1, imageid1:cb_multichase
+MUMBLERHEAD = size:08-16384, imageid1:cb_mumbler
+MUMBLERREMOTE = size:08-16384, imageid1:cb_mumbler
+MYSQL = size:01-2048, lb_size:08-4096, eclipsed_size:08-4096, imageids:1, imageid1:cb_open_daytrader
+NETCLIENT = size:02-2048, imageids:1, imageid1:cb_netperf
+NETSERVER = size:02-2048, imageids:1, imageid1:cb_netperf
+NODEJS = size:04-2048, eclipsed_size:08-4096, imageid1:cb_wrk2
+NUTTCPCLIENT = size:02-2048, imageids:1, imageid1:cb_nuttcp
+NUTTCPSERVER = size:02-2048, imageids:1, imageid1:cb_nuttcp
+OLDISIMDRIVER = size:02-2048, imageid1:cb_oldisim
+OLDISIMLB = size:02-2048, imageid1:cb_oldisim
+OLDISIMLEAF = size:02-2048, imageid1:cb_oldisim
+OLDISIMROOT = size:02-2048, imageid1:cb_oldisim
+PARBOIL = size:01-2560, imageids:1, imageid1:cb_parboil
+POSTMARK = size:02-2048, imageids:1, imageid1:cb_postmark
+REDIS = size:04-2048, eclipsed_size:08-4096, imageid1:cb_ycsb
+RUBBOS = size:04-2048, imageid1:cb_rubbos
+RUBIS_DB = size:04-2048, imageid1:cb_rubis
+RUBIS = size:04-2048, imageid1:cb_rubis
+SCIMARK = size:01-2048, imageids:1, imageid1:cb_scimark
+SEED = size:04-16384, eclipsed_size:08-16384, imageid1:cb_ycsb
+SLURMCONTROLLER = size:08-16384, imageid1:cb_slurm
+SLURMCOMPUTE = size:08-16384, imageid1:cb_slurm
+SPARKMASTER = size:08-16384, imageid1:cb_spark
+SPARKSLAVE = size:08-16384, imageid1:cb_spark
+SPECJBB = size:08-4096, eclipsed_size:08-4096, imageids:1, imageid1:cb_specjbb
+STRESS = size:08-4096, imageids:1, imageid1:cb_stress
+SYSBENCH = size:01-2048, imageid1:cb_sysbench
+TINYVM = size:01-512, imageids:1, imageid1:cb_nullworkload
+TPCC = size:04-8192, imageids:1, imageid1:cb_tpcc
+UNIXBENCH = size:02-2048, imageids:1, imageid1:cb_unixbench
+WAS = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_daytrader
+WINDOWS = size:02-2048, imageids:1, imageid1:cb_windows
+WRK = size:04-2048, eclipsed_size:08-4096, imageid1:cb_wrk
+WRK2 = size:04-2048, eclipsed_size:08-4096, imageid1:cb_wrk2
+XPINGRECEIVER =  size:02-2048, imageids:1, imageid1:cb_xping
+XPINGSENDER =  size:02-2048, imageids:1, imageid1:cb_xping
+YATINYVM = size:01-512, imageids:1, imageid1:cb_nullworkload
+YCSB = size:04-16384, eclipsed_size:08-16384, imageid1:cb_ycsb
+
+# These are just defaults, because ibmcb is publicly accessible.
+# Each cloud will likely need to override them if they use
+# private docker repositories. But this is enough to get the
+# user started using the public container images.
+[CONTAINER_TEMPLATES]
+TINYVM = imageids:1, imageid1:ubuntu_cb_nullworkload
+CASSANDRA = imageids:1, imageid1:ubuntu_cb_ycsb
+YCSB = imageids:1, imageid1:ubuntu_cb_ycsb
+SEED = imageids:1, imageid1:ubuntu_cb_ycsb
+HADOOPSLAVE = imageids:1, imageid1:ubuntu_cb_hadoop
+HADOOPMASTER = imageids:1, imageid1:ubuntu_cb_hadoop
+MONGO_CFG_SERVER = imageids:1, imageid1:ubuntu_cb_hadoop
+MONGODB = imageids:1, imageid1:ubuntu_cb_open_daytrader
+MONGOS = imageids:1, imageid1:ubuntu_cb_netperf
+NETCLIENT = imageids:1, imageid1:ubuntu_cb_netperf
+NETSERVER = imageids:1, imageid1:ubuntu_cb_netperf
+REDIS = imageids:1, imageid1:ubuntu_cb_nuttcp
+FIO = imageids:1, imageid1:ubuntu_cb_fio
+DRIVER_FIO = imageids:1, imageid1:ubuntu_cb_fio
+FEN_HPC = imageids:1, imageid1:ubuntu_cb_hpcc
+CN_HPC = imageids:1, imageid1:ubuntu_cb_hpcc
+DRIVER_FILEBENCH = imageids:1, imageid1:ubuntu_cb_filebench
+FILEBENCH = imageids:1, imageid1:ubuntu_cb_filebench
+GIRAPHMASTER = imageids:1, imageid1:ubuntu_cb_giraph
+GIRAPHSLAVE = imageids:1, imageid1:ubuntu_cb_giraph
+IPERFCLIENT = imageids:1, imageid1:ubuntu_cb_iperf
+IPERFSERVER = imageids:1, imageid1:ubuntu_cb_iperf
+XPINGRECEIVER = imageids:1, imageid1:ubuntu_cb_xping
+XPINGSENDER = imageids:1, imageid1:ubuntu_cb_xping
+DDGEN = imageids:1, imageid1:ubuntu_cb_ddgen
+POSTMARK = imageids:1, imageid1:ubuntu_cb_postmark
+BTEST = imageids:1, imageid1:ubuntu_cb_btest
+UNIXBENCH = imageids:1, imageid1:ubuntu_cb_unixbench
+OLDISIMDRIVER = imageids:1, imageid1:ubuntu_cb_oldisim
+OLDISIMLB = imageids:1, imageid1:ubuntu_cb_oldisim
+OLDISIMLEAF = imageids:1, imageid1:ubuntu_cb_oldisim
+OLDISIMROOT = imageids:1, imageid1:ubuntu_cb_oldisim
+APACHE = imageids:1, imageid1:ubuntu_cb_wrk
+WRK = imageids:1, imageid1:ubuntu_cb_wrk
+WRK2 = imageids:1, imageid1:ubuntu_cb_wrk2
+NODEJS = imageids:1, imageid1:ubuntu_cb_wrk2
+MEMTIER = imageids:1, imageid1:ubuntu_cb_memtier
+SCIMARK = imageids:1, imageid1:ubuntu_cb_scimark
+MULTICHASE = imageids:1, imageid1:ubuntu_cb_multichase
+SYSBENCH = imageids:1, imageid1:ubuntu_cb_sysbench
+MYSQL = imageids:1, imageid1:ubuntu_cb_sysbench
+BONNIE = imageids:1, imageid1:ubuntu_cb_bonnie
+LINPACK = imageids:1, imageid1:ubuntu_cb_linpack
+KERNBENCH = imageids:1, imageid1:ubuntu_cb_kernbench
+LB = imageids:1, imageid1:ubuntu_cb_nullworkload
+TPCC = imageids:1, imageid1:ubuntu_cb_tpcc
+
+[SIZE_TEMPLATES]
 
 # These are just defaults, because ibmcb is publicly accessible.
 # Each cloud will likely need to override them if they use

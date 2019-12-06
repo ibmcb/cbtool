@@ -249,7 +249,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                       cld_attr_lst["vm_defaults"], \
                                                                       cld_attr_lst["vmc_defaults"])
 
-                    if _x_status == 1 and str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
+                    if _x_status or str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
                         cld_attr_lst["walkthrough"] = "true"
                 
                 cld_attr_lst["vmc_defaults"]["walkthrough"] = cld_attr_lst["walkthrough"]
@@ -976,6 +976,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
 
+            obj_attr_list["walkthrough"] = _vmc_defaults["walkthrough"]
+
             if _cloud_parameters["all_vmcs_attached"].lower() == "false" :
                 _obj_type = command.split('-')[0].upper()
                 _obj_attr_list = {}
@@ -990,7 +992,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _obj_attr_list["name"] = "all"
                                 
                 _obj_attr_list["walkthrough"] = _vmc_defaults["walkthrough"]
-                
+
                 _temp_attr_list = obj_attr_list["temp_attr_list"]
 
                 self.get_counters(_obj_attr_list["cloud_name"], _obj_attr_list)
@@ -1064,7 +1066,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "experiment: " + _fmsg
                 cberr(_msg)
             else :
-                _msg = "\nAll VMCs successfully attached to this experiment." + self.walkthrough_messages("CLOUD", "attach", obj_attr_list)
+                _msg = "\nAll VMCs successfully attached to this experiment." + self.walkthrough_messages("VMCALL", "attach", obj_attr_list)
                 cbdebug(_msg)
                         
             return self.package(_status, _msg, self.get_cloud_parameters(obj_attr_list["cloud_name"]))

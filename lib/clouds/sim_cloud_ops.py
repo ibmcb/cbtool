@@ -101,7 +101,7 @@ class SimCmds(CommonCloudFunctions) :
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
 
-            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults, vm_defaults)
             
             if not (_run_netname_found and _prov_netname_found and \
                     _key_pair_found and _security_group_found) :
@@ -157,7 +157,7 @@ class SimCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates, vmc_defaults) :
+    def check_images(self, vmc_name, vm_templates, vmc_defaults, vm_defaults) :
         '''
         TBD
         '''
@@ -187,7 +187,7 @@ class SimCmds(CommonCloudFunctions) :
         _map_name_to_id["baseimg"] = self.generate_random_uuid("baseimg")
         _map_uuid_to_name[self.generate_random_uuid("baseimg")] = "baseimg"
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_uuid_to_name)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_uuid_to_name, vm_defaults)
 
         if "images_uuid2name" not in vmc_defaults :
             vmc_defaults["images_uuid2name"] = dic2str(_map_uuid_to_name)
@@ -1203,7 +1203,7 @@ class SimCmds(CommonCloudFunctions) :
         _host_mem_found = False        
         
         _host = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, host_uuid, False)
-        
+
         if int(_host["available_cores"]) >= int(obj_attr_list["vcpus"]) :
             _host_core_found = True
             

@@ -56,7 +56,7 @@ class PlmCmds(CommonCloudFunctions) :
         self.additional_rc_contents = ''
 
         self.vhw_config = {}
-        self.vhw_config["pico32"] = { "vcpus" : "1", "vmem" : "192", "vstorage" : "2048", "vnics" : "1" }
+        self.vhw_config["pico32"] = { "vcpus" : "1", "vmem" : "256", "vstorage" : "2048", "vnics" : "1" }
         self.vhw_config["nano32"] = { "vcpus" : "1", "vmem" : "512", "vstorage" : "61440", "vnics" : "1" }
         self.vhw_config["micro32"] = { "vcpus" : "1", "vmem" : "1024", "vstorage" : "61440", "vnics" : "1" }
         self.vhw_config["copper32"] = { "vcpus" : "1", "vmem" : "2048", "vstorage" : "61440", "vnics" : "1" }
@@ -133,7 +133,7 @@ class PlmCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults['poolname'])
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults['poolname'], vm_defaults)
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using lxc CLI)"
@@ -198,7 +198,7 @@ class PlmCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates, poolname) :
+    def check_images(self, vmc_name, vm_templates, poolname, vm_defaults) :
         '''
         TBD
         '''
@@ -234,10 +234,10 @@ class PlmCmds(CommonCloudFunctions) :
 
                     _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
                 
-            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
+            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
 
             if not _detected_imageids :
-                return _detected_imageids  
+                return _detected_imageids
 
         return _detected_imageids
 

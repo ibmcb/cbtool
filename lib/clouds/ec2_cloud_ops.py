@@ -123,7 +123,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
-            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vm_defaults)
 
             if not (_key_pair_found and _security_group_found) :
                 _fmsg += ": Check the previous errors, fix it (using " + self.get_description() + "'s web"
@@ -162,7 +162,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates) :
+    def check_images(self, vmc_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
@@ -199,7 +199,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         for _registered_image in _registered_image_list :
             _registered_imageid_list.append(_registered_image.id)
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
 
         return _detected_imageids
 

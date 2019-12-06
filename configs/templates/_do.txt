@@ -19,6 +19,7 @@ DO_CREDENTIALS_DEFAULT = tag1:some_hex_token
 
 DO_KEY_NAME_DOC = Comma-separated list of SSH key names or IDs used in your account.
 DO_KEY_NAME_DEFAULT = foo,bar
+
 DO_LOGIN_DOC = username to which your ssh key corresponds
 DO_LOGIN_DEFAULT = root
 
@@ -82,88 +83,21 @@ ACCESS = $DO_ACCESS
 SECURITY_GROUPS = not_yet_applicable
 GLOBAL_IMAGES = $True
 
-[AI_TEMPLATES : HADOOP ]
-HADOOP_HOME = /usr/local/hadoop
-
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
-# imageid can be either the actual ID number or more easily the name in the case of a private account
-# The images named cloudbench-*-on-1604.060117-1 are accessible by anyone with a valid DigitalOcean account
-ACMEAIR = size:4gb, imageid1:cb_acmeair
-APACHE = size:4gb, imageid1:cb_wrk
-BONNIE = size:2gb, imageid1:cb_bonnie
-BTEST = size:2gb, imageid1:cb_btest
-CAFFE = size:4gb, imageid1:cb_caffe
-CASSANDRA = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.051818-1
-CHECK = size:512mb, imageids:1, imageid1:to_replace
-CLIENT_IBM_DAYTRADER = size:4gb, imageid1:cb_daytrader
-CLIENT_OPEN_DAYTRADER = size:4gb, imageid1:cb_open_daytrader
-CLIENT_RUBBOS = size:4gb, imageid1:cb_rubbos
-CLIENT_RUBIS = size:2gb, imageid1:cb_rubis
-CLIENT_TRADELITE = size:4gb, imageid1:cb_tradelite
-CLIENT_WINDOWS = size:4gb, imageid1:cb_windows
-CN_HPC = size:4gb, imageid1:cb_hpcc
-COREMARK = size:1gb, imageid1:cb_coremark
-DB2 = size:4gb, imageid1:cb_daytrader
-DDGEN = size:2gb, imageid1:cb_ddgen
-DRIVER_COREMARK = size:1gb, imageid1:cb_coremark
-DRIVER_DAYTRADER = size:4gb, imageid1:cb_daytrader
-DRIVER_FILEBENCH = size:4gb, imageid1:cb_filebench
-DRIVER_FIO = size:4gb, imageid1:cb_fio
-DRIVER_HADOOP = size:1gb, imageid1:cb_hadoop
-DRIVER_NETPERF = size:1gb, imageid1:cb_netperf
-DRIVER_TRADELITE = size:4gb, imageid1:cb_tradelite
-FEN_HPC = size:4gb, imageid1:cb_hpcc
-FILEBENCH = size:2gb, imageid1:cb_filebench
-FIO = size:2gb, imageid1:cb_fio
-GERONIMO = size:4gb, imageid1:cb_open_daytrader
-GIRAPHMASTER = size:2gb, imageid1:cb_giraph
-GIRAPHSLAVE = size:4gb, imageid1:cb_giraph
-HADOOPMASTER = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.061818-1
-HADOOPSLAVE = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.061818-1
-IPERFCLIENT = size:512mb, imageid1:cb_iperf
-IPERFSERVER = size:512mb, imageid1:cb_iperf
-LB = size:4gb, imageid1:cb_nullworkload
-LIBERTY = size:4gb, imageid1:cb_acmeair
-LINPACK = size:4gb, imageid1:cb_linpack
-MEMTIER = size:4gb, imageid1:cb_memtier
-MONGO_CFG_SERVER = size:2gb, imageid1:cb_ycsb
-MONGODB = size:4gb, imageid1:cb_ycsb
-MONGOS = size:8gb, imageid1:cb_ycsb
-MULTICHASE = size:4gb, imageid1:cb_multichase
-MYSQL = size:4gb, imageid1:cb_open_daytrader
-NETCLIENT = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.051818-1
-NETSERVER = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.051818-1
-NUTTCPCLIENT = size:512mb, imageid1:cb_nuttcp
-NUTTCPSERVER = size:512mb, imageid1:cb_nuttcp
-OLDISIMDRIVER = size:1gb, imageid1:cb_oldisim
-OLDISIMLB = size:1gb, imageid1:cb_oldisim
-OLDISIMLEAF = size:1gb, imageid1:cb_oldisim
-OLDISIMROOT = size:1gb, imageid1:cb_oldisim
-PARBOIL = size:4gb, imageid1:cb_parboil
-POSTMARK = size:2gb, imageid1:cb_postmark
-REDIS = size:4gb, imageid1:cb_ycsb
-RUBBOS = size:4gb, imageid1:cb_rubbos
-RUBIS_DB = size:4gb, imageid1:cb_rubis
-RUBIS = size:4gb, imageid1:cb_rubis
-SCIMARK = size:2gb, imageid1:cb_scimark
-SEED = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.051818-1
-SPARKMASTER = size:8gb, imageid1:cb_spark
-SPARKSLAVE = size:8gb, imageid1:cb_spark
-SPECJBB = size:4gb, imageid1:cb_specjbb
-SYSBENCH = size:4gb, imageid1:cb_sysbench
-TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.051818-1
-LB = size:4gb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.051818-1
-UNIXBENCH = size:512mb,imageids:1,imageid1:cloudbench-nullworkload-on-1604.051818-1
-WAS = size:4gb, imageid1:cb_daytrader
-WINDOWS = size:4gb imageids:1, imageid1:cb_windows
-WRK = size:2gb, imageid1:cb_wrk
-WRK2 = size:2gb, imageid1:cb_wrk2
-NODEJS = size:2gb, imageid1:cb_wrk2
-XPINGRECEIVER =  size:512mb, imageid1:cb_xping
-XPINGSENDER =  size:512mb, imageid1:cb_xping
-YATINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.051818-1
-YCSB = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.051818-1
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:18.04_x64, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
-TPCC = size:4gb, imageid1:not_important
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:53893572, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
-[CONTAINER_TEMPLATES]
+[SIZE_TEMPLATES : DO_CLOUDCONFIG]
+# Sizes extracted from https://www.digitalocean.com/pricing/
+01-256=1gb
+01-512=1gb
+01-1024=1gb
+01-2048=2gb
+01-2560=2gb
+02-2048=2gb
+04-2048=2gb
+08-4096=8gb
+02-4096=4gb
+02-5120=4gb
+04-16384=16gb
+08-16384=16gb
+16-16384=48gb

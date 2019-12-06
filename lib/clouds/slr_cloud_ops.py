@@ -133,7 +133,7 @@ class SlrCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, vmc_name)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates, access)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, access, vm_defaults)
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using GCE's web"
@@ -172,7 +172,7 @@ class SlrCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates, access) :
+    def check_images(self, vmc_name, vm_templates, access, vm_defaults) :
         '''
         TBD
         '''
@@ -203,7 +203,7 @@ class SlrCmds(CommonCloudFunctions) :
 
                 _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
 
         return _detected_imageids
 

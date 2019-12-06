@@ -419,7 +419,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
 
-            _detected_imageids = self.check_images(vmc_name, vm_templates, credentials_list)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, credentials_list, vm_defaults)
 
             _extra_vmc_setup_complete = self.extra_vmc_setup(vmc_name, vmc_defaults, vm_defaults, vm_templates, _local_conn)
 
@@ -481,7 +481,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates, credentials_list) :
+    def check_images(self, vmc_name, vm_templates, credentials_list, vm_defaults) :
         '''
         TBD
         '''
@@ -518,7 +518,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                 _map_id_to_name[_map_name_to_id[_replacement_id]] = _replacement_id
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
 
         return _detected_imageids
 
