@@ -30,6 +30,7 @@ import json
 import traceback
 import socket
 
+from copy import deepcopy
 from time import time, sleep
 from uuid import uuid5, UUID, NAMESPACE_DNS
 from socket import gethostbyname
@@ -1018,14 +1019,19 @@ class CommonCloudFunctions:
         return _security_group_found
 
     @trace        
-    def base_check_images(self, vmc_name, vm_templates, registered_imageid_list, map_id_to_name) :
+    def base_check_images(self, vmc_name, vm_templates, registered_imageid_list, map_id_to_name, vm_defaults) :
         '''
         TBD
         '''        
         
         _required_imageid_list = {}
 
-        for _vm_role in vm_templates.keys() :
+        _vm_templates = deepcopy(vm_templates)
+        if str(vm_defaults["nest_containers_enabled"]).lower() == "false" :
+            if "nest_containers_base_image"  in _vm_templates :
+                del _vm_templates["nest_containers_base_image"]
+
+        for _vm_role in _vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             if self.is_cloud_image_uuid(_imageid) :
                 if _imageid not in _required_imageid_list :

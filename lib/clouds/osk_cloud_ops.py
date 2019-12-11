@@ -407,7 +407,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
         
         return _detected_imageids
 

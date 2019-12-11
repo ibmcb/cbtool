@@ -130,7 +130,7 @@ class PcmCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vm_defaults)
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using lxc CLI)"
@@ -195,7 +195,7 @@ class PcmCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates) :
+    def check_images(self, vmc_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
@@ -214,7 +214,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _registered_imageid_list.append(_registered_image.fingerprint)
                 if len(_registered_image.aliases) :
                     _map_name_to_id[_registered_image.aliases[0]["name"]] = _registered_image.fingerprint
-                
+
             for _vm_role in vm_templates.keys() :            
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
                 if _imageid != "to_replace" :
@@ -226,7 +226,7 @@ class PcmCmds(CommonCloudFunctions) :
 
                     _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
                 
-            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
+            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
 
             if not _detected_imageids :
                 return _detected_imageids  

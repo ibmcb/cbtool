@@ -98,7 +98,7 @@ class NopCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults, vm_defaults)
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it"
@@ -136,7 +136,7 @@ class NopCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates, vmc_defaults) :
+    def check_images(self, vmc_name, vm_templates, vmc_defaults, vm_defaults) :
         '''
         TBD
         '''
@@ -167,7 +167,7 @@ class NopCmds(CommonCloudFunctions) :
         _map_name_to_id["baseimg"] = self.generate_random_uuid("baseimg")
         _map_uuid_to_name[self.generate_random_uuid("baseimg")] = "baseimg"
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_uuid_to_name)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_uuid_to_name, vm_defaults)
 
         if "images_uuid2name" not in vmc_defaults :
             vmc_defaults["images_uuid2name"] = dic2str(_map_uuid_to_name)

@@ -161,7 +161,7 @@ class GceCmds(CommonCloudFunctions) :
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, vmc_name)
             
             if not GceCmds.base_images_checked :
-                _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
+                _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name, vm_defaults)
 
                 if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                     _msg = "Check the previous errors, fix it (using GCE's web"
@@ -208,7 +208,7 @@ class GceCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates, http_conn_id) :
+    def check_images(self, vmc_name, vm_templates, http_conn_id, vm_defaults) :
         '''
         TBD
         '''
@@ -240,7 +240,7 @@ class GceCmds(CommonCloudFunctions) :
 
                 _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
 
         return _detected_imageids
 
