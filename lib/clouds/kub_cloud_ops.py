@@ -43,9 +43,8 @@ pykube.objects.DaemonSet.version = k8s_version
 pykube.objects.Deployment.version = k8s_version
 pykube.objects.ReplicaSet.version = k8s_version
 pykube.objects.StatefulSet.version = k8s_version
-pykube.objects.PodSecurityPolicy.version = k8s_version
-pykube.objects.Ingress.version = k8s_version
-pykube.objects.ThirdPartyResource.version = k8s_version
+pykube.objects.PodSecurityPolicy.version = "policy/v1beta1"
+pykube.objects.Ingress.version = "networking.k8s.io/v1beta1" 
 
 class KubCmds(CommonCloudFunctions) :
     catalogs = threading.local()
