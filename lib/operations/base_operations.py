@@ -2445,7 +2445,7 @@ class BaseObjectOperations :
                                                                  False)
 
                             obj_attr_list["load_generator_target_vm"] += _vm_uuid + ','
-                            if str(obj_attr_list["use_public_lb_network"]).lower() == "true" :
+                            if "load_balancer_target_role" in obj_attr_list and obj_attr_list["load_balancer_target_role"] != "none" and str(obj_attr_list["use_public_lb_network"]).lower() == "true" :
                                 obj_attr_list["load_generator_target_ip"] += _vm_attr_list["public_cloud_ip"] + ','
                             else :
                                 obj_attr_list["load_generator_target_ip"] += _vm_attr_list["run_cloud_ip"] + ','

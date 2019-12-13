@@ -350,6 +350,21 @@ function get_vm_attribute {
     get_hash VM ${vmuuid} ${attribute} 0
 }
 
+function get_vm_attribute_with_default {
+    vmuuid=$1
+    attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
+    TEST="`get_vm_attribute ${vmuuid} ${attribute}`"
+
+    if [ x"$TEST" != x ] ; then
+        echo "$TEST"
+    elif [ x"$DEFAULT" != x ] ; then
+        echo "$DEFAULT"
+    else
+        syslog_netcat "Configuration error: Value for key ($vmuuid, $attribute) not available online or offline."
+        exit 1
+    fi
+}
+
 function get_my_vm_attribute {
     attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
     get_hash VM ${my_vm_uuid} ${attribute} 0
@@ -886,9 +901,24 @@ function build_ai_mapping {
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
         # Lines were getting duplicated (presumably because the function is called more than once.
         # Avoid adding a line twice:
-        if [ x"$(grep ${vmuuid} ${ai_mapping_file})" == x ] ; then 
+        if [ x"$(grep ${vmuuid} ${ai_mapping_file})" == x ] ; then
             echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
         fi
+
+       # The problem here is that we cannot simply add a new line to the hosts file
+       # because the "hostname" of the VM is already intended to represent the private network
+       # However, we still need a mapping to the public network for load balancer purposes,
+       # without "breaking" scripts who grep /etc/hosts for hostnames. Instead, we'll use the
+       # private IP as a pseudo-hostname so that we can still perform the lookup.
+
+       publicip=`get_vm_attribute_with_default ${vmuuid} public_cloud_ip none`
+       if [ x"${publicip}" != x"none" ] ; then
+               publicipkeyname=$(echo $vmip | sed -e "s/\./__/g")
+
+               if [ x"$(grep ${publicipkeyname} ${ai_mapping_file})" == x ] ; then
+                   echo "${publicip}    public-${publicipkeyname}    # public ip address for above VM" >> ${ai_mapping_file}
+               fi
+       fi
     done
 }
 
@@ -1273,10 +1303,10 @@ function configure_firewall {
             sudo ufw --force enable >/dev/null 2>&1
             sudo ufw allow 22 >/dev/null 2>&1
             sudo ufw allow $(get_my_vm_attribute ${prov_cloud_port}) >/dev/null 2>&1
-    
+
             for i in $(cat /etc/hosts | grep -v 127.0.0.1 | awk '{ print $1 }')
             do
-                sudo ufw allow from $i 
+                sudo ufw allow from $i
             done
         fi
 
@@ -1287,12 +1317,18 @@ function configure_firewall {
             sudo systemctl start firewalld
             firewall-cmd --zone ${_Z} --add-port 22/tcp >/dev/null 2>&1
             firewall-cmd --zone ${_Z} --add-port $(get_my_vm_attribute ${prov_cloud_port})/tcp >/dev/null 2>&1
-    
+
             for i in $(cat /etc/hosts | grep -v 127.0.0.1 | awk '{ print $1 }')
             do
-                firewall-cmd --zone ${_Z} --add-rich-rule="rule family='ipv4' source address=$i accept" 
+                firewall-cmd --zone ${_Z} --add-rich-rule="rule family='ipv4' source address=$i accept"
+               publicipkeyname=$(echo $i | sed -e "s/\./__/g")
+               publicip=$(grep "public-${publicipkeyname}" /etc/hosts)
+               if [ x"$publicip" != x ] ; then
+                    firewall-cmd --zone ${_Z} --add-rich-rule="rule family='ipv4' source address=$publicip accept"
+               fi
+
             done
-        fi        
+        fi
     fi
 }
 export -f configure_firewall
@@ -1769,7 +1805,7 @@ function setup_passwordless_ssh {
     sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub > ~/.ssh/id_rsa.pub
     sudo chmod 0644 ~/.ssh/id_rsa.pub
 
-    touch ~/.ssh/authorized_keys    
+    touch ~/.ssh/authorized_keys
     PKC=$(cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub)
     grep "$PKC" ~/.ssh/authorized_keys > /dev/null 2>&1
     if [[ $? -ne 0 ]]
@@ -2437,7 +2473,7 @@ function set_nic_mtu {
     IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
     if [[ ${IF_MTU} != "auto" ]]
     then
-        syslog_netcat "Setting MTU for interface \"${my_if}\" to \"${IF_MTU}\" ..."                
+        syslog_netcat "Setting MTU for interface \"${my_if}\" to \"${IF_MTU}\" ..."
         sudo ifconfig $my_if mtu ${IF_MTU}
         _NEW_MTU=$(ifconfig $my_if | grep mtu | awk '{ print $4 }')
         if [[ ${_NEW_MTU} != ${IF_MTU} ]]
