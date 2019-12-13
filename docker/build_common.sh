@@ -62,7 +62,7 @@ else
 fi
 
 CB_UBUNTU_BASE=ubuntu:18.04
-CB_CENTOS_BASE=centos:latest
+CB_CENTOS_BASE=centos:7
 CB_VERB="-q"
 CB_PUSH="nopush"
 CB_ARCH=$(uname -a | awk '{ print $12 }')
@@ -85,15 +85,15 @@ CB_USAGE="Usage: $0 [-r <repository>] [-u Ubuntu base image] [-c Centos base ima
 
 function cb_docker_build {
     _CB_REPOSITORY=$1
-    _CB_VERBQUIET=$2    
+    _CB_VERBQUIET=$2
     _CB_DOCKERFN=$3
-    _CB_BRANCH=$(echo $4 | sed 's/://g')     
-    _CB_USERNAME=$5 
+    _CB_BRANCH=$(echo $4 | sed 's/://g')
+    _CB_USERNAME=$5
     _CB_ARCH=$6
     _CB_RSYNC=$7
     _CB_FATAL=$8
     _CB_SQUASH=$9
-    _CB_MULTIARCH=${10}    
+    _CB_MULTIARCH=${10}
     _CB_DROPBOX=${11}
     
     if [[ ${_CB_ARCH} == "x86_64" ]]
@@ -102,14 +102,14 @@ function cb_docker_build {
         CB_ARCH2=x86-64
         CB_ARCH3=amd64
         CB_ARCH4=x64
-        CB_ARCH5=amd64        
+        CB_ARCH5=amd64
     elif [[ ${_CB_ARCH} == "ppc64le" ]]
     then
         CB_ARCH1=ppc64le
         CB_ARCH2=ppc64
         CB_ARCH3=ppc64el
         CB_ARCH4=ppc64le
-        CB_ARCH5=ppc64le        
+        CB_ARCH5=ppc64le      
     else
         CB_ARCH1=$CB_ARCH
         CB_ARCH2=$CB_ARCH
@@ -136,23 +136,27 @@ function cb_docker_build {
 
     CB_DNAME=$(echo ${_CB_DOCKERFN} | sed 's/Dockerfile-//g')
 
-    sudo sed -i "s/-ARCH$CB_ARCH1//g" Dockerfile
-    sudo sed -i "s/-ARCH$CB_ARCH2//g" Dockerfile    
-    sudo sed -i "s/-ARCH$CB_ARCH3//g" Dockerfile
-    sudo sed -i "s/-ARCH$CB_ARCH4//g" Dockerfile
+    sudo sed -i "s^REPLACE_ARCH1^${CB_ARCH1}^g" Dockerfile
+    sudo sed -i "s^REPLACE_ARCH2^${CB_ARCH2}^g" Dockerfile        
+    sudo sed -i "s^REPLACE_ARCH3^${CB_ARCH3}^g" Dockerfile
+    sudo sed -i "s^REPLACE_ARCH4^${CB_ARCH4}^g" Dockerfile
+
+    sudo sed -i "s/-ARCH${CB_ARCH1}//g" Dockerfile
+    sudo sed -i "s/-ARCH${CB_ARCH2}//g" Dockerfile    
+    sudo sed -i "s/-ARCH${CB_ARCH3}//g" Dockerfile
+    sudo sed -i "s/-ARCH${CB_ARCH4}//g" Dockerfile
                 
     sudo sed -i "/-ARCH/,/-ARCH/d" Dockerfile
 
     sudo sed -i "s^____^ ^g" Dockerfile
     sudo sed -i "s^REPLACE_BRANCH^${_CB_BRANCH}^g" Dockerfile
-    sudo sed -i "s^REPLACE_ARCH1^$CB_ARCH1^g" Dockerfile
-    sudo sed -i "s^REPLACE_ARCH2^$CB_ARCH2^g" Dockerfile        
-    sudo sed -i "s^REPLACE_ARCH3^$CB_ARCH3^g" Dockerfile
-    sudo sed -i "s^REPLACE_ARCH4^$CB_ARCH4^g" Dockerfile        
-    sudo sed -i "s^REPLACE_BASE_VANILLA_UBUNTU^$CB_UBUNTU_BASE^g" Dockerfile
-    sudo sed -i "s^REPLACE_BASE_VANILLA_CENTOS^$CB_CENTOS_BASE^g" Dockerfile
+
+    sudo sed -i "s^REPLACE_BASE_VANILLA_UBUNTU^${CB_UBUNTU_BASE}^g" Dockerfile
+    sudo sed -i "s^REPLACE_BASE_VANILLA_CENTOS^${CB_CENTOS_BASE}^g" Dockerfile
     sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://${_CB_RSYNC}/ --exclude 3rd_party/workload/ --exclude old_data/ --include=configs/cloud_definitions.txt --include configs/build*.sh --include configs/generated/ --include=configs/templates/ --exclude=configs/* --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" Dockerfile        
     sudo sed -i "s^REPLACE_RSYNC^rsync -a rsync://${_CB_RSYNC}/3rd_party/workload/^g" Dockerfile
+
+    sudo sed -i "s^apt-get update^apt -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update^g" Dockerfile
 
     if [[ ${_CB_MULTIARCH} -eq 1 ]]
     then
@@ -419,7 +423,12 @@ function cb_push_images {
         then
             CMD="docker tag ${IMG}${CB_BRANCH} ${IMG}:latest"
             echo "########## Tagging image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
-            $CMD            
+	        if [[ $? -eq 0 ]]
+	        then
+                echo "############ Image ${IMG}${CB_BRANCH} tagged successfully!!!"
+        	else
+                echo "############ Image ${IMG}${CB_BRANCH} tagging FAILED!"	        		
+			fi   
         fi
         echo $IMG | grep coremark
         NOT_COREMARK=$?
@@ -443,12 +452,24 @@ function cb_push_images {
         then
             CMD="docker push ${IMG}${CB_BRANCH}"
             echo "########## Pushing image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
-            $CMD
-            if [[ $CB_BRANCH != ""  ]]
+	        $CMD > /dev/null 2>&1
+	        if [[ $? -eq 0 ]]
+	        then
+                echo "############ Image ${IMG}${CB_BRANCH} pushed successfully!!!"
+        	else
+                echo "############ Image ${IMG}${CB_BRANCH} push FAILED!"	        		
+			fi                	
+            if [[ $CB_BRANCH != "latest"  ]]
             then
                 CMD="docker push ${IMG}:latest"
-                echo "########## Pushing image ${IMG}:latest by executing the command \"$CMD\" ..."             
-                $CMD            
+                echo "########## Pushing image ${IMG}:latest by executing the command \"$CMD\" ..."
+                $CMD > /dev/null 2>&1
+                if [[ $? -eq 0 ]]
+                then
+	                echo "############ Image ${IMG}:latest pushed successfully!!!"
+	        	else
+	                echo "############ Image ${IMG}:latest push FAILED!"	        		
+				fi                	
             fi            
         fi
     done

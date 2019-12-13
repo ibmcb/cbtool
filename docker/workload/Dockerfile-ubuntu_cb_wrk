@@ -6,8 +6,12 @@ RUN apt-get install -y apache2
 # service_stop_disable apache2
 # apache-install-pm
 
-# wrk-install-man
+# wrk-ARCHx86_64-install-man
 RUN /bin/true; cd /home/REPLACE_USERNAME/; git clone https://github.com/wg/wrk.git; cd /home/REPLACE_USERNAME/wrk; make all
-# wrk-install-man
+# wrk-ARCHx86_64-install-man
+
+# wrk-ARCHppc64le-install-man
+RUN /bin/true; cd /home/REPLACE_USERNAME/; git clone https://github.com/wg/wrk.git; cd /home/REPLACE_USERNAME/wrk; make all; /bin/true
+# wrk-ARCHppc64le-install-man
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

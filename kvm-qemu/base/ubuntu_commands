@@ -27,9 +27,8 @@ run-command sed -i '/^#.* partner/s/^#//' /etc/apt/sources.list
 install sudo,rsync,python2.7,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop,libyaml-0-2
 install net-tools,psmisc,ntp,git,wget,python-pip,gcc,make,bc,sshpass,curl,screen,ncftp,lftp,haproxy,vim,netcat-openbsd,nmap
 install openvpn,ganglia-monitor,rsyslog,apache2,redis-server,mongodb,sudo,python-libvirt,python-dev,pssh,jq,iptables,openssh-server
-install r-base-core,rrdtool,python-rrdtool,pwgen,python-docutils,language-pack-en,subnetcalc,haveged,python-libxml2,uuid
-
-install expect,xfce4,xfce4-goodies,tightvncserver
+install libffi-dev,libssl-dev,libxml2-dev,libxslt1-dev,libjpeg8-dev,zlib1g-dev,build-essential,dkms
+install rrdtool,python-rrdtool,pwgen,python-docutils,language-pack-en,subnetcalc,haveged,python-libxml2,uuid
 
 run-command sudo cp /bin/nc /usr/local/bin/netcat
 
@@ -83,6 +82,8 @@ password REPLACE_USERNAME:password:temp4now
 run-command mkdir /root/.docker
 run-command mkdir /home/REPLACE_USERNAME/.docker
 
+run-command usermod -aG docker REPLACE_USERNAME
+
 #
 #
 
@@ -102,6 +103,9 @@ run-command rsync -a /root/.ssh/ /home/REPLACE_USERNAME/.ssh/
 run-command chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
 
 #
+#
+#
+
 #
 #
 

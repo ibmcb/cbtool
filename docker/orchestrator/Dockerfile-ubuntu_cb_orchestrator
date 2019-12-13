@@ -326,6 +326,24 @@ WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/d3.git
 # d3-install-git
 
+ADD installrlibs.R /usr/local/bin/installrlibs
+RUN sudo chmod +x /usr/local/bin/installrlibs; sudo /usr/local/bin/installrlibs
+
+USER root
+RUN ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa; \
+touch /root/.ssh/authorized_keys; \
+chmod 644 /root/.ssh/authorized_keys; \
+mkdir -p /home/REPLACE_USERNAME/.ssh/; \
+echo "StrictHostKeyChecking no" > /root/.ssh/config; \
+echo "UserKnownHostsFile=/dev/null" >> /root/.ssh/config; \
+echo "HashKnownHosts no" >> /root/.ssh/config; \
+rsync -a /root/.ssh/ /home/REPLACE_USERNAME/.ssh/; \
+mkdir /home/REPLACE_USERNAME/repos; \
+chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/;
+
+#
+#
+
 ARG CLOUDBENCH_VERSION=AUTO
 
 ADD get_my_ips.sh /usr/local/bin/getmyips
@@ -340,11 +358,29 @@ cp -f /home/REPLACE_USERNAME/cbtool/util/manually_download_files.txt /home/REPLA
 cd /home/REPLACE_USERNAME/cbtool; \
 mv configs private_configs; \
 mkdir configs; \
+mkdir -p data; \
 mv data private_data; \
 mkdir data; \
 chmod +x /usr/local/bin/getmyips; \
-chmod +x /usr/local/bin/gucn; \
+chmod +x /usr/local/bin/gucn;
+
+#
+
 #
 #
-sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+#
+
+#
+#
+#
+#
+#
+#
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+
+USER REPLACE_USERNAME
+
+#
+
 WORKDIR /home/REPLACE_USERNAME/cbtool

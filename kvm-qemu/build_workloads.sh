@@ -2,7 +2,7 @@
 
 source ./build_common.sh
 
-CB_USAGE="Usage: $0 -r built image location [-w Workload] [-l CB Username/login] [-b branch] [-o distros] [--noskip] [--verbose] [--allinone] [--preserve]"
+CB_USAGE="Usage: $0 -r built image location [-w Workload] [-l CB Username/login] [-b branch] [-o distros] [--noskip] [--verbose] [--allinone] [--preserve] [--ubuntubi <filename or url>] [--centosbi <filename or url>]"
 
 while [[ $# -gt 0 ]]
 do
@@ -70,6 +70,22 @@ do
         --preserve)
         CB_PRESERVE_ON_ERROR=1
         ;;
+        --ubuntubi)
+        CB_KVMQEMU_UBUNTU_BASE="$2"
+        shift
+        ;;
+        --ubuntubi=*)
+        CB_KVMQEMU_CENTOS_BASE=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;
+        --centosbi)
+        CB_KVMQEMU_CENTOS_BASE="$2"
+        shift
+        ;;
+        --centosbi=*)
+        CB_KVMQEMU_UBUNTU_BASE=$(echo $key | cut -d '=' -f 2)
+        shift        
+        ;;        
         -h|--help)
         echo $CB_USAGE
         shift

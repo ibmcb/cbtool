@@ -143,10 +143,10 @@ RUN sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf
 RUN sed -i "s/.*port.*/port $OBJECTSTORE_PORT/" /etc/redis.conf
 
 # mongodb-install-pm
-RUN yum install -y mongodb mongodb-server
-RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf
+RUN yum install -y mongodb mongodb-server; /bin/true
+RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; /bin/true
+RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/mongod.conf; /bin/true
 # mongodb-install-pm
-RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/mongod.conf
 
 # pylibvirt-install-pm
 RUN yum install -y libvirt-python
@@ -161,7 +161,7 @@ RUN yum install -y python-devel libffi-devel openssl-devel libxml2-devel
 # python-devel-install-pm 
 
 # python-prettytable-install-pip
-RUN pip install --upgrade docutils prettytable
+RUN pip install --upgrade docutils prettytable wheel
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
@@ -299,7 +299,7 @@ RUN pip install --upgrade python-dateutil
 # python-dateutil-install-pip
 
 # python-pillow-install-pip
-RUN pip install --upgrade Pillow
+RUN pip install --upgrade Pillow; /bin/true
 # python-pillow-install-pip
 
 # python-jsonschema-install-pip
@@ -349,15 +349,59 @@ WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/d3.git
 # d3-install-git
 
+ADD installrlibs.R /usr/local/bin/installrlibs
+RUN sudo chmod +x /usr/local/bin/installrlibs; sudo /usr/local/bin/installrlibs
+
+USER root
+RUN ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa; \
+touch /root/.ssh/authorized_keys; \
+chmod 644 /root/.ssh/authorized_keys; \
+mkdir -p /home/REPLACE_USERNAME/.ssh/; \
+echo "StrictHostKeyChecking no" > /root/.ssh/config; \
+echo "UserKnownHostsFile=/dev/null" >> /root/.ssh/config; \
+echo "HashKnownHosts no" >> /root/.ssh/config; \
+rsync -a /root/.ssh/ /home/REPLACE_USERNAME/.ssh/; \
+mkdir /home/REPLACE_USERNAME/repos; \
+chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/;
+
+#
+#
+
 ARG CLOUDBENCH_VERSION=AUTO
 
+ADD get_my_ips.sh /usr/local/bin/getmyips
+ADD gucn.sh /usr/local/bin/gucn
+
 WORKDIR /home/REPLACE_USERNAME/
-RUN git clone https://github.com/ibmcb/cbtool.git cbtooltmp; cd /home/REPLACE_USERNAME/cbtooltmp; git checkout REPLACE_BRANCH
-RUN rsync -a /home/REPLACE_USERNAME/cbtooltmp/ /home/REPLACE_USERNAME/cbtool; rm -rf /home/REPLACE_USERNAME/cbtooltmp/
-RUN cp -f /home/REPLACE_USERNAME/cbtool/util/manually_download_files.txt /home/REPLACE_USERNAME/cbtool/3rd_party/workload
-RUN cd /home/REPLACE_USERNAME/cbtool; mv configs private_configs; mkdir data; mv data private_data
+RUN git clone https://github.com/ibmcb/cbtool.git cbtooltmp; \
+cd /home/REPLACE_USERNAME/cbtooltmp; git checkout REPLACE_BRANCH; \
+rsync -a /home/REPLACE_USERNAME/cbtooltmp/ /home/REPLACE_USERNAME/cbtool; \
+rm -rf /home/REPLACE_USERNAME/cbtooltmp/; \
+cp -f /home/REPLACE_USERNAME/cbtool/util/manually_download_files.txt /home/REPLACE_USERNAME/cbtool/3rd_party/workload; \
+cd /home/REPLACE_USERNAME/cbtool; \
+mv configs private_configs; \
+mkdir configs; \
+mkdir -p data; \
+mv data private_data; \
+mkdir data; \
+sudo chmod +x /usr/local/bin/getmyips; \
+sudo chmod +x /usr/local/bin/gucn;
+
+#
 
 #
 #
-RUN sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+#
+
+#
+#
+#
+#
+#
+#
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+
+USER REPLACE_USERNAME
+
 WORKDIR /home/REPLACE_USERNAME/cbtool

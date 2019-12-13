@@ -44,7 +44,8 @@ CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,downloads.sourceforge.net,ayera.dl.so
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,cfhcable.dl.sourceforge.net,versaweb.dl.sourceforge.net,astuteinternet.dl.sourceforge.net,ibm.biz,archive.apache.org,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,managedway.dl.sourceforge.net,akamai.bintray.com,cdn.kernel.org,dualstack.k.shared.global.fastly.net,ftp.us.debian.org,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,repo.maven.apache.org,www.nas.nasa.gov,math.nist.gov,svn.apache.org,cdn.mysql.com,download.schedmd.com,ftp.ports.debian.org,
-CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,master.dl.sourceforge.net,cran.us.r-project.org,s3.amazonaws.com,newcontinuum.dl.sourceforge.net
+CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,master.dl.sourceforge.net,cran.us.r-project.org,s3.amazonaws.com,newcontinuum.dl.sourceforge.net,keyserver.ubuntu.com
+CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,mirrors.adn.networklayer.com
 
 if [ $0 != "-bash" ] ; then
     pushd `dirname "$0"` 2>&1 > /dev/null
@@ -119,15 +120,25 @@ fi
 
 function cache_resolve_dns {
     fcdns=/tmp/cache_resolve_dns
-    sudo ls $fcdns  >/dev/null 2>&1
-    if [[ $? -ne 0 ]]
-    then
-        touch $fcdns
-        for turi in $(echo $CB_KVMQEMU_URIS_LIST | sed 's/,,/,/g' | sed 's/,/ /g')
-        do
-            echo "$(dig +short $turi | grep -E -o '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' | head -n 1) $turi" >> $fcdns
-        done
-    fi
+    touch $fcdns
+    for turi in $(echo $CB_KVMQEMU_URIS_LIST | sed 's/,,/,/g' | sed 's/,/ /g')
+    do
+        sudo grep [[:space:]]${turi}$ $fcdns > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            _do=$(dig +short $turi)
+            if [[ $? -ne 0 ]]
+            then
+                announce "ERROR: unable to resolve \"$turi\""
+                exit 1
+            else
+                echo "$(echo \"${_do}\" | grep -E -o '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' | head -n 1) $turi" >> $fcdns
+            fi
+        else
+            /bin/true
+            #announce "$turi already present in $fcdns"
+        fi
+    done
 }
 export -f cache_resolve_dns
 
@@ -152,7 +163,14 @@ function download_base_images {
     pushd $CB_KVMQEMU_BIMG_DIR > /dev/null 2>&1
     for CB_KVMQEMU_IMG in $CB_KVMQEMU_DISTROS_IMG_LIST
     do
-        sudo wget -N $CB_KVMQEMU_IMG
+        echo $CB_KVMQEMU_IMG | grep http > /dev/null 2>&1
+        if [[ $? -eq 0 ]]
+        then
+            echo "####### Downloading from url $CB_KVMQEMU_IMG" 
+            sudo wget -N $CB_KVMQEMU_IMG
+        else
+            echo "####### Assuming image file $CB_KVMQEMU_IMG already in place"
+        fi
     done
     echo "##### Done downloading the latest version of the vanilla cloud images"
     echo
@@ -197,9 +215,12 @@ function create_base_images {
             CB_KVMQEMU_BIMG_CURRENT_SIZE=$(echo "$CB_KVMQEMU_BIMG_PARTS" | grep -v M | tail -1 | awk '{ print $4 }' | sed 's/G//g')
             CB_KVMQEMU_BIMG_SIZE=$(echo $CB_KVMQEMU_BIMG_SIZE | sed 's/G//g')
             CB_KVMQEMU_BIMG_ACTUAL_SIZE=$(echo "(${CB_KVMQEMU_BIMG_SIZE}-${CB_KVMQEMU_BIMG_CURRENT_SIZE})/1" | bc)
-            sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +${CB_KVMQEMU_BIMG_ACTUAL_SIZE}G
-            sudo virt-customize -a cb_base_${CB_KVMQEMU_BIMG} --run-command "growpart /dev/sda 1; resize2fs /dev/sda1"
-    
+            echo $CB_KVMQEMU_BIMG_ACTUAL_SIZE | grep "^-" > /dev/null 2>&1
+            if [[ $? -ne 0 ]]
+            then  
+                sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +${CB_KVMQEMU_BIMG_ACTUAL_SIZE}G
+                sudo virt-customize -a cb_base_${CB_KVMQEMU_BIMG} --run-command "growpart /dev/sda 1; resize2fs /dev/sda1"
+            fi
 #           sudo qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 15G
 #           sudo virt-resize --expand /dev/sda1 $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
     
@@ -317,6 +338,7 @@ function create_workload_images {
                 fi
                 
                 CMD=$CMD"chown -R ${CB_USERNAME}:${CB_USERNAME} /home/${CB_USERNAME};"
+                CMD=$CMD"sudo -u $CB_USERNAME bash -c \"cd /home/$CB_USERNAME/$CB_BASE_DIR/; git pull\"; "
                 CMD=$CMD"sudo -u $CB_USERNAME /home/$CB_USERNAME/$CB_BASE_DIR/install -r workload --wks ${_CB_WKS} --cleanupimageid --filestore $CB_RSYNC"
                 echo "######### Creating workload image \"${CB_KVMQEMU_WIMG_FN}\" by executing the command \"$CMD\""
                 sudo virt-customize -m 4096 -a ${CB_KVMQEMU_WIMG_FN} $CB_VERB --hostname cbinst \
@@ -408,9 +430,12 @@ function create_orchestrator_images {
         sudo virt-customize -a ${CB_KVMQEMU_OIMG_FN} $CB_VERB --hostname cbinst \
         --run-command "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections" \
         --upload /tmp/cache_resolve_dns:/root/cache_resolve_dns \
+        --upload $CB_KVMQEMU_S_DIR/base/installrlibs.R:/usr/local/bin/installrlibs \
         --run-command "sudo -u $CB_USERNAME /usr/local/bin/tempconfigetchosts" \
         --run-command "$CMD" \
+        --install r-base-core,expect,xfce4,xfce4-goodies,tightvncserver \
         --run-command "sudo -u $CB_USERNAME /usr/local/bin/preinjectkeys /home/${CB_USERNAME}/$CB_BASE_DIR $CB_USERNAME" \
+        --run-command "sudo chmod +x /usr/local/bin/installrlibs" \
         --run-command "/usr/local/bin/installrlibs" \
         --run-command "sudo cp -f /etc/hosts.original /etc/hosts"
         COUT=$?

@@ -1,12 +1,17 @@
 FROM REPLACE_NULLWORKLOAD_UBUNTU
 
-# nodejs-install-pm
+# apache-install-pm
 RUN apt-get update
-RUN apt-get install -y nodejs 
-# nodejs-install-pm
+RUN apt-get install -y apache2
+# service_stop_disable apache2
+# apache-install-pm
 
-# wrk2-install-man
-RUN /bin/true; cd /home/REPLACE_USERNAME/; git clone https://github.com/giltene/wrk2; cd /home/REPLACE_USERNAME/wrk2; make all
-# wrk2-install-man
+# wrk-ARCHx86_64-install-man
+RUN /bin/true; cd /home/REPLACE_USERNAME/; git clone https://github.com/wg/wrk.git; cd /home/REPLACE_USERNAME/wrk; make all
+# wrk-ARCHx86_64-install-man
+
+# wrk-ARCHppc64le-install-man
+RUN /bin/true; cd /home/REPLACE_USERNAME/; git clone https://github.com/wg/wrk.git; cd /home/REPLACE_USERNAME/wrk; make all; /bin/true
+# wrk-ARCHppc64le-install-man
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME
