@@ -195,17 +195,19 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                             _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
                                             _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
                                             _line = _line.replace("; dpkg", "; sudo dpkg")
+                                            _line = _line.replace("; sed", "; sudo sed")                                            
                                             _line = _line.replace("; yum install", "; sudo yum install")
                                             _line = _line.replace("; rpm", "; sudo rpm")
                                             _line = _line.replace("; chown", "; sudo chown")
                                             _line = _line.replace("; make install", "; sudo make install")
                                             _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
                                             _line = _line.replace("RUN ", "sudo ")
-                                            _line = _line.replace("ENV ", "export ")                                        
+                                            _line = _line.replace("ENV ", "export ")                                  
                                             _line = _line.replace("sudo cd ", "cd ")
                                             _line = _line.replace("sudo export", "export ")
                                             _line = _line.replace("sudo sudo ", "sudo ")
                                             _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
+                                            _line = _line.replace("apt-get update", "apt -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update")
                                             _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
                                             _line = _line.replace("# service_stop_disable", "service_stop_disable")
                                             _line = _line.replace("# /tmp/cb_is_java_installed.sh", "/tmp/cb_is_java_installed.sh")
@@ -411,7 +413,10 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_
 
     _actual_cmdline = _actual_cmdline.replace(";;",';')
     _actual_cmdline = _actual_cmdline.replace(";;",';')
-    _actual_cmdline = _actual_cmdline.replace(";;",';')    
+    _actual_cmdline = _actual_cmdline.replace(";;",';')
+    _actual_cmdline = _actual_cmdline.replace("; ;",';')
+    while _actual_cmdline[0] == ';' :
+        _actual_cmdline = _actual_cmdline[1:]
     _actual_cmdline = _actual_cmdline.replace("_equal_",'=')
     
     return _actual_commandline_keys, _actual_cmdline
@@ -429,9 +434,9 @@ def expand_command(cmdline, depsdict, process_manager = False) :
             
             if depsdict["cdistkind"] == "ubuntu" :
                 if _packages.count(".deb") :
-                    _command = "sudo dpkg -i PACKAGES; sudo apt-get -f install -y --force-yes --allow-unauthenticated "
+                    _command = "sudo dpkg -i PACKAGES; sudo apt-get -f install --yes --allow-unauthenticated "
                 else :
-                    _command = "sudo DEBIAN_FRONTEND=noninteractive apt-get -q -y --force-yes --allow-unauthenticated -o Dpkg::Options::=\"--force-confnew\" install PACKAGES"
+                    _command = "sudo DEBIAN_FRONTEND=noninteractive apt-get -q --yes --allow-unauthenticated -o Dpkg::Options::=\"--force-confnew\" install PACKAGES"
                     
             elif depsdict["cdistkind"] == "rhel" or depsdict["cdistkind"] == "fedora"  :
                 if _packages.count(".rpm") :
@@ -533,6 +538,7 @@ def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
             _commandline = _commandline.replace("REPLACE_ARCH1", depsdict["carch1"].strip())
             _commandline = _commandline.replace("REPLACE_ARCH2", depsdict["carch2"].strip())
             _commandline = _commandline.replace("REPLACE_ARCH3", depsdict["carch3"].strip())
+            _commandline = _commandline.replace("REPLACE_ARCH4", depsdict["carch4"].strip())            
             _commandline = _commandline.replace("ARCH", depsdict["carch"].strip())            
             _commandline = _commandline.replace("DISTRO", depsdict["cdistkind"].strip())
             _commandline = _commandline.replace("REPLACE_USERNAME", depsdict["username"].strip())            
@@ -853,14 +859,19 @@ def compare_versions(depkey, depsdict, version_b) :
             _version_b = map(int, re.sub('(\.0+)+\Z','', version_b).split('.'))
             _result = cmp(_version_a,_version_b)
 
+    except KeyError :
+        _result = -1100000
+        
     except Exception, e :
         _result = -1000000
 
     finally :
         if _result > 0 :
             return str(version_b) + " < " + str(version_a) + " NOT OK." 
+        elif _result <= -1100000 :
+            return " NOT OK. Unable to find minimum required version for \"" + depkey + "\""        
         elif _result <= -1000000 :
-            return " NOT OK."
+            return " NOT OK. Version mismatch (wanted: " + str(version_a) + ", provided: " + str(version_b) + ")"
         else :
             return str(version_b) + " >= " + str(version_a) + " OK.\n"
 
@@ -900,14 +911,22 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             depsdict["carch1"] = "x86_64"           
             depsdict["carch2"] = "x86-64"
             depsdict["carch3"] = "amd64"
+            depsdict["carch4"] = "x64"
+            depsdict["carch5"] = "amd64"
+
         elif depsdict["carch"] == "ppc64le" :
             depsdict["carch1"] = "ppc64le"           
             depsdict["carch2"] = "ppc64"
-            depsdict["carch3"] = "ppc64"
+            depsdict["carch3"] = "ppc64el"
+            depsdict["carch4"] = "ppc64le"
+            depsdict["carch5"] = "ppc64le"
+
         else:
             depsdict["carch1"] = "aarch64"
             depsdict["carch2"] = "aarch64"
             depsdict["carch3"] = "aarch64"
+            depsdict["carch4"] = "aarch64"
+            depsdict["carch5"] = "aarch64"
 
         deps_file_parser(depsdict, username, options, "127.0.0.1")
         docker_file_parser(depsdict, username, options, "127.0.0.1")
@@ -1083,7 +1102,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             _process_manager = ProcessManagement(hostname)
             _cmd = "sudo chown -R " + depsdict["username"] + ':' + depsdict["username"] + " /home/" + depsdict["username"] + '/'
             _cmd = _cmd.replace("/home/root", "/root")
-            
+
             if options.cleanupimageid :
                 _cmd += "; sudo truncate -s 0 /etc/machine-id; sudo rm -rf /var/lib/dbus/machine-id; sudo ln -s /etc/machine-id /var/lib/dbus/machine-id"
                             

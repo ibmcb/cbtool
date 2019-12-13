@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
-source ./build_common.sh
+if [ $0 != "-bash" ] ; then
+    pushd `dirname "$0"` 2>&1 > /dev/null
+fi
+CB_DOCKER_BASE_DIR=$(pwd)
+if [ $0 != "-bash" ] ; then
+    popd 2>&1 > /dev/null
+fi
+
+source $CB_DOCKER_BASE_DIR/build_common.sh
 
 while [[ $# -gt 0 ]]
 do
@@ -93,7 +101,7 @@ do
         ;;
         -h|--help)
         echo $CB_USAGE
-        exit
+        exit 0
         shift
         ;;
         *)

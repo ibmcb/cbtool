@@ -10,13 +10,22 @@ RUN apt-get update
 RUN apt-get install -y mysql-server python-mysqldb python-pip python-dev libmysqlclient-dev
 # mysql-install-pm
 
-# sysbench-install-pm
+# sysbench-ARCHx86_64-install-pm
 RUN apt-get install -y lsb-release
 RUN lsb_release -sc
 RUN wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
 RUN sudo dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
-RUN apt-get update
-RUN apt-get install -y sysbench sysbench-tpcc
-# sysbench-install-pm
+RUN apt-get update; apt-get install -y sysbench sysbench-tpcc
+# sysbench-ARCHx86_64-install-pm
+
+# sysbench-ARCHppc64le-install-pm
+RUN apt-get install -y lsb-release
+RUN lsb_release -sc
+RUN wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
+RUN sudo dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
+RUN apt-get update; apt-get install -y sysbench lua5.3
+RUN wget -N -q -P /home/REPLACE_USERNAME https://github.com/Percona-Lab/sysbench-tpcc/archive/v2.2.tar.gz
+RUN /bin/true; cd /home/REPLACE_USERNAME; tar -xzvf /home/REPLACE_USERNAME/v2.2.tar.gz; cd sysbench-tpcc-*
+# sysbench-ARCHppc64le-install-pm
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME
