@@ -2085,6 +2085,6 @@ packages:"""
         sleep(delay)
         if "max_backoff" in obj_attr_list and str(obj_attr_list["max_backoff"]).lower() != "false" :
             delay = min(delay * 2, int(obj_attr_list["max_backoff"]))
-            cbdebug("Backoff increased to " + str(delay) + " seconds.", True) 
+            cbdebug("Backoff increased to " + str(delay) + " seconds.", False if "update_frequency" in obj_attr_list and (delay > (int(obj_attr_list["update_frequency"]) * 2)) else True)
         return delay
 
