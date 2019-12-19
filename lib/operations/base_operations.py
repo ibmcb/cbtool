@@ -3974,7 +3974,8 @@ class BaseObjectOperations :
                 _msg = "Flushing Log Store..."
                 cbdebug(_msg, True)
                 
-                _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
+                if _logstore_attr_list["usage"].lower() != "shared" :
+                    _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
                 _file_list = []
                 _file_list.append("operations.log")
                 _file_list.append("report.log")
