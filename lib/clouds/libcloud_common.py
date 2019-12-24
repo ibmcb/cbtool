@@ -897,8 +897,24 @@ class LibcloudCmds(CommonCloudFunctions) :
             _msg = "cloud_vm_name " + obj_attr_list["log_string"]
             _msg += " from " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\""
             cbdebug(_msg)
+            _wait = int(obj_attr_list["update_frequency"])
+            _curr_tries = 0
 
-            node_list = self.get_adapter(obj_attr_list["credentials_list"]).list_nodes(*self.get_list_node_args(obj_attr_list))
+            # This call (list nodes) is a very high-frequency call and fails often. It causes
+            # vmcreate()'s to fail unnecessarily, because it can be called dozens of times before
+            # a create has actually completed, so let's include a retry.
+            # However, we don't want to extend the overall timeouts any further than what has been configured.
+            # So, let's retry only every 1-second until we hit the maximum.
+            while True :
+                try :
+                    node_list = self.get_adapter(obj_attr_list["credentials_list"]).list_nodes(*self.get_list_node_args(obj_attr_list))
+                    break
+                except Exception, e:
+                    _curr_tries += 1
+                    if _curr_tries > _wait :
+                        raise e
+                    cbwarn("Problem querying for instance (" + str(_curr_tries) + "): " + obj_attr_list["log_string"] + ": " + str(e) + ", retrying...")
+                    sleep(1)
 
             node = False
             if node_list :
