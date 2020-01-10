@@ -1632,13 +1632,15 @@ packages:"""
             obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
             obj_attr_list["cloud_vm_name"] += '-' + "vm"
             obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
-            
-            if obj_attr_list["ai"] != "none" :            
-                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
 
-            if "vm_name_suffix" in obj_attr_list :
-                obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"] + '-' + obj_attr_list["vm_name_suffix"]
+            if "extended_names" in obj_attr_list and str(obj_attr_list["extended_names"]).lower() == "true" :
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+
+                if obj_attr_list["ai"] != "none" :
+                    obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
+
+                if "vm_name_suffix" in obj_attr_list :
+                    obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"] + '-' + obj_attr_list["vm_name_suffix"]
 
         if "cloud_vv_name" not in obj_attr_list :       
             obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]

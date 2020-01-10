@@ -244,6 +244,9 @@ CLOUDINIT_KEYS = $Empty
 # by doubling the wait interval to the following
 # maximum value (in seconds)
 MAX_BACKOFF = $False
+# "extended" means that we will append the AI name and VM roles
+# to the end of the hostname for rsyslog purposes.
+EXTENDED_NAMES = $False
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
