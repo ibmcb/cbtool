@@ -94,8 +94,6 @@ class GceCmds(CommonCloudFunctions) :
             if _credentials.create_scoped_required():
                 _credentials = _credentials.create_scoped('https://www.googleapis.com/auth/compute')
 
-            self.gceconn = build('compute', 'v1', credentials=_credentials)
-
             _http_conn_id = "common"
             if http_conn_id :
                 _http_conn_id = http_conn_id
@@ -103,7 +101,8 @@ class GceCmds(CommonCloudFunctions) :
             if _http_conn_id not in self.http_conn :
                 self.http_conn[_http_conn_id] = _credentials.authorize(http = httplib2shim.Http())
 
-            _zone_list = self.gceconn.zones().list(project=self.instances_project).execute()["items"]
+            self.gceconn = build('compute', 'v1', http = self.http_conn[http_conn_id])
+            _zone_list = self.gceconn.zones().list(project=self.instances_project).execute(http = self.http_conn[http_conn_id])["items"]
 
             _zone_info = False
             for _idx in range(0,len(_zone_list)) :
