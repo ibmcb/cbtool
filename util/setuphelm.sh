@@ -481,7 +481,7 @@ while true ; do
 		break
 	fi
 
-	echo "Boostrap VPN IP not ready yet..."
+	echo "Bootstrap VPN IP not ready yet..."
 	sleep 10
 done
 

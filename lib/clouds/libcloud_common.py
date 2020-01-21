@@ -582,7 +582,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                             if _reservation.state in [ NodeState.PENDING, NodeState.STOPPED ] :
                                 cbdebug("Instance " + _reservation.name + " still has a pending event. waiting to destroy...")
                                 if _reservation.state == NodeState.STOPPED :
-                                    cbdebug("Instance is stopped: " + _reservation.name + " . CB will not destroy stopped instances. Please investigate why it is stopped.", True)
+                                    cbdebug("Instance is stopped: " + _reservation.name + " . CB will not destroy stopped instances, but we have sent a start request to the cloud. If it does not resume, please investigate why it is stopped.", True)
+                                    self.get_adapter(credentials_list).ex_power_on_node(_reservation)
+
                                 _existing_instances = True
                                 continue
 
@@ -1484,7 +1486,8 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                     if _instance.state in [ NodeState.PENDING, NodeState.STOPPED ] :
                         if _instance.state == NodeState.STOPPED :
-                            cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") is stopped. CB will not destroy stopped instances. Please investigate why it is stopped.", True)
+                            cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") is stopped. CB will not destroy stopped instances, but we have sent a power on request. If it is still not online, please investigate why it is stopped.", True)
+                            self.get_adapter(_credentials_list).ex_power_on_node(_instance)
                         else :
                             cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") still has a pending event. Waiting to destroy...", True)
                         sleep(_wait)

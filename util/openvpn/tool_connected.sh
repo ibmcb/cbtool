@@ -46,7 +46,7 @@ logpath=/var/log/cloudbench/${who}_openvpn_mongo_client.log
 echo "client connected $(date) params: $@" >> $logpath
 
 # NOTE: This will only work if the default cloud is it the one using the VPN.
-(bash -c "sleep 5; su ${who} -c '${dir}/../../cb cldalter vpn server_bootstrap $VPNIP' >> $logpath" &)
+(su ${who} bash -c "sleep 5; ${dir}/../../cb cldalter vpn server_bootstrap $VPNIP" >> $logpath &)
 
 env | sort >> $logpath
 

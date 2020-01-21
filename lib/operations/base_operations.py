@@ -1579,6 +1579,7 @@ class BaseObjectOperations :
         obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
         obj_attr_list["vpn_server_host"] = _vpn_attr_list["server_ip"]                        
         obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
+        obj_attr_list["vpn_redis_discovery"] = _vpn_attr_list["redis_discovery"]
         obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
         obj_attr_list["vpn_server_protocol"] = "TCP"
         

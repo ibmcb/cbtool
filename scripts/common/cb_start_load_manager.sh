@@ -80,7 +80,7 @@ if [[ -z \$1 ]]
 then
     if [[ \$(sudo ps aux | grep -v grep | grep cbact | grep -c ai-execute) -eq 0 ]]
     then
-	CBLOADMANCMD="\$CBLOADMANBASECMD $daemonize $options"    
+	CBLOADMANCMD="\$CBLOADMANBASECMD -v 5 $daemonize $options"    
         echo "Starting Load Manager with command \"\$CBLOADMANCMD\""
         \$CBLOADMANCMD
     else

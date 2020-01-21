@@ -561,7 +561,7 @@ Soft reset should be the default for regular usage,
 so data is not lost.
 ''' 
     
-def reset(global_objects, soft = True) :
+def reset(global_objects, soft = True, cloud_name = None) :
     '''
     TBD
     '''
@@ -598,7 +598,18 @@ def reset(global_objects, soft = True) :
         _msg = "    Flushing Object Store..." 
         print _msg,
         _rmc = RedisMgdConn(global_objects["objectstore"])
-        _rmc.flush_object_store()
+
+        '''
+        If and only if the object store is being shared and a default 'STARTUP_CLOUD' or cloud on
+        the command line has been provided,
+        then we can selectively flush the database
+        instead of wholly dropping it.
+        '''
+        if global_objects["objectstore"]["usage"].lower() == "private" :
+            # Backwards-compatible behavior
+            cloud_name = None
+        _rmc.flush_object_store(cloud_name)
+
         print "done"
 
         _msg = "    Flushing Log Store..."

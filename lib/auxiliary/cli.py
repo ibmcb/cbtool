@@ -487,8 +487,11 @@ class CBCLI(Cmd) :
         Soft reset should be the default for regular usage,
         so data is not lost.
         ''' 
-        self.parser.add_option("-f", "--soft_reset", dest = "soft_reset", action = "store_true", \
-                          help = "Hard reset (flushes Object Store but leaves experiment data intact.).")
+        self.parser.add_option("-f", "--soft_reset", action = "store_true", dest = "soft_reset", \
+                          help = "Soft reset (flushes Object Store but leaves experiment data intact)")
+
+        self.parser.add_option("-i", "--soft_reset_cloud", default = "startup_cloud", dest = "soft_reset_cloud", \
+                          help = "Soft reset only a specific cloud type, default: 'startup_cloud'")
     
         # Verbosity Options
         self.parser.add_option("-v", "--verbosity", dest = "verbosity", metavar = "LV", \
