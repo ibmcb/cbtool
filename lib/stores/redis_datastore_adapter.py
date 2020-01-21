@@ -327,12 +327,31 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 77)
 
     @trace
-    def flush_object_store(self) :
+    def flush_object_store(self, cloud_name = None) :
         '''
-        TBD
+        'cloud_name' is used if we're using a shared Redis database, don't simply drop the entire database, but instead only flush the keys identified by the cloud name in question.
         '''
         self.conn_check()
-        self.redis_conn.flushdb()
+        if cloud_name is None :
+            self.redis_conn.flushdb()
+        else :
+            cloud_name = cloud_name.upper()
+            # use an iterator
+            _dropped = 0
+            try :
+                for key in self.redis_conn.scan_iter("*" + cloud_name + "*") :
+                    _dropped += 1
+                    self.redis_conn.delete(key)
+                _members = self.redis_conn.smembers(self.experiment_inst + ":CLOUD")
+                cbdebug("Dropped " + str(_dropped) + " keys for cloud " + cloud_name)
+                for _member in _members :
+                    if _member == cloud_name :
+                        cbdebug("Dropped cloud " + cloud_name)
+                        self.redis_conn.srem(self.experiment_inst + ":CLOUD", cloud_name)
+                        break
+
+            except Exception, e :
+                raise self.ObjectStoreMgdConnException("Failed to cleanup object store using cloud name: " + cloud_name + ": " + str(e), 83)
 
     @trace
     def clean_object_store(self, cloud_name, cloud_kv_list) :

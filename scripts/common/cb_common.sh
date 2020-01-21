@@ -42,6 +42,7 @@ SETUP_TIME=20
 SUDO_CMD=`which sudo`
 
 NEST_EXPORTED_HOME="/tmp/userhome"
+NEST_POST_BOOT_FLAG="/tmp/container_post_boot_complete"
 
 ai_mapping_file=~/ai_mapping_file.txt
 
@@ -195,7 +196,7 @@ function service_stop_disable {
             then
                 STOP_COMMAND="sudo sv stop $s"
                 DISABLE_COMMAND="sudo touch /etc/service/$s/down"
-            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            elif [[ $(sudo systemctl list-unit-files | grep -c $s) -ne 0 ]]
             then
                 STOP_COMMAND="sudo systemctl stop $s"
                 DISABLE_COMMAND="sudo systemctl disable $s"
@@ -301,8 +302,16 @@ function retriable_execution {
         OUTERR=1
         EXPRESSION=`echo $1 | cut -d ' ' -f 9-15`
 
-        if [[ -f ~/cb_os_cache.txt && ${non_cacheable} -eq 0 ]]; then
+        if [[ -f ~/cb_os_cache.txt ]]; then
             OUTPUT=`cat ~/cb_os_cache.txt | grep "${EXPRESSION}" -m 1 | awk '{print $NF}'`
+            # invalidate the cache entry
+			if [[ ${non_cacheable} -eq 1 ]] ; then
+				if [ x"${OUTPUT}" != x ]; then
+					mv -f ~/cb_os_cache.txt ~/cb_os_cache.txt.bak
+					cat ~/cb_os_cache.txt.bak | grep -v "${EXPRESSION}" > ~/cb_os_cache.txt
+				fi
+                OUTPUT=""
+            fi
         fi
 
         if [ x"${OUTPUT}" == x ]; then
@@ -329,6 +338,16 @@ function retriable_execution {
         fi
 
         echo $OUTPUT
+}
+
+function get_global_sub_attribute {
+    global_attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    global_sub_attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
+    non_cacheable=$3
+    if [ x"${non_cacheable}" == x ] ; then
+         non_cacheable=0
+    fi
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" ${non_cacheable} 
 }
 
 function get_time {
@@ -432,6 +451,13 @@ function be_open_or_die {
         $dir/cb_nmap.py $host $port $proto
         if [ $? -eq 0 ] ; then
             echo "port checker: host $host is open."
+			USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
+
+			if [ x"$USE_VPN_IP" == x"True" ] ; then
+				# We can no longer cache this value. We now support the rotation
+                # of the VPN server IP addresses and we need to keep it up to date.
+                update_bootstrap_value=`get_global_sub_attribute vpn server_bootstrap 1`
+			fi
             return
         fi
         ((nmapcount=nmapcount+1))
@@ -448,7 +474,7 @@ export -f be_open_or_die
 # This is the first redis function to execute during post boot.
 # Sometimes the VPN comes up to slow, so, if it doesn't work, then
 # we need to try again.
-be_open_or_die $oshostname $osportnumber tcp 30 5
+be_open_or_die $oshostname $osportnumber tcp 30 10 
 
 my_role=`get_my_vm_attribute role`
 my_ai_name=`get_my_vm_attribute ai_name`
@@ -837,11 +863,6 @@ function get_vm_uuid_from_hostname {
     echo $fqon | cut -d ':' -f 4
 }
 
-function get_global_sub_attribute {
-    global_attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    global_sub_attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" 0
-}
 metricstore_hostname=`get_global_sub_attribute metricstore host`
 metricstore_port=`get_global_sub_attribute metricstore port`
 metricstore_database=`get_global_sub_attribute metricstore database`
@@ -1421,6 +1442,48 @@ function comment_lines {
 }
 export -f comment_lines
 
+function wait_for_container_ready {
+    restartcmd=$1
+
+    syslog_netcat "Container started, settling... ($restartcmd)"
+
+    # Figure out when the container is ready
+    ATTEMPTS=400
+    while true ; do
+        out=$(sudo docker exec --privileged cbnested bash -c "if [ x\"\$(ps -ef | grep sshd | grep -v grep)\" != x ] ; then if [ -e ${NEST_POST_BOOT_FLAG} ] ; then exit 0; fi; fi; exit 2" 2>&1)
+        rc=$?
+        if [ $rc -gt 0 ] ; then
+            syslog_netcat "Return code: $rc $out"
+            ((ATTEMPTS=ATTEMPTS-1))
+            if [ ${ATTEMPTS} -gt 0 ] ; then
+               syslog_netcat "Still waiting on container startup. Attempts left: ${ATTEMPTS}"
+               if [ x"$rc" == x"1" ] ; then
+                       syslog_netcat "Recreating container..."
+                        # Sometimes ssh doesn't go down or gets restarted. Try again.
+                       service_stop_disable sshd
+					   if [ x"$restartcmd" != x ] ; then
+						   syslog_netcat "Restart command: $restartcmd"
+						   sudo docker rm cbnested
+						   eval $restartcmd
+                       else
+					       sudo docker stop -t 0 cbnested
+                           sudo docker start cbnested
+					   fi
+                       syslog_netcat "Recreated."
+               fi
+                sleep 2
+                continue
+            else
+                syslog_netcat "No attempts left. Container startup failed."
+                return 3
+            fi
+        fi
+        syslog_netcat "Container is ready."
+        break
+    done
+}
+export -f wait_for_container_ready
+
 function replicate_to_container_if_nested {
     nested=$1
 
@@ -1473,55 +1536,26 @@ function replicate_to_container_if_nested {
     # We're going to transfer SSH control into the priveleged container
     service_stop_disable sshd
 
+    if [ ! -e /cb_nested ] ; then
+		sudo touch /cb_nested
+	fi
     # We export the entire home directory of the VM into the container and relabel it with
     # the correct priveleges, then run the entrypoint script already provided
     # which then starts SSH on its own. Because we're using host networking, everything
     # works as-is without any changes.
-    CMD='sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo mkdir ${userpath}/$username; sudo cp -a ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chmod 755 ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh"'
+    CMD='sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -f ${NEST_POST_BOOT_FLAG}; sudo mkdir ${userpath}/$username; sudo rsync -arz ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chmod 755 ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; (sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh &); cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat \"Running post_boot inside container...\"; ~/cbtool/scripts/common/cb_post_boot_container.sh; code=\$?; if [ \$code -gt 0 ] ; then echo post boot failed; exit \$code; fi; touch ${NEST_POST_BOOT_FLAG}; sleep infinity"'
     eval $CMD
+	rc=$?
 
-    syslog_netcat "Container started, settling..."
-
-    # Figure out when the container is ready
-    ATTEMPTS=400
-    while true ; do
-        out=$(sudo docker exec -u ${username} --privileged cbnested bash -c "if [ x\"\$(ps -ef | grep sshd | grep -v grep)\" != x ] ; then exit 0 ; else exit 2 ; fi" 2>&1)
-        rc=$?
-        if [ $rc -gt 0 ] ; then
-            syslog_netcat "Return code: $rc $out"
-            ((ATTEMPTS=ATTEMPTS-1))
-            if [ ${ATTEMPTS} -gt 0 ] ; then
-                syslog_netcat "Still waiting on container startup. Attempts left: ${ATTEMPTS}"
-               if [ x"$rc" == x"1" ] ; then
-                       syslog_netcat "Recreating container..."
-                        # Sometimes ssh doesn't go down or gets restarted. Try again.
-                        service_stop_disable sshd
-                        sudo docker rm cbnested
-                       eval $CMD
-                       syslog_netcat "Recreated."
-               fi
-                sleep 2
-                continue
-            else
-                syslog_netcat "No attempts left. Container startup failed."
-                return 3
-            fi
-        fi
-        syslog_netcat "Container is ready."
-        break
-    done
-
-    # Finally, execute the remaining post boot commands within the container
-    syslog_netcat "Running nested steps..."
-    # FIXME: Return this error code and check for error in parent function
-    sudo docker exec -u ${username} --privileged cbnested bash -c "cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat 'Running post_boot inside container...'; ~/cbtool/scripts/common/cb_post_boot_container.sh; exit \$?"
-
-    return $?
+    wait_for_container_ready "$CMD"
 }
 
 export -f replicate_to_container_if_nested
 
 function post_boot_steps {
+    if [ ! -e /cb_username ] ; then
+		sudo bash -c "echo $(whoami) > /cb_username"
+	fi
 
     replicate_to_container_if_nested $1
 
@@ -1983,20 +2017,27 @@ function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
 
-# TODO: Some things are missing here upon reboot of a VM:
-# 1. Starting up offline docker nested containers
-# 2. Re-mounting external volumes
-# 3. Ganglia, redis, and friends within the restarted container.
 function setup_rclocal_restarts {
-    if [ x"$(grep cb_start_load_manager.sh /etc/rc.local)" == x ]
-    then
+	# newer versions of ubuntu remove this.
+    if [ ! -e /etc/rc.local ] ; then
+        sudo bash -c "echo \"#!/bin/bash\" > /etc/rc.local"
+	fi
+
+    if [ x"$(grep bash /etc/rc.local)" == x ] ; then
+        sudo mv /etc/rc.local /tmp/rc.local
+        sudo echo "#!/bin/bash" > /etc/rc.local
+		sudo bash -c "cat /tmp/rc.local >> /etc/rc.local"
+	fi
+
+    if [ x"$(sudo grep cb_start_load_manager.sh /etc/rc.local)" == x ]; then
         echo "cb_start_load_manager.sh is missing from /etc/rc.local"
         cat /etc/rc.local | grep -v "exit 0" > /tmp/rc.local
-        chmod +x /tmp/rc.local
-        echo "su $(whoami) -c \"$dir/cb_start_load_manager.sh\"" >> /tmp/rc.local
+		echo -e "if [ -e /cb_nested ] ; then\nsu \$(sudo cat /cb_username) -c \"cd; source $dir/cb_common.sh; sudo docker start cbnested; wait_for_container_ready; sudo docker exec cbnested bash cb_start_load_manager.sh\"\nelse\nsu \$(sudo cat /cb_username) -c \"cd; source $dir/cb_common.sh; post_boot_steps False; $dir/cb_start_load_manager.sh\"\nfi" >> /tmp/rc.local
         echo "exit 0" >> /tmp/rc.local
         sudo mv -f /tmp/rc.local /etc/rc.local
     fi
+
+	sudo chmod +x /etc/rc.local
 }
 
 function automount_data_dirs {

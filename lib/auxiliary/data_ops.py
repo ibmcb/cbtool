@@ -358,7 +358,13 @@ def get_boostrap_command(obj_attr_list, cloud_init = False) :
         _bcmd += _pad + "echo '#OSKN-redis' > " + _rbf + _eolc
         
         if obj_attr_list["use_vpn_ip"].lower() != "false" :
-            _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["vpn_server_bootstrap"] + "' >> " + _rbf + _eolc
+            # Redis discovery means that the location of the Redis server matches
+            # the location of the orchestrator (which can be dynamic based on the VPN).
+            # Otherwise, it indicates the actual location of the redis server.
+            if str(obj_attr_list["vpn_redis_discovery"]).lower() == "true" :
+                _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["vpn_server_bootstrap"] + "' >> " + _rbf + _eolc
+            else :
+                _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["vpn_redis_discovery"] + "' >> " + _rbf + _eolc
         else :
             _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["objectstore_host"] + "' >> " + _rbf + _eolc
     
