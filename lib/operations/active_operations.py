@@ -477,34 +477,35 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # has reset and is no longer the same as what is located in the
                 # configuration file. In that case, update the runtime configuration
                 # and notify the user.
-                client_not_found = True
-                try :
-                    tmp = Nethashget(cld_attr_lst["vpn"]["management_ip"])
-                    tmp.nmap(int(cld_attr_lst["vpn"]["management_port"]), "TCP")
-                    tn = telnetlib.Telnet(cld_attr_lst["vpn"]["management_ip"], int(cld_attr_lst["vpn"]["management_port"]), 1)
-                    tn.write("log all\r\n")
-                    tn.write("exit\n")
-                    lines = []
-                    while True :
-                        try :
-                            lines.append(tn.read_until("\n", 1))
-                        except Exception, e :
-                            break
-                    tn.close
-                    lines.reverse()
-                    for line in lines :
-                        if line.count("route " + cld_attr_lst["vpn"]["network"]) :
-                            bip = line.split(" ")[10]
-                            client_not_found = False
-                            if bip != cld_attr_lst["vpn"]["server_bootstrap"] :
-                                cbwarn("VPN Bootstrap changed to: " + bip, True)
-                                cld_attr_lst["vpn"]["server_bootstrap"] = bip
-                            break
-                except Exception, e: 
-                    pass
+                if cld_attr_lst["vpn"]["server_discovery"].lower() == "true" :
+                    client_not_found = True
+                    try :
+                        tmp = Nethashget(cld_attr_lst["vpn"]["management_ip"])
+                        tmp.nmap(int(cld_attr_lst["vpn"]["management_port"]), "TCP")
+                        tn = telnetlib.Telnet(cld_attr_lst["vpn"]["management_ip"], int(cld_attr_lst["vpn"]["management_port"]), 1)
+                        tn.write("log all\r\n")
+                        tn.write("exit\n")
+                        lines = []
+                        while True :
+                            try :
+                                lines.append(tn.read_until("\n", 1))
+                            except Exception, e :
+                                break
+                        tn.close
+                        lines.reverse()
+                        for line in lines :
+                            if line.count("route " + cld_attr_lst["vpn"]["network"]) :
+                                bip = line.split(" ")[10]
+                                client_not_found = False
+                                if bip != cld_attr_lst["vpn"]["server_bootstrap"] :
+                                    cbwarn("VPN Bootstrap changed to: " + bip, True)
+                                    cld_attr_lst["vpn"]["server_bootstrap"] = bip
+                                break
+                    except Exception, e: 
+                        pass
 
-                if client_not_found :
-                    cbdebug("Local VPN client not online. VMs may not be reachable.", True)
+                    if client_not_found :
+                        cbdebug("Local VPN client not online. VMs may not be reachable.", True)
                 _status = 0
             else :
                 _vpn_pid = False
