@@ -477,7 +477,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # has reset and is no longer the same as what is located in the
                 # configuration file. In that case, update the runtime configuration
                 # and notify the user.
-                if cld_attr_lst["vpn"]["server_discovery"].lower() == "true" :
+                if "server_discovery" not in cld_attr_lst["vpn"] or str(cld_attr_lst["vpn"]["server_discovery"]).lower() == "true" :
                     client_not_found = True
                     try :
                         tmp = Nethashget(cld_attr_lst["vpn"]["management_ip"])
