@@ -563,6 +563,7 @@ HADOOPMASTER = size:04-16384, eclipsed_size:08-16384, imageids:1, imageid1:cb_ha
 HADOOPSLAVE = size:04-16384, eclipsed_size:08-16384, imageids:1, imageid1:cb_hadoop
 IPERFCLIENT = size:02-2048, imageid1:cb_iperf
 IPERFSERVER = size:02-2048, imageid1:cb_iperf
+KERNBENCH = size:02-2048, imageids:1, imageid1:cb_kernbench
 LB = size:02-2048, eclipsed_size:08-4096, imageids:1, imageid1:cb_nullworkload
 LIBERTY = size:04-2048, eclipsed_size:08-4096, imageid1:cb_acmeair
 LINPACK = size:01-2560, imageids:1, imageid1:cb_linpack
