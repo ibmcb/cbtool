@@ -553,7 +553,12 @@ class MongodbMgdConn :
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             
-            _experiment_list = _collection_handle.distinct('expid')
+            #_experiment_list = _collection_handle.distinct('expid')
+
+            # The document is getting too big, but a workaround was found.
+            # TODO: Find a more permanent solution to this.
+            _experiment_list_agg = _collection_handle.aggregate([ {"$group": {"_id": '$expid'}} ])
+            _experiment_list = ([_v['_id'] for _v in _experiment_list_agg])
 
             if disconnect_finish :
                 self.disconnect()
