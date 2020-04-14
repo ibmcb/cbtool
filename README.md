@@ -2,6 +2,8 @@
 
 Cloud Rapid Experimentation and Analysis Tool (aka CBTOOL) is a framework that automates IaaS cloud benchmarking through the running of controlled experiments.
 
+[![Gitter](https://badges.gitter.im/ibmcb-project/community.svg)](https://gitter.im/ibmcb-project/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Subscribe to our mailing list:
 
 - Users: https://groups.google.com/forum/#!forum/cbtool-users
