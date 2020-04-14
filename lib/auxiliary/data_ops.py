@@ -405,7 +405,7 @@ def create_restart_script(scriptname, cmdline, username, searchcmd, objectname =
     _fn = _fn.replace('---','')
             
     _fc = "#!/bin/bash\n\n"
-    _fc += "PID=$(sudo pgrep -u " + username + " -f " + searchcmd + ")\n"
+    _fc += "PID=$(pgrep -u " + username + " -f " + searchcmd + ")\n"
     _fc += "if [[ ${PID} ]]\n"
     _fc += "then\n"        
     _fc += "    echo \"Killing current \\\"" + searchcmd + "\\\" process (PID is $PID)\"\n"
