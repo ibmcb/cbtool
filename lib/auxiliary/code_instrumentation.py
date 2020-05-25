@@ -32,14 +32,12 @@ from itertools import chain
 from collections import deque
 import sys
 import socket
-import __builtin__
 
 try:
     from reprlib import repr
 except ImportError:
     pass
 
-bins = dir(__builtin__)
 
 DEBUG = logging.DEBUG
 INFO = logging.INFO
@@ -68,7 +66,7 @@ def trace_actual(aFunc):
         
         try:
             result = aFunc(*args, **kwargs )
-        except Exception, e:
+        except Exception as e:
             _msg = _log_prefix + " - Exit point (Exception \"" + str(e) + "\") "
             _msg += _log_suffix
             logging.debug(_msg)
@@ -143,7 +141,7 @@ def _cblog(*args):
         _msg = _log_prefix + ' ' + _procid + " - " + _msg + _log_suffix
         _log_severity[_severity](_msg)
     
-    except Exception, msg :
+    except Exception as msg :
         print ("exception: " + str(msg) + " : " + _msg)
 
     return True

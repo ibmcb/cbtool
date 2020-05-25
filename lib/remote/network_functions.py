@@ -24,9 +24,13 @@
     @author: Michael R. Hines, Marcio A. Silva
 '''
 
+import sys
 import socket
 import struct
-import urllib2
+if sys.version_info[0] < 3:
+    import urllib2
+else:
+    import urllib.request
 
 try :
     import IN
@@ -186,7 +190,7 @@ def get_syslog_port(username) :
         cbdebug(_msg)
         return _syslog_port
     
-    except Exception, e :
+    except Exception as e :
         _msg = "Unable to find default syslog port for this CloudBench host: " + _syslog_port
         cberr(_msg)
         raise NetworkException(str(_msg), 1)
@@ -237,7 +241,7 @@ def hostname2ip(hostname, raise_exception = False) :
         _msg = "Error while attempting to resolve the " + _x + " \"" + hostname + "\"."
         _msg += " Please make sure this name is resolvable either in /etc/hosts or DNS."
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg = "Error while attempting to resolve the " + _x + " \"" + hostname + "\":" + str(e)
 
@@ -268,8 +272,8 @@ def get_mtu(ifname) :
     try:
         ifs = ioctl(s, SIOCGIFMTU, ifr)
         mtu = struct.unpack('<H',ifs[16:18])[0]
-    except Exception, s:
-        print 'socket ioctl call failed: {0}'.format(s)
+    except Exception as s:
+        print('socket ioctl call failed: {0}'.format(s))
         raise
  
     return mtu
@@ -282,7 +286,10 @@ def check_url(url, string_to_replace = None, string_replacement = None, tout = 3
         if len(url) :
             if string_to_replace and string_replacement :
                 _url = url.replace(string_to_replace, string_replacement.strip())
-            urllib2.urlopen(urllib2.Request(_url), timeout = tout)
+            if sys.version_info[0] < 3:
+                urllib2.urlopen(urllib2.Request(_url), timeout = tout)
+            else:
+                urllib.request.urlopen(urllib.request.Request(_url), timeout = tout)
         return True
         
     except:
@@ -348,7 +355,7 @@ class Nethashget :
                 cberr(_msg)
                 raise NetworkException(str(_msg), "1")
 
-        except socket.error, msg :
+        except socket.error as msg :
             self.socket.close()
             self.socket = None
 
@@ -377,7 +384,7 @@ class Nethashget :
             self.socket.connect((self.hostname, self.port if port is None else port))
             return True
         
-        except socket.error, msg :
+        except socket.error as msg :
             _msg = "Unable to connect to " + protocol + " port " + str(port)
             _msg += " on host " + self.hostname + ": " + str(msg)
             cbinfo(_msg)
@@ -401,7 +408,7 @@ class Nethashget :
         if reset :
             try :
                 self.connect()
-            except socket.error, msg :
+            except socket.error as msg :
                 _msg = "ERROR cannot connect to ganglia gmetad to the port "
                 _msg += self.port + " on server " + self.hostname + ": "
                 _msg += str(msg) + '.' 

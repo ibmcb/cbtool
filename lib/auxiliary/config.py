@@ -44,7 +44,7 @@ def isbrokenlink(path):
 
   try:
     os.stat(path)
-  except os.error, err:
+  except os.error as err:
     # broken link
     # "No such file or directory"
     if err.errno == errno.ENOENT:
@@ -336,7 +336,7 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
     
                             _multiline = True
                             if _key.count("enema") :
-                                print '\n' + _key
+                                print('\n' + _key)
                         else :
                             _msg = "configuration error: variable " + _key.upper()
                             _msg += "= has to be preceded by one occurrence of "
@@ -403,22 +403,22 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
             _msg = "\"" +  _file_name + "\" opened and parsed successfully."
 
             if print_message :
-                print _msg
+                print(_msg)
 
             return _cld_attr_lst, "\n".join(_cloud_definitions_fc)
 
-        except IOError, msg :
+        except IOError as msg :
             if _file_names.index(_file_name) == len(_file_names) - 1 :
                 _msg = "Unable to open any of the following files: "
                 _msg += ','.join(_file_names) + ':' + str(msg)
                 raise Exception(_msg)
                 exit(1)
         
-        except NetworkException, obj :
+        except NetworkException as obj :
             raise Exception(str(obj))
             exit(1)
         
-        except Exception, e :
+        except Exception as e :
             raise Exception(str(e))
             exit(1)
 
@@ -489,7 +489,7 @@ def get_my_parameters(me):
 
 @trace
 def set_my_parameters(me, parameters):
-    for key, value in parameters.iteritems() :
+    for key, value in parameters.items() :
         if key.lower().count("cloudoption") :
             continue
         try:

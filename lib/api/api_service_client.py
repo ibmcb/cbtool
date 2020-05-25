@@ -32,12 +32,17 @@
 '''
 
 from sys import path
-from xmlrpclib import Server
-import xmlrpclib
 import pwd
 import sys
 import re
 import os
+
+if sys.version_info[0] < 3:
+    from xmlrpclib import Server
+    import xmlrpclib
+else:
+    from xmlrpc.client import ServerProxy as Server
+    import xmlrpc.client as xmlrpclib
 
 path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../")
 path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../../")
@@ -137,13 +142,13 @@ class APIClient(Server):
                 mutex.acquire()
                 resp = func(*args, **kwargs)
                 mutex.release()
-            except Exception, e :
+            except Exception as e :
                 mutex.release()
                 raise e
             if int(resp["status"]) :
                 raise APIException(str(resp["status"]), resp["msg"])
             if self.print_message :
-                print resp["msg"]
+                print(resp["msg"])
             return resp["result"]
         return wrapped
 
@@ -209,10 +214,10 @@ class APIClient(Server):
         TBD
         '''
         info = self.vmshow(cloud_name, identifier)
-        print identifier + " configured: (" + info["vcpus"] + ", " + info["vmemory"] + ")"
+        print(identifier + " configured: (" + info["vcpus"] + ", " + info["vmemory"] + ")")
 
         if "configured_size" in info :
-            print "   Eclipsed size: (" + info["vcpus_max"] + ", " + info["vmemory_max"] + ")"
+            print("   Eclipsed size: (" + info["vcpus_max"] + ", " + info["vmemory_max"] + ")")
 
         if info["ai"] != "none" :
             app = self.appshow(cloud_name, info["ai_name"])
@@ -268,12 +273,12 @@ class APIClient(Server):
             self.reset_refresh(cloud_name)
             return True
 
-        except APIException, obj :
-            print "Check VM API Problem (" + str(obj.status) + "): " + obj.msg
+        except APIException as obj :
+            print("Check VM API Problem (" + str(obj.status) + "): " + obj.msg)
             return False
 
-        except socket.error, obj :
-            print "API not available: " + str(obj)
+        except socket.error as obj :
+            print("API not available: " + str(obj))
             return False
 
     def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False, samples = 0, expid = "auto") :
