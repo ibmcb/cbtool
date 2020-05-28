@@ -47,6 +47,8 @@ import urllib
 
 #import scripts.common.et.ElementTree as ET
 
+cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0))
+
 from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import makeTimestamp
@@ -142,6 +144,20 @@ def nmap(port) :
         exit(1)
     return argv[1], argv[2]
 
+def refresh_os_cache() :
+    '''
+    TBD
+    '''
+    _cmd = "source " + cwd + "/cb_common.sh"
+
+    proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    (_output_stdout, _output_stderr) = proc_h.communicate()
+
+    if proc_h.returncode > 0 :
+        return _output_stderr
+    else :
+        return _output_stdout.strip()
+
 def get_my_ip() :
     '''
     TBD
@@ -210,6 +226,7 @@ def get_stores_parms() :
     TBD
     '''
     try :
+        _status = 100
         _fmsg = ""
         _home = os.environ["HOME"]        
         _from_file = False
@@ -273,13 +290,6 @@ def get_stores_parms() :
             else :
                 True
 
-        if use_vpn :
-            for _line in _fc :
-                _line = _line.strip()
-                if _line.count("server_bootstrap") :
-                    _mscp["host"] = _line.split("server_bootstrap")[1].strip()
-                    break
-
         _mscp["mongodb_conn"] = False
 
         _lscp = {}
@@ -298,6 +308,14 @@ def get_stores_parms() :
             else :
                 True
 
+        if use_vpn :
+            for _line in _fc :
+                _line = _line.strip()
+                if _line.count("server_bootstrap") :
+                    _mscp["host"] = _line.split("server_bootstrap")[1].strip()
+                    _lscp["hostname"] = _mscp["host"]
+                    break
+
         if _oscp["mode"] == "scalable" :
             _lscp["hostname"] = _lscp["metric_aggregator_ip"]
 
@@ -310,6 +328,10 @@ def get_stores_parms() :
     except OSError, msg :
         _status = 20
         _fmsg = str(msg) 
+
+    except Exception, e:
+        status = 30
+        _fmsg = str(e)
 
     finally :
         if _status :
@@ -463,7 +485,8 @@ def get_ms_conn(mscp = None, cn = None) :
     TBD
     '''
     try :
-
+        _status = 100
+        _fmsg = ""
         _my_uuid, _oscp, _mscp, _lscp = get_stores_parms()
 
         _ms_adapter = __import__("lib.stores." + _mscp["kind"] + "_datastore_adapter", \
@@ -696,6 +719,11 @@ def unit_convert(convstr, unit, value) :
                                                 
 def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
                        os_conn = "auto", reset_syslog = True, force_conversion = None) :
+
+    # When using the VPN, it's possible that the
+    # object store's address for different services
+    # has changed. We may have to repopulate some values.
+    refresh_os_cache()
 
     if ms_conn == "auto" :
         _msci, _my_uuid, _expid, _username = get_ms_conn()

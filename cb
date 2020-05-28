@@ -95,8 +95,28 @@ def main() :
         _msg += "\" reset: (killing all running toolkit processes"
         _msg += " and flushing stores) before starting the experiment......"
         print _msg
+        _default_cloud_to_flush = None
+        if options.soft_reset_cloud == "startup_cloud" :
+            if "startup_cloud" in _cmd_processor.cld_attr_lst["user-defined"] :
+                _default_cloud_to_flush = _cmd_processor.cld_attr_lst["user-defined"]["startup_cloud"]
+        else :
+            _default_cloud_to_flush = options.soft_reset_cloud
+        if _default_cloud_to_flush is not None :
+            _default_cloud_to_flush = _default_cloud_to_flush.lower()
+            available_clouds = get_available_clouds(_cmd_processor.cld_attr_lst, return_all_options = True)
+            found = False
+            for cloud in available_clouds :
+                if _cmd_processor.cld_attr_lst["user-defined"]["startup_cloud"].lower() == _default_cloud_to_flush :
+                    found = True
+                    break
+
+            if found :
+                print "Only flush registered cloud: " + _default_cloud_to_flush.upper()
+            else :
+                print "Error: " + _default_cloud_to_flush.upper() + " not found."
+                exit(1)
         
-        _status, _msg = reset(_cmd_processor.cld_attr_lst, soft = False if options.hard_reset else True)
+        _status, _msg = reset(_cmd_processor.cld_attr_lst, soft = False if options.hard_reset else True, cloud_name = _default_cloud_to_flush)
         if not _status :
             _msg = "\"" + ("Hard" if options.hard_reset else "Soft")
             _msg += "\" reset executed successfully."
@@ -117,6 +137,8 @@ def main() :
                     _command = _command.replace("__COMMA__",',').strip()
                     print "\n ############################# Executing command \"" + _command + "\" (specified on the configuration file) \n"
                     _cmd_processor.onecmd(_command)
+                    if _command.count("cldattach") :
+                        _cmd_processor.do_clddefault(cloud.upper())
     else :
         # Or do it the old way
         for command in get_available_clouds(_cmd_processor.cld_attr_lst) :

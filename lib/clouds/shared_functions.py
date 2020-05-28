@@ -1167,7 +1167,10 @@ class CommonCloudFunctions:
 
                     line = line.replace("USER", obj_attr_list["username"])
                     line = line.replace("CLOUD_NAME", obj_attr_list["cloud_name"])
-                    line = line.replace("SERVER_BOOTSTRAP", obj_attr_list["vpn_server_bootstrap"])
+                    if str(obj_attr_list["vpn_redis_discovery"]).lower() == "true" :
+                        line = line.replace("SERVER_BOOTSTRAP", obj_attr_list["vpn_server_bootstrap"])
+                    else :
+                        line = line.replace("SERVER_BOOTSTRAP", obj_attr_list["vpn_redis_discovery"])
                     line = line.replace("UUID", obj_attr_list["uuid"])
                     line = line.replace("OSCI_PORT", str(self.osci.port))
                     line = line.replace("OSCI_DBID", str(self.osci.dbid))
@@ -1235,7 +1238,10 @@ packages:"""
         
         _cn = obj_attr_list["cloud_name"]
         
-        _ohn = obj_attr_list["vpn_server_bootstrap"]
+        if str(obj_attr_list["vpn_redis_discovery"]).lower() == "true" :
+            _ohn = obj_attr_list["vpn_server_bootstrap"]
+        else :
+            _ohn = obj_attr_list["vpn_redis_discovery"]
         _fshn = obj_attr_list["vpn_server_bootstrap"]
 
         _pad = "      " 

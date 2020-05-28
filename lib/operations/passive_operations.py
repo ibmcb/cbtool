@@ -312,7 +312,18 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _obj_uuid, _obj_name = _obj.split('|')
                             else :
                                 _obj_uuid = _obj
-                            _obj_attrs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, _obj_uuid, False)
+                            try :
+                                _obj_attrs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, _obj_uuid, False)
+                            except self.osci.ObjectStoreMgdConnException, e :
+                                if _obj_type == "CLOUD" :
+                                    # We have stabilized the use of a shared Redis database. Unfortunately,
+                                    # this allows multiple users to leave leftover information in the database,
+                                    # which can happen for various reasons. In this case, if a cloud was leftover
+                                    # it can cause the API service to fail to startup. If we find such information
+                                    # just skip the invalid Cloud and move on with a warning.
+                                    cbwarn("Warning: Cloud " + _obj_uuid + " does not exist.", True)
+                                    continue
+                                raise e
     
                             if _obj_type == "VM" or _obj_type == "AI" :
                                 _state = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)
