@@ -699,7 +699,6 @@ class CBCLI(Cmd) :
             _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["api_facility"]
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
             _base_cmd += " --syslogr=" + self.cld_attr_lst["logstore"]["protocol"]
-            _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
             #_cmd = _base_cmd + " --daemon"
             _cmd = _base_cmd + " --logdest=console -v 5"
             #_cmd = _base_cmd + " --debug_host=localhost"
