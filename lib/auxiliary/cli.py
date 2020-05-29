@@ -707,7 +707,7 @@ class CBCLI(Cmd) :
             _api_pid = _proc_man.start_daemon(_cmd, \
                                               self.cld_attr_lst["api_defaults"]["port"], \
                                               self.cld_attr_lst["api_defaults"]["protocol"], \
-                                              conditional = True, \
+                                              conditional = False, \
                                               search_keywords = "cloud-api")
 
             if len(_api_pid) :
