@@ -677,7 +677,7 @@ class CBCLI(Cmd) :
 
             _proc_man = ProcessManagement(username = self.cld_attr_lst["objectstore"]["username"])
 
-            _base_cmd = "\"" +  self.path + "/cbact\""
+            _base_cmd = "bash -c \"(" +  self.path + "/cbact"
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
             _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
@@ -700,7 +700,7 @@ class CBCLI(Cmd) :
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
             _base_cmd += " --syslogr=" + self.cld_attr_lst["logstore"]["protocol"]
             #_cmd = _base_cmd + " --daemon"
-            _cmd = _base_cmd + " --logdest=console -v 5"
+            _cmd = _base_cmd + " --logdest=console -v 5 2>&1 >> /tmp/out.log &)\""
             #_cmd = _base_cmd + " --debug_host=localhost"
             cbdebug(_cmd, True)     
             
