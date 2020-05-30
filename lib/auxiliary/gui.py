@@ -21,7 +21,7 @@
 
     GUI formatter
 
-    @author: Michael R. Hines
+    @author: Michael R. Galaxy
 '''
 
 import json
@@ -29,7 +29,7 @@ import traceback
 import os
 import re
 import shutil
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from datetime import datetime
 from pwd import getpwuid
@@ -89,7 +89,7 @@ class Dashboard () :
         self.destinations = {}
         self.user_generated_categories = { 'p' : "Provisioning", 'a' : "Application" }
         self.standard_categories = { 's' : "VM", 'h': "HOST" }
-        self.categories = dict(self.standard_categories.items() + self.user_generated_categories.items())
+        self.categories = dict(list(self.standard_categories.items()) + list(self.user_generated_categories.items()))
         self.owners = { "VM" : ['s', 'p', 'a'], "HOST" : ['h']}
         self.summaries = {"Saved VMs" : [True, "savedvm"], 
                           "Failed VMs" : [True, "failedvm"], 
@@ -198,7 +198,7 @@ class Dashboard () :
         # For later formatting into HTML
         _obj_list = []
 
-        for _obj_type in self.manage_collection.keys() :
+        for _obj_type in list(self.manage_collection.keys()) :
             _obj_list += self.msci.find_document(self.manage_collection[_obj_type], \
                             {'expid' : expid, 'mgt_901_deprovisioning_request_originated' : { "$exists" : False}, \
                              'mgt_903_deprovisioning_request_completed' : { "$exists" : False}}, \
@@ -228,7 +228,7 @@ class Dashboard () :
                         del _reported_app_metrics["_id"]
                         del _reported_app_metrics["expid"]
 
-                        for _metric_name in _reported_app_metrics.keys() :
+                        for _metric_name in list(_reported_app_metrics.keys()) :
                             if _metric_name not in _app_metrics :
                                 _app_metrics[_metric_name] = {}
                                 _app_metrics[_metric_name]["val"] = "NA"
@@ -270,7 +270,7 @@ class Dashboard () :
                     row_indexer[dest] = {'d3_uuid' : str(attrs['uuid']), 'd3_name' : str(attrs['name']), 'd3_host' : 'none', 'd3_role' : 'none', 'd3_ip' : str(attrs['cloud_ip'])}
                 label_indexer[dest] = {}
                        
-            for mkey, mvalue in metrics.iteritems() :
+            for mkey, mvalue in list(metrics.items()) :
 
                 average = False
                 max = False
@@ -399,7 +399,7 @@ class Dashboard () :
         # Now, dump the master dictionary according to category
         
         for dest in self.categories :
-            unitkeys = accumulate_units[dest].keys()
+            unitkeys = list(accumulate_units[dest].keys())
             self.destinations[dest] = ""
             prefix_rows1 = []
             prefix_rows2 = []
@@ -474,7 +474,7 @@ class Dashboard () :
 
         # Inform the user of the configuration of this dashboard so that they
         # can save it to a configuration file later permanently
-        for summ in self.summaries.keys() :
+        for summ in list(self.summaries.keys()) :
             url += self.summaries[summ][1] + "=" + ("yes" if self.summaries[summ][0] else "no") + "&"
 
         for dest in ['p', 'h', 's', 'a' ] :
@@ -511,7 +511,7 @@ class Dashboard () :
             else :
                 output += "=yes' target='_top'>Show " + self.categories[dest] + "</a>"
                 
-        for summ in self.summaries.keys() :
+        for summ in list(self.summaries.keys()) :
             output += " <a class='btn' href='" + self.prefix() + "/monitor?"
 
             if self.summaries[summ][0] :
@@ -605,7 +605,7 @@ class Dashboard () :
                 elif key in self.show :
                     self.show[key] = True if value == "yes" else False
                 else :
-                    for summ in self.summaries.keys() :
+                    for summ in list(self.summaries.keys()) :
                         if key == self.summaries[summ][1] :
                             if value == "yes" :
                                 self.summaries[summ][0] = True
@@ -689,18 +689,18 @@ class GUI(object):
         
         try:
             resp = self.common(req)
-        except exc.HTTPTemporaryRedirect, e :
+        except exc.HTTPTemporaryRedirect as e :
             resp = e
             resp.location = req.dest + resp.location + req.active
-        except exc.HTTPException, e:
+        except exc.HTTPException as e:
             resp = e
-        except Exception, e :
+        except Exception as e :
 #            exc_type, exc_value, exc_traceback = sys.exc_info()
             resp = "<h4>Exception:</h4>"
             for line in traceback.format_exc().splitlines() :
                 resp += "<br>" + line
 
-        if isinstance(resp, str) or isinstance(resp, unicode):
+        if isinstance(resp, str) or isinstance(resp, str):
             return Response(resp)(environ, start_response)
         else :
             return resp(environ, start_response)
@@ -878,11 +878,11 @@ class GUI(object):
         session.save()
         
     def d3_process(self, mon, data, result, category, label):
-        print "There are " + str(data.count()) + " records"
+        print(("There are " + str(data.count()) + " records"))
         fin = 0
         for document in data:
             if fin % 500 == 0 :
-                print "finished " + str(fin) + " records so far"
+                print(("finished " + str(fin) + " records so far"))
             fin += 1
             if(category == 'p' and mon.is_failed_vm(document)) :
                 continue
@@ -925,7 +925,7 @@ class GUI(object):
                                     
                                 try :
                                     func = getattr(self.api, parts[0])
-                                except AttributeError, msg :
+                                except AttributeError as msg :
                                     return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
                                 
                                 if parts[0] != "cldattach" and 'cloud_name' in req.session and not command.lower().count(req.session['cloud_name'].lower()) :
@@ -1000,7 +1000,7 @@ class GUI(object):
                     "fail" : [10, {"operations" : [ "vm" ], "icon" : "fire", "state" : "protected" } ], 
                 }
                 
-                for operation in req.session["operations"].keys() :
+                for operation in list(req.session["operations"].keys()) :
                     req.session["operations"][operation][1]["label"] = operation[0].upper() + operation[1:]
     
                 req.session["objects"] = { 
@@ -1080,7 +1080,7 @@ class GUI(object):
                     try :
                         self.api.cldalter(req.cloud_name, req.http.params.get("category"), req.http.params.get("name"), req.http.params.get("value"))
                         result  += "Successfully altered " + msg
-                    except APIException, obj :
+                    except APIException as obj :
                         result += "Failed to alter " + msg + ": " + obj.msg
                     result += "</h4></div>"
                         
@@ -1244,45 +1244,47 @@ class GUI(object):
                 return self.bootstrap(req, "<div class='span10'>" + mon.body + cli_html)
 
             elif req.action == "stats" :
-		try :
-			stats = self.api.stats(req.cloud_name)
-			output = "<div class='span10'>"
-			output += self.heromsg + "\n<h4>&nbsp;&nbsp;Runtime Summary Statistics:</h4></div>\n"
-			output += "<div class='accordion' id='statistics'>\n"
-			
-		        cbdebug(str(stats))
-			for group_key in stats.keys() :
-				group = group_key.replace("_", " ")
-				output += """
-					    <div class="accordion-group">
-						<div class="accordion-heading">
-				"""
-				output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#statistics' href='#collapse" + group_key + "'>" + group + "</a>"
-				output += "</div>\n"
-				output += "<div id='collapse" + group_key + "' class='accordion-body collapse'>"
-				output += "<div class='accordion-inner'>"
-				for label, stat in stats[group_key].iteritems() :
-					output += "<table class='table table-hover table-striped'>\n"
-					output += "<tr><td><b>" + label + "</b></td></tr>\n"
-					for name, value in stats[group_key].iteritems() :
-					    output += "<tr><td>" + name + "</td><td>" + str(value) + "</td></tr>\n"
-					output  += "</table>"
-		    
-				output += """
-				    </div>
-				   </div>
-				 </div>
-				"""
-			output += """
-				</div>
-			"""
-			output_fd = open(cwd + "/gui_files/cli_template.html", "r")
-			cli_html = output_fd.read()
-			output_fd.close()
-			output += cli_html
-			return self.bootstrap(req, output)
-		except Exception, e:
- 			return self.bootstrap(req, str(e))
+                try :
+                    stats = self.api.stats(req.cloud_name)
+                    output = "<div class='span10'>"
+                    output += self.heromsg + "\n<h4>&nbsp;&nbsp;Runtime Summary Statistics:</h4></div>\n"
+                    output += "<div class='accordion' id='statistics'>\n"
+                    
+                    cbdebug(str(stats))
+                    for group_key in list(stats.keys()) :
+                        group = group_key.replace("_", " ")
+                        output += """
+                                <div class="accordion-group">
+                                <div class="accordion-heading">
+                        """
+                        output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#statistics' href='#collapse" + group_key + "'>" + group + "</a>"
+                        output += "</div>\n"
+                        output += "<div id='collapse" + group_key + "' class='accordion-body collapse'>"
+                        output += "<div class='accordion-inner'>"
+                        for label, stat in list(stats[group_key].items()) :
+                            output += "<table class='table table-hover table-striped'>\n"
+                            output += "<tr><td><b>" + label + "</b></td></tr>\n"
+                            for name, value in list(stats[group_key].items()) :
+                                output += "<tr><td>" + name + "</td><td>" + str(value) + "</td></tr>\n"
+                            output  += "</table>"
+                    
+                        output += """
+                            </div>
+                           </div>
+                         </div>
+                        """
+                    output += """
+                        </div>
+                    """
+                    output_fd = open(cwd + "/gui_files/cli_template.html", "r")
+                    cli_html = output_fd.read()
+                    output_fd.close()
+                    output += cli_html
+                    return self.bootstrap(req, output)
+                except Exception as e:
+                    for line in traceback.format_exc().splitlines() :
+                        cbdebug(line)
+                    return self.bootstrap(req, str(e))
             elif req.action == "commands" :
                 self.api.dashboard_conn_check(req.cloud_name, msattrs = req.session['msattrs'], username = req.session['time_vars']['username'])
                 contents = """
@@ -1291,7 +1293,7 @@ class GUI(object):
                     """
                     
                 result = []
-                commands = self.api.msci.find_document("trace_" + req.session['time_vars']["username"], None, True, [("expid", expid), ("command_originated" , -1)], 10, ["command"], disconnect_finish = True)
+                commands = self.api.msci.find_document("trace_" + req.session['time_vars']["username"], criteria = {"expid": expid}, sortkeypairs = [("command_originated" , -1)], allmatches = True, limitdocuments = 10, documentfields = ["command"], disconnect_finish = True)
                 for command in commands :
                     command = command["command"].replace(req.cloud_name, "")
                     contents += "<tr><td style='word-break: break-all;'>" + command.replace("default", "").replace("none", "").strip() + "</td></tr>"
@@ -1357,16 +1359,18 @@ class GUI(object):
             
             return self.bootstrap(req, self.heromsg + "\n<h4>We do not understand you! Try again...</h4></div>", error = True)
     
-        except APIException, obj :
+        except APIException as obj :
             return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service says:" + str(obj.status) + ": " + obj.msg.replace("<", "&lt;").replace(">", "&gt;").replace("\\n", "<br>").replace("\n", "<br>") + "</h4></div>", error = True)
-        except IOError, msg : 
+        except IOError as msg : 
             return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
-        except socket.error, v:
+        except socket.error as v:
             return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
-        except exc.HTTPTemporaryRedirect, e :
+        except exc.HTTPTemporaryRedirect as e :
             raise e
-        except Exception, msg:
-            print "Exception: " + str(msg)
+        except Exception as msg:
+            for line in traceback.format_exc().splitlines() :
+                cbdebug(line)
+            print(("Exception: " + str(msg)))
             _msg = self.heromsg + "\n<h4 id='gerror'>Error: Something bad "
             _msg += "happened while executing the action " + str(req.action) + ": " + str(msg) + "</h4></div>"
             for line in traceback.format_exc().splitlines() :
@@ -1390,7 +1394,7 @@ class GUI(object):
             <ul id='one' class="nav nav-tabs">
         """
     
-        for obj, label in sorted(objects.iteritems(), key=itemgetter(1)) :
+        for obj, label in sorted(iter(list(objects.items())), key=itemgetter(1)) :
             output += "<li "
             if req.active == obj :
                     output += "class='active'"
@@ -1421,7 +1425,7 @@ class GUI(object):
                 <ul id='two' class="nav nav-tabs">
             """
     
-            for obj, attrs in sorted(views[req.active].iteritems(), key=itemgetter(1)) :
+            for obj, attrs in sorted(iter(list(views[req.active].items())), key=itemgetter(1)) :
                 criterion = attrs[1]["criterion"].strip()
                 expressions = attrs[1]["expression"]
                 dropdown = isinstance(expressions, list)
@@ -1464,7 +1468,7 @@ class GUI(object):
                     """
                 output += "</li>\n"
                 
-            for tempstate, state_attrs in sorted(liststates.iteritems(), key=itemgetter(1)) :
+            for tempstate, state_attrs in sorted(iter(list(liststates.items())), key=itemgetter(1)) :
                 output += "<li"
                 if not found_view and liststate == tempstate : 
                     output += " class='active'"
@@ -1493,14 +1497,14 @@ class GUI(object):
                 try :
                     getattr(self.api, req.active + "alter")(req.cloud_name, uuid, params.get("key"), params.get("value"))
                     output += self.heromsg + "\n<h4>Successfully altered BOOTOBJECTNAME " + uuid  + " attribute " + params.get("key") + "=" + params.get("value") + "</h4></div>"
-                except APIException, obj :
+                except APIException as obj :
                     output += self.heromsg + "\n<h4>&nbsp;&nbsp;Error: Could not alter BOOTOBJECTNAME " + uuid + " attribute " + params.get("key") + " = " + params.get("value") + ": " + obj.msg + "</h4></div>"
                 
             attrs = getattr(self.api, req.active + "show")(req.cloud_name, uuid)
             output += "<h2>BOOTOBJECTNAME: " + attrs["name"] + "</h2>"
             
             migrate_operations = []
-            for operation, operation_attrs in sorted(operations.iteritems(), key=itemgetter(1)) :
+            for operation, operation_attrs in sorted(iter(list(operations.items())), key=itemgetter(1)) :
                         
                 keywords = {}
                 label = operation_attrs[1]["label"]
@@ -1668,7 +1672,9 @@ class GUI(object):
                         output += self.list_objects(req, req.active, objs, link = False, icon = False, label = 'label-warning')
                     else :
                         output += "No Pending Objects"
-                except APIException, obj :
+                except APIException as obj :
+                    for line in traceback.format_exc().splitlines() :
+                        cbdebug(line)
                     output += "Failed to list pending objects!: " + obj.msg
             else :
                 output += "unchanged"
@@ -1698,7 +1704,7 @@ class GUI(object):
                     else :
                         raise exc.HTTPTemporaryRedirect(location = "/provision?object=")
                         
-                except APIException, obj :
+                except APIException as obj :
                     success = False
                     output += self.heromsg + "\n<h4>Error: BOOTOBJECTNAME " + params.get("keyword1") + " not " + operation_attrs["label"] + "ed: " + obj.msg
                     output += "</h4></div>"
@@ -1908,9 +1914,12 @@ def parse_bufdata(bufdata):
     import re
 
     if bufdata == None:
-        raise "empty buffer data handed to parse_bufdata"
+        raise Exception("empty buffer data handed to parse_bufdata")
 
-    prefix, rest = "".join(bufdata).split('\r\n', 1)
+    data = ""
+    for item in bufdata :
+        data += item.decode('utf-8')
+    prefix, rest = data.split('\r\n', 1)
 
     # log.msg("dispatcher: prefix:%s" % prefix)
 
@@ -1941,16 +1950,16 @@ class BroadwayRedirectResource(Resource):
             port = int(request.args["port"][0])
             
             if name == "broadway" :
-                return urllib2.urlopen("http://localhost:" + str(port)).read().replace("broadway.js", "broadway.js?port=" + str(port))
+                return urllib.request.urlopen("http://localhost:" + str(port)).read().replace("broadway.js", "broadway.js?port=" + str(port))
             
             elif name == "broadway.js" :
-                return urllib2.urlopen("http://localhost:" + str(port) + "/" + name).read().replace("/socket", "/socket?port=" + str(port))
+                return urllib.request.urlopen("http://localhost:" + str(port) + "/" + name).read().replace("/socket", "/socket?port=" + str(port))
             
             else :
                 return "Error: Unknown GTK broadway URL request! Try again"
-        except urllib2.URLError, msg :
+        except urllib.error.URLError as msg :
             return "Error: Display not available: " + request.uri + ": " + str(msg)
-        except ValueError, msg :
+        except ValueError as msg :
             return "Error: Display not available: " + request.uri + ": " + str(msg)
 
         
@@ -1990,19 +1999,19 @@ class GUIDispatcher(Resource) :
         request.setHeader('Access-Control-Allow-Headers', 'x-prototype-version,x-requested-with')
         request.setHeader('Access-Control-Max-Age', "2520")
 
-        if name.count("3rd_party") :
+        if name.count(b"3rd_party") :
             return self.third_party
-        elif name.count("gui_files") :
+        elif name.count(b"gui_files") :
             return self.files
-        elif name.count("hfdrs") :
+        elif name.count(b"hfdrs") :
             return self.hfdrs
-        elif name.count("fdrs") :
+        elif name.count(b"fdrs") :
             return self.fdrs
-        elif name.count("favicon.ico"):
+        elif name.count(b"favicon.ico"):
             return self.icon
-        elif name.count("git"):
+        elif name.count(b"git"):
             return self.git
-        elif name.count("broadway"):
+        elif name.count(b"broadway"):
             return self.broadway
 
         else :
@@ -2051,9 +2060,9 @@ class WebsocketsDispatcher:
 
         if self.path == "/":
             # Replace the Host: header
-            x = re.sub(r'Host: (\S*)', 'Host: localhost', self.bufdata[0])
+            x = re.sub(r'Host: (\S*)', 'Host: localhost', self.bufdata[0].decode('utf-8'))
             log.msg("replace:%s" % x)
-            self.bufdata[0] = x
+            self.bufdata[0] = str.encode(x) 
 
         return self.bufdata
     

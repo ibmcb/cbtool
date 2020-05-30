@@ -51,6 +51,7 @@ do
         -h|--help)
         echo $CB_USAGE
         shift
+        exit 0
         ;;
         *)
         # unknown option
@@ -77,14 +78,14 @@ fi
 if [[ $CB_ADAPTERS == "all" ]]
 then
     CB_ADAPTERS="sim pdm plm pcm kub osk,oskfile,oskfip nop ec2 gce do as slr"	
-#    CB_ADAPTERS="sim pdm plm pcm kub osk,oskfile,oskfip nop osl,oslfip ec2 gce do as slr"
+#    CB_ADAPTERS="sim pdm plm pcm kub osl,oslfip osk,oskfile,oskfip nop ec2 gce do as slr"
 elif [[ $CB_ADAPTERS == "single" ]]
 then
     CB_ADAPTERS="sim plm pdm pcm nop"
 elif [[ $CB_ADAPTERS == "private" ]]
 then
     CB_ADAPTERS="sim plm pdm pcm kub osk,oskfile,oskfip nop"
-#    CB_ADAPTERS="sim plm pdm pcm kub osk,oskfile,oskfip nop osl,oslfip"    
+    #CB_ADAPTERS="sim plm pdm pcm kub osl,oslfip osk,oskfile,oskfip nop"    
 elif [[ $CB_ADAPTERS == "public" ]]
 then
     CB_ADAPTERS="ec2 gce do as slr"
@@ -110,7 +111,7 @@ do
     actual_user=$(echo $adapter | cut -d ',' -f 1 | sed 's/fip//g' | sed 's/file//g' | sed 's/osl/os/g')
     adapter=$(echo $adapter | sed 's/osl/os/g')
     actual_adapter=$(echo $adapter | cut -d ',' -f 1)
-    
+
     sudo tmux kill-session -t cb${actual_user} > /dev/null 2>&1
     sudo rm /tmp/${actual_adapter}_real_multicloud_regression_test.txt > /dev/null 2>&1
     sudo rm /tmp/${actual_adapter}_real_cloud_regression_ecode.txt    > /dev/null 2>&1

@@ -29,13 +29,13 @@
 '''
     Created on Jan 26, 2018
     Azure Object Operations Library
-    @author: Marcio Silva, Michael R. Hines
+    @author: Marcio Silva, Michael R. Galaxy
 '''
 from time import time
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import is_number
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
 import hashlib
 
@@ -45,12 +45,14 @@ class AsCmds(LibcloudCmds) :
     @trace
     def __init__ (self, pid, osci, expid = None) :
         LibcloudCmds.__init__(self, pid, osci, expid = expid, \
-                              provider = "AZURE", \
+                              provider = "AZURE_ARM", \
                               num_credentials = 1, \
                               use_ssh_keys = False, \
                               use_volumes = False, \
-                              use_services = True, \
+                              use_services = False, \
                               use_get_image = False, \
+                              use_locations = True, \
+                              target_location = True, \
                               tldomain = "azure.com" \
                              )
     # All clouds based on libcloud should define this function.
@@ -60,9 +62,9 @@ class AsCmds(LibcloudCmds) :
         '''
         TBD
         '''
-        _subscription_id, _certificate_path = access_token.split('+')
+        _subscription_id, _tenant_id, _application_id, _secret = access_token.split('+')
         
-        driver = libcloud_driver(subscription_id = _subscription_id, key_file = _certificate_path)
+        driver = libcloud_driver(subscription_id = _subscription_id, tenant_id = _tenant_id, key = _application_id, secret = _secret)
 
         return driver
 
@@ -72,30 +74,30 @@ class AsCmds(LibcloudCmds) :
         TBD
         '''
         
-        _cloud_service_found = False
+#        _cloud_service_found = False
                 
-        vm_defaults["cloud_service_name"] = vm_defaults["cloud_service_prefix"] + vmc_name.replace(' ','')
+#        vm_defaults["cloud_service_name"] = vm_defaults["cloud_service_prefix"] + vmc_name.replace(' ','')
         
         vm_defaults["run_netname"] = "private"
         
-        vmc_defaults["cloud_service_name"] = vm_defaults["cloud_service_name"]
+#        vmc_defaults["cloud_service_name"] = vm_defaults["cloud_service_name"]
         
-        _cloud_service_name_list = _local_conn.ex_list_cloud_services()
+#        _cloud_service_name_list = _local_conn.ex_list_cloud_services()
         
-        for _cloud_service in _cloud_service_name_list :
-            if _cloud_service.service_name == vm_defaults["cloud_service_name"] :
-                _cloud_service_found = True
+#        for _cloud_service in _cloud_service_name_list :
+#            if _cloud_service.service_name == vm_defaults["cloud_service_name"] :
+#                _cloud_service_found = True
 
-        if not _cloud_service_found :
-            _local_conn.ex_create_cloud_service(vm_defaults["cloud_service_name"], vmc_name)
-            LibcloudCmds.services = False
-            _cloud_service_found = True
+#        if not _cloud_service_found :
+#            _local_conn.ex_create_cloud_service(vm_defaults["cloud_service_name"], vmc_name)
+#            LibcloudCmds.services = False
+#            _cloud_service_found = True
 
-        hash_object = hashlib.sha1(str(time()))
+        hash_object = hashlib.sha1(str(time()).encode("utf-8"))
         hex_dig = hash_object.hexdigest()
         vm_defaults["vm_name_suffix"] = str(hex_dig[0:10])
 
-        return _cloud_service_found
+        return True
 
     @trace
     def get_list_node_args(self, obj_attr_list) :
@@ -103,7 +105,7 @@ class AsCmds(LibcloudCmds) :
         TBD
         '''
         
-        return [ obj_attr_list["cloud_service_name"] ]
+        return [ ]
 
     @trace
     def is_cloud_image_uuid(self, imageid) :
@@ -121,24 +123,20 @@ class AsCmds(LibcloudCmds) :
         '''
         TBD
         '''
-        
-        for _service in LibcloudCmds.services :
-            if _service.service_name == obj_attr_list["cloud_service_name"] :
-                obj_attr_list["libcloud_location_inst"] = _service.service_name
+        print("AQUI")
+        for _location in LibcloudCmds.locations :
+            print(obj_attr_list["region"])
+            if _location.id == obj_attr_list["region"] :
+                obj_attr_list["libcloud_location_inst"] = _location
                 break
                     
         self.vmcreate_kwargs["ex_custom_data"] = obj_attr_list["userdata"]
         self.vmcreate_kwargs["ex_admin_user_id"] = obj_attr_list["login"]
-        obj_attr_list["libcloud_call_type"] = "create_node_with_mixed_arguments"        
-#        network = ConfigurationSet()
-#        network.configuration_set_type = 'NetworkConfiguration'
-#        network.input_endpoints.items.append(ConfigurationSetInputEndpoint('SSHDirect', 'tcp', '22', '22', None, True))
-        
-#        self.vmcreate_kwargs["ex_network_config"] = network
+        obj_attr_list["libcloud_call_type"] = "create_node_with_mixed_arguments"
 
     @trace
     def get_description(self) :
         '''
         TBD
         '''
-        return "Azure Service Management"
+        return "Azure Resource Manager"

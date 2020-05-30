@@ -17,7 +17,7 @@
 /*
     Example use of the CloudBench golang bindings.
 
-    @author: Michael R. Hines
+    @author: Michael R. Galaxy
  */
 package main
 

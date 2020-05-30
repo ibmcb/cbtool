@@ -21,7 +21,7 @@
 
     Experiment Command Processor Command Line Interface
 
-    @author: Marcio Silva, Michael R. Hines
+    @author: Marcio Silva, Michael R. Galaxy
 '''
 
 import os
@@ -44,7 +44,7 @@ def isbrokenlink(path):
 
   try:
     os.stat(path)
-  except os.error, err:
+  except os.error as err:
     # broken link
     # "No such file or directory"
     if err.errno == errno.ENOENT:
@@ -193,9 +193,9 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
                     _fullpath = path + "/configs/templates/" + _template_file_name
                     if os.path.islink(_fullpath) and isbrokenlink(_fullpath) :
                         if _firsttime :
-                            print
+                            print()
                             _firsttime = False
-                        print ("WARNING: " + _fullpath + " symlink is invalid. Skipping")
+                        print(("WARNING: " + _fullpath + " symlink is invalid. Skipping"))
                         continue
                     _lines += "INCLUDE configs/templates/" + _template_file_name + '\n'
 
@@ -336,7 +336,7 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
     
                             _multiline = True
                             if _key.count("enema") :
-                                print '\n' + _key
+                                print('\n' + _key)
                         else :
                             _msg = "configuration error: variable " + _key.upper()
                             _msg += "= has to be preceded by one occurrence of "
@@ -370,9 +370,9 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
             v = compile("\${[^\$]*}")
             
             # Go through all the definitions, and evaluate variables
-            for _global in _cld_attr_lst.keys() :
+            for _global in list(_cld_attr_lst.keys()) :
                 if isinstance(_cld_attr_lst[_global], dict) :
-                    for _key in _cld_attr_lst[_global].keys() :
+                    for _key in list(_cld_attr_lst[_global].keys()) :
                         _value = _cld_attr_lst[_global][_key]
                         _eval_value = _value
                         
@@ -403,22 +403,22 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
             _msg = "\"" +  _file_name + "\" opened and parsed successfully."
 
             if print_message :
-                print _msg
+                print(_msg)
 
             return _cld_attr_lst, "\n".join(_cloud_definitions_fc)
 
-        except IOError, msg :
+        except IOError as msg :
             if _file_names.index(_file_name) == len(_file_names) - 1 :
                 _msg = "Unable to open any of the following files: "
                 _msg += ','.join(_file_names) + ':' + str(msg)
                 raise Exception(_msg)
                 exit(1)
         
-        except NetworkException, obj :
+        except NetworkException as obj :
             raise Exception(str(obj))
             exit(1)
         
-        except Exception, e :
+        except Exception as e :
             raise Exception(str(e))
             exit(1)
 
@@ -489,7 +489,7 @@ def get_my_parameters(me):
 
 @trace
 def set_my_parameters(me, parameters):
-    for key, value in parameters.iteritems() :
+    for key, value in parameters.items() :
         if key.lower().count("cloudoption") :
             continue
         try:
@@ -514,9 +514,9 @@ def rewrite_cloudconfig(cld_attr_lst) :
       to re-write the configuration so the rest of the operations code
       functions the same way it did before.
     '''
-    for _category in cld_attr_lst.keys() :
+    for _category in list(cld_attr_lst.keys()) :
         if isinstance(cld_attr_lst[_category], dict) :
-            for  _attribute in cld_attr_lst[_category].keys() :
+            for  _attribute in list(cld_attr_lst[_category].keys()) :
                 if _attribute.count("_cloudconfig_") :
                     if _attribute.count(cld_attr_lst["model"] + "_cloudconfig_") :
                         _new = _attribute.replace(cld_attr_lst["model"] + "_cloudconfig_", "")
@@ -572,7 +572,7 @@ def rewrite_cloudoptions(cld_attr_lst, available_clouds, user_defined_only = Tru
             if cld_attr_lst["cloud_name"].lower() != cloud_name :
                 continue
             searchkey = "cloudoption_" + cloud_name
-            for _category in cld_attr_lst.keys() :
+            for _category in list(cld_attr_lst.keys()) :
                 if user_defined_only :
                     if _category != "user-defined" :
                         continue
@@ -581,7 +581,7 @@ def rewrite_cloudoptions(cld_attr_lst, available_clouds, user_defined_only = Tru
                         continue
                 if not isinstance(cld_attr_lst[_category], dict) :
                     continue 
-                for  _attribute in cld_attr_lst[_category].keys() :
+                for  _attribute in list(cld_attr_lst[_category].keys()) :
                     if _attribute.count(searchkey) :
                         # Don't rewrite the cloudoption keyword
                         # indicators themselves
@@ -601,7 +601,7 @@ def rewrite_cloudoptions(cld_attr_lst, available_clouds, user_defined_only = Tru
             if cld_attr_lst["cloud_name"].lower() == cloud_name :
                 continue
             searchkey = "cloudoption_" + cloud_name
-            for _category in cld_attr_lst.keys() :
+            for _category in list(cld_attr_lst.keys()) :
                 if user_defined_only :
                     if _category != "user-defined" :
                         continue
@@ -610,7 +610,7 @@ def rewrite_cloudoptions(cld_attr_lst, available_clouds, user_defined_only = Tru
                         continue
                 if not isinstance(cld_attr_lst[_category], dict) :
                     continue 
-                for  _attribute in cld_attr_lst[_category].keys() :
+                for  _attribute in list(cld_attr_lst[_category].keys()) :
                     if _attribute.count(searchkey) :
                         del cld_attr_lst[_category][_attribute]
 

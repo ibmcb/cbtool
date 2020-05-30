@@ -18,7 +18,8 @@ RUN apt-get install -y maven ant
 # giraph-install-git
 RUN sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME
 RUN /bin/true; cd /home/REPLACE_USERNAME; git clone https://github.com/apache/giraph.git
-RUN /bin/true; export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre; cd /home/REPLACE_USERNAME/giraph/; git checkout release-1.0.0; mvn package -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2,SSLv3 -Phadoop_1.0 -DskipTests; /bin/true
+RUN /bin/true; export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre; cd /home/REPLACE_USERNAME/giraph/; git checkout release-1.0.0; 
+RUN cd /home/REPLACE_USERNAME/giraph/; sudo sed -i 's^http://repo1.maven.org/maven2^https://repo.maven.apache.org/maven2^g' pom.xml; mvn package -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2,SSLv3 -Phadoop_1.0 -DskipTests; /bin/true
 #RUN /bin/true; cd /home/REPLACE_USERNAME/giraph/; git checkout release-1.1; mvn package -Phadoop_yarn -Dhadoop.version=2.3.0 -DskipTests
 # giraph-install-git
 

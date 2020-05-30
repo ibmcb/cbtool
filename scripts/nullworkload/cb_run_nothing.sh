@@ -16,16 +16,23 @@
 # limitations under the License.
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
+syslog_netcat "1"
 set_load_gen $@
 
+syslog_netcat "2"
 CMDLINE="sleep ${LOAD_DURATION}"
 
+syslog_netcat "3 $CMDLINE"
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
+syslog_netcat "4"
 
 FORCE_FAILURE_ON_EXECUTION=$(get_my_ai_attribute_with_default force_failure_on_execution false)
 FORCE_FAILURE_ON_EXECUTION=$(echo ${FORCE_FAILURE_ON_EXECUTION} | tr '[:upper:]' '[:lower:]')
+
+syslog_netcat "5"
 
 if [[ $FORCE_FAILURE_ON_EXECUTION == "false" ]]
 then
@@ -34,19 +41,25 @@ then
     tp=`echo "$LOAD_ID*2.78 + 2.78" | bc`
     lat=`echo "$LOAD_ID*0.577 + 0.577" | bc`
     
+	syslog_netcat "6"
     ~/cb_report_app_metrics.py \
     bandwidth:${bw}:mbps \
     throughput:${tp}:tps \
     latency:${lat}:msec \
     $(common_metrics)    
     
+	syslog_netcat "7"
+
     unset_load_gen
     
+	syslog_netcat "8"
     exit 0
 else
     syslog_netcat "nullworkload run forced failure!"
     
     unset_load_gen
+
+	syslog_netcat "9"
     
     exit 1
 fi

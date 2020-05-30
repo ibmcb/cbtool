@@ -13,16 +13,16 @@
 '''
     Created on Oct 31, 2015
     DigitalOcean Object Operations Library
-    @author: Michael R. Hines, Darrin Eden
+    @author: Michael R. Galaxy, Darrin Eden
 '''
 
 from time import time
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import is_number
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
-from shared_functions import CldOpsException
+from .shared_functions import CldOpsException
 
 class DoCmds(LibcloudCmds) :
     @trace

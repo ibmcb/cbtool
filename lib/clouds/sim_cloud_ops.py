@@ -30,7 +30,9 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException, create_restart_script, weighted_choice
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.network_functions import Nethashget
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
+
+import traceback
 
 class SimCmds(CommonCloudFunctions) :
     '''
@@ -67,7 +69,7 @@ class SimCmds(CommonCloudFunctions) :
             _region = "everything"            
             _status = 0
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -115,11 +117,11 @@ class SimCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -167,7 +169,7 @@ class SimCmds(CommonCloudFunctions) :
         _map_uuid_to_name = {}
         _registered_imageid_list = []
         if True :
-            for _vm_role in vm_templates.keys() :
+            for _vm_role in list(vm_templates.keys()) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if _imageid != "to_replace" :
                     if not self.is_cloud_image_uuid(_imageid) :
@@ -207,9 +209,6 @@ class SimCmds(CommonCloudFunctions) :
         
         _host_uuid = obj_attr_list["cloud_vm_uuid"]
 
-        obj_attr_list["hosts_cpu"] = obj_attr_list["hosts_cpu"].strip().split(',')
-        obj_attr_list["hosts_mem_per_core"] = obj_attr_list["hosts_mem_per_core"].strip().split(',')
-            
         obj_attr_list["host_list"] = {}
         obj_attr_list["hosts"] = ''
         _auto_name = False
@@ -291,7 +290,7 @@ class SimCmds(CommonCloudFunctions) :
             _msg = "Ok"
             _status = 0
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -337,11 +336,15 @@ class SimCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
     
@@ -372,11 +375,11 @@ class SimCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -395,7 +398,7 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"                        
             _nr_instances = self.osci.count_object(obj_attr_list["cloud_name"], "VM", "RESERVATIONS")
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -483,7 +486,7 @@ class SimCmds(CommonCloudFunctions) :
                 obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(obj_attr_list["imageid1"])
                 _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -506,7 +509,7 @@ class SimCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -646,11 +649,11 @@ class SimCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -672,11 +675,11 @@ class SimCmds(CommonCloudFunctions) :
                                 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -784,7 +787,7 @@ class SimCmds(CommonCloudFunctions) :
                 _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                
                 _status = 916
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -793,7 +796,7 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -834,11 +837,11 @@ class SimCmds(CommonCloudFunctions) :
                     
             _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -897,11 +900,11 @@ class SimCmds(CommonCloudFunctions) :
             
             _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -934,7 +937,7 @@ class SimCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1009,11 +1012,11 @@ class SimCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1107,7 +1110,7 @@ class SimCmds(CommonCloudFunctions) :
                 else :
                     _status = 0
                 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1155,7 +1158,7 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list.update(_curr_vhw_config)
             _status = 0
         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1176,11 +1179,11 @@ class SimCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        _cpus = choice(obj_attr_list["hosts_cpu"])
+        _cpus = choice(obj_attr_list["hosts_cpu"].split(","))
         obj_attr_list["host_list"][host_uuid]["cores"] = _cpus        
         obj_attr_list["host_list"][host_uuid]["available_cores"] = _cpus
 
-        _mem_per_core = choice(obj_attr_list["hosts_mem_per_core"])         
+        _mem_per_core = choice(obj_attr_list["hosts_mem_per_core"].split(","))         
 
         _memory = int(_cpus) * int(_mem_per_core) * 1024
         

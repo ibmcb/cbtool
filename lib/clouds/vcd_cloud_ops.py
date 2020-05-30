@@ -18,7 +18,7 @@
 '''
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
 class VcdCmds(LibcloudCmds) :
     @trace

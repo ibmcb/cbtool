@@ -32,7 +32,7 @@ from docker.errors import APIError
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 class PdmCmds(CommonCloudFunctions) :
     '''
@@ -76,7 +76,7 @@ class PdmCmds(CommonCloudFunctions) :
                 _endpoint, _endpoint_name, _endpoint_ip= self.parse_endpoint(_endpoint, "tcp", "2375")
                 
                 if _endpoint_ip not in self.dockconn :
-                    self.dockconn[_endpoint_ip] = docker.Client(base_url = _endpoint, timeout = 180)
+                    self.dockconn[_endpoint_ip] = docker.APIClient(base_url = _endpoint, timeout = 180)
 
                 _host_info = self.dockconn[_endpoint_ip].info()
                 
@@ -93,7 +93,7 @@ class PdmCmds(CommonCloudFunctions) :
  
             _status = 0
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -137,11 +137,11 @@ class PdmCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -162,7 +162,7 @@ class PdmCmds(CommonCloudFunctions) :
         _prov_netname_found = False
         _run_netname_found = False
 
-        for _endpoint in self.dockconn.keys() :
+        for _endpoint in list(self.dockconn.keys()) :
 
             _msg = "Checking if the " + _net_str + " can be "
             _msg += "found on VMC " + vmc_name + " (endpoint " + _endpoint + ")..."
@@ -198,7 +198,7 @@ class PdmCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        for _endpoint in self.dockconn.keys() :
+        for _endpoint in list(self.dockconn.keys()) :
 
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
 
@@ -212,7 +212,7 @@ class PdmCmds(CommonCloudFunctions) :
                         _registered_image_tags.append(_image_tag)
 
             _attempted_pulls = []
-            for _vm_role in vm_templates.keys() :            
+            for _vm_role in list(vm_templates.keys()) :            
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if self.is_cloud_image_uuid(_imageid) :
                     if _imageid in _map_id_to_name :
@@ -237,7 +237,7 @@ class PdmCmds(CommonCloudFunctions) :
                 if _registered_image["RepoTags"] :
                     _map_name_to_id[_registered_image["RepoTags"][0].split(':')[0]] = _registered_image["Id"].split(':')[1]
                 
-            for _vm_role in vm_templates.keys() :      
+            for _vm_role in list(vm_templates.keys()) :      
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if _imageid != "to_replace" :
                     if _imageid in _map_name_to_id :
@@ -393,11 +393,11 @@ class PdmCmds(CommonCloudFunctions) :
             _msg = "Ok"
             _status = 0
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
                         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -448,11 +448,11 @@ class PdmCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -483,11 +483,11 @@ class PdmCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -524,7 +524,7 @@ class PdmCmds(CommonCloudFunctions) :
                             if _name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                                 _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = str(e)
@@ -557,7 +557,7 @@ class PdmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''             
-        _networks = self.instance_info["NetworkSettings"]["Networks"].keys()
+        _networks = list(self.instance_info["NetworkSettings"]["Networks"].keys())
                 
         if len(_networks) :
             
@@ -606,7 +606,7 @@ class PdmCmds(CommonCloudFunctions) :
         _call = "NA"
         
         if endpoints == "all" :
-            _endpoints = self.dockconn.keys()
+            _endpoints = list(self.dockconn.keys())
         else :
             _endpoints = [endpoints]
 
@@ -635,15 +635,15 @@ class PdmCmds(CommonCloudFunctions) :
 
             _status = 0
         
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _xfmsg = "API Error " + str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _xfmsg = "Cloud Exception " + str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _xfmsg = "Exception " + str(e)
             
@@ -716,11 +716,11 @@ class PdmCmds(CommonCloudFunctions) :
                 _fmsg += " to "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
                 _status = 1927
             
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -742,11 +742,11 @@ class PdmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -807,7 +807,7 @@ class PdmCmds(CommonCloudFunctions) :
             else :
                 return False
         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -837,7 +837,7 @@ class PdmCmds(CommonCloudFunctions) :
         if self.swarm_ip :
             obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(self.swarm_ip, True)            
         else :
-            obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(choice(self.dockconn.keys()), True)
+            obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(choice(list(self.dockconn.keys())), True)
 
         return True
 
@@ -872,15 +872,15 @@ class PdmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -915,15 +915,15 @@ class PdmCmds(CommonCloudFunctions) :
                                 
             _status = 0
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1068,11 +1068,11 @@ class PdmCmds(CommonCloudFunctions) :
                 _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
                 _status = 916
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1081,7 +1081,7 @@ class PdmCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1155,15 +1155,15 @@ class PdmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1221,15 +1221,15 @@ class PdmCmds(CommonCloudFunctions) :
                         
                 _status = 0
             
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1286,15 +1286,15 @@ class PdmCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1353,11 +1353,11 @@ class PdmCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except APIError, obj:
+        except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             

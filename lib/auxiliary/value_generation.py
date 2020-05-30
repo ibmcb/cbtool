@@ -73,7 +73,7 @@ class ValueGeneration :
                 _value = float(parameters)
             _status = 0
                 
-        except ValueError, msg :
+        except ValueError as msg :
             _status = 10
             _fmsg = str(msg)
                     
@@ -160,11 +160,11 @@ class ValueGeneration :
             else :
                 _fmsg = _distribution + " distribution generators are not supported."
                 _fmsg += "Supported random distribution generators are: \n"
-                for _key in _distributions.keys() :
+                for _key in list(_distributions.keys()) :
                     _msg = _msg + _key + '\n'
                 _status = 30
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -220,7 +220,7 @@ class ValueGeneration :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -295,7 +295,7 @@ class ValueGeneration :
             else :
                 _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 

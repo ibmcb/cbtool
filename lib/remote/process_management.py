@@ -21,7 +21,7 @@
 
     Process management (local and remote) primitives for CloudBench
 
-    @author: Michael R. Hines, Marcio A. Silva
+    @author: Michael R. Galaxy, Marcio A. Silva
 '''
 
 from subprocess import PIPE,Popen
@@ -147,16 +147,16 @@ class ProcessManagement :
                     _result = _proc_h.communicate()
 
                     if check_stderr_len :
-                        _stderr_len = len(_result[1])
+                        _stderr_len = len(_result[1].decode('utf-8'))
                     else :
                         _stderr_len = 1
                     
                     if _proc_h.returncode and _stderr_len :
                         _msg = "Error while executing the command line "
                         _msg += "\"" + cmdline + "\" (returncode = "
-                        _msg += str(_proc_h.returncode) + ") :" + str(_result[1]) + str(_result[0])
+                        _msg += str(_proc_h.returncode) + ") :" + str(_result[1].decode('utf-8')) + str(_result[0].decode('utf-8'))
                         cbdebug(_msg)
-                        if tell_me_if_stderr_contains is not False and _result[1].count(tell_me_if_stderr_contains) :
+                        if tell_me_if_stderr_contains is not False and _result[1].decode('utf-8').count(tell_me_if_stderr_contains) :
                             cbdebug("Command failed with: " + tell_me_if_stderr_contains, True)
                             raise self.ProcessManagementException(str(_msg), "90001")
                         elif raise_exception :
@@ -164,12 +164,12 @@ class ProcessManagement :
                         
                         else :
                             _status = _proc_h.returncode
-                            _result_stdout = _result[0]
-                            _result_stderr = _result[1]
+                            _result_stdout = _result[0].decode('utf-8')
+                            _result_stderr = _result[1].decode('utf-8')
                     else :
                         _status = 0
-                        _result_stdout = _result[0]
-                        _result_stderr = _result[1]
+                        _result_stdout = _result[0].decode('utf-8')
+                        _result_stderr = _result[1].decode('utf-8')
                 else :
                     _status = 0
                     _result_stdout = " "
@@ -254,7 +254,7 @@ class ProcessManagement :
                                                                               port = port,
                                                                               ssh_keepalive = ssh_keepalive)
 
-            except ProcessManagement.ProcessManagementException, obj :
+            except ProcessManagement.ProcessManagementException as obj :
                 if obj.status == "90001" :
                     raise obj
                 _status = obj.status
@@ -399,7 +399,7 @@ class ProcessManagement :
             if _thread_pool :
                 _thread_pool.abort()
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _xfmsg = str(e)
             if _thread_pool :

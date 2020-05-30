@@ -8,7 +8,6 @@ RUN apt-get update; \
 apt-get install -y vim sudo; \
 useradd -ms /bin/bash REPLACE_USERNAME; \
 echo "REPLACE_USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
-#RUN apt-get install -y pwgen; wget -N -P /home/REPLACE_USERNAME http://REPLACE_DROPBOX/repo/dropbox/genesis/python-genesis-master.zip; cd /home/REPLACE_USERNAME; unzip python-genesis-master.zip; cd python-genesis-master; python setup.py install
 
 # sudo-install-man
 RUN apt-get install -y sudo
@@ -16,11 +15,11 @@ RUN apt-get install -y sudo
 # sudo-install-man
 
 # ifconfig-install-sl
-RUN apt-get update; apt-get install -y net-tools; sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+RUN apt-get update; apt-get install -y net-tools; sudo ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
 # ifconfig-install-sl
 
 # ip-install-sl
-RUN sudo ln -s /sbin/ip /usr/local/bin/ip
+RUN sudo ln -sf /sbin/ip /usr/local/bin/ip
 # ip-install-sl
 
 # pkill-install-pm
@@ -32,7 +31,7 @@ RUN /bin/true
 # which-install-pm
 
 # ntp-install-pm
-RUN apt-get install -y ntp ntpdate 
+RUN apt-get install -y ntp ntpdate
 # ntp-install-pm
 
 # git-install-pm
@@ -44,7 +43,7 @@ RUN apt-get install -y wget
 # wget-install-pm
 
 # pip-install-pm
-RUN apt-get update; apt-get install -y python-pip
+RUN apt-get update; apt-get install -y python3-pip
 # pip-install-pm
 
 # gcc-install-pm
@@ -98,16 +97,16 @@ RUN apt-get install -y nmap
 # nmap-install-pm
 
 # openvpn-install-pm
-RUN apt-get install -y openvpn; sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+RUN apt-get install -y openvpn; sudo ln -sf /usr/sbin/openvpn /usr/local/bin/openvpn
 # openvpn-install-pm
 
 # gmond-install-pm
-RUN apt-get install -y ganglia-monitor; sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+RUN apt-get install -y ganglia-monitor; sudo ln -sf /usr/sbin/gmond /usr/local/bin/gmond
 # service_stop_disable ganglia-monitor
 # gmond-install-pm
 
 # rsyslog-install-pm
-RUN apt-get install -y rsyslog; sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd; sudo mkdir -p /var/log/cloudbench
+RUN apt-get install -y rsyslog; sudo ln -sf /usr/sbin/rsyslogd /usr/local/bin/rsyslogd; sudo mkdir -p /var/log/cloudbench
 # rsyslog-install-pm
 
 # rsyslog-filter-pm
@@ -131,43 +130,43 @@ RUN apt-get install -y mongodb; sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mon
 RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/mongodb.conf
 
 # pylibvirt-install-pm
-RUN apt-get install -y python-libvirt
+RUN apt-get install -y python3-libvirt
 # pylibvirt-install-pm
 
 # pypureomapi-install-pip
-RUN pip install --upgrade pypureomapi
+RUN pip3 install --upgrade pypureomapi
 # pypureomapi-install-pip
 
-# python-devel-install-pm
-RUN apt-get install -y python-dev libffi-dev libssl-dev python-libxml2 libxml2-dev libxslt1-dev libjpeg8-dev zlib1g-dev
-# python-devel-install-pm 
+# python3-devel-install-pm
+RUN apt-get install -y python3-dev libffi-dev libssl-dev python3-libxml2 libxml2-dev libxslt1-dev libjpeg8-dev zlib1g-dev
+# python3-devel-install-pm
 
 # python-prettytable-install-pip
-RUN pip install --upgrade prettytable docutils
+RUN pip3 install --upgrade prettytable docutils
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
-RUN pip install --upgrade python-daemon
+RUN pip3 install --upgrade python-daemon
 # python-daemon-install-pip
 
 # python-twisted-install-pip
-RUN pip install --upgrade twisted service_identity
+RUN pip3 install --upgrade twisted service_identity
 # python-twisted-install-pip
 
 # python-beaker-install-pip
-RUN pip install --upgrade beaker
+RUN pip3 install --upgrade beaker
 # python-beaker-install-pip
 
 # python-webob-install-pip
-RUN pip install --upgrade webob
+RUN pip3 install --upgrade webob
 # python-webob-install-pip
 
 # pyredis-install-pip
-RUN pip install redis==2.10.6
+RUN pip3 install redis
 # pyredis-install-pip
 
 # pymongo-install-pip
-RUN pip install --upgrade mongo
+RUN pip3 install --upgrade mongo
 # pymongo-install-pip
 
 # pssh-install-pm
@@ -175,27 +174,27 @@ RUN apt-get install -y pssh
 # pssh-install-pm
 
 # docutils-install-pip
-RUN pip install --upgrade docutils
+RUN pip3 install --upgrade docutils
 # docutils-install-pip
 
 # python-setuptools-install-pip
-RUN pip install --upgrade setuptools
-# python-setuptools-install-pip 
+RUN pip3 install --upgrade setuptools
+# python-setuptools-install-pip
 
 # markup-install-pip
-RUN pip install --upgrade markup
-# markup-install-pip 
+RUN pip3 install --upgrade markup
+# markup-install-pip
 
 # pyyaml-install-pip
-RUN pip install --upgrade pyyaml
-# pyyaml-install-pip 
+RUN pip3 install --upgrade pyyaml
+# pyyaml-install-pip
 
 # ruamelyaml-install-pip
-RUN pip install --upgrade ruamel.yaml
+RUN pip3 install --upgrade ruamel.yaml
 # ruamelyaml-install-pip
 
 # urllib3-install-pip
-RUN pip install --upgrade  urllib3[secure]
+RUN pip3 install --upgrade  urllib3[secure]
 # urllib3-install-pip
 
 # jq-install-pm
@@ -203,7 +202,7 @@ RUN apt-get install -y jq
 # jq-install-pm
 
 # httplib2shim-install-pip
-RUN pip install --upgrade httplib2shim
+RUN pip3 install --upgrade httplib2shim
 # httplib2shim-install-pip
 
 # iptables-install-pm
@@ -213,53 +212,53 @@ RUN apt-get install -y iptables
 
 # sshd-install-pm
 RUN apt-get install -y openssh-server; sudo bash -c "echo 'UseDNS no' >> /etc/ssh/sshd_config"; sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config; sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
-# sshd-install-pm 
+# sshd-install-pm
 
 # novaclient-install-pip
-RUN pip install --upgrade pbr
-RUN pip install --upgrade netifaces
-RUN pip install --upgrade python-novaclient==9.1.1
+RUN pip3 install --upgrade pbr
+RUN pip3 install --upgrade netifaces
+RUN pip3 install --upgrade python-novaclient==9.1.1
 # novaclient-install-pip
 
 # neutronclient-install-pip
-RUN pip install --upgrade python-neutronclient==6.5.0
+RUN pip3 install --upgrade python-neutronclient==6.5.0
 # neutronclient-install-pip
 
 # cinderclient-install-pip
-RUN pip install --upgrade python-cinderclient==3.2.0
+RUN pip3 install --upgrade python-cinderclient==3.2.0
 # cinderclient-install-pip
 
 # glanceclient-install-pip
-RUN pip install --upgrade python-glanceclient==2.8.0
+RUN pip3 install --upgrade python-glanceclient==2.8.0
 # glanceclient-install-pip
 
 # softlayer-install-pip
-RUN pip install --upgrade softlayer
+RUN pip3 install --upgrade softlayer
 # softlayer-install-pip
 
 # boto-install-pip
-RUN pip install --upgrade boto
+RUN pip3 install --upgrade boto
 # boto-install-pip
 
 # libcloud-install-pip
-RUN pip install --upgrade apache-libcloud
+RUN pip3 install --upgrade apache-libcloud
 # libcloud-install-pip
 
 # pygce-install-pip
-RUN pip install --upgrade gcloud google-api-python-client
+RUN pip3 install --upgrade gcloud google-api-python-client
 # pygce-install-pip
 
 # pydocker-install-pip
-RUN pip install --upgrade docker-py==1.8.1 wget
+RUN pip3 install --upgrade docker wget
 # pydocker-install-pip
 
 # pylxd-install-pip
-RUN pip install --upgrade pylxd
+RUN pip3 install --upgrade pylxd
 # pylxd-install-pip
 
-# pykube-install-pip
-RUN pip install --upgrade pykube
-# pykube-install-pip
+# pykube-ng-install-pip
+RUN pip3 install --upgrade pykube-ng
+# pykube-ng-install-pip
 
 # R-install-pm
 RUN apt-get install -y r-base-core
@@ -270,26 +269,26 @@ RUN apt-get install -y rrdtool
 # rrdtool-install-pm
 
 # python-rrdtool-install-pm
-RUN apt-get install -y python-rrdtool
+RUN apt-get install -y python3-rrdtool
 # python-rrdtool-install-pm
 
 # python-dateutil-install-pip
-RUN pip install --upgrade python-dateutil
+RUN pip3 install --upgrade python-dateutil
 # python-dateutil-install-pip
 
 # python-pillow-install-pip
-RUN pip install --upgrade Pillow
+RUN pip3 install --upgrade Pillow
 # python-pillow-install-pip
 
 # python-jsonschema-install-pip
-RUN pip install --upgrade jsonschema
+RUN pip3 install --upgrade jsonschema
 # python-jsonschema-install-pip
 
 USER REPLACE_USERNAME
 # gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
-RUN curl https://sdk.cloud.google.com | bash
-RUN sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
+RUN bash -c "export CLOUDSDK_CORE_DISABLE_PROMPTS=1; if [[ $(uname -p) != "ppc64le" ]]; then curl https://sdk.cloud.google.com | bash; else /bin/true; fi"
+RUN bash -c "if [[ $(uname -p) != "ppc64le" ]]; then sudo ln -sf /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud; else /bin/true; fi"
 # gcloud-install-man
 
 WORKDIR /home/REPLACE_USERNAME/
@@ -299,11 +298,13 @@ RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party/workload; \
 cp____-f____/home/REPLACE_USERNAME/cbtool/util/manually_download_files.txt____/home/REPLACE_USERNAME/cbtool/3rd_party/workload; /bin/true
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/monitor-core.git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/monitor-core
+RUN git checkout origin/python3 -B python3
 # gmetad-python-install-git
 
 # pyhtml-install-git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
-RUN sudo rm -rf HTML.py; git clone https://github.com/ibmcb/HTML.py.git; cd HTML.py; sudo python setup.py install
+RUN sudo rm -rf HTML.py; git clone https://github.com/ibmcb/HTML.py.git; cd HTML.py; git checkout origin/python3 -B python3; sudo python3 setup.py install
 # pyhtml-install-git
 
 # bootstrap-install-git

@@ -1,10 +1,10 @@
 [USER-DEFINED]
 KUB_ACCESS = need_to_be_configured_by_user
 # Name of the ssh key pair 
-KUB_KEY_NAME = cbtool_rsa
-KUB_SSH_KEY_NAME = cbtool_rsa
+KUB_KEY_NAME = need_to_be_configured_by_user
+KUB_SSH_KEY_NAME = need_to_be_configured_by_user
 KUB_LOGIN = need_to_be_configured_by_user
-KUB_INITIAL_VMCS = none
+KUB_INITIAL_VMCS = need_to_be_configured_by_user
 KUB_NETNAME = need_to_be_configured_by_user
 KUB_NAMESPACE = need_to_be_configured_by_user
 
@@ -115,7 +115,7 @@ LOGIN = $KUB_LOGIN
 SSH_KEY_NAME = $KUB_SSH_KEY_NAME
 
 [VM_TEMPLATES : KUB_CLOUDCONFIG]
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:ibmcb/cbtoolbt-ubuntu, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:ibmcb/cbtoolbt-ubuntucolonmaster, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
 [SIZE_TEMPLATES : KUB_CLOUDCONFIG]
 X-Y=X-Y

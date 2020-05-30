@@ -32,12 +32,12 @@ if os.access(api_file_name, os.F_OK) :
     except :
         _msg = "Unable to open file containing API connection information "
         _msg += "(" + api_file_name + ")."
-        print _msg
+        print(_msg)
         exit(4)
 else :
     _msg = "Unable to locate file containing API connection information "
     _msg += "(" + api_file_name + ")."
-    print _msg
+    print(_msg)
     exit(4)
 
 _path_set = False
@@ -54,13 +54,13 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 from lib.api.api_service_client import *
 
 _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
+print(_msg)
 api = APIClient(_api_conn_info)
 
 #---------------------------------- END CB API ---------------------------------
 
 if len(argv) < 2 :
-        print "./" + argv[0] + " <cloud_name>"
+        print("./" + argv[0] + " <cloud_name>")
         exit(1)
 
 cloud_name = argv[1]
@@ -101,7 +101,7 @@ try :
             break
 
     if not _cloud_attached :
-        print "Cloud " + cloud_name + " not attached"
+        print("Cloud " + cloud_name + " not attached")
         exit(1)    
 
 #-------------------------------------------------------------------------------
@@ -122,7 +122,7 @@ try :
 #
 #-------------------------------------------------------------------------------
     if load_phase : 
-        print "Loading Database Phase"
+        print("Loading Database Phase")
         api.appalter(cloud_name, app["uuid"], "load_db_phase", "false")
 
 #-------------------------------------------------------------------------------
@@ -180,23 +180,23 @@ try :
 #-------------------------------------------------------------------------------
     if run_phase :
         for i in range(7,0,-1):
-            print "Current Load : %s " % current_load 
+            print("Current Load : %s " % current_load) 
             time.sleep(300)
             current_load=app["load_level"]
-            print "Changing Load Level"
+            print("Changing Load Level")
             api.appalter(cloud_name, app["uuid"], "load_level", "800000")
-            print "Adding new Client"
+            print("Adding new Client")
             api.appresize(cloud_name, app["uuid"], "ycsb", "+1")
             time.sleep(300)
-            print "Adding new Cassandra Instance"
+            print("Adding new Cassandra Instance")
             api.appresize(cloud_name, app["uuid"], "cassandra", "+1")
             app = api.appshow(cloud_name,app["uuid"])
 
-except APIException, obj:
+except APIException as obj:
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
-except Exception, msg:
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
+except Exception as msg:
     error = True
-    print "Problem during experiment: " + str(msg)
+    print("Problem during experiment: " + str(msg))
 finally:
-    print "App.. Launched"
+    print("App.. Launched")

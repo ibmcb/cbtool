@@ -3,11 +3,11 @@ MAIN_UPDATE_ATTEMPTS = 180
 AS_ACCESS = https://portal.azure.com/
 AS_CREDENTIALS = need_to_be_configured_by_user
 AS_LOGIN = need_to_be_configured_by_user
-AS_SSH_KEY_NAME = cbtool_rsa
+AS_SSH_KEY_NAME = need_to_be_configured_by_user
+AS_KEY_NAME = need_to_be_configured_by_user
 AS_INITIAL_VMCS = need_to_be_configured_by_user
-AS_KEY_NAME = cbtool_rsa
 AS_CLOUD_SERVICE_PREFIX = cbtool
-AS_NETNAME = private
+AS_NETNAME = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 AS_INITIAL_VMCS_DOC = There are multiple regions to choose from @ https://azure.microsoft.com/en-us/regions/
@@ -85,7 +85,7 @@ SECURITY_GROUPS = not_yet_applicable
 HADOOP_HOME = /usr/local/hadoop
 
 [VM_TEMPLATES : AS_CLOUDCONFIG ]
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:cf5002d59cfb4234b3336cac8e587838__Ubuntu-18_04-LTS-amd64-server-20191113-en-us-30GB, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:CanonicalcolonUbuntuServercolon18.04-LTScolonlatest, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
 [SIZE_TEMPLATES : AS_CLOUDCONFIG]
 # Sizes extracted from https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs

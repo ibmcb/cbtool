@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import time, subprocess, signal, datetime, os, sys
 
@@ -19,14 +19,14 @@ for _command in _commands :
             if (now - start).seconds > _timeout:
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
-                print "Command \"" + _command + "\" did not respond within " + str(_timeout) + " seconds (attempt " + str(_current_attempts) + " of " + str(_attempts) + ")."
+                print("Command \"" + _command + "\" did not respond within " + str(_timeout) + " seconds (attempt " + str(_current_attempts) + " of " + str(_attempts) + ").")
                 _current_attempts += 1
                 _complete = False
                 break
 
 if _current_attempts > _attempts :
-    print "Command \"" + _command + "\" failed to complete within " + str(_timeout) + " seconds after " + str(_attempts) + " attempts."
+    print("Command \"" + _command + "\" failed to complete within " + str(_timeout) + " seconds after " + str(_attempts) + " attempts.")
     exit(1)
 else :
-    print process.stdout.read()
+    print(process.stdout.read())
     exit(process.returncode)

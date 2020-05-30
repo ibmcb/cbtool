@@ -8,6 +8,7 @@
 
 # Unless required by applicable law or agreed to in writing, software
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_load_gen $@

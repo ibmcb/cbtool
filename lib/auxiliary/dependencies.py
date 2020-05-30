@@ -21,18 +21,20 @@
 
     Dependency Checker/Installer
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 from sys import path
 import os
 import re
 import platform
+import traceback
 
 from os.path import expanduser
 home = expanduser("~")
 
 from json import dumps
 from lib.remote.process_management import ProcessManagement
+from lib.auxiliary.data_ops import cmp
 from lib.auxiliary.code_instrumentation import  VerbosityFilter, MsgFilter, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import check_url
 
@@ -58,7 +60,7 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
     if len(options.custom) :
         _file_name_list.append(options.cusdir + '/' + options.custom)
 
-    print '\n'
+    print('\n')
     
     for _file in _file_name_list :
         if os.access(_file, os.F_OK) :
@@ -93,7 +95,7 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
                         _key = _key.strip()
                         depsdict[_key] = _value
         
-            except Exception, e :
+            except Exception as e :
                 _msg = "##### Error reading file \"" + _file  + "\":" + str(e)
                 cberr(_msg)
                 exit(4)
@@ -143,7 +145,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
         _workloads_list = options.wks.split(',')
         _role_list = [ options.role ]
 
-    print '\n'
+    print('\n')
 
     for _role in _role_list :    
         for _path, _dirs, _files in os.walk(options.dfdir + '/' + _role) :
@@ -188,7 +190,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                         else :
                                             _line = _line.replace("RUN apt-get install -y","package_install")
                                             _line = _line.replace("RUN yum install -y","package_install")
-                                            _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
+                                            _line = _line.replace("RUN pip3 install --upgrade", "sudo pip3 install --upgrade INDEXURL")
                                             _line = _line.replace("RUN git", "git")
                                             _line = _line.replace("; apt install", "; sudo apt install")                                            
                                             _line = _line.replace("; apt-get install", "; sudo apt-get install")
@@ -206,6 +208,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                             _line = _line.replace("sudo cd ", "cd ")
                                             _line = _line.replace("sudo export", "export ")
                                             _line = _line.replace("sudo sudo ", "sudo ")
+                                            _line = _line.replace("sudo if ", "if ")
                                             _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
                                             _line = _line.replace("apt-get update", "apt -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update")
                                             _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
@@ -222,7 +225,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                         _current_key = _detected_key
                                         depsdict[_current_key] = ''
             
-                        except Exception, e :
+                        except Exception as e :
                             _msg = "##### Error reading file \"" + _full_fnam  + "\":" + str(e)
                             cberr(_msg)
                             exit(4)
@@ -235,7 +238,7 @@ def preparation_file_parser(depsdict, username, options, hostname, process_manag
     '''
     _file = home + "/cb_prepare_parameters.txt"
 
-    print '\n'
+    print('\n')
 
     if os.access(_file, os.F_OK) :
 
@@ -415,10 +418,17 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_
     _actual_cmdline = _actual_cmdline.replace(";;",';')
     _actual_cmdline = _actual_cmdline.replace(";;",';')
     _actual_cmdline = _actual_cmdline.replace("; ;",';')
+
+    if len(_actual_cmdline) == 1 :
+        _msg = "######## Error! The command to  " + operation + " the dependency " +  depkey + " is empty!"
+        cberr(_msg)
+        exit(4)
+
     while _actual_cmdline[0] == ';' :
         _actual_cmdline = _actual_cmdline[1:]
+
     _actual_cmdline = _actual_cmdline.replace("_equal_",'=')
-    
+
     return _actual_commandline_keys, _actual_cmdline
 
 def expand_command(cmdline, depsdict, process_manager = False) :
@@ -446,9 +456,9 @@ def expand_command(cmdline, depsdict, process_manager = False) :
                                     
             _command = _command.replace("PACKAGES", _packages)
 
-        if _command.count("sudo pip ") :
+        if _command.count("sudo pip3 ") :
             if depsdict["indocker"] :
-                _command = _command.replace("sudo pip", "export LC_ALL=C; sudo pip") 
+                _command = _command.replace("sudo pip3", "export LC_ALL=C; sudo pip3") 
 
         if _command.count("IF DOCKER") :
             if depsdict["indocker"] :
@@ -544,7 +554,7 @@ def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
             _commandline = _commandline.replace("REPLACE_USERNAME", depsdict["username"].strip())            
             _commandline = _commandline.replace("/home/root", "/root")       
             _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())
-            _commandline = _commandline.replace("REPLACE_RSYNC", "rsync -a rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb/3rd_party/workload/")
+            _commandline = _commandline.replace("REPLACE_RSYNC", "rsync --inplace -a rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb/3rd_party/workload/")
 
             if depsdict["pip_addr"] :
                 _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"] + " --trusted-host " + depsdict["pip_addr"].split('/')[0] + ' ')
@@ -567,7 +577,7 @@ def select_url(source, depsdict) :
     else :
         _element = "python pip repository"
 
-    print '\n'
+    print('\n')
     _msg = "Selecting " + _element + " address...." 
     cbinfo(_msg)
     
@@ -698,19 +708,19 @@ def build_repository_files(depsdict) :
                 _file_descriptor = file(_file_name, 'w')
                 _file_descriptor.write(_file_contents)
                 _file_descriptor.close()
-                os.chmod(_file_name, 0755)
+                os.chmod(_file_name, 0o755)
 
-            except IOError, msg :
+            except IOError as msg :
                 _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
                 cberr(_msg)
                 exit(4)
 
-            except OSError, msg :
+            except OSError as msg :
                 _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
                 cberr(_msg)
                 exit(4)
 
-            except Exception, e :
+            except Exception as e :
                 _msg = "######## Error writing file \"" + _file_name  + "\":" + str(e)
                 cberr(_msg)
                 exit(4)
@@ -727,7 +737,7 @@ def build_repository_contents(depsdict) :
     depsdict["repos_rhel"] = []
 
     _tmp_list = []
-    for _key in depsdict.keys() :
+    for _key in list(depsdict.keys()) :
         if _key.count("name") and not _key.count("username") :
             _distro, _repo_name, _x = _key.split('-')
             _tmp_list.append(_distro + '-' + _repo_name)
@@ -735,7 +745,7 @@ def build_repository_contents(depsdict) :
             depsdict["repo_contents"][_distro + '-' + _repo_name] = {}
             depsdict["repos_" + _distro].append(_distro + '-' + _repo_name)
 
-    for _key in depsdict.keys() :
+    for _key in list(depsdict.keys()) :
         for _repo_name in _tmp_list :
             for _repo_attr in [ "local-url", "original-url", "enabled", \
                                "skip_if_unavailable", "priority", "gpgcheck", \
@@ -788,7 +798,7 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         else :
 
             if venv :
-                _cmd["install"] = _cmd["install"].replace("sudo pip", "pip")
+                _cmd["install"] = _cmd["install"].replace("sudo pip3", "pip3")
             
             _msg = "(" + _order + ") Installing \"" + depkey + "\" by executing the command \""
             _msg += _cmd[operation] + "\" (" + _cmd[operation + "-keys"] + ")..."
@@ -813,13 +823,13 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         if _msg.count("NOT OK") :
             _status = 701
 
-    except ProcessManagement.ProcessManagementException, obj :
+    except ProcessManagement.ProcessManagementException as obj :
         _status = str(obj.status)
         _result_stderr = str(obj.msg)
         
         _msg += "NOT OK (PMgr Exception, exit code " + str(_status) + ", " + str(_result_stderr) + " ). "
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg += "NOT OK (" + str(e) + ")."
 
@@ -846,6 +856,7 @@ def compare_versions(depkey, depsdict, version_b) :
     TBD
     '''
     try :
+        _msg = ''
         version_a = depsdict[depkey + "-ver"]
         if version_a.lower() == "any" :
             _result = 0
@@ -855,23 +866,25 @@ def compare_versions(depkey, depsdict, version_b) :
             _non_decimal = re.compile(r'[^\d.]+')
             version_a = _non_decimal.sub('', version_a)
             version_b = _non_decimal.sub('', version_b)
-            _version_a = map(int, re.sub('(\.0+)+\Z','', version_a).split('.'))
-            _version_b = map(int, re.sub('(\.0+)+\Z','', version_b).split('.'))
+            _version_a = list(map(int, re.sub('(\.0+)+\Z','', version_a).split('.')))
+            _version_b = list(map(int, re.sub('(\.0+)+\Z','', version_b).split('.')))
             _result = cmp(_version_a,_version_b)
 
-    except KeyError :
+    except KeyError as e:
+        _msg = "( exception: " + str(e) + ")"
         _result = -1100000
         
-    except Exception, e :
+    except Exception as e :
+        _msg = "( exception: " + str(e) + ")"
         _result = -1000000
 
     finally :
         if _result > 0 :
             return str(version_b) + " < " + str(version_a) + " NOT OK." 
         elif _result <= -1100000 :
-            return " NOT OK. Unable to find minimum required version for \"" + depkey + "\""        
+            return " NOT OK. Unable to find minimum required version for \"" + depkey + "\"" + _msg        
         elif _result <= -1000000 :
-            return " NOT OK. Version mismatch (wanted: " + str(version_a) + ", provided: " + str(version_b) + ")"
+            return " NOT OK. Version mismatch (wanted: " + str(version_a) + ", provided: " + str(version_b) + ")" + _msg
         else :
             return str(version_b) + " >= " + str(version_a) + " OK.\n"
 
@@ -944,7 +957,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             depsdict["repo_addr"] = None
             _raise_exception = False
             
-        for _key in depsdict.keys() :
+        for _key in list(depsdict.keys()) :
             if _key.count("-order")  :
                 _dependency = _key.replace("-order",'')
                 _order = int(depsdict[_key]) * 20
@@ -952,7 +965,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
 
         _dep_list = [x for x in _dep_list if x != 0]
 
-        print '\n' 
+        print('\n') 
         if options.role.count("workload") :
 
             options.tag = "base," + options.role
@@ -1015,7 +1028,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
         _msg = "##### DETECTED RUNNING INSIDE DOCKER: " + str(depsdict["indocker"])
         cbinfo(_msg)
 
-        print '\n' 
+        print('\n') 
 
         if operation == "configure" :
             if "repo" in _dep_list :
@@ -1068,7 +1081,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
                                                     username = username, \
                                                     venv = options.venv, \
                                                     raise_exception = _raise_exception)
-                    
+
                     if not _status :
                         _dep_missing -= 1
                         _missing_dep.remove(_dep)
@@ -1081,11 +1094,13 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
         _status = _dep_missing
         _fmsg += ','.join(_missing_dep)
 
-    except KeyError, e:
+    except KeyError as e:
         _status = 22
         _fmsg = "Unable to find entry " + str(e) + " in dependencies dictionary. Check you dependencies configuration file(s)"
 
-    except Exception, e :
+    except Exception as e :
+        for line in traceback.format_exc().splitlines() :
+            print(line)
         _status = 23
         _fmsg = str(e)
     
@@ -1149,14 +1164,14 @@ def instance_preparation(hostname, depsdict, options) :
                 cbinfo(_msg)
 
                 if _store.lower() == "filestore" :
-                    print '\n'
+                    print('\n')
                     _msg = "rsync rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb"
-                    print _msg
+                    print(_msg)
 
-                    print '\n'
+                    print('\n')
                     _msg = "--filestore " + depsdict["Filestore_ip"] + '-' + depsdict["Filestore_port"] + '-' + depsdict["Filestore_username"]
-                    print _msg
-                    print '\n'
+                    print(_msg)
+                    print('\n')
                     
             if str(options.addr) != "bypass" :
                 _cmd = options.wksdir + "/common/cb_cleanup.sh"
@@ -1169,7 +1184,7 @@ def instance_preparation(hostname, depsdict, options) :
 
         _status = 0
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
     

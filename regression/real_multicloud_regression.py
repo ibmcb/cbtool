@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -40,7 +40,7 @@ def cli_postional_argument_parser() :
     '''
 
     if len(argv) < 2 :
-        print "./" + argv[0] + " <multi cloud config dir> [comma-separated value cloud model list] [minimal|low|medium|high|complete|pause] [noheader]"
+        print("./" + argv[0] + " <multi cloud config dir> [comma-separated value cloud model list] [minimal|low|medium|high|complete|pause] [noheader]")
         exit(1)
 
     _options, args = cli_named_option_parser()
@@ -141,7 +141,7 @@ def print_msg(message) :
     '''
     TBD
     '''
-    print datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message
+    print(datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message)
 
 print_msg("CBTOOL client API library found on \"" + _cb_api_path + "\"")
 print_msg("CBTOOL executable CLI found on \"" + _cb_cli_path + "\"")
@@ -175,11 +175,11 @@ def check_cloud_attach(apiconn, cloud_model, time_mark) :
 
         _cloud_attach_time = int(time() - time_mark)
         
-    except APIException, obj :
+    except APIException as obj :
         _error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
-    except Exception, msg :
+    except Exception as msg :
         _error = True
         _fmsg = "Problem during experiment: " + str(msg)
     
@@ -210,26 +210,29 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _vm = {}
         _vms_failed = 0     
         
-        print '' 
+        print('')
                
         if cloud_name == "NA" :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
 
         _model_to_imguuid = {}
-        _model_to_imguuid["sim"] = "baseimg"
-        _model_to_imguuid["pcm"] = "bionic" 
-        _model_to_imguuid["pdm"] = "cbtoolbt-ubuntu"
-        _model_to_imguuid["nop"] = "baseimg"
+        _model_to_imguuid["pdm"] = "/cbtoolbt-ubuntu"
         _model_to_imguuid["osk"] = "bionic-server-cloudimg-amd64"
         _model_to_imguuid["os"] = "bionic-server-cloudimg-amd64"
         _model_to_imguuid["gen"] = "xenial3"
-        _model_to_imguuid["plm"] = "bionic"        
-        _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1804-bionic-v20190320"
-        _model_to_imguuid["do"] = "44972302"        
         _model_to_imguuid["slr"] = "2110219"
-        _model_to_imguuid["kub"] = "cb_nullworkload"
+        _model_to_imguuid["kub"] = "cb_nullworkloadcolonmaster"
         _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-18_04-LTS-amd64-server-20190320-en-us-30GB"
+
+        _model_to_imguuid["sim"] = "default"
+        _model_to_imguuid["pcm"] = "default" 
+        _model_to_imguuid["nop"] = "default"
+        _model_to_imguuid["gen"] = "default"
+        _model_to_imguuid["plm"] = "default"
+        _model_to_imguuid["ec2"] = "default"
+        _model_to_imguuid["do"] = "default"        
+        _model_to_imguuid["as"] = "default"
 
         _model_to_login = {}
         _model_to_login["sim"] = "cbuser"
@@ -305,7 +308,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                 _command = "sudo getent hosts cloudbencha | awk '{ print $1 }'"
                 _proc_h = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 _resul = _proc_h.communicate()
-                _nop_cloud_ip = _resul[0].replace('\n','')
+                _nop_cloud_ip = str(_resul[0]).replace("b'",'').replace('\n','')
             _temp_attr_list += ",cloud_ip=" + _nop_cloud_ip
 
         _vms_failed = int(apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]["failed"])
@@ -319,8 +322,8 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             _vm["volume_list"] = ''
         
         if options.pause :
-            print json.dumps(_vm, indent=4, sort_keys=True)
-            raw_input("Press Enter to continue...")
+            print(json.dumps(_vm, indent=4, sort_keys=True))
+            input("Press Enter to continue...")
                 
         _msg = "#### Testing management performance metrics for VM \"" 
         _msg += _vm["name"] + "\" (" + _vm["cloud_vm_name"] + '/' 
@@ -336,18 +339,18 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _mgt_metric = apiconn.get_latest_management_data(cloud_name, _vm["uuid"])
 #        print _mgt_metric
     
-    except APIException, obj :
+    except APIException as obj :
         _attach_error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
-    except APINoSuchMetricException, obj :
+    except APINoSuchMetricException as obj :
         _attach_error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
         print_msg("Aborting this VM.")
     
-    except Exception, msg :
+    except Exception as msg :
         _attach_error = True
         _fmsg = "Problem during experiment: " + str(msg)
     
@@ -413,18 +416,18 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                 apiconn.vmdetach(cloud_name, _vm["uuid"])
                 _delete_time = int(time() - _mark_a)
         
-            except APIException, obj :
+            except APIException as obj :
                 _delete_error = True
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
 
-            except APINoSuchMetricException, obj :
+            except APINoSuchMetricException as obj :
                 _delete_error = True
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
                 
             except KeyboardInterrupt :
                 print_msg("Aborting this VM.")
 
-            except Exception, msg :
+            except Exception as msg :
                 _delete_error = True
                 _fmsg = "Problem during experiment: " + str(msg)
                 
@@ -475,7 +478,7 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
     '''
     try :
 
-        print ''
+        print('')
         _error = False
         _fmsg = ''  
                 
@@ -488,8 +491,8 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
         _capture_time = int(time() - _mark_a)
 
         if options.pause :
-            print json.dumps(_vm, indent=4, sort_keys=True)
-            raw_input("Press Enter to continue...")
+            print(json.dumps(_vm, indent=4, sort_keys=True))
+            input("Press Enter to continue...")
             
         _vm_counters = apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]
 
@@ -504,18 +507,18 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
         else :
             _msg = "## Successfuly tested VM Capture."
     
-    except APIException, obj :
+    except APIException as obj :
         _error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
-    except APINoSuchMetricException, obj :
+    except APINoSuchMetricException as obj :
         _error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
         print_msg("Aborting this VM.")
     
-    except Exception, msg :
+    except Exception as msg :
         _error = True
         _fmsg = "##Problem during experiment: " + str(msg)
     
@@ -533,7 +536,7 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
     '''
     try :
 
-        print ''
+        print('')
         _error = False
         _fmsg = ''
 
@@ -547,23 +550,23 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
         _imgdelete_time = int(time() - _mark_a)
 
         if options.pause :
-            print json.dumps(_img, indent=4, sort_keys=True)
-            raw_input("Press Enter to continue...")
+            print(json.dumps(_img, indent=4, sort_keys=True))
+            input("Press Enter to continue...")
             
         _msg = "## Successfuly tested IMAGE Delete."
     
-    except APIException, obj :
+    except APIException as obj :
         _error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
-    except APINoSuchMetricException, obj :
+    except APINoSuchMetricException as obj :
         _error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
         print_msg("Aborting this IMG.")
     
-    except Exception, msg :
+    except Exception as msg :
         _error = True
         _fmsg = "Problem during experiment: " + str(msg)
     
@@ -700,7 +703,7 @@ def write_results(options, test_results_table, cloud_model) :
     _fh.close()
     
     if not options.headeronly :
-        print _x_test_results_table
+        print(_x_test_results_table)
     
     return True
     
@@ -806,7 +809,7 @@ def main() :
 
         _start = int(time())
         
-        print ''
+        print('')
         
         if _options.private_results :
             _reset = " --soft_reset"            
@@ -826,7 +829,7 @@ def main() :
         _results_row.append(_display_cloud_model)
 
         if _options.pause :
-            raw_input("Press Enter to continue...")
+            input("Press Enter to continue...")
             
         _cloud_result, _cloud_name = check_cloud_attach(api, _actual_cloud_model, _mark_a)
         _results_row.append(_cloud_result)
@@ -934,10 +937,10 @@ def main() :
         _results_row[0] = _results_row[0].center(22, ' ')
 
         if _results_row[1] == "NA" :
-            _results_row[1] = _results_row[1].center(51,' ')
+            _results_row[1] = _results_row[1].center(49,' ')
 
         if _results_row[2] == "NA" :
-            _results_row[2] = _results_row[2].center(51,' ')
+            _results_row[2] = _results_row[2].center(49,' ')
 
         if _results_row[3] == "NA" :
             _results_row[3] = _results_row[3].center(49,' ')

@@ -1,7 +1,7 @@
 [USER-DEFINED]
 PCM_ACCESS = need_to_be_configured_by_user
-PCM_KEY_NAME = cbtool_rsa
-PCM_SSH_KEY_NAME = cbtool_rsa
+PCM_KEY_NAME = need_to_be_configured_by_user
+PCM_SSH_KEY_NAME = need_to_be_configured_by_user
 PCM_LOGIN = need_to_be_configured_by_user
 PCM_INITIAL_VMCS = need_to_be_configured_by_user
 PCM_NETNAME = need_to_be_configured_by_user

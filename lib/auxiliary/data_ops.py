@@ -21,10 +21,12 @@
 
     Data transformation functions
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 from time import time, strftime, strptime, localtime
-from os import chmod
+from os import chmod, makedirs
+from os.path import isdir
+from errno import EEXIST
 from random import random
 from datetime import datetime
 from re import sub, split
@@ -51,14 +53,14 @@ def selective_dict_update(maindict, extradict) :
     '''
     try :
         _status = 100
-        for _key,_value in extradict.iteritems() :
+        for _key,_value in extradict.items() :
             if _key in maindict and maindict[_key] != "default":
                 True
             else :
                 maindict[_key] = _value
         _status = 0
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
 
@@ -85,12 +87,12 @@ def str2dic(input_string, raise_exception = True) :
             _dictionary[_kv_pair[0]] = _kv_pair[1]
         _status = 0
 
-    except IndexError, msg:
+    except IndexError as msg:
         _status = 110
         _fmsg = "Input string was not properly formatted ("
         _fmsg += ':'.join(_kv_pair) + "): " + str(msg)
  
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
 
@@ -113,12 +115,12 @@ def dic2str(input_dictionary, raise_exception = True) :
     try :
         _status = 100
         _string = ''
-        for _key,_value in input_dictionary.iteritems() :
+        for _key,_value in input_dictionary.items() :
             _string = str(_key) + ':' + str(_value) + ',' + _string
         _string = _string[0:-1]  
         _status = 0
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
 
@@ -149,7 +151,7 @@ def is_valid_temp_attr_list(input_string) :
                 break  
         _status = 0
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
 
@@ -160,6 +162,16 @@ def is_valid_temp_attr_list(input_string) :
             raise DataOpsException(_status, _msg)
         else :
             return _is_temp_attr_list
+
+@trace
+def mkdir_p(path):
+    try:
+        makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == EEXIST and isdir(path):
+            pass
+        else:
+            raise
 
 @trace
 def wait_on_process(processid, proc_h, output_list) :
@@ -295,7 +307,7 @@ def plm_message_beautifier(processid, obj_type, obj_list) :
     _fmt_obj_list = _header + '\n'
     _fmt_obj_list += '-'.rjust(len(_header),'-') + '\n'
 
-    for _obj in obj_list.keys() :
+    for _obj in list(obj_list.keys()) :
         _obj_attrs = obj_list[_obj]
         for _field in _fields :
             _af = _field[1:].strip()
@@ -318,7 +330,7 @@ def plm_parse_host_groups(processid, group_string) :
         _groups_list[_group_name] = _host_list
 
     _msg = str(len(_groups_list)) + " Host Group(s) found: "
-    _msg += ','.join(_groups_list.keys())
+    _msg += ','.join(list(_groups_list.keys()))
     cbdebug(_msg)
     return _groups_list
 
@@ -406,7 +418,8 @@ def create_restart_script(scriptname, cmdline, username, searchcmd, objectname =
     '''
     TBD
     '''
-    _fn = scriptpath + '/' + scriptname + '_' + username + '-' + objectname + '--' + uuid
+    mkdir_p(scriptpath + '/' + username + '/')
+    _fn = scriptpath + '/' + username + '/' + scriptname + '_' + username + '-' + objectname + '--' + uuid
 
     _fn = _fn.replace('---','')
             
@@ -459,7 +472,7 @@ def create_restart_script(scriptname, cmdline, username, searchcmd, objectname =
     _fh = open(_fn, "w")
     _fh.write(_fc)
     _fh.close()
-    chmod(_fn, 0755)
+    chmod(_fn, 0o755)
     
     return True
 
@@ -561,7 +574,7 @@ def add_ip_address(subnet, delta) :
     _octects, _mask = subnet.split('/')
     _octects = _octects.split('.')
     
-    for _index in xrange(len(_octects)) :
+    for _index in range(len(_octects)) :
         _oav = int(_octects[- _index - 1]) + delta
         _oqn = float(float(_oav) / float(256))
         _orn = (_oav % 256)
@@ -617,3 +630,6 @@ def natural_keys(text):
     return int(text) if text.isdigit() else text
 
   return [ atoi(c) for c in split(r'(\d+)', text) ]
+
+def cmp(a, b):
+    return (a > b) - (a < b)
