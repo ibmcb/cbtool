@@ -20,7 +20,7 @@
     Library functions to allow VMs to perform operations on Object and Metric
     stores remotely
 
-    @author: Michael R. Hines, Marcio A. Silva
+    @author: Michael R. Galaxy, Marcio A. Silva
 
 """
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, \
@@ -38,7 +38,8 @@ import os
 import fnmatch
 import socket
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
+import traceback
 
 #for _path, _dirs, _files in os.walk(os.path.abspath(path[0])):
 #    for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
@@ -94,7 +95,7 @@ class Nethashget :
             self.socket.connect((self.hostname, self.port if port is None else port))
             return True
         
-        except socket.error, msg :
+        except socket.error as msg :
             _msg = "Unable to connect to " + protocol + " port " + str(port)
             _msg += " on host " + self.hostname + ": " + str(msg)
             print(_msg)
@@ -115,7 +116,7 @@ class Nethashget :
             self.socket.connect((self.hostname, self.port if port is None else port))
             return True
 
-        except socket.error, msg :
+        except socket.error as msg :
             _msg = "Unable to connect to " + protocol + " port " + str(port)
             _msg += " on host " + self.hostname + ": " + str(msg)
             print(_msg)
@@ -139,7 +140,7 @@ def nmap(port) :
         if app.nmap(port) is False :
             print(_msg)
             exit(1)
-    except NetworkException, msg :
+    except NetworkException as msg :
         print(_msg)
         exit(1)
     return argv[1], argv[2]
@@ -201,22 +202,22 @@ def get_uuid_from_ip(ipaddr) :
         
         _status = 0
 
-    except IOError, msg :
+    except IOError as msg :
         _status = 10
         _fmsg = str(msg) 
     
-    except OSError, msg :
+    except OSError as msg :
         _status = 20
         _fmsg = str(msg) 
     
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
     
     finally :
         if _status :
             _msg = "Failure while getting uuid from IP: " + _fmsg
-            print _msg
+            print(_msg)
             exit(2)
         else :
             return _uuid
@@ -321,22 +322,22 @@ def get_stores_parms() :
 
         _status = 0
 
-    except IOError, msg :
+    except IOError as msg :
         _status = 10
         _fmsg = str(msg) 
     
-    except OSError, msg :
+    except OSError as msg :
         _status = 20
         _fmsg = str(msg) 
 
-    except Exception, e:
+    except Exception as e:
         status = 30
         _fmsg = str(e)
 
     finally :
         if _status :
             _msg = "Failure while getting Object Store parameters: " + _fmsg
-            print _msg
+            print(_msg)
             exit(2)
         else :
             _msg = "Object Store parameters obtained successfully."
@@ -467,14 +468,14 @@ def setup_syslog(verbosity, quiet = False, logdest = "syslog") :
 
         _status = 0
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
 
     finally :
         if _status :
             _msg = "Failure while setting up syslog channel: " + _fmsg
-            print _msg
+            print(_msg)
             exit(2)
         else :
             _msg = "Syslog channel set up successfully."
@@ -498,22 +499,22 @@ def get_ms_conn(mscp = None, cn = None) :
         
         _status = 0
 
-    except ImportError, msg :
+    except ImportError as msg :
         _status = 20
         _fmsg = str(msg)
 
-    except AttributeError, msg :
+    except AttributeError as msg :
         _status = 20
         _fmsg = str(msg)
     
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
     
     finally :
         if _status :
             _msg = "Failure while setting up metric store adapter: " + _fmsg
-            print _msg
+            print(_msg)
             exit(2)
         else :
             _msg = "Metric store adapter set up successfully."
@@ -542,22 +543,22 @@ def get_os_conn(oscp = None) :
         
         _status = 0
 
-    except ImportError, msg :
+    except ImportError as msg :
         _status = 20
         _fmsg = str(msg)
 
-    except AttributeError, msg :
+    except AttributeError as msg :
         _status = 20
         _fmsg = str(msg)
     
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
     
     finally :
         if _status :
             _msg = "Failure while setting up object store adapter: " + _fmsg
-            print _msg
+            print(_msg)
             exit(2)
         else :
             _msg = "Object store adapter set up successfully."
@@ -597,7 +598,7 @@ def update_avg_acc_max_min(metrics_dict, uuid, username) :
 
     _curr_load_id = float(metrics_dict["app_load_id"]["val"])
     
-    for _metric in metrics_dict.keys() :
+    for _metric in list(metrics_dict.keys()) :
 
         if _metric.count("app_") and not _metric.count("load_id") :
             if is_number(metrics_dict[_metric]["val"]) :
@@ -877,11 +878,11 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
         if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
             _new_reported_metrics_dict = {}
-            for _key in _metrics_dict.keys() :
+            for _key in list(_metrics_dict.keys()) :
                 if not _key.count("time") and not _key.count("uuid") and not _key.count("time_h") :
                     _new_reported_metrics_dict[_key] = "1"
             _new_reported_metrics_dict["expid"] = _expid
-            _new_reported_metrics_dict["_id"] = b64encode(sha1(_expid).digest())
+            _new_reported_metrics_dict["_id"] = b64encode(sha1(_expid.encode("utf-8")).digest())
             _reported_metrics_dict = \
             _msci.find_document("reported_runtime_app_VM_metric_names_" + \
                                 _username, {"_id" : _new_reported_metrics_dict["_id"]})
@@ -923,11 +924,15 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
         _status = 0
         
-    except _msci.MetricStoreMgdConnException, obj :
+    except _msci.MetricStoreMgdConnException as obj :
+        for line in traceback.format_exc().splitlines() :
+            cberr(line)
         _status = obj.status
         _fmsg = str(obj.msg)
 
-    except Exception, e :
+    except Exception as e :
+        for line in traceback.format_exc().splitlines() :
+            cberr(line)
         _status = 23
         _fmsg = str(e)
 
@@ -970,7 +975,7 @@ def collect_db_one(command) :
         err += line    
     p.wait()
     if output is None :
-        print("ERROR collecting from database: \n" + err)
+        print(("ERROR collecting from database: \n" + err))
         return 0
 
     result = re.compile('.*Transactions: ([0-9]+)').match(output)
@@ -1008,12 +1013,12 @@ def collect_apache(role, grep) :
     rate = 0
     latency = 0
     url = "http://" + ip + "/tm?" + grep
-    print("Requesting URL: " + url)
+    print(("Requesting URL: " + url))
 
-    handle = urllib.urlopen(url)
+    handle = urllib.request.urlopen(url)
 
     if handle is None :
-        print("Url " + url + " seems unavailable")
+        print(("Url " + url + " seems unavailable"))
         return (0, 0)
 
     for line in handle.readlines() :
@@ -1025,7 +1030,7 @@ def collect_apache(role, grep) :
             rate /= int(delay)
             continue
         
-    urllib.urlopen("http://" + ip + "/tm?reset").read()
+    urllib.request.urlopen("http://" + ip + "/tm?reset").read()
     report_app_metrics(role, rate, latency)
 
 def et_find(path, tree) :
@@ -1034,7 +1039,7 @@ def et_find(path, tree) :
     '''
     elems = tree.find(path)
     if elems is None :
-        print("path " + path + " not found")
+        print(("path " + path + " not found"))
     return elems
 
 def collect_was(role, port, ejb_name) :

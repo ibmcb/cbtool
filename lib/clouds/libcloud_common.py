@@ -14,7 +14,7 @@
     Created on September 8th, 2016
     Libcloud Common Library: You want to inherit from this to make it easier to
     be compatible with CloudBench
-    @author: Michael R. Hines, Darrin Eden
+    @author: Michael R. Galaxy, Darrin Eden
 '''
 from time import time, sleep
 from random import randint
@@ -24,7 +24,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.remote.network_functions import Nethashget
 
-from shared_functions import CldOpsException, CommonCloudFunctions
+from .shared_functions import CldOpsException, CommonCloudFunctions
 
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
@@ -34,26 +34,17 @@ from libcloud.common.exceptions import BaseHTTPError
 
 from copy import deepcopy
 
-from cStringIO import StringIO
+from io import StringIO
 
 import threading
 import traceback
 import os
-import httplib
+import http.client
 
-try:
-    from http.client import HTTPConnection # py3
-    from http.client import HTTPSConnection # py3
-except ImportError:
-    from httplib import HTTPConnection # py2
-    from httplib import HTTPSConnection # py2
-
-import sys
-reload(sys)
-sys.setdefaultencoding("utf8")
+from http.client import HTTPConnection
+from http.client import HTTPSConnection
 
 import libcloud.security
-
 import logging
 import contextlib
 
@@ -98,7 +89,7 @@ stream = False
 
 # Tell the httplib patch (if available, sold separately) to debug and use the logging module
 # for logging the request headers.
-if hasattr(httplib, "httplib_log") :
+if hasattr(http.client, "httplib_log") :
     HTTPConnection.debuglevel = 3
     HTTPSConnection.debuglevel = 3
     httplib_log = logging.getLogger("httplib")
@@ -278,9 +269,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                 # Grab the response headers from libcloud itself and log those.
                 headers = LibcloudCmds.catalogs.cbtool[credentials_list].connection.connection.getheaders()
-                for hkey in headers.keys() :
+                for hkey in list(headers.keys()) :
                     cberr("recv ==> " + str(hkey) + ": " + headers[hkey])
-            except Exception, e :
+            except Exception as e :
                 for line in traceback.format_exc().splitlines() :
                     cberr(line, True)
 
@@ -306,7 +297,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         cbdebug("Checking libcloud connection...")
         try :
             getattr(LibcloudCmds.catalogs, "cbtool")
-        except AttributeError, e :
+        except AttributeError as e :
             cbdebug("Initializing thread local connection: ")
 
             LibcloudCmds.catalogs.cbtool = {}
@@ -372,7 +363,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e:
+        except Exception as e:
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(credentials_list)
@@ -434,11 +425,11 @@ class LibcloudCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(credentials_list)
@@ -500,7 +491,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _map_name_to_id[str(_registered_image.name.encode('utf-8').strip())] = str(_registered_image.id)
             _map_name_to_id[str(_registered_image.id.encode('utf-8').strip())] = str(_registered_image.id)
 
-        for _vm_role in vm_templates.keys() :
+        for _vm_role in list(vm_templates.keys()) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             _replacement_id = _imageid
             if _imageid != "to_replace" :
@@ -529,7 +520,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         '''
         _host_uuid = obj_attr_list["cloud_vm_uuid"]
 
-        obj_attr_list["host_list"] = {}
+        obj_attr_list["host_list"] = ""
         obj_attr_list["hosts"] = ''
 
         obj_attr_list["initial_hosts"] = ''.split(',')
@@ -591,14 +582,14 @@ class LibcloudCmds(CommonCloudFunctions) :
                             try :
                                 cbdebug("Killing: " + _reservation.name + " (" + tenant + ")", True)
                                 _reservation.destroy()
-                            except BaseHTTPError, e :
+                            except BaseHTTPError as e :
                                 if e.code == 404 :
                                     cbwarn("404: Not trusting instance " + _reservation.name + " error status... Will try again.", True)
                                 self.dump_httplib_headers(credentials_list)
-                            except MalformedResponseError, e :
+                            except MalformedResponseError as e :
                                 self.dump_httplib_headers(credentials_list)
                                 cbdebug("The Cloud's API is misbehaving...", True)
-                            except Exception, e :
+                            except Exception as e :
                                 for line in traceback.format_exc().splitlines() :
                                     cbwarn(line, True)
                                 self.dump_httplib_headers(credentials_list)
@@ -627,10 +618,10 @@ class LibcloudCmds(CommonCloudFunctions) :
                                 try :
                                     cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
                                     _volume.destroy()
-                                except MalformedResponseError, e :
+                                except MalformedResponseError as e :
                                     self.dump_httplib_headers(credentials_list)
                                     raise CldOpsException("The Cloud's API is misbehaving", 1483)
-                                except Exception, e :
+                                except Exception as e :
                                     for line in traceback.format_exc().splitlines() :
                                         cbwarn(line, True)
                                     self.dump_httplib_headers(credentials_list)
@@ -643,12 +634,12 @@ class LibcloudCmds(CommonCloudFunctions) :
                             _wait = self.backoff(obj_attr_list, _wait)
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             cberr(_msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(credentials_list)
@@ -693,7 +684,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 self.discover_hosts(obj_attr_list, _time_mark_prs)
             else :
                 obj_attr_list["hosts"] = ''
-                obj_attr_list["host_list"] = {}
+                obj_attr_list["host_list"] = "" 
                 obj_attr_list["host_count"] = "NA"
 
             _time_mark_prc = int(time())
@@ -702,11 +693,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(credentials_list)
@@ -741,11 +732,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _fmsg = str(msg)
@@ -781,7 +772,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                             if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                                 _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(credentials_list)
@@ -880,7 +871,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 0
             return True
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -911,7 +902,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 try :
                     node_list = self.get_adapter(obj_attr_list["credentials_list"]).list_nodes(*self.get_list_node_args(obj_attr_list))
                     break
-                except Exception, e:
+                except Exception as e:
                     _curr_tries += 1
                     if _curr_tries > _wait :
                         raise e
@@ -928,7 +919,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             return node
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -951,7 +942,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 if self.use_get_image :
                     try :
                         _candidate_images = self.get_adapter(obj_attr_list["credentials_list"]).get_image(obj_attr_list["imageid1"])
-                    except BaseHTTPError, e :
+                    except BaseHTTPError as e :
                         if e.code == 404 :
                             cbdebug("Instead looking for: " + obj_attr_list["imageid1"].replace("_", " "), True)
                             _candidate_images = self.get_adapter(obj_attr_list["credentials_list"]).get_image(obj_attr_list["imageid1"].replace("_", " "))
@@ -974,7 +965,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 obj_attr_list["boot_volume_imageid1"] = _candidate_images.id
                 _status = 0
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1001,7 +992,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             node = self.get_instances(obj_attr_list)
             return node and node.state == NodeState.RUNNING
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1037,7 +1028,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1106,11 +1097,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1139,21 +1130,21 @@ class LibcloudCmds(CommonCloudFunctions) :
                         try :
                             _volume.destroy()
                             break
-                        except MalformedResponseError, e :
+                        except MalformedResponseError as e :
                             self.dump_httplib_headers(credentials_list)
                             raise CldOpsException("The Cloud's API is misbehaving", 1483)
-                        except Exception, e :
+                        except Exception as e :
                             for line in traceback.format_exc().splitlines() :
                                 cbwarn(line, True)
                             self.dump_httplib_headers(credentials_list)
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1173,6 +1164,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred when creating new VM, but no error message was captured"
             _instance = False
+            _reservation = False
             volume = False
 
             # This is just to pass regression tests.
@@ -1391,7 +1383,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 cberr(_fmsg)
                 _status = 100
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1399,7 +1391,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _fmsg = str(obj.msg)
             cbwarn("Error during reservation creation: " + _fmsg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1420,6 +1412,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                 if obj_attr_list["cloud_vv_instance"] :
                     del obj_attr_list["cloud_vv_instance"]
+            else :
+                if _reservation :
+                    cbdebug("Error after VM creation. Cleanup...", True)
+                    self.vmdestroy_repeat(obj_attr_list)
+
 
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
@@ -1505,15 +1502,15 @@ class LibcloudCmds(CommonCloudFunctions) :
                             obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
                         firsttime = False
-                    except BaseHTTPError, e :
+                    except BaseHTTPError as e :
                         if e.code == 404 :
                             cbwarn("404: Not trusting instance " + obj_attr_list["name"] + " error status... Will try again.", True)
                         self.dump_httplib_headers(_credentials_list)
                         raise CldOpsException("The Cloud's API is misbehaving, code: " + str(e.code), 1484)
-                    except MalformedResponseError, e :
+                    except MalformedResponseError as e :
                         self.dump_httplib_headers(_credentials_list)
                         raise CldOpsException("The Cloud's API is misbehaving", 1483)
-                    except Exception, e :
+                    except Exception as e :
                         for line in traceback.format_exc().splitlines() :
                             cbwarn(line, True)
                         self.dump_httplib_headers(_credentials_list)
@@ -1539,11 +1536,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1625,11 +1622,11 @@ class LibcloudCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1696,7 +1693,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                         if firsttime :
                             obj_attr_list["mgt_202_runstate_request_sent"] = int(time()) - int(obj_attr_list["mgt_201_runstate_request_originated"])
                         firsttime = False
-                    except Exception, e :
+                    except Exception as e :
                         for line in traceback.format_exc().splitlines() :
                             cbwarn(line, True)
                         self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1721,11 +1718,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(obj_attr_list["credentials_list"])
@@ -1799,7 +1796,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(_credentials_list)
@@ -1835,7 +1832,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             self.dump_httplib_headers(credentials_list)

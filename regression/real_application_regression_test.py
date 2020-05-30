@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -51,9 +51,9 @@ def print_msg(message, newline = True) :
     TBD
     '''
     if newline :
-        print datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message
+        print(datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message)
     else :
-        print datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message,        
+        print(datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message, end=' ')        
 
 def get_type_list(options) :
     '''
@@ -289,7 +289,7 @@ def main() :
             _x_test_results_table[4] = _aux
 
             if not _options.headeronly :
-                print '\n'.join(_x_test_results_table)
+                print('\n'.join(_x_test_results_table))
 
             if _options.noheader :
                 _x_test_results_table = '\n'.join(_x_test_results_table[4:-1])
@@ -305,7 +305,7 @@ def main() :
         _fh.close()
 
         if not _options.noheader :
-            print _x_test_results_table
+            print(_x_test_results_table)
                 
     return True
 
@@ -374,10 +374,10 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                     _msg = "        Checking metric \"" + _metric + "\"..."
                     print_msg(_msg, False)
                     if _metric not in _management_metrics :
-                        print "NOK"
+                        print("NOK")
                     else :
                         _value = int(_management_metrics[_metric])
-                        print str(_value) + " OK"
+                        print(str(_value) + " OK")
 
                         if _vm_uuid == _vapp["load_manager_vm"] :
                             if not _management_metrics_pass :
@@ -415,12 +415,12 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                             if _metric not in _runtime_metrics :
                                 if _metric not in _runtime_missing_metrics :
                                     _runtime_missing_metrics.append(_metric)
-                                print "NOK"
+                                print("NOK")
                             elif _metric.count("completion_time") and \
                             (_runtime_metrics[_metric]["val"] == "0" or _runtime_metrics[_metric]["val"] == "0.0" or _runtime_metrics[_metric]["val"] == "NA" ) :
                                 _runtime_metrics_problem = "|compl is zero or NA|"
                                 _runtime_missing_metrics.append(_metric)
-                                print "NOK"      
+                                print("NOK")      
                             else :
                                 if not _metric.count("load_profile") :
                                     try:
@@ -429,7 +429,7 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                                         _value = str(_value)
                                 else :
                                     _value = _runtime_metrics[_metric]["val"]                                    
-                                print str(_value) + " OK"
+                                print(str(_value) + " OK")
                                 if _metric == "app_load_id" :
                                     _collected_samples = _value
 
@@ -487,20 +487,20 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             apiconn.appdetach(cloud_name, _vapp["uuid"])
 
         _msg = "    Checking reported deprovisioning metrics..." 
-        print _msg
+        print(_msg)
         # Get some data from the monitoring system
         for _vm in _vapp["vms"].split(",") :
             _vm_uuid, _vm_role, _vm_name = _vm.split("|") 
             for _management_metrics in apiconn.get_management_data(cloud_name, _vm_uuid) :
                 for _metric in _dst_m :
                     _msg = "        Checking metric \"" + _metric + "\"..."
-                    print _msg,
+                    print(_msg, end=' ')
                     if _metric not in _management_metrics :
                         _management_metrics_pass = False
-                        print "NOK"
+                        print("NOK")
                     else :
                         _value = int(_management_metrics[_metric])                        
-                        print str(_value) + " OK"
+                        print(str(_value) + " OK")
 
         if _management_metrics_pass :
             _msg = "    Reported deprovisioning metrics OK" 
@@ -508,18 +508,18 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
 
         _vapp = None
 
-    except APIException, obj :
+    except APIException as obj :
         error = True
         print_msg("API Problem (" + str(obj.status) + "): " + obj.msg)
     
-    except APINoSuchMetricException, obj :
+    except APINoSuchMetricException as obj :
         error = True
         print_msg("API Problem (" + str(obj.status) + "): " + obj.msg)
     
     except KeyboardInterrupt :
         print_msg("Aborting this APP.")
     
-    except Exception, msg :
+    except Exception as msg :
         error = True
         print_msg("Problem during experiment: " + str(msg))
     
@@ -533,9 +533,9 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                     _msg = "Attempting to destroy Virtual Application \"" + _vapp["name"] + "\" again..."
                     print_msg(_msg, False)             
                     apiconn.appdetach(cloud_name, _vapp["uuid"])
-                    print "DONE"
+                    print("DONE")
                     
-            except APIException, obj :
+            except APIException as obj :
                 print_msg("Error finishing up: (\" + str(obj.status) + \"): " + obj.msg)
         else :
             try :            
@@ -544,9 +544,9 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                         _msg = "Attempting to destroy Virtual Application \"" + _vapp["name"] + "\" again..."
                         print_msg(_msg, False) 
                         apiconn.appdetach(cloud_name, _vapp["uuid"])                    
-                        print "DONE"
+                        print("DONE")
                         
-            except APIException, obj :
+            except APIException as obj :
                 print_msg("Error finishing up: (" + str(obj.status) + "): " + obj.msg)
 
         return _management_metrics_pass, _runtime_metrics_pass, _runtime_missing_metrics, _sut

@@ -21,10 +21,10 @@
 
     Tracing and Debugging
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 
-from __future__ import print_function
+
 from logging.handlers import logging, SysLogHandler
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO
 from sys import getsizeof, stderr, _getframe
@@ -32,14 +32,14 @@ from itertools import chain
 from collections import deque
 import sys
 import socket
-import __builtin__
+import builtins
 
 try:
     from reprlib import repr
 except ImportError:
     pass
 
-bins = dir(__builtin__)
+bins = dir(builtins)
 
 DEBUG = logging.DEBUG
 INFO = logging.INFO
@@ -68,7 +68,7 @@ def trace_actual(aFunc):
         
         try:
             result = aFunc(*args, **kwargs )
-        except Exception, e:
+        except Exception as e:
             _msg = _log_prefix + " - Exit point (Exception \"" + str(e) + "\") "
             _msg += _log_suffix
             logging.debug(_msg)
@@ -143,7 +143,7 @@ def _cblog(*args):
         _msg = _log_prefix + ' ' + _procid + " - " + _msg + _log_suffix
         _log_severity[_severity](_msg)
     
-    except Exception, msg :
+    except Exception as msg :
         print ("exception: " + str(msg) + " : " + _msg)
 
     return True
@@ -238,7 +238,7 @@ def total_size(o, handlers={}, verbose=False):
                     OtherContainerClass: OtherContainerClass.get_elements}
 
     """
-    dict_handler = lambda d: chain.from_iterable(d.items())
+    dict_handler = lambda d: chain.from_iterable(list(d.items()))
     all_handlers = {tuple: iter,
                     list: iter,
                     deque: iter,
@@ -257,9 +257,9 @@ def total_size(o, handlers={}, verbose=False):
         s = getsizeof(o, default_size)
 
         if verbose:
-            print(s, type(o), repr(o), file=stderr)
+            print(s, type(o), repr(o), file = stderr)
 
-        for typ, handler in all_handlers.items():
+        for typ, handler in list(all_handlers.items()):
             if isinstance(o, typ):
                 s += sum(map(sizeof, handler(o)))
                 break
@@ -304,7 +304,7 @@ class ReconnectingNewlineSysLogHandler(logging.handlers.SysLogHandler):
 
     def handleError(self, record):
         # use the default error handling (writes an error message to stderr)
-        super(ReconnectingNewlineSysLogHandler, self).handleError(record)
+        #super(ReconnectingNewlineSysLogHandler, self).handleError(record)
 
         # If we get an error within a retry, just return.  We don't want an
         # infinite, recursive loop telling us something is broken.
@@ -340,9 +340,9 @@ class ReconnectingNewlineSysLogHandler(logging.handlers.SysLogHandler):
             prio = '<%d>' % self.encodePriority(self.facility,
                                                 self.mapPriority(record.levelname))
             # Message is a string. Convert to bytes as required by RFC 5424
-            if type(msg) is unicode:
+            if type(msg) is str:
                 msg = msg.encode('utf-8')
-            msg = prio + msg
+            msg = prio.encode('utf-8') + msg
             if self.unixsocket:
                 try:
                     self.socket.send(msg)

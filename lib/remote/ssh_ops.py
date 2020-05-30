@@ -21,7 +21,7 @@
 
     General purpose connection to remote machines with through ssh
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 
 from time import sleep
@@ -184,7 +184,7 @@ class SSHMgdConn :
                     local_hash = hashlib.sha256()
                     local_hash.update(open(local_file, 'r').read())
                     local_hex = local_hash.hexdigest()
-                except Exception, msg :
+                except Exception as msg :
                     _msg = "Failed to verify SCP integrity: " + str(msg)
                     cberr(_msg)
                     return False, output_list
@@ -327,4 +327,4 @@ def get_public_rsa_fingerprint(pubkey_contents):
     return fingerprint 
 
 def insert_char_every_n_chars(string, char='\n', every=64):
-    return char.join(string[i:i + every] for i in xrange(0, len(string), every)) 
+    return char.join(string[i:i + every] for i in range(0, len(string), every)) 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -19,13 +19,13 @@
 import redis
 import sys
 if len(sys.argv) != 6 :
-    print "Usage: barrier.py <host> <port> <db> <channel> <message>"
+    print("Usage: barrier.py <host> <port> <db> <channel> <message>")
     exit(2)
 
-redis_conn = redis.Redis(host=sys.argv[1], port=int(sys.argv[2]), db=int(sys.argv[3]))
+redis_conn = redis.Redis(host=sys.argv[1], port=int(sys.argv[2]), db=int(sys.argv[3]), decode_responses=True)
 redis_conn_pubsub = redis_conn.pubsub()
 redis_conn_pubsub.subscribe(sys.argv[4])
-print "Subscribed to channel \"" + sys.argv[4] + "\""
+print("Subscribed to channel \"" + sys.argv[4] + "\"")
 for message in redis_conn_pubsub.listen() :
     if isinstance(message["data"], str) :
         if message["data"].count(sys.argv[5]) :

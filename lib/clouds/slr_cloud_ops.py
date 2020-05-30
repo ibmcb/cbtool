@@ -32,7 +32,7 @@ from SoftLayer import exceptions as slexceptions
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, is_number
 from lib.remote.network_functions import hostname2ip
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 class SlrCmds(CommonCloudFunctions) :
     '''
@@ -100,7 +100,7 @@ class SlrCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -146,11 +146,11 @@ class SlrCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -192,7 +192,7 @@ class SlrCmds(CommonCloudFunctions) :
             _registered_imageid_list.append(_registered_image["id"])
             _map_name_to_id[str(_registered_image["name"].encode('utf-8').strip())] = str(_registered_image["id"])
 
-        for _vm_role in vm_templates.keys() :            
+        for _vm_role in list(vm_templates.keys()) :            
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             if _imageid != "to_replace" :
                 if _imageid in _map_name_to_id :                     
@@ -287,11 +287,11 @@ class SlrCmds(CommonCloudFunctions) :
             else :
                 _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -340,11 +340,11 @@ class SlrCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -376,11 +376,11 @@ class SlrCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -418,7 +418,7 @@ class SlrCmds(CommonCloudFunctions) :
                                         if _instance["hostname"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                                             _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
@@ -491,7 +491,7 @@ class SlrCmds(CommonCloudFunctions) :
             else :
                 return False
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -562,7 +562,7 @@ class SlrCmds(CommonCloudFunctions) :
                     _status = 0
                     break
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -589,7 +589,7 @@ class SlrCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -644,7 +644,7 @@ class SlrCmds(CommonCloudFunctions) :
 
             return False
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             if fail :
@@ -683,7 +683,7 @@ class SlrCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -719,11 +719,11 @@ class SlrCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -745,11 +745,11 @@ class SlrCmds(CommonCloudFunctions) :
                                 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -872,7 +872,7 @@ class SlrCmds(CommonCloudFunctions) :
                 cberr(_fmsg)
                 _status = 100
                 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -881,7 +881,7 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -947,11 +947,11 @@ class SlrCmds(CommonCloudFunctions) :
              
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1029,11 +1029,11 @@ class SlrCmds(CommonCloudFunctions) :
             else :
                 _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1083,11 +1083,11 @@ class SlrCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1153,7 +1153,7 @@ class SlrCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             

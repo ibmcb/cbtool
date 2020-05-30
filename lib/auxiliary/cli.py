@@ -21,15 +21,16 @@
 
     Experiment Command Processor Command Line Interface
 
-    @author: Marcio Silva, Michael R. Hines
+    @author: Marcio Silva, Michael R. Galaxy
 '''
 
 import os
 import sys
 import readline
 import re
-import xmlrpclib
+import xmlrpc.client
 import socket
+import traceback
 
 from cmd import Cmd
 from pwd import getpwuid
@@ -81,7 +82,7 @@ class CBCLI(Cmd) :
         
         if self.options.debug_host is not None :
             import debug
-            print str(path)
+            print(str(path))
             import pydevd
             pydevd.settrace(host=self.options.debug_host)
 
@@ -89,7 +90,7 @@ class CBCLI(Cmd) :
 
             self.cld_attr_lst = {}
             _msg = "Parsing \"cloud definitions\" file....."
-            print _msg,
+            print(str(_msg), end=' ')
 
             '''
              We have to store the resulting definitions themselves in
@@ -152,19 +153,19 @@ class CBCLI(Cmd) :
             self.os_func, self.ms_func, self.ls_func, self.fs_func = \
             load_store_functions(self.cld_attr_lst)
     
-            print "\nChecking \"Object Store\".....",        
+            print("\nChecking \"Object Store\".....", end=' ')        
             _status, _msg = self.os_func(self.cld_attr_lst, "check")
             sys.stdout.write(_msg + '\n')
     
-            print "Checking \"Log Store\".....",     
+            print("Checking \"Log Store\".....", end=' ')     
             _status, _msg = self.ls_func(self.cld_attr_lst, "check")
             sys.stdout.write(_msg + '\n')
     
-            print "Checking \"Metric Store\".....", 
+            print("Checking \"Metric Store\".....", end=' ') 
             _status, _msg = self.ms_func(self.cld_attr_lst, "check")
             sys.stdout.write(_msg + '\n')
 
-            print "Checking \"File Store\".....", 
+            print("Checking \"File Store\".....", end=' ') 
             _status, _msg = self.fs_func(self.cld_attr_lst, "check")
             sys.stdout.write(_msg + '\n\n')
             
@@ -194,7 +195,7 @@ class CBCLI(Cmd) :
             self.signatures = {}
             self.usage = {}
 
-            for methodtuple in inspect.getmembers(API, predicate=inspect.ismethod) :
+            for methodtuple in inspect.getmembers(API, predicate=inspect.isfunction) :
                 
                 # Record the function signatures required to be provided by the CLI
                 name = methodtuple[0]
@@ -211,7 +212,7 @@ class CBCLI(Cmd) :
                 try :
                     getattr(self, "do_" + name)
                     continue
-                except AttributeError, msg :
+                except AttributeError as msg :
                     pass
                 
                 func = getattr(API, name)
@@ -246,19 +247,23 @@ class CBCLI(Cmd) :
             Cmd.emptyline = self.emptyline()
             Cmd.__init__(self)
 
-        except StoreSetupException, obj :
+        except StoreSetupException as obj :
+            for line in traceback.format_exc().splitlines() :
+                print(line)
             _status = str(obj.status)
             _msg = str(obj.msg)
 
-        except IOError, msg :
-            print ("IOError: " + str(msg))
+        except IOError as msg :
+            print(("IOError: " + str(msg)))
             pass
         
-        except OSError, msg :
-            print("OSError: " + str(msg))
+        except OSError as msg :
+            print(("OSError: " + str(msg)))
             pass
 
-        except Exception, e :
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                print(line)
             _status = 23
             _msg = str(e)
 
@@ -357,23 +362,23 @@ class CBCLI(Cmd) :
             the actual function.
             '''
             if num_parms < required :
-                print self.usage[name]
+                print(self.usage[name])
                 return
 
             if num_parms > len(self.signatures[name]["args"]) :
-                print self.usage[name]
+                print(self.usage[name])
                 return
 
             # Now, actually send to the API
             try :
                 response = func(*parameters, **kwargs)
                 if not self.options.remote :
-                    print(message_beautifier(response["msg"]))
+                    print((message_beautifier(response["msg"])))
 
-            except APIException, obj :
+            except APIException as obj :
                 print(obj)
 
-            except Exception, e :
+            except Exception as e :
                 _status = 23
                 _msg = str(e)
 
@@ -673,7 +678,7 @@ class CBCLI(Cmd) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            print "Checking for a running API service daemon.....", 
+            print("Checking for a running API service daemon.....", end=' ') 
 
             _proc_man = ProcessManagement(username = self.cld_attr_lst["objectstore"]["username"])
 
@@ -702,7 +707,7 @@ class CBCLI(Cmd) :
             _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
             _cmd = _base_cmd + " --daemon"
             #_cmd = _base_cmd + " --debug_host=localhost"
-            cbdebug(_cmd)     
+            cbdebug(_cmd)
             
             _api_pid = _proc_man.start_daemon(_cmd, \
                                               self.cld_attr_lst["api_defaults"]["port"], \
@@ -743,9 +748,9 @@ class CBCLI(Cmd) :
                         _fd.write(_api_conn_string)
                         _fd.close()
 
-                    except Exception, e :
+                    except Exception as e :
                         _msg = "    Error writing file \"" + _fn  + "\":" + str(e)
-                        print _msg
+                        print(_msg)
                         exit(4)
                     
             else :
@@ -761,7 +766,7 @@ class CBCLI(Cmd) :
             if cert and key :
                 use_ssl = True
 
-            print "Checking for a running GUI service daemon.....",
+            print("Checking for a running GUI service daemon.....", end=' ')
             _base_cmd = "\"" + self.path + "/cbact\""
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
@@ -831,11 +836,11 @@ class CBCLI(Cmd) :
             _status = 0
             _msg = "All processes started successfully"
 
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -884,11 +889,11 @@ class CBCLI(Cmd) :
             
         if f[0] != "/" :
             f = self.path + "/" + f
-            print ("Loading trace file commands from: " + f)
+            print(("Loading trace file commands from: " + f))
             try :
                 r = file(f)
-            except IOError, msg :
-                print ("Could not open file: " + str(msg))
+            except IOError as msg :
+                print(("Could not open file: " + str(msg)))
                 return
             
             while True :
@@ -911,7 +916,7 @@ class CBCLI(Cmd) :
         if not _status  :
             self.do_cldlist("", False)
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_monextract(self, parameters) :
@@ -928,7 +933,7 @@ class CBCLI(Cmd) :
                                                                                 "mon-extract")
         
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_clddetach(self, parameters) :
@@ -945,7 +950,7 @@ class CBCLI(Cmd) :
             # self.do_clddefault("none")
             self.do_cldlist("", False)
             
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_clddefault(self, parameters) :
@@ -968,7 +973,7 @@ class CBCLI(Cmd) :
         if default_cloud == '' :
             _msg = "Current default cloud is \"" + str(BaseObjectOperations.default_cloud)
             _msg += "\". Need cloud name to be set as default cloud or 'none' to unset."
-            print(message_beautifier(_msg))
+            print((message_beautifier(_msg)))
         else :
             if default_cloud.lower() == "none" :
                 BaseObjectOperations.default_cloud = None
@@ -1015,7 +1020,7 @@ class CBCLI(Cmd) :
             self.install_functions()
                 
         if print_message :
-            print(message_beautifier(_msg))
+            print((message_beautifier(_msg)))
 
     @trace
     def do_waituntil(self, parameters) :
@@ -1025,7 +1030,7 @@ class CBCLI(Cmd) :
         _status, _msg, _object = self.passive_operations.wait_until(self.cld_attr_lst, \
                                                                     parameters, \
                                                                     "wait-until")
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_waiton(self, parameters) :
@@ -1035,7 +1040,7 @@ class CBCLI(Cmd) :
         _status, _msg, _object = self.passive_operations.wait_on(self.cld_attr_lst, \
                                                                  parameters, \
                                                                  "wait-on")
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_msgpub(self, parameters) :
@@ -1045,7 +1050,7 @@ class CBCLI(Cmd) :
         _status, _msg, _object = self.passive_operations.msgpub(self.cld_attr_lst, \
                                                                 parameters, \
                                                                 "msg-pub")
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_shell(self, parameters) :
@@ -1055,7 +1060,7 @@ class CBCLI(Cmd) :
         _status, _msg, _object = self.passive_operations.execute_shell(parameters, \
                                                                        "shell-execute")  
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_appdev(self, parameters) :
@@ -1066,7 +1071,7 @@ class CBCLI(Cmd) :
                                                                       "ai_defaults run_application_scripts=false,debug_remote_commands=true", \
                                                                       "cloud-alter")
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_appundev(self, parameters) :
@@ -1077,7 +1082,7 @@ class CBCLI(Cmd) :
                                                                       "ai_defaults run_application_scripts=true,debug_remote_commands=false", \
                                                                       "cloud-alter")
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_vmdev(self, parameters) :
@@ -1088,7 +1093,7 @@ class CBCLI(Cmd) :
                                                                       "vm_defaults check_boot_complete=wait_for_0,transfer_files=false,run_generic_scripts=false,debug_remote_commands=true,check_ssh=false", \
                                                                       "cloud-alter")
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_vmundev(self, parameters) :
@@ -1099,7 +1104,7 @@ class CBCLI(Cmd) :
                                                                       "vm_defaults check_boot_complete=tcp_on_22,transfer_files=true,run_generic_scripts=true,debug_remote_commands=false,check_ssh=true", \
                                                                       "cloud-alter")
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_appnoload(self, parameters) :
@@ -1110,7 +1115,7 @@ class CBCLI(Cmd) :
                                                                       "ai_defaults dont_start_load_manager=true", \
                                                                       "cloud-alter")
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_appload(self, parameters) :
@@ -1121,7 +1126,7 @@ class CBCLI(Cmd) :
                                                                       "ai_defaults dont_start_load_manager=false", \
                                                                       "cloud-alter")
 
-        print(message_beautifier(_msg))
+        print((message_beautifier(_msg)))
 
     @trace
     def do_echo(self, line):
@@ -1145,7 +1150,7 @@ class CBCLI(Cmd) :
 
     @trace
     def do_pause(self, args):
-        raw_input("CLI was paused.Press any key to continue....")
+        input("CLI was paused.Press any key to continue....")
 
     @trace
     def do_EOF(self, line) :
@@ -1169,11 +1174,11 @@ def help(args):
             _fc = _fd.readlines()
             _fd.close()
             for _line in _fc :
-                print _line,
+                print(_line, end=' ')
         else :
             "No help available for " + args
             return False
-        print ''
+        print('')
         return True
     else :
         return False
@@ -1186,11 +1191,11 @@ def get_options_from_env(options) :
     if not options.config :
         _key = "CB_CONFIGURATION_FILE"
         if _key in os.environ :
-            print "\n##########################################################################################"
-            _msg = "CLI option \" --config=" + os.environ[_key] + " set on the"
-            _msg += " environment (" + _key + ")."
+            print("\n##########################################################################################")
+            _msg = "CLI option \" --config=" + str(os.environ[_key]) + " set on the"
+            _msg += " environment (" + str(_key) + ")."
             cbdebug(_msg, True)            
-            print "##########################################################################################\n"
+            print("##########################################################################################\n")
             options.config = os.environ[_key]
 
     return True

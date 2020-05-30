@@ -29,16 +29,16 @@
 '''
     Created on Jan 30, 2018
     OpenStack Object Operations Library
-    @author: Marcio Silva, Michael R. Hines
+    @author: Marcio Silva, Michael R. Galaxy
 '''
 
 from time import time
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import is_number
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
-from shared_functions import CldOpsException
+from .shared_functions import CldOpsException
 
 #from libcloud.compute.drivers.azure import ConfigurationSet,ConfigurationSetInputEndpoint
 

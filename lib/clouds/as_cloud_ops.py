@@ -29,13 +29,13 @@
 '''
     Created on Jan 26, 2018
     Azure Object Operations Library
-    @author: Marcio Silva, Michael R. Hines
+    @author: Marcio Silva, Michael R. Galaxy
 '''
 from time import time
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import is_number
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
 import hashlib
 
@@ -91,7 +91,7 @@ class AsCmds(LibcloudCmds) :
             LibcloudCmds.services = False
             _cloud_service_found = True
 
-        hash_object = hashlib.sha1(str(time()))
+        hash_object = hashlib.sha1(str(time()).encode("utf-8"))
         hex_dig = hash_object.hexdigest()
         vm_defaults["vm_name_suffix"] = str(hex_dig[0:10])
 

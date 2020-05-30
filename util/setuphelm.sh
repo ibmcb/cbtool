@@ -10,7 +10,7 @@
 #/*******************************************************************************
 #    Created on October 10, 2018
 #    VPN-support for k8s within CloudBench
-#    @author: Michael R. Hines
+#    @author: Michael R. Galaxy
 #
 #   We take a completely different approach with using OpenVPN with Kubernetes.
 #   We make exclusive use of the 'helm' k8s package manager, which comes with a ready-to-use
@@ -99,9 +99,9 @@ function check_ready {
 pushd ${dir}/../
 cldid=$(./cb cldlist | grep MY | cut -d "|" -f 2 | grep "^MY" | sed "s/ \+//g")
 PREFIX="from lib.api.api_service_client import APIClient; from lib.auxiliary.data_ops import str2dic; api = APIClient('http://localhost:7070');"
-vmcname=$(python -c "$PREFIX print api.vmclist('${cldid}')[0]['name']")
+vmcname=$(python3 -c "$PREFIX print(api.vmclist('${cldid}')[0]['name'])")
 echo "Exporting kubeconfig for VMC $vmcname $cldid ..."
-python -c "$PREFIX print api.vmcshow('${cldid}', '${vmcname}')['kubeconfig']" > /tmp/kubeconfig.yaml
+python3 -c "$PREFIX print api.vmcshow('${cldid}', '${vmcname}')['kubeconfig']" > /tmp/kubeconfig.yaml
 popd
 
 KEY_NAME=kubeVPN-${cldid}-${vmcname}
@@ -121,7 +121,7 @@ helm init --service-account tiller
 check_error $? "tiller service account"
 check_ready
 
-vpn_network=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['network'].lower()")
+vpn_network=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'vpn')['network'].lower())")
 VPN_NODE_PORT="32085"
 
 cat << EOF > /tmp/cbhelm_openvpn_values.yaml
@@ -301,7 +301,7 @@ while true ; do
 done
 
 PRIVATE_REGISTRY="${REGISTRYIP}:${REGISTRYPORT}"
-python -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu_')"
+python3 -c "$PREFIX api.cldalter('${cldid}', 'vm_defaults', 'image_prefix', '${PRIVATE_REGISTRY}/ubuntu_')"
 
 echo "Registry located at: ${PRIVATE_REGISTRY}"
 NODES=$(kubectl get nodes | grep Ready | wc -l)
@@ -398,11 +398,11 @@ echo "Configuring CB to recognize the openvpn server ..."
 
 POD_NAME=$(kubectl get pods --namespace "default" -l app=openvpn -o jsonpath='{ .items[0].metadata.name }')
 
-VPN_STATUS_PORT=$(python -c "$PREFIX print api.cldshow('${cldid}', 'vpn')['management_port'].lower()")
+VPN_STATUS_PORT=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'vpn')['management_port'].lower())")
 
 echo "VPN status port: ${VPN_STATUS_PORT}"
 
-python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'use_vpn_ip', 'True')"
+python3 -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'use_vpn_ip', 'True')"
 
 while true ; do
 	RELEASE=$(helm list | grep openvpn | sed "s/\t/ /g" | cut -d " " -f 1)
@@ -449,7 +449,7 @@ done
 
 echo "Service IP: ${SERVICE_IP}"
 
-python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
+python3 -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
 kubectl --namespace "default" exec -it "$POD_NAME" /etc/openvpn/setup/newClientCert.sh "$KEY_NAME" "$SERVICE_IP"
 check_error $? "create client certificate"
 kubectl --namespace "default" exec -it "$POD_NAME" cat "/etc/openvpn/certs/pki/$KEY_NAME.ovpn" > "/tmp/${KEY_NAME}.ovpn"
@@ -490,12 +490,12 @@ done
 
 echo "Uploading iptables rules ... "
 
-logproto=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['protocol'].lower()")
-logprotoupper=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['protocol'].upper()")
-logport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['port'].lower()")
-metricport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'metricstore')['port'].lower()")
-fileport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'filestore')['port'].lower()")
-apiport=$(python -c "$PREFIX print api.cldshow('${cldid}', 'api_defaults')['port'].lower()")
+logproto=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'logstore')['protocol'].lower())")
+logprotoupper=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'logstore')['protocol'].upper())")
+logport=$(python3 -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['port'].lower())")
+metricport=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'metricstore')['port'].lower())")
+fileport=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'filestore')['port'].lower())")
+apiport=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'api_defaults')['port'].lower())")
 redisport=6379 # command isn't working yet
 
 cat << EOF > /tmp/cbportforward.sh
@@ -585,7 +585,7 @@ done
 
 echo "Openvpn Proxy IP: ${INTERNAL_SERVICE_IP}"
 
-python -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
+python3 -c "$PREFIX api.cldalter('${cldid}', 'vpn', 'server_bootstrap', '${INTERNAL_SERVICE_IP}')"
 
 kubectl delete --grace-period=0 --force=true deployment backdoor
 

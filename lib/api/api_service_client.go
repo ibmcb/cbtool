@@ -17,7 +17,7 @@
 /*
     CloudBench API Service XML-RPC Relay bindings for golang.
 
-    @author: Michael R. Hines
+    @author: Michael R. Galaxy
  */
 package api_service_client
 

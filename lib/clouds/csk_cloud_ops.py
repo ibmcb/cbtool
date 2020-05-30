@@ -33,7 +33,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.remote.network_functions import hostname2ip
 
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 from lib.remote.process_management import ProcessManagement
 
@@ -78,7 +78,7 @@ class CskCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -114,7 +114,7 @@ class CskCmds(CommonCloudFunctions) :
 
             _key_pair_found = False
             for _key_pair in self.cskconn.listSSHKeyPairs() :
-                if _key_pair[u'name'] == key_name :
+                if _key_pair['name'] == key_name :
                     _key_pair_found = True
 
             if not _key_pair_found :
@@ -129,7 +129,7 @@ class CskCmds(CommonCloudFunctions) :
 
             _security_group_found = False
             for security_group in self.cskconn.listSecurityGroups() :
-                if security_group[u'name'] == security_group_name :
+                if security_group['name'] == security_group_name :
                     _security_group_found = True
 
             if not _security_group_found :
@@ -142,16 +142,16 @@ class CskCmds(CommonCloudFunctions) :
             _msg += " registered on VMC " + vmc_name + "...."
             cbdebug(_msg, True)
 
-            _registered_image_list = self.cskconn.listTemplates({u'zoneid' : _zoneid, u'templatefilter' : u'executable'})
+            _registered_image_list = self.cskconn.listTemplates({'zoneid' : _zoneid, 'templatefilter' : 'executable'})
             _registered_imageid_list = []
 
             for _registered_image in _registered_image_list :
-                _registered_imageid_list.append(_registered_image[u'name'].replace(" ", ""))
+                _registered_imageid_list.append(_registered_image['name'].replace(" ", ""))
 
             _required_imageid_list = {}
 
 
-            for _vm_role in vm_templates.keys() :
+            for _vm_role in list(vm_templates.keys()) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
                 if _imageid not in _required_imageid_list :
                     _required_imageid_list[_imageid] = []
@@ -162,7 +162,7 @@ class CskCmds(CommonCloudFunctions) :
             _detected_imageids = {}
             _undetected_imageids = {}
 
-            for _imageid in _required_imageid_list.keys() :
+            for _imageid in list(_required_imageid_list.keys()) :
                 
                 # Unfortunately we have to check image names one by one,
                 # because they might be appended by a generic suffix for
@@ -187,7 +187,7 @@ class CskCmds(CommonCloudFunctions) :
             if not len(_detected_imageids) :
                 _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
                 _msg += " in this cloudPlatform. Please register at least one "
-                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+                _msg += "of the following images: " + ','.join(list(_undetected_imageids.keys()))
                 _fmsg = _msg 
                 cberr(_msg, True)
             else :
@@ -205,11 +205,11 @@ class CskCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -241,7 +241,7 @@ class CskCmds(CommonCloudFunctions) :
                 
             obj_attr_list["hosts"] = ''
             obj_attr_list["host_list"] = {}
-            _host_list = self.cskconn.listHosts({u'zoneid' : _zoneid})
+            _host_list = self.cskconn.listHosts({'zoneid' : _zoneid})
 
             _host_count = 0
 
@@ -250,17 +250,17 @@ class CskCmds(CommonCloudFunctions) :
                 # Sometimes, the same hypervisor is reported more than once,
                 # with slightly different names. We need to remove (in fact,
                 # avoid the insertion of) duplicates.
-                if not _host[u'id'] in _service_ids_found and _host[u'type'] == 'Routing' :
+                if not _host['id'] in _service_ids_found and _host['type'] == 'Routing' :
                     # Host UUID is artificially generated
-                    _host_uuid = _host[u'id']
+                    _host_uuid = _host['id']
                     obj_attr_list["host_list"][_host_uuid] = {}
                     obj_attr_list["hosts"] += _host_uuid + ','
-                    obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = _host[u'name']
-                    obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = _host[u'ipaddress']
+                    obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = _host['name']
+                    obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = _host['ipaddress']
                     obj_attr_list["host_list"][_host_uuid]["function"] = "compute"
                     obj_attr_list["host_list"][_host_uuid]["name"] = "host_" + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
-                    obj_attr_list["host_list"][_host_uuid]["memory_size"] = _host[u'memorytotal']
-                    obj_attr_list["host_list"][_host_uuid]["cores"] = _host[u'cpunumber']
+                    obj_attr_list["host_list"][_host_uuid]["memory_size"] = _host['memorytotal']
+                    obj_attr_list["host_list"][_host_uuid]["cores"] = _host['cpunumber']
                     obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
                     obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
                     obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
@@ -274,7 +274,7 @@ class CskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
                     _time_mark_prc = int(time())
                     obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
-                    _service_ids_found[ _host[u'id']] = "1"
+                    _service_ids_found[ _host['id']] = "1"
                     _host_count = _host_count + 1
 
             obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
@@ -285,11 +285,11 @@ class CskCmds(CommonCloudFunctions) :
             
             _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -337,22 +337,22 @@ class CskCmds(CommonCloudFunctions) :
             while _running_instances and _curr_tries < _max_tries :
                 _running_instances = False
 
-                _instances = self.cskconn.listVirtualMachines({u'zoneid': _zoneid})
+                _instances = self.cskconn.listVirtualMachines({'zoneid': _zoneid})
 
                 for _instance in _instances :
 
-                    if _instance[u'name'].count(_instance_name) :
+                    if _instance['name'].count(_instance_name) :
                         _running_instances = True
-                        if _instance[u'state'] == u'Running' or _instance[u'state'] == u'Stopped' :
+                        if _instance['state'] == 'Running' or _instance['state'] == 'Stopped' :
                             _msg = "Terminating instance: " 
-                            _msg += _instance[u'id'] + " (" + _instance[u'name'] + ")"
+                            _msg += _instance['id'] + " (" + _instance['name'] + ")"
                             cbdebug(_msg, True)
-                            self.cskconn.destroyVirtualMachine({u'id': _instance[u'id']})
+                            self.cskconn.destroyVirtualMachine({'id': _instance['id']})
 
-                        if _instance[u'state'] == u'Starting' or _instance[u'state'] == u'Creating' :
+                        if _instance['state'] == 'Starting' or _instance['state'] == 'Creating' :
                             _msg = "Will wait for instance "
-                            _msg += _instance[u'id'] + "\"" 
-                            _msg += " (" + _instance[u'name'] + ") to "
+                            _msg += _instance['id'] + "\"" 
+                            _msg += " (" + _instance['name'] + ") to "
                             _msg += "start and then destroy it."
                             cbdebug(_msg, True)
                 sleep(_wait)
@@ -377,17 +377,17 @@ class CskCmds(CommonCloudFunctions) :
             _msg += "also be removed."
             cbdebug(_msg)
 
-            _volumes = self.cskconn.listVolumes({u'zoneid': _zoneid})
+            _volumes = self.cskconn.listVolumes({'zoneid': _zoneid})
 
             if _volumes and len(_volumes) :
                 for unattachedvol in _volumes :
-                    if unattachedvol[u'state'] == u'Allocated' :
-                        _msg = unattachedvol[u'id'] + ' ' + unattachedvol[u'state'] 
+                    if unattachedvol['state'] == 'Allocated' :
+                        _msg = unattachedvol['id'] + ' ' + unattachedvol['state'] 
                         _msg += "... was deleted"
                         cbdebug(_msg)
-                        self.cskconn.deleteVolume({u'id':unattachedvol[u'id']})
+                        self.cskconn.deleteVolume({'id':unattachedvol['id']})
                     else:
-                        _msg = unattachedvol[u'id'] + ' ' + unattachedvol[u'state'] 
+                        _msg = unattachedvol['id'] + ' ' + unattachedvol['state'] 
                         _msg += "... still attached and could not be deleted"
                         cbdebug(_msg)
             else :
@@ -396,12 +396,12 @@ class CskCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             cberr(_msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -463,12 +463,12 @@ class CskCmds(CommonCloudFunctions) :
 
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - _time_mark_prs
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             cberr(_msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -510,11 +510,11 @@ class CskCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -542,8 +542,8 @@ class CskCmds(CommonCloudFunctions) :
             _zoneid = False
             _zones = self.cskconn.listZones()
             for _zone in _zones : 
-                if _zone[u'name'] == zonename : 
-                    _zoneid = _zone[u'id']
+                if _zone['name'] == zonename : 
+                    _zoneid = _zone['id']
                     break;
             
             if _zoneid :
@@ -551,7 +551,7 @@ class CskCmds(CommonCloudFunctions) :
             else :
                 _fmsg = "Unknown CloudPlatform zone (" + zonename + ")"
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -572,11 +572,11 @@ class CskCmds(CommonCloudFunctions) :
         '''
         try :
             _instance = obj_attr_list["instance_obj"]
-            obj_attr_list["cloud_hostname"] = _instance[u'name']
-            if len(_instance[u'nic']) : 
-                for _nic in _instance[u'nic'] :
-                    if _nic[u'isdefault'] == True :
-                        obj_attr_list["run_cloud_ip"] = _nic[u'ipaddress']
+            obj_attr_list["cloud_hostname"] = _instance['name']
+            if len(_instance['nic']) : 
+                for _nic in _instance['nic'] :
+                    if _nic['isdefault'] == True :
+                        obj_attr_list["run_cloud_ip"] = _nic['ipaddress']
                         # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
                         obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] 
                         obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
@@ -605,12 +605,12 @@ class CskCmds(CommonCloudFunctions) :
 
             _sizeid = False
             for _size in _size_list :
-                if _size[u'name'] == obj_attr_list["size"] :
-                    _sizeid = _size[u'id']
+                if _size['name'] == obj_attr_list["size"] :
+                    _sizeid = _size['id']
                     _status = 0
                     break
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -633,10 +633,10 @@ class CskCmds(CommonCloudFunctions) :
             if not self.cskconn :
                 self.connect(obj_attr_list["access"], obj_attr_list["api_key"], obj_attr_list["secret_key"])
 
-            _searchOps={u'templatefilter' : u'executable'}
+            _searchOps={'templatefilter' : 'executable'}
  
             if zoneid :
-                _searchOps[u'zoneid'] = zoneid
+                _searchOps['zoneid'] = zoneid
 
             _image_list = self.cskconn.listTemplates(_searchOps)
 
@@ -648,14 +648,14 @@ class CskCmds(CommonCloudFunctions) :
             _candidate_images = []
 
             for _image in _image_list :
-                _image_name = _image[u'name'].replace(" ", "")
+                _image_name = _image['name'].replace(" ", "")
                 if obj_attr_list["randomize_image_name"].lower() == "false" and \
                 _image_name == obj_attr_list["imageid1"] :
-                    _imageid = _image[u'id']
+                    _imageid = _image['id']
                     break
                 elif obj_attr_list["randomize_image_name"].lower() == "true" and \
                 _image_name == obj_attr_list["imageid1"] :
-                    _candidate_images.append(_image[u'id'])
+                    _candidate_images.append(_image['id'])
                 else :                     
                     True
 
@@ -664,7 +664,7 @@ class CskCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -687,7 +687,7 @@ class CskCmds(CommonCloudFunctions) :
                 self.connect(obj_attr_list["access"], obj_attr_list["api_key"], obj_attr_list["secret_key"])
         
             if "cloud_uuid" in obj_attr_list and obj_attr_list["cloud_uuid"] != "NA" :
-                _instances = self.cskconn.listVirtualMachines({u'id': obj_attr_list["cloud_uuid"]})
+                _instances = self.cskconn.listVirtualMachines({'id': obj_attr_list["cloud_uuid"]})
                 if _instances :
                     obj_attr_list["instance_obj"] = _instances[0]
                     return _instances[0]
@@ -696,11 +696,11 @@ class CskCmds(CommonCloudFunctions) :
             else :
                 _instances = self.cskconn.listVirtualMachines()
                 for _instance in _instances :
-                    if _instance[u'name'] == obj_attr_list["cloud_vm_name"] :
+                    if _instance['name'] == obj_attr_list["cloud_vm_name"] :
                         obj_attr_list["instance_obj"] = _instance
                         return _instance
                 return False
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
@@ -721,9 +721,9 @@ class CskCmds(CommonCloudFunctions) :
             _instance = self.get_vm_instance(obj_attr_list)
 
             if _instance :
-                if _instance[u'state'] == u'Running' :
+                if _instance['state'] == 'Running' :
                     return _instance
-                elif _instance[u'state'] == u'Error' :
+                elif _instance['state'] == 'Error' :
                     _msg = "Instance \"" + obj_attr_list["cloud_vm_name"] + "\"" 
                     _msg += " reported an error (from CloudPlatform)"
                     _status = 1870
@@ -733,7 +733,7 @@ class CskCmds(CommonCloudFunctions) :
                     return False
             else :
                 return False
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
             cberr(_fmsg)
@@ -747,13 +747,13 @@ class CskCmds(CommonCloudFunctions) :
             _instance = self.get_vm_instance(obj_attr_list)
 
             if _instance :
-                if _instance[u'state'] == u'Stopped' :
+                if _instance['state'] == 'Stopped' :
                     return _instance
                 else :
                     return False
             else :
                 return False
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
@@ -833,17 +833,17 @@ class CskCmds(CommonCloudFunctions) :
 
             cbdebug(_msg, True)
 
-            _instance = self.cskconn.deployVirtualMachine({u'name':obj_attr_list["cloud_vm_name"], \
-                                                      u'serviceofferingid':_sizeid, \
-                                                      u'templateid':_imageid, \
-                                                      u'keypair':obj_attr_list["key_name"], \
-                                                      u'securitygroupnames' : obj_attr_list["security_groups"], \
-                                                      u'zoneid':_zoneid})
+            _instance = self.cskconn.deployVirtualMachine({'name':obj_attr_list["cloud_vm_name"], \
+                                                      'serviceofferingid':_sizeid, \
+                                                      'templateid':_imageid, \
+                                                      'keypair':obj_attr_list["key_name"], \
+                                                      'securitygroupnames' : obj_attr_list["security_groups"], \
+                                                      'zoneid':_zoneid})
  
             if _instance :
                 sleep(int(obj_attr_list["update_frequency"]))
                 
-                obj_attr_list["cloud_uuid"] = '{0}'.format(_instance[u'id'])
+                obj_attr_list["cloud_uuid"] = '{0}'.format(_instance['id'])
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
@@ -867,11 +867,11 @@ class CskCmds(CommonCloudFunctions) :
                 cberr(_fmsg)
                 _status = 100
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -889,7 +889,7 @@ class CskCmds(CommonCloudFunctions) :
                     self.vmdestroy(obj_attr_list)
                 else :
                     if _instance :
-                        self.cskconn.destroyVirtualMachine({u'id': _instance[u'id']})
+                        self.cskconn.destroyVirtualMachine({'id': _instance['id']})
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
@@ -922,11 +922,11 @@ class CskCmds(CommonCloudFunctions) :
                     _cmd += ":/home/" + obj_attr_list["login"] + "/nmon/nmon.csv "
                     _cmd += _data_dir + "/nmon_" + obj_attr_list["cloud_vm_name"] + ".csv"
 
-                    print _cmd
+                    print(_cmd)
 
                     _proc_man = ProcessManagement()
                     _proc_man.run_os_command(_cmd)
-                except Exception, msg :
+                except Exception as msg :
                     cbdebug(str(msg), True)
 
             _time_mark_drs = int(time())
@@ -948,11 +948,11 @@ class CskCmds(CommonCloudFunctions) :
         
             if _instance :
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                _msg += " (instance id " + _instance[u'id'] + ")"
+                _msg += " (instance id " + _instance['id'] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
                 
-                self.cskconn.destroyVirtualMachine({u'id': _instance[u'id']})
+                self.cskconn.destroyVirtualMachine({'id': _instance['id']})
 
                 sleep(_wait)
 
@@ -969,17 +969,17 @@ class CskCmds(CommonCloudFunctions) :
             # This needs to be changed later. I could not find an easy way to
             # find the actual volume id of a given instance
              
-            _volumes = self.cskconn.listVolumes({u'zoneid': _zoneid})
+            _volumes = self.cskconn.listVolumes({'zoneid': _zoneid})
 
             if _volumes and len(_volumes) :
                 for unattachedvol in _volumes :
-                    if unattachedvol[u'state'] == u'Allocated' :
-                        _msg = unattachedvol[u'id'] + ' ' + unattachedvol[u'state'] 
+                    if unattachedvol['state'] == 'Allocated' :
+                        _msg = unattachedvol['id'] + ' ' + unattachedvol['state'] 
                         _msg += "... was deleted"
                         cbdebug(_msg)
-                        self.cskconn.deleteVolume({u'id':unattachedvol[u'id']})
+                        self.cskconn.deleteVolume({'id':unattachedvol['id']})
                     else:
-                        _msg = unattachedvol[u'id'] + ' ' + unattachedvol[u'state'] 
+                        _msg = unattachedvol['id'] + ' ' + unattachedvol['state'] 
                         _msg += "... still attached and could not be deleted"
                         cbdebug(_msg)
             else :
@@ -988,11 +988,11 @@ class CskCmds(CommonCloudFunctions) :
            
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1032,15 +1032,15 @@ class CskCmds(CommonCloudFunctions) :
             _instance = self.get_vm_instance(obj_attr_list)
 
             if _instance :
-                self.cskconn.stopVirtualMachine({u'id': _instance[u'id']})
+                self.cskconn.stopVirtualMachine({'id': _instance['id']})
                 while not self.is_vm_stopped(obj_attr_list) :
                     sleep(_wait)
 
                 _osTypes = self.cskconn.listOsTypes();
                 _osTypeId = False
                 for _osType in _osTypes : 
-                    if _osType[u'description'] == u'Ubuntu 12.04 (64-bit)' :
-                        _osTypeId = _osType[u'id']
+                    if _osType['description'] == 'Ubuntu 12.04 (64-bit)' :
+                        _osTypeId = _osType['id']
                         break;
 
                 if not _osTypeId : 
@@ -1050,10 +1050,10 @@ class CskCmds(CommonCloudFunctions) :
                     raise CldOpsException(_status, _msg)
 
                 _volumeId = False
-                _volumes = self.cskconn.listVolumes({u'virtualmachineid':_instance[u'id']})
+                _volumes = self.cskconn.listVolumes({'virtualmachineid':_instance['id']})
                 if _volumes and len(_volumes) :
                     _volume = _volumes[0]
-                    _volumeId = _volume[u'id']
+                    _volumeId = _volume['id']
  
                 if not _volumeId : 
                     _status  = 312
@@ -1074,11 +1074,11 @@ class CskCmds(CommonCloudFunctions) :
 
                 _msg = obj_attr_list["name"] + " capture request sent. "
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 
-                _msg += " from " + _instance[u'name'] + "(" + _volumeId + ")" 
+                _msg += " from " + _instance['name'] + "(" + _volumeId + ")" 
                 cbdebug(_msg, True)
 
-                _captured_image = self.cskconn.createTemplate({u'volumeid':_volumeId , u'name':obj_attr_list["captured_image_name"], u'displaytext':obj_attr_list["captured_image_name"], u'ostypeid':_osTypeId})
-                _captured_imageid = _captured_image[u'id']
+                _captured_image = self.cskconn.createTemplate({'volumeid':_volumeId , 'name':obj_attr_list["captured_image_name"], 'displaytext':obj_attr_list["captured_image_name"], 'ostypeid':_osTypeId})
+                _captured_imageid = _captured_image['id']
 
                 _msg = "Waiting for " + obj_attr_list["name"]
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
@@ -1089,9 +1089,9 @@ class CskCmds(CommonCloudFunctions) :
 
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries :
-                    _image_instance = self.cskconn.listTemplates({u'zoneid':_zoneid, u'templatefilter':u'executable',u'id':_captured_imageid})
+                    _image_instance = self.cskconn.listTemplates({'zoneid':_zoneid, 'templatefilter':'executable','id':_captured_imageid})
                     if len(_image_instance)  :
-                        if _image_instance[0][u'status'] == "Download Complete" :
+                        if _image_instance[0]['status'] == "Download Complete" :
                             _vm_image_created = True
                             _time_mark_crc = int(time())
                             obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
@@ -1119,11 +1119,11 @@ class CskCmds(CommonCloudFunctions) :
             else :
                 _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1169,13 +1169,13 @@ class CskCmds(CommonCloudFunctions) :
 
             if _instance :
                 if _ts == "fail" :
-                    self.cskconn.stopVirtualMachine({u'id': _instance[u'id']})
+                    self.cskconn.stopVirtualMachine({'id': _instance['id']})
                 elif _ts == "save" :
-                    self.cskconn.stopVirtualMachine({u'id': _instance[u'id']})
+                    self.cskconn.stopVirtualMachine({'id': _instance['id']})
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
-                    self.cskconn.startVirtualMachine({u'id': _instance[u'id']})
+                    self.cskconn.startVirtualMachine({'id': _instance['id']})
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-                    self.cskconn.startVirtualMachine({u'id': _instance[u'id']})
+                    self.cskconn.startVirtualMachine({'id': _instance['id']})
             
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
@@ -1185,11 +1185,11 @@ class CskCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1216,7 +1216,7 @@ class CskCmds(CommonCloudFunctions) :
             self.take_action_if_requested("AI", obj_attr_list, current_step)
             _status = 0
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
@@ -1245,7 +1245,7 @@ class CskCmds(CommonCloudFunctions) :
             self.take_action_if_requested("AI", obj_attr_list, current_step)                        
             _status = 0
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23

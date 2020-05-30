@@ -34,7 +34,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.ssh_ops import get_ssh_key
 
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build 
@@ -118,13 +118,13 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 _fmsg = "Unknown " + self.get_description() + " zone (" + zone + ")"
                 
-        except GCEException, obj:
+        except GCEException as obj:
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _fmsg = str(msg)
@@ -177,13 +177,13 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _fmsg = str(msg)
@@ -227,7 +227,7 @@ class GceCmds(CommonCloudFunctions) :
             _registered_imageid_list.append(_registered_image["id"])
             _map_name_to_id[_registered_image["name"]] = _registered_image["id"]
 
-        for _vm_role in vm_templates.keys() :
+        for _vm_role in list(vm_templates.keys()) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
 
             if _imageid != "to_replace" :
@@ -282,7 +282,7 @@ class GceCmds(CommonCloudFunctions) :
                 
                 for _instance in _instance_list :
 
-                    if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) and _instance["status"] == u'RUNNING' :
+                    if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) and _instance["status"] == 'RUNNING' :
                         self.gceconn.instances().delete(project = self.instances_project, \
                                                         zone = obj_attr_list["name"], \
                                                         instance = _instance["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
@@ -317,16 +317,16 @@ class GceCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             cberr(_msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -370,15 +370,15 @@ class GceCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -410,15 +410,15 @@ class GceCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -450,7 +450,7 @@ class GceCmds(CommonCloudFunctions) :
                     if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
                         _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
@@ -521,7 +521,7 @@ class GceCmds(CommonCloudFunctions) :
 
             return True
 
-        except Exception, e:
+        except Exception as e:
             cbdebug("Failed to retrieve IP for: " + obj_attr_list["name"] + ": " + str(e))
             return False
 
@@ -568,12 +568,12 @@ class GceCmds(CommonCloudFunctions) :
                 
             return _instances
         
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, _fmsg :
+        except Exception as _fmsg :
             return []
 
     @trace
@@ -616,12 +616,12 @@ class GceCmds(CommonCloudFunctions) :
                 obj_attr_list["boot_volume_imageid1"] = _candidate_images["items"][0]["id"]
                 _status = 0
             
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -644,7 +644,7 @@ class GceCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -669,7 +669,7 @@ class GceCmds(CommonCloudFunctions) :
 
         _key_list_str = ''
 
-        for _key in self.temp_key_metadata.keys() :
+        for _key in list(self.temp_key_metadata.keys()) :
             _key_list_str += self.temp_key_metadata[_key] + '\n'
 
         _key_list_str = _key_list_str[0:-1]
@@ -723,12 +723,12 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 return False
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
@@ -767,7 +767,7 @@ class GceCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -827,13 +827,13 @@ class GceCmds(CommonCloudFunctions) :
                     
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException, obj :
+        except GCEException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = int(obj.error_code)
@@ -844,7 +844,7 @@ class GceCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -880,15 +880,15 @@ class GceCmds(CommonCloudFunctions) :
 
             _status = 0
                     
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1056,15 +1056,15 @@ class GceCmds(CommonCloudFunctions) :
                 _fmsg += "instance creation failed for some unknown reason."
                 _status = 100
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1127,19 +1127,19 @@ class GceCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException, obj :
+        except GCEException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _fmsg = str(msg)
@@ -1230,11 +1230,11 @@ class GceCmds(CommonCloudFunctions) :
                 _fmsg = "This instance does not exist"
                 _status = 1098
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1292,15 +1292,15 @@ class GceCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1369,11 +1369,11 @@ class GceCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except GCEException, obj :
+        except GCEException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             

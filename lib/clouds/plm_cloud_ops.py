@@ -34,7 +34,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import hostname2ip
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 class PlmCmds(CommonCloudFunctions) :
     '''
@@ -97,11 +97,11 @@ class PlmCmds(CommonCloudFunctions) :
 
             _status -= 100
             
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -145,11 +145,11 @@ class PlmCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -170,7 +170,7 @@ class PlmCmds(CommonCloudFunctions) :
         _prov_netname_found = False
         _run_netname_found = False
 
-        for _endpoint in self.lvirtconn.keys() :
+        for _endpoint in list(self.lvirtconn.keys()) :
 
             _msg = "Checking if the " + _net_str + " can be "
             _msg += "found on VMC " + vmc_name + " (endpoint " + _endpoint + ")..."
@@ -203,7 +203,7 @@ class PlmCmds(CommonCloudFunctions) :
         TBD
         '''
 
-        for _endpoint in self.lvirtconn.keys() :
+        for _endpoint in list(self.lvirtconn.keys()) :
 
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
 
@@ -222,7 +222,7 @@ class PlmCmds(CommonCloudFunctions) :
 
                 _map_name_to_id[_registered_image] = _image_uuid
                 
-            for _vm_role in vm_templates.keys() :            
+            for _vm_role in list(vm_templates.keys()) :            
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
 
                 if _imageid != "to_replace" :
@@ -385,15 +385,15 @@ class PlmCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
                         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -445,11 +445,11 @@ class PlmCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -480,11 +480,11 @@ class PlmCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -518,7 +518,7 @@ class PlmCmds(CommonCloudFunctions) :
                         if _domain.name().count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                             _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = str(e)
@@ -578,7 +578,7 @@ class PlmCmds(CommonCloudFunctions) :
         _call = "NA"
         
         if endpoints == "all" :
-            _endpoints = self.lvirtconn.keys()
+            _endpoints = list(self.lvirtconn.keys())
         else :
             _endpoints = [endpoints]
                       
@@ -594,15 +594,15 @@ class PlmCmds(CommonCloudFunctions) :
 
             _status = 0
         
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _xfmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _xfmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _xfmsg = str(e)
             
@@ -679,11 +679,11 @@ class PlmCmds(CommonCloudFunctions) :
                 _fmsg += " on " + self.get_description()
                 _status = 1927
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -717,11 +717,11 @@ class PlmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -775,7 +775,7 @@ class PlmCmds(CommonCloudFunctions) :
             else :
                 return False
         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -800,7 +800,7 @@ class PlmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''        
-        obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(choice(self.lvirtconn.keys()), True)
+        obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(choice(list(self.lvirtconn.keys())), True)
         
         return True
 
@@ -834,15 +834,15 @@ class PlmCmds(CommonCloudFunctions) :
                                                   
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -868,15 +868,15 @@ class PlmCmds(CommonCloudFunctions) :
                 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -982,11 +982,11 @@ class PlmCmds(CommonCloudFunctions) :
                 _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
                 _status = 916
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
@@ -995,7 +995,7 @@ class PlmCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1064,15 +1064,15 @@ class PlmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1144,15 +1144,15 @@ class PlmCmds(CommonCloudFunctions) :
                         
                 _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1203,15 +1203,15 @@ class PlmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1269,11 +1269,11 @@ class PlmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except libvirtError, msg :
+        except libvirtError as msg :
             _status = 18127
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -1321,11 +1321,11 @@ class PlmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except ProcessManagement.ProcessManagementException, obj:
+        except ProcessManagement.ProcessManagementException as obj:
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1429,19 +1429,19 @@ class PlmCmds(CommonCloudFunctions) :
                 _cloud_init_fd = file(_cloud_init_fn, 'w')
                 _cloud_init_fd.write(_cloud_init_contents[_file])
                 _cloud_init_fd.close()
-                os.chmod(_cloud_init_fn, 0644)
+                os.chmod(_cloud_init_fn, 0o644)
 
-        except IOError, msg :
+        except IOError as msg :
             _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
             cberr(_msg, True, False)
             exit(4)
 
-        except OSError, msg :
+        except OSError as msg :
             _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
             cberr(_msg, True, False)
             exit(4)
 
-        except Exception, e :
+        except Exception as e :
             _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(e)
             cberr(_msg, True, False)
             exit(4)

@@ -34,7 +34,7 @@ RUN apt-get install -y gradle unzip
 # gradle-install-pm
 
 # numpy-install-pm
-RUN apt-get install -y python-numpy
+RUN apt-get install -y python3-numpy
 # numpy-install-pm
 
 #git-lfs-ARCHx86_64-install-man
@@ -56,7 +56,7 @@ RUN /bin/true; wget -N -q -P /home/REPLACE_USERNAME https://github.com/broadinst
 # gatk4-install-man
 
 # spark-perf-install-man
-RUN cd /home/REPLACE_USERNAME; pip install nose; git clone https://github.com/databricks/spark-perf.git
+RUN cd /home/REPLACE_USERNAME; pip3 install nose; git clone https://github.com/databricks/spark-perf.git
 # spark-perf-install-man
 
 # sparkbench-install-man

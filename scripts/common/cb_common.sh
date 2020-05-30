@@ -1519,7 +1519,8 @@ function replicate_to_container_if_nested {
     # According to the docks, /etc/docker/daemon.json is supposed to be linux distribution-independent
     nest_containers_insecure_registry=`get_my_vm_attribute nest_containers_insecure_registry`
     if [ x"${nest_containers_insecure_registry}" == x"True" ] ; then
-        echo "{ \"insecure-registries\" : [\"${nest_containers_repository}\"] }" > /tmp/daemon.json
+        repo=$(echo "${nest_containers_repository}" | cut -d "/" -f 1)
+        echo "{ \"insecure-registries\" : [\"${repo}\"] }" > /tmp/daemon.json
         chown root:root /tmp/daemon.json
         sudo mv /tmp/daemon.json /etc/docker/daemon.json
     fi

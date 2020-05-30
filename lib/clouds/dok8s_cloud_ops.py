@@ -13,7 +13,7 @@
 '''
     Created on October 10, 2018
     DigitalOcean Kubernetes Object Operations Library
-    @author: Michael R. Hines
+    @author: Michael R. Galaxy
 '''
 
 import requests
@@ -24,10 +24,10 @@ from json import loads, dumps
 from time import sleep, time
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from shared_functions import CldOpsException
+from .shared_functions import CldOpsException
 
-from libcloud_common import LibcloudCmds
-from kub_cloud_ops import KubCmds
+from .libcloud_common import LibcloudCmds
+from .kub_cloud_ops import KubCmds
 
 import operator
 import traceback
@@ -36,8 +36,8 @@ try:
     from http.client import HTTPConnection # py3
     from http.client import HTTPSConnection # py3
 except ImportError:
-    from httplib import HTTPConnection # py2
-    from httplib import HTTPSConnection # py2
+    from http.client import HTTPConnection # py2
+    from http.client import HTTPSConnection # py2
 
 HTTPConnection.debuglevel = 0
 HTTPSConnection.debuglevel = 0
@@ -60,7 +60,7 @@ class Dok8sCmds(KubCmds) :
                     extra_parms["kubeyaml"] = yaml.safe_load(extra_parms["kubeconfig"])
 
             return KubCmds.connect(self, access, credentials, vmc_name, extra_parms, diag, generate_rc)
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             raise e
@@ -241,7 +241,7 @@ class Dok8sCmds(KubCmds) :
             else :
                 cberr("Failed to list droplet IDs: " + str(r.status_code), True)
                 raise CldOpsException("No k8s for you.", 463)
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
 
@@ -289,7 +289,7 @@ class Dok8sCmds(KubCmds) :
             cbdebug("Deleted " + kuuid)
             return True
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             cberr("Failure to destroy k8s cluster: " + str(e), True)
@@ -327,7 +327,7 @@ class Dok8sCmds(KubCmds) :
                 if not obj_attr_list["kuuid"] :
                     return 458, "vmcregister did not find a UUID, No k8s for you."
             status, msg = KubCmds.vmcregister(self, obj_attr_list)
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             status, msg = self.common_messages("VMC", obj_attr_list, "registered", status, msg)
@@ -348,7 +348,7 @@ class Dok8sCmds(KubCmds) :
                     if not success :
                         status = 463
                         msg = "Failed to destroy k8s cluster"
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             status, msg = self.common_messages("VMC", obj_attr_list, "unregistered", status, msg)
@@ -372,7 +372,7 @@ class Dok8sCmds(KubCmds) :
                         cbdebug("Container " + obj_attr_list["name"] + " sent to Node " + obj_attr_list["node"] + " = " + str(obj_attr_list["host_name"]), True)
                         obj_attr_list["droplet"] = dumps(droplet)
                         break
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
         finally :

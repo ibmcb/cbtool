@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -44,7 +44,7 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, cloud_name, overri
     '''
     _msg = "Experiment plan directives will be"
     _msg += " written to experiment plan file \"" + path[0] + '/' + reg_tst_expl_fn + "\"."
-    print _msg
+    print(_msg)
 
     _counter = 0
     _reg_tst_expl_fh = open(path[0] + '/' + reg_tst_expl_fn, 'w', 0)
@@ -113,7 +113,7 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, cloud_name, overri
     _msg += "export CB_VMC_DEFAULTS_SIM_HOSTS_MEM_PER_CORE=10000000; export CB_ATTACH_STARTUP_CLOUD=0" + _path + "/../configs/build_cloud_config_file_from_env.sh;" 
     _msg += _path + "/../cb --soft_reset --trace regression/"
     _msg += reg_tst_expl_fn + " 2>&1 > regression_test_output.txt\""
-    print _msg
+    print(_msg)
 
 ignore_strings = [
                   "Used Memory", 
@@ -144,9 +144,9 @@ def show_percent(num, contents, phase) :
     clen = len(contents)
     percent = int((float(num) / float(clen)) * 100.0)
     if int(num) == 0 :
-        print "Starting phase: " + phase
+        print("Starting phase: " + phase)
     elif int(num) == (clen - 1) :
-        print "\r100%    "
+        print("\r100%    ")
     elif (int(percent) % percent_inc) == 0 :
         sys.stdout.write("\r" + str(percent) + "%...")
         sys.stdout.flush()
@@ -250,8 +250,8 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
         elif _line_contents.count("[TEST]") and _line_contents.count("END") and not _line_contents.count("exit") :
             try :
                 _golden_output_results[str(_current_test)]["size"] = str(len(_golden_output_results[str(_current_test)]["contents"].split('\n')))
-            except KeyError, e:
-                print "Failed, current is false on test idx " + str(test_idx) + ": " + str(e) + " test: " + _line_contents
+            except KeyError as e:
+                print("Failed, current is false on test idx " + str(test_idx) + ": " + str(e) + " test: " + _line_contents)
                 exit(1)
 
             _golden_output_fh = open(path[0] + '/' + _outputs_directory + '/golden/test' + str(_current_test) + ".txt", 'w', 0)
@@ -418,7 +418,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     _msg += " failures detected (" + _failure_list[0:-1] + "), "
     _msg += str(_warnings) + " warnings detected (" + _warning_list[0:-1]
     _msg += ") and " + str(_infos) + " infos detected."
-    print _msg
+    print(_msg)
 
     _check_list = _failure_list + ',' + _warning_list
 
@@ -443,7 +443,7 @@ def main() :
     _reg_tst_val_fn = "main.html"
 
     if len(argv) < 2 :
-        print "Usage: regression_test make|validate [cloud name] [regression test output filename]"
+        print("Usage: regression_test make|validate [cloud name] [regression test output filename]")
         exit(1)
 
     else :
@@ -454,7 +454,7 @@ def main() :
         
             for _file in _file_list :
                 _msg = "Opening file \"" + _file + "\".........."
-                print _msg
+                print(_msg)
         
                 try : 
                     with open(path[0] + '/' + _file, 'r'): pass
@@ -463,7 +463,7 @@ def main() :
                     _file_fh.close()
                 except IOError :
                     if argv[1] == "make" and _file == _reg_tst_expl_fn :
-                        print "Will make " + _file + " from scratch..."
+                        print("Will make " + _file + " from scratch...")
                         _file_contents[_file] = ""
                     else :
                         raise IOError
@@ -499,7 +499,7 @@ def main() :
                 _msg += _reg_tst_out_fn + "\" against the golden file \"" + path[0]
                 _msg += '/' + _reg_tst_gold_fn + "."
               
-                print _msg
+                print(_msg)
     
                 _reg_tst_out_fh = open(_reg_tst_out_fn, 'r')
                 _reg_tst_out_contents = _reg_tst_out_fh.readlines()
@@ -512,7 +512,7 @@ def main() :
                                                         _reg_tst_val_fn)
     
         else :
-            print "Unknown operation: " + argv[1]
+            print("Unknown operation: " + argv[1])
             exit(1)
 
 main()
