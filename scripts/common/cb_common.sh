@@ -302,7 +302,7 @@ function retriable_execution {
         OUTERR=1
         EXPRESSION=`echo $1 | cut -d ' ' -f 9-15`
 
-        if [[ -f ~/cb_os_cache.txt ]]; then
+        if [[ x"${EXPRESSION}" != x ]] && [[ -f ~/cb_os_cache.txt ]]; then
             OUTPUT=`cat ~/cb_os_cache.txt | grep "${EXPRESSION}" -m 1 | awk '{print $NF}'`
             # invalidate the cache entry
 			if [[ ${non_cacheable} -eq 1 ]] ; then
@@ -334,10 +334,12 @@ function retriable_execution {
         fi
 
     if [[ x"${OUTPUT}" != x && ${can_cache} -eq 1 && ${non_cacheable} -eq 0 ]]; then
-        echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
-        fi
+       if [ x"${EXPRESSION}" != x ] ; then
+            echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
+       fi
+    fi
 
-        echo $OUTPUT
+    echo $OUTPUT
 }
 
 function get_global_sub_attribute {
