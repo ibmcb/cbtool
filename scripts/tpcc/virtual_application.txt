@@ -70,7 +70,7 @@ MYSQL_INNODB_LOG_FILE_SIZE = 48M
 
 # A large query cache size leads to significant performance degradation. This
 # is because of cache overhead and locking. Cacheable queries take out an
-# exclusive lock on MySQL’s query cache. In addition, any insert, update,
+# exclusive lock on MySQL's query cache. In addition, any insert, update,
 # delete, or other modifications to a table causes any relevant entries in the
 # query cache to be flushed.
 MYSQL_QUERY_CACHE_SIZE = 16M
