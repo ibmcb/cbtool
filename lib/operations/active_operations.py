@@ -5293,7 +5293,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] and int(str(_ai_attr_list["load_generator_sources"])) == 1 :
                         _script_key = _ai_attr_list["load_manager_role"].lower() + "_start1"
                         _cmd = "~/" + _ai_attr_list[_script_key] + ' ' + _cmd_params
-                        _cmd = "bash -c \"bash -x " + _cmd + " 2>&1 | tee /tmp/run.log\""
         
                         _proc_h = Popen(_cmd, shell=True)
         
