@@ -47,7 +47,7 @@ Subscribe to our mailing list:
 
     3. You can also try to use the [Graphical Wizard](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection) for a first-time connection.
 
-16. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
+13. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
 
 ## Features:
 - Automatic deployment and controlled execution of multiple multi-tier applications.
@@ -77,54 +77,54 @@ Want to add support for a new Cloud? Take a look at our [Frequently Asked Questi
 
 To get the most current list, start CBTOOL and type ```typelist``` on the CLI. To get more information about a given workload, ```typeshow <workload name>```:
 
-```
-(MYCLOUD) typelist
-AIs with the following types can be attached to to this experiment (Cloud MYSIMCLOUD) :
+> (MYCLOUD) typelist
 
-synthetic:
-  bonnie (default, full)
-  btest (default)
-  coremark (default)
-  ddgen (default)
-  filebench (fileserver, oltp_noism, varmail, videoserver, webproxy)
-  fio (default)
-  iperf (tcp, udp)
-  mlg (default)
-  netperf (tcp_stream, tcp_maerts, udp_stream, tcp_rr, tcp_cc, tcp_crr, udp_rr)
-  nuttcp (tcp, udp)
-  postmark (default)
-  unixbench (arithmetic, dhrystone, whetstone, load, misc, speed, oldsystem, system, fs, shell, index)
-  xping (icmp)
+> AIs with the following types can be attached to to this experiment (Cloud MYSIMCLOUD) :
 
-application-stress:
-  memtier (default)
-  oldisim (default)
-  wrk (default)
+1. synthetic:
+2.  bonnie (default, full)
+3.   btest (default)
+4.  coremark (default)
+5.  ddgen (default)
+6.  filebench (fileserver, oltp_noism, varmail, videoserver, webproxy)
+7.  fio (default)
+8.  iperf (tcp, udp)
+9.  mlg (default)
+10.  netperf (tcp_stream, tcp_maerts, udp_stream, tcp_rr, tcp_cc, tcp_crr, udp_rr)
+11.  nuttcp (tcp, udp)
+12.  postmark (default)
+13.  unixbench (arithmetic, dhrystone, whetstone, load, misc, speed, oldsystem, system, fs, shell, index)
+14.  xping (icmp)
 
-scientific:
-  hpcc (default)
-  linpack (default)
-  multichase (simple, work:N, t0-2, nta, movdqa, mvntdqa, parallel2-10, critword:N, critword2:N)
-  parboil (histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp)
-  scimark (default)
+> application-stress:
+1.  memtier (default)
+2.  oldisim (default)
+3.  wrk (default)
 
-transactional:
-  cassandra_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  ibm_daytrader (default)
-  mongo_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  open_daytrader (default)
-  redis_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  specjbb (preset, hbir)
-  sysbench (simple, complex, nontrx, sp)
+> scientific:
+1.  hpcc (default)
+2.  linpack (default)
+3.  multichase (simple, work:N, t0-2, nta, movdqa, mvntdqa, parallel2-10, critword:N, critword2:N)
+4.  parboil (histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp)
+5.  scimark (default)
 
-data-centric:
-  giraph (pagerank, topkpagerank)
-  hadoop (sort, wordcount, terasort, dfsioe, nutchindexing, pagerank, bayes, kmeans, hivebench)
+> transactional:
+1.  cassandra_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
+2.  ibm_daytrader (default)
+3.  mongo_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
+4.  open_daytrader (default)
+5.  redis_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
+6.  specjbb (preset, hbir)
+7.  sysbench (simple, complex, nontrx, sp)
 
-fake:
-  nullworkload (default)
-```
+> data-centric:
+1.  giraph (pagerank, topkpagerank)
+2.  hadoop (sort, wordcount, terasort, dfsioe, nutchindexing, pagerank, bayes, kmeans, hivebench)
+
+> fake:
+1.  nullworkload (default)
+
 Contacts:
 
 Marcio Silva marcios@us.ibm.com
-Michael R. Hines mrhines@digitalocean.com
+Michael Galaxy mrhines@digitalocean.com
