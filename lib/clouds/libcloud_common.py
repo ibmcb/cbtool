@@ -488,8 +488,8 @@ class LibcloudCmds(CommonCloudFunctions) :
         for _registered_image in _registered_image_list :
 
             _registered_imageid_list.append(_registered_image.id)
-            _map_name_to_id[str(_registered_image.name.encode('utf-8').strip())] = str(_registered_image.id)
-            _map_name_to_id[str(_registered_image.id.encode('utf-8').strip())] = str(_registered_image.id)
+            _map_name_to_id[str(_registered_image.name.strip())] = str(_registered_image.id)
+            _map_name_to_id[str(_registered_image.id.strip())] = str(_registered_image.id)
 
         for _vm_role in list(vm_templates.keys()) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
