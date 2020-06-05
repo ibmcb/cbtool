@@ -210,7 +210,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         _host_uuid = obj_attr_list["cloud_vm_uuid"]
 
-        obj_attr_list["host_list"] = {}
+        obj_attr_list["host_list"] = ""
         obj_attr_list["hosts"] = ''
 
         obj_attr_list["initial_hosts"] = ''.split(',')
@@ -307,7 +307,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 self.discover_hosts(obj_attr_list, _time_mark_prs)
             else :
                 obj_attr_list["hosts"] = ''
-                obj_attr_list["host_list"] = {}
+                obj_attr_list["host_list"] = ""
                 obj_attr_list["host_count"] = "NA"
 
             _time_mark_prc = int(time())
