@@ -1122,9 +1122,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             if str(obj_attr_list["cloud_vv_uuid"]).lower() != "not supported" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
-                self.common_messages("VV", obj_attr_list, "destroying", 0, '')
-
                 _volumes = connection.list_volumes()
+                if len(_volumes) :
+                    self.common_messages("VV", obj_attr_list, "destroying", 0, '')
                 for _volume in _volumes :
                     if _volume.name == obj_attr_list["cloud_vv_name"] :
                         try :

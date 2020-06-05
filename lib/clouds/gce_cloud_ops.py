@@ -545,7 +545,7 @@ class GceCmds(CommonCloudFunctions) :
                     _instance_list = self.gceconn.instances().list(project = self.instances_project, \
                                                                    zone =  _actual_zone).execute(http = self.http_conn[obj_attr_list["name"]])
                 else :
-                    _istance_list = self.gceconn.instances().get(project = self.instances_project, \
+                    _instance_list = self.gceconn.instances().get(project = self.instances_project, \
                                                                     zone =  _actual_zone, instance = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
             else :
                 if identifier == "all" :
@@ -871,16 +871,17 @@ class GceCmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list[identifier])
-            
-            if _instance :
-                self.common_messages("VV", obj_attr_list, "destroying", 0, '')
+            if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false":
+                _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list[identifier])
 
-                _operation = self.gceconn.disks().delete(project = self.instances_project, \
-                                                         zone =  obj_attr_list["vmc_name"], \
-                                                         disk = obj_attr_list[identifier]).execute(http = self.http_conn[obj_attr_list["name"]])
+                if _instance :
+                    self.common_messages("VV", obj_attr_list, "destroying", 0, '')
 
-                self.wait_until_operation(obj_attr_list, _operation)
+                    _operation = self.gceconn.disks().delete(project = self.instances_project, \
+                                                             zone =  obj_attr_list["vmc_name"], \
+                                                             disk = obj_attr_list[identifier]).execute(http = self.http_conn[obj_attr_list["name"]])
+
+                    self.wait_until_operation(obj_attr_list, _operation)
 
             _status = 0
                     
@@ -908,6 +909,7 @@ class GceCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            _operation = False
             
             self.determine_instance_name(obj_attr_list)
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower()
@@ -1077,12 +1079,16 @@ class GceCmds(CommonCloudFunctions) :
                 cberr(line)
             _fmsg = str(msg)
             _status = 23
-    
+
         finally :
-            
+
+            if _status and _operation is not False :
+                cbdebug("Error after VM creation. Cleanup...", True)
+                self.vmdestroy_repeat(obj_attr_list)
+
             if "instance_obj" in obj_attr_list :
                 del obj_attr_list["instance_obj"]
-                
+
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
         
@@ -1091,6 +1097,7 @@ class GceCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        cbdebug("Entering destroy...", True)
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
