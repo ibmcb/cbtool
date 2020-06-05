@@ -12,7 +12,7 @@ RUN yum install -y sudo
 # ifconfig-install-sl
 RUN yum -y update; yum clean all
 RUN yum install -y net-tools
-RUN ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+RUN ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
 # ifconfig-install-sl
 
 # ip-install-sl

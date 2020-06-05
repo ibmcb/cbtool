@@ -16,7 +16,7 @@ RUN apt-get install -y sudo
 # sudo-install-man
 
 # ifconfig-install-sl
-RUN apt-get update; apt-get install -y net-tools; sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+RUN apt-get update; apt-get install -y net-tools; sudo ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
 # ifconfig-install-sl
 
 # ip-install-sl
