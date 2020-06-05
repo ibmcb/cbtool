@@ -1487,7 +1487,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                             self.get_adapter(_credentials_list).ex_power_on_node(_instance)
                         else :
                             cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") still has a pending event. Waiting to destroy...", True)
-                        sleep(_wait)
+                        _wait = self.backoff(obj_attr_list, _wait)
                         _curr_tries += 1
                         continue
 
@@ -1518,7 +1518,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     _msg = "Inside destroy. " + _errmsg
                     _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
                     cbdebug(_msg)
-                    sleep(_wait)
+                    _wait = self.backoff(obj_attr_list, _wait)
                     _curr_tries += 1
                     cbdebug("Next try...")
 
