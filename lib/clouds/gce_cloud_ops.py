@@ -38,7 +38,7 @@ from .shared_functions import CldOpsException, CommonCloudFunctions
 
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build 
-import googleapiclient.errors as GCEException
+from googleapiclient.errors import HttpError as GCEExceptionHttpError
 
 class GceCmds(CommonCloudFunctions) :
     # GCE uses the same image IDs for all regions and all zones.
@@ -118,15 +118,15 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 _fmsg = "Unknown " + self.get_description() + " zone (" + zone + ")"
                 
-        except GCEException as obj:
+        except GCEExceptionHttpError as obj:
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+                cbwarn(line)
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except Exception as msg :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+                cbwarn(line)
             _fmsg = str(msg)
             _status = 23
 
@@ -179,13 +179,13 @@ class GceCmds(CommonCloudFunctions) :
 
         except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+                cbwarn(line)
             _fmsg = str(obj.msg)
             _status = 2
 
         except Exception as msg :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+                cbwarn(line)
             _fmsg = str(msg)
             _status = 23
 
@@ -317,9 +317,9 @@ class GceCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
             
         except CldOpsException as obj :
             _fmsg = str(obj.msg)
@@ -370,9 +370,9 @@ class GceCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
             
         except CldOpsException as obj :
             _fmsg = str(obj.msg)
@@ -410,9 +410,9 @@ class GceCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except CldOpsException as obj :
             _status = obj.status
@@ -531,30 +531,26 @@ class GceCmds(CommonCloudFunctions) :
         TBD
         '''
 
-        _instances = []
-        _fmsg = "Error while getting instances"
-
-        if "vmc_name" in obj_attr_list :
-            _actual_zone = obj_attr_list["vmc_name"]
-        else :
-            _actual_zone = obj_attr_list["name"]
-
         try :
+            _instances = []
+            _fmsg = "Error while getting instances"
+
+            if "vmc_name" in obj_attr_list :
+                _actual_zone = obj_attr_list["vmc_name"]
+            else :
+                _actual_zone = obj_attr_list["name"]
+
             if obj_type == "vm" :
                 if identifier == "all" :
                     _instance_list = self.gceconn.instances().list(project = self.instances_project, \
                                                                    zone =  _actual_zone).execute(http = self.http_conn[obj_attr_list["name"]])
-                                                                   
                 else :
-                    _instance_list = self.gceconn.instances().get(project = self.instances_project, \
-                                                                   zone =  _actual_zone, \
-                                                                   instance = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
-           
+                    _istance_list = self.gceconn.instances().get(project = self.instances_project, \
+                                                                    zone =  _actual_zone, instance = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
             else :
                 if identifier == "all" :
                     _instance_list = self.gceconn.disks().list(project = self.instances_project, \
                                                                    zone =  _actual_zone).execute(http = self.http_conn[obj_attr_list["name"]])
- 
                 else :
                     _instance_list = self.gceconn.disks().get(project = self.instances_project, \
                                                                    zone =  _actual_zone, \
@@ -568,12 +564,17 @@ class GceCmds(CommonCloudFunctions) :
                 
             return _instances
         
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-            raise CldOpsException(_fmsg, _status)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            if _status == 404 :
+                return []
+            else :
+                _fmsg = str(obj)
+                raise CldOpsException(_fmsg, _status)
         
         except Exception as _fmsg :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line)
             return []
 
     @trace
@@ -616,9 +617,9 @@ class GceCmds(CommonCloudFunctions) :
                 obj_attr_list["boot_volume_imageid1"] = _candidate_images["items"][0]["id"]
                 _status = 0
             
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
             raise CldOpsException(_fmsg, _status)
         
         except Exception as e :
@@ -703,7 +704,6 @@ class GceCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            
             _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
 
             if _instance :
@@ -723,12 +723,16 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 return False
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line)
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
             raise CldOpsException(_fmsg, _status)
         
         except Exception as msg :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line)
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
@@ -829,15 +833,15 @@ class GceCmds(CommonCloudFunctions) :
 
         except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+                cbwarn(line)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException as obj :
+        except GCEExceptionHttpError as obj :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+                cbwarn(line)
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except KeyboardInterrupt :
             _status = 42
@@ -846,7 +850,7 @@ class GceCmds(CommonCloudFunctions) :
 
         except Exception as e :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+                cbwarn(line)
             _status = 23
             _fmsg = str(e)
     
@@ -884,9 +888,9 @@ class GceCmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except Exception as e :
             _status = 23
@@ -1057,14 +1061,20 @@ class GceCmds(CommonCloudFunctions) :
                 _status = 100
 
         except CldOpsException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line)
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except Exception as msg :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line)
             _fmsg = str(msg)
             _status = 23
     
@@ -1129,19 +1139,19 @@ class GceCmds(CommonCloudFunctions) :
             
         except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+                cbwarn(line)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException as obj :
+        except GCEExceptionHttpError as obj :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+                cbwarn(line)
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except Exception as msg :
             for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+                cberr(line)
             _fmsg = str(msg)
             _status = 23
     
@@ -1296,9 +1306,9 @@ class GceCmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except Exception as msg :
             _fmsg = str(msg)
@@ -1369,9 +1379,9 @@ class GceCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except GCEException as obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+        except GCEExceptionHttpError as obj :
+            _status = int(obj.resp.status)
+            _fmsg = str(obj)
 
         except Exception as e :
             _status = 23
