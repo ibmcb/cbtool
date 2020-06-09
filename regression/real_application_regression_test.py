@@ -53,7 +53,7 @@ def print_msg(message, newline = True) :
     if newline :
         print(datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message)
     else :
-        print(datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message, end=' ')        
+        print(datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S') + ' ' + message, end=' ')
 
 def get_type_list(options) :
     '''
@@ -65,8 +65,8 @@ def get_type_list(options) :
     _fc = _fd.read()
     _cb_workload_alias = {}
     for _line in _fc.split('\n') :
-        if _line[0] != "#" :
-            _key, _contents = _line.split(' ')
+        if len(_line.split(' ')) == 3 :
+            _x, _key, _contents = _line.split(' ')
             _cb_workload_alias[_key] = _contents
     _fd.close()
         
@@ -145,8 +145,6 @@ def retriable_cloud_connection(options, cloud_model, command) :
             _attempt += 1
             sleep(10)
 
-
-
 def cli_named_option_parser() :
     '''
     Reserved for future use
@@ -164,6 +162,7 @@ def cli_named_option_parser() :
     parser.add_option("-c", "--cloud_model", dest="cloud_model", default = "auto", help="Which cloud model should be used")        
     parser.add_option("--noheader", dest = "noheader", action = "store_true", help = "Do not print header")
     parser.add_option("--headeronly", dest = "headeronly", action = "store_true", help = "Print only header")
+    parser.add_option("-e", "--experiment_id", dest="experiment_id", default="real_app_regtest_" + makeTimestamp().replace(' ','_').replace('/','_').replace(':','_'), help="Experiment identifier")    
     (options, args) = parser.parse_args()
 
     return options, args
@@ -188,6 +187,11 @@ def main() :
         _msg = "ERROR: Unable to connect to API and get a list of attached clouds"
         print_msg(_msg)
         exit(1)
+
+    if str(_options.experiment_id).lower() != "none" :
+        _msg = "# Setting expid to \"" + _options.experiment_id  + "\""
+        print_msg( _msg)
+        apiconn.expid(cloud_name, _options.experiment_id)
 
     _exit_code = 0
     
@@ -305,12 +309,18 @@ def main() :
         _fh.close()
 
         if not _options.noheader :
-            print(_x_test_results_table)
-                
+            print _x_test_results_table
+
+    _msg = "# Performance metrics will be collected in .csv files." 
+    print_msg(_msg)
+    _url = apiconn.monextract(cloud_name, "all", "all")
+    _msg = "Data is available at url \"" + _url + "\""
+    print_msg(_msg)
+
     return True
 
     exit(_exit_code)
-    
+
 def deploy_virtual_application(apiconn, application_type, hypervisor_type, runtime_samples, timeout, check_interval) :
     '''
     TBD
@@ -487,20 +497,20 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             apiconn.appdetach(cloud_name, _vapp["uuid"])
 
         _msg = "    Checking reported deprovisioning metrics..." 
-        print(_msg)
+        print_msg( _msg)
         # Get some data from the monitoring system
         for _vm in _vapp["vms"].split(",") :
             _vm_uuid, _vm_role, _vm_name = _vm.split("|") 
             for _management_metrics in apiconn.get_management_data(cloud_name, _vm_uuid) :
                 for _metric in _dst_m :
                     _msg = "        Checking metric \"" + _metric + "\"..."
-                    print(_msg, end=' ')
+                    print_msg(_msg, False)
                     if _metric not in _management_metrics :
                         _management_metrics_pass = False
-                        print("NOK")
+                        print_msg("NOK")
                     else :
                         _value = int(_management_metrics[_metric])                        
-                        print(str(_value) + " OK")
+                        print_msg(str(_value) + " OK")
 
         if _management_metrics_pass :
             _msg = "    Reported deprovisioning metrics OK" 
@@ -508,18 +518,18 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
 
         _vapp = None
 
-    except APIException as obj :
+    except APIException, obj :
         error = True
         print_msg("API Problem (" + str(obj.status) + "): " + obj.msg)
     
-    except APINoSuchMetricException as obj :
+    except APINoSuchMetricException, obj :
         error = True
         print_msg("API Problem (" + str(obj.status) + "): " + obj.msg)
     
     except KeyboardInterrupt :
         print_msg("Aborting this APP.")
     
-    except Exception as msg :
+    except Exception, msg :
         error = True
         print_msg("Problem during experiment: " + str(msg))
     
@@ -548,6 +558,10 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                         
             except APIException as obj :
                 print_msg("Error finishing up: (" + str(obj.status) + "): " + obj.msg)
+
+        _msg = "# Metrics will be collected in .csv files." 
+        print_msg( _msg)
+        _url = apiconn.monextract(cloud_name, "all", "all")
 
         return _management_metrics_pass, _runtime_metrics_pass, _runtime_missing_metrics, _sut
 

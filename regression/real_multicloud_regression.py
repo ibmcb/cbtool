@@ -210,7 +210,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _vm = {}
         _vms_failed = 0     
         
-        print('') 
+        print('')
                
         if cloud_name == "NA" :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
@@ -223,12 +223,12 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["osk"] = "bionic-server-cloudimg-amd64"
         _model_to_imguuid["os"] = "bionic-server-cloudimg-amd64"
         _model_to_imguuid["gen"] = "xenial3"
-        _model_to_imguuid["plm"] = "bionic"        
+        _model_to_imguuid["plm"] = "bionic-server-cloudimg-amd64.img"
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1804-bionic-v20190320"
         _model_to_imguuid["do"] = "44972302"        
         _model_to_imguuid["slr"] = "2110219"
-        _model_to_imguuid["kub"] = "cb_nullworkload"
+        _model_to_imguuid["kub"] = "ibmcb/ubuntu_cb_nullworkloadcolonmaster"
         _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-18_04-LTS-amd64-server-20190320-en-us-30GB"
 
         _model_to_login = {}
@@ -336,18 +336,18 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _mgt_metric = apiconn.get_latest_management_data(cloud_name, _vm["uuid"])
 #        print _mgt_metric
     
-    except APIException as obj :
+    except APIException, obj :
         _attach_error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
-    except APINoSuchMetricException as obj :
+    except APINoSuchMetricException, obj :
         _attach_error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
         print_msg("Aborting this VM.")
     
-    except Exception as msg :
+    except Exception, msg :
         _attach_error = True
         _fmsg = "Problem during experiment: " + str(msg)
     
@@ -413,18 +413,18 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                 apiconn.vmdetach(cloud_name, _vm["uuid"])
                 _delete_time = int(time() - _mark_a)
         
-            except APIException as obj :
+            except APIException, obj :
                 _delete_error = True
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
 
-            except APINoSuchMetricException as obj :
+            except APINoSuchMetricException, obj :
                 _delete_error = True
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
                 
             except KeyboardInterrupt :
                 print_msg("Aborting this VM.")
 
-            except Exception as msg :
+            except Exception, msg :
                 _delete_error = True
                 _fmsg = "Problem during experiment: " + str(msg)
                 
@@ -934,10 +934,10 @@ def main() :
         _results_row[0] = _results_row[0].center(22, ' ')
 
         if _results_row[1] == "NA" :
-            _results_row[1] = _results_row[1].center(51,' ')
+            _results_row[1] = _results_row[1].center(49,' ')
 
         if _results_row[2] == "NA" :
-            _results_row[2] = _results_row[2].center(51,' ')
+            _results_row[2] = _results_row[2].center(49,' ')
 
         if _results_row[3] == "NA" :
             _results_row[3] = _results_row[3].center(49,' ')

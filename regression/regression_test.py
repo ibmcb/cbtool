@@ -110,7 +110,7 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, cloud_name, overri
     _msg += " Now run it with the command \"export CB_STARTUP_CLOUD=MYSIM; export CB_CLOUD_RENAME=" + cloud_name + "; "
     _msg += "export CB_API_DEFAULTS_FILE_IDENTIFIER=_sim; export CB_SIM_INITIAL_VMCS=simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg; "
     _msg += "export CB_VMC_DEFAULTS_SIM_HOSTS_PER_VMC=15; export CB_VMC_DEFAULTS_SIM_HOSTS_CPU=200000; "
-    _msg += "export CB_VMC_DEFAULTS_SIM_HOSTS_MEM_PER_CORE=10000000; export CB_ATTACH_STARTUP_CLOUD=0" + _path + "/../configs/build_cloud_config_file_from_env.sh;" 
+    _msg += "export CB_VMC_DEFAULTS_SIM_HOSTS_MEM_PER_CORE=10000000; export CB_ATTACH_STARTUP_CLOUD=0;" + _path + "/../configs/build_cloud_config_file_from_env.sh;" 
     _msg += _path + "/../cb --soft_reset --trace regression/"
     _msg += reg_tst_expl_fn + " 2>&1 > regression_test_output.txt\""
     print(_msg)
