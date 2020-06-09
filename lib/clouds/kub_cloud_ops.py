@@ -338,6 +338,8 @@ class KubCmds(CommonCloudFunctions) :
 
         self.additional_host_discovery (obj_attr_list)
 
+        obj_attr_list["host_list"] = str2dic(obj_attr_list["host_list"])
+
         return True
 
     @trace
