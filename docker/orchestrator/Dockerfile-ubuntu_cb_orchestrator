@@ -8,7 +8,6 @@ RUN apt-get update; \
 apt-get install -y vim sudo; \
 useradd -ms /bin/bash REPLACE_USERNAME; \
 echo "REPLACE_USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
-#RUN apt-get install -y pwgen; wget -N -P /home/REPLACE_USERNAME http://REPLACE_DROPBOX/repo/dropbox/genesis/python-genesis-master.zip; cd /home/REPLACE_USERNAME; unzip python-genesis-master.zip; cd python-genesis-master; python3 setup.py install
 
 # sudo-install-man
 RUN apt-get install -y sudo
@@ -288,7 +287,8 @@ RUN pip3 install --upgrade jsonschema
 USER REPLACE_USERNAME
 # gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
-RUN curl https://sdk.cloud.google.com | bash
+RUN if [[ $(uname -p) != "ppc64le" ]]; then curl https://sdk.cloud.google.com | bash; else /bin/true; fi
+RUN if [[ $(uname -p) != "ppc64le" ]]; then sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud; else /bin/true; fi 
 RUN sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
 # gcloud-install-man
 

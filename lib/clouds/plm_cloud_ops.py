@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -31,7 +31,7 @@ from hashlib import sha256
 from libvirt import *
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, is_number, DataOpsException
 from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import hostname2ip
 from .shared_functions import CldOpsException, CommonCloudFunctions 
@@ -64,7 +64,7 @@ class PlmCmds(CommonCloudFunctions) :
         self.vhw_config["iron32"] = { "vcpus" : "2", "vmem" : "2048", "vstorage" : "179200", "vnics" : "1" }
         self.vhw_config["silver32"] = { "vcpus" : "4", "vmem" : "2048", "vstorage" : "358400", "vnics" : "1" }
         self.vhw_config["gold32"] = { "vcpus" : "8", "vmem" : "4096", "vstorage" : "358400", "vnics" : "1" }
-        self.vhw_config["cooper64"] = { "vcpus" : "2", "vmem" : "4096", "vstorage" : "61440", "vnics" : "1" }
+        self.vhw_config["copper64"] = { "vcpus" : "2", "vmem" : "4096", "vstorage" : "61440", "vnics" : "1" }
         self.vhw_config["bronze64"]  = { "vcpus" : "2", "vmem" : "4096", "vstorage" : "870400", "vnics" : "1" }
         self.vhw_config["silver64"] = { "vcpus" : "4", "vmem" : "8192", "vstorage" : "1048576", "vnics" : "1" }
         self.vhw_config["gold64"] = { "vcpus" : "8", "vmem" : "16384", "vstorage" : "1048576", "vnics" : "1" }
@@ -210,23 +210,22 @@ class PlmCmds(CommonCloudFunctions) :
             _map_name_to_id = {}
             _map_id_to_name = {}
 
-#            for _storage_pool in self.lvirtconn[_endpoint].listStoragePools() :
             _storage_pool_handle = self.lvirtconn[_endpoint].storagePoolLookupByName(poolname)          
             _registered_image_list = _storage_pool_handle.listVolumes()
-                
+
             _registered_imageid_list = []
-                
+
             for _registered_image in _registered_image_list :
                 _image_uuid = self.generate_random_uuid(_registered_image)
                 _registered_imageid_list.append(_image_uuid)
 
                 _map_name_to_id[_registered_image] = _image_uuid
                 
-            for _vm_role in list(vm_templates.keys()) :            
+            for _vm_role in list(vm_templates.keys()) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
 
                 if _imageid != "to_replace" :
-                    if _imageid in _map_name_to_id :                     
+                    if _imageid in _map_name_to_id :
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     else :
                         _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
@@ -294,7 +293,7 @@ class PlmCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
             _time_mark_prc = int(time())
             obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
-                
+
         obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
         self.additional_host_discovery(obj_attr_list)

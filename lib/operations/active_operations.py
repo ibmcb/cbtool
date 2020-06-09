@@ -2083,15 +2083,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if "userdata" in obj_attr_list :
                             obj_attr_list["userdata"] = "/var/lib/cloud/" + obj_attr_list["cloud_vm_uuid"] + "/user-data.txt"
 
+                        if "host_list" in obj_attr_list :
+                            _host_list_attrs = copy.deepcopy(obj_attr_list["host_list"])
+                            del obj_attr_list["host_list"]
+                        else :
+                            _host_list_attrs = {}
+
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
-
-
 
                         _created_object = True
 
                         if _obj_type == "VMC" :
-                            self.post_attach_vmc(obj_attr_list)
+                            self.post_attach_vmc(obj_attr_list, _host_list_attrs)
     
                         elif _obj_type == "VM" :
 
@@ -2326,7 +2330,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
 
     @trace
-    def post_attach_vmc(self, obj_attr_list) :
+    def post_attach_vmc(self, obj_attr_list, host_attr_list) :
         '''
         TBD
         '''
@@ -2336,11 +2340,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             if "hosts" in obj_attr_list and len(obj_attr_list["hosts"]) and obj_attr_list["discover_hosts"].lower() == "true":
 
-                _host_list = eval(obj_attr_list["host_list"])
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
-        
                     self.osci.create_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, \
-                                            _host_list[_host_uuid], False, True)
+                                            host_attr_list[_host_uuid], False, True)
 
                 if not "attach_parallel" in obj_attr_list :
                     self.update_host_os_perfmon(obj_attr_list)

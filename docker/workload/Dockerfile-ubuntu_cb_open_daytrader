@@ -1,27 +1,21 @@
 FROM REPLACE_NULLWORKLOAD_UBUNTU
 
-## java-ARCHx86_64-install-pm
-#RUN apt-get update; mkdir /home/REPLACE_USERNAME/openjdk7/ ; wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+b1_REPLACE_ARCH3.deb
-#RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/o/openjdk-7/openjdk-7-jre-headless_7u181-2.6.14-1~deb8u1_REPLACE_ARCH3.deb
-#RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/o/openjdk-7/openjdk-7-jdk_7u181-2.6.14-1~deb8u1_REPLACE_ARCH3.deb
-#RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.us.debian.org/debian/pool/main/o/openjdk-7/openjdk-7-jre_7u181-2.6.14-1~deb8u1_REPLACE_ARCH3.deb
-#RUN cd /home/REPLACE_USERNAME/openjdk7/; dpkg -i *.deb; sudo apt --fix-broken -y install
-## /tmp/cb_is_java_installed.sh
-## java-ARCHx86_64-install-pm
+# java-ARCHx86_64-install-pm
+RUN apt-get update; apt install -y openjdk-8-jre:REPLACE_ARCH3 openjdk-8-jre-headless:REPLACE_ARCH3 openjdk-8-jdk:REPLACE_ARCH3
+RUN sudo apt --fix-broken -y install
+# /tmp/cb_is_java_installed.sh openjdk
+# java-ARCHx86_64-install-pm
 
-## java-ARCHppc64le-install-pm
+# java-ARCHppc64le-install-pm
+RUN apt-get update; apt install -y openjdk-8-jre:REPLACE_ARCH3 openjdk-8-jre-headless:REPLACE_ARCH3 openjdk-8-jdk:REPLACE_ARCH3
+RUN sudo apt --fix-broken -y install
 #RUN apt-get update; mkdir /home/REPLACE_USERNAME/openjdk7/
 #RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.ports.debian.org/debian-ports/pool-ppc64/main/o/openjdk-7/openjdk-7-jre-headless_7u111-2.6.7-1_REPLACE_ARCH3.deb
 #RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.ports.debian.org/debian-ports/pool-ppc64/main/o/openjdk-7/openjdk-7-jre_7u111-2.6.7-1_REPLACE_ARCH3.deb
 #RUN wget -N -q -P /home/REPLACE_USERNAME/openjdk7/ http://ftp.ports.debian.org/debian-ports/pool-ppc64/main/o/openjdk-7/openjdk-7-jdk_7u111-2.6.7-1_REPLACE_ARCH3.deb
 #RUN cd /home/REPLACE_USERNAME/openjdk7/; dpkg -i *.deb; sudo apt --fix-broken -y install
-## /tmp/cb_is_java_installed.sh
-## java-ARCHppc64le-install-pm
-
-# java-install-pm
-RUN apt-get update; apt install -y openjdk-8-jre:REPLACE_ARCH3 openjdk-8-jre-headless:REPLACE_ARCH3 openjdk-8-jdk:REPLACE_ARCH3
-RUN sudo apt --fix-broken -y install
-# java-install-pm
+# /tmp/cb_is_java_installed.sh openjdk
+# java-ARCHppc64le-install-pm
 
 # subversion-install-pm
 RUN apt-get install -y xinetd subversion unzip
@@ -38,7 +32,7 @@ RUN apt-get install -y apache2
 
 # mysql-install-pm
 RUN apt-get update; echo "mysql-server-5.7 mysql-server/root_password password temp4now" | sudo debconf-set-selections; echo "mysql-server-5.7 mysql-server/root_password_again password temp4now" | sudo debconf-set-selections
-RUN apt-get install -y ant unzip mysql-server python3-mysqldb libmysqlclient-dev
+RUN apt-get install -y ant unzip mysql-server python-mysqldb python-pip python-dev libmysqlclient-dev
 # mysql-install-pm
 
 # daytrader-install-man

@@ -76,7 +76,7 @@ class PdmCmds(CommonCloudFunctions) :
                 _endpoint, _endpoint_name, _endpoint_ip= self.parse_endpoint(_endpoint, "tcp", "2375")
                 
                 if _endpoint_ip not in self.dockconn :
-                    self.dockconn[_endpoint_ip] = docker.Client(base_url = _endpoint, timeout = 180)
+                    self.dockconn[_endpoint_ip] = docker.APIClient(base_url = _endpoint, timeout = 180)
 
                 _host_info = self.dockconn[_endpoint_ip].info()
                 

@@ -72,6 +72,8 @@ CB_USERNAME="cbuser"
 CB_MYUSERNAME=$(whoami)
 CB_MYUID=$(id -u $(whoami))
 CB_MYGID=$(id -g $(whoami))
+CB_PRIVATE_IMAGES="coremark\|linpack\|parboil\|spec\|caffe\|rubis\|rubbos\|acmeair\|spark\|mumbler"
+
 if [[ -z $CB_BRANCH ]]
 then
     CB_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>&1)
@@ -241,7 +243,7 @@ function cb_build_orchestrator {
     CB_MULTIARCH=$7
 
     echo "##### Building Docker orchestrator images"
-    pushd orchestrator > /dev/null 2>&1
+    pushd $CB_DOCKER_BASE_DIR/orchestrator > /dev/null 2>&1
     sudo rm -rf Dockerfile
     for CB_DFILE in $(ls Dockerfile* | grep -v _processed_)
     do
@@ -263,7 +265,7 @@ function cb_build_installtest {
     CB_MULTIARCH=$7
                                 
     echo "##### Building Docker orchestrator images"
-    pushd installtest > /dev/null 2>&1
+    pushd $CB_DOCKER_BASE_DIR/installtest > /dev/null 2>&1
     sudo rm -rf Dockerfile
     for CB_DFILE in $(ls Dockerfile* | grep -v _processed_)
     do
@@ -293,7 +295,7 @@ function cb_build_base_images {
     CB_MULTIARCH=$6
 
     echo "##### Building Docker base images"
-    pushd base > /dev/null 2>&1
+    pushd $CB_DOCKER_BASE_DIR/base > /dev/null 2>&1
     sudo rm -rf Dockerfile
     for CB_DFILE in $(ls Dockerfile* | grep -v _processed_)
     do
@@ -329,7 +331,7 @@ function cb_build_nullworkloads {
     CB_MULTIARCH=$7
 
     echo "##### Building Docker nullworkload images"
-    pushd workload > /dev/null 2>&1
+    pushd $CB_DOCKER_BASE_DIR/workload > /dev/null 2>&1
     sudo rm -rf Dockerfile        
     for CB_DFILE in $(ls Dockerfile*nullworkload | grep -v _processed_)
     do
@@ -371,7 +373,7 @@ function cb_build_workloads {
         CB_WORKLOAD=''
     fi
 
-    pushd workload > /dev/null 2>&1
+    pushd $CB_DOCKER_BASE_DIR/workload > /dev/null 2>&1
     sudo rm -rf Dockerfile
     echo "##### Building the rest of the Docker workload images"
     for CB_DFILE in $(ls Dockerfile*${CB_WORKLOAD} | grep -v nullworkload | grep -v _processed_ | grep -v ignore)
@@ -416,39 +418,27 @@ function cb_push_images {
         CB_IMG_GREP_CMD="grep $CB_IMGTYPE"
     fi
 
+	local _CB_TAG=$(echo ${CB_BRANCH} | sed 's^:^^g')
+	echo
+	echo
+	echo
     echo "##### Pushing all images to Docker repository"
-    for IMG in $(docker images | grep ${CB_REPOSITORY} | $CB_IMG_GREP_CMD | awk '{ print $1 }')
+    for IMG in $(docker images | grep ${CB_REPOSITORY} | grep ${_CB_TAG} | $CB_IMG_GREP_CMD | awk '{ print $1 }')
     do
-        if [[ $CB_BRANCH != ""  ]]
-        then
-            CMD="docker tag ${IMG}${CB_BRANCH} ${IMG}:latest"
-            echo "########## Tagging image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
-	        if [[ $? -eq 0 ]]
-	        then
-                echo "############ Image ${IMG}${CB_BRANCH} tagged successfully!!!"
-        	else
-                echo "############ Image ${IMG}${CB_BRANCH} tagging FAILED!"	        		
-			fi   
-        fi
-        echo $IMG | grep coremark
-        NOT_COREMARK=$?
-        echo $IMG | grep linpack
-        NOT_LINPACK=$?
-        echo $IMG | grep parboil
-        NOT_PARBOIL=$?
-        echo $IMG | grep spec
-        NOT_SPEC=$?
-        echo $IMG | grep caffe
-        NOT_CAFFE=$?
-        echo $IMG | grep rubis
-        NOT_RUBIS=$?
-        echo $IMG | grep rubbos
-        NOT_RUBBOS=$?
-        echo $IMG | grep acmeair
-        NOT_ACMEAIR=$?
-        echo $IMG | grep spark
-        NOT_SPARK=$?  
-        if [[ $NOT_COREMARK -eq 1 && $NOT_LINPACK -eq 1 && $NOT_PARBOIL -eq 1 && $NOT_SPEC -eq 1 && $NOT_CAFFE -eq 1 && $NOT_RUBIS -eq 1 && $NOT_RUBBOS -eq 1 && $NOT_ACMEAIR -eq 1 && $NOT_SPARK -eq 1 || $CB_PUSHALL -eq 1 ]]
+#        if [[ $CB_BRANCH != ""  ]]
+#        then
+#            CMD="docker tag ${IMG}${CB_BRANCH} ${IMG}:latest"
+#            echo "########## Tagging image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."            
+#	        if [[ $? -eq 0 ]]
+#	        then
+#                echo "############ Image ${IMG}${CB_BRANCH} tagged successfully!!!"
+#        	else
+#                echo "############ Image ${IMG}${CB_BRANCH} tagging FAILED!"	        		
+#			fi   
+#        fi
+        echo $IMG | grep $CB_PRIVATE_IMAGES
+        CB_IS_NOT_PRIVATE_IMG=$?
+        if [[ $CB_IS_NOT_PRIVATE_IMG -eq 1 || $CB_PUSHALL -eq 1 ]]
         then
             CMD="docker push ${IMG}${CB_BRANCH}"
             echo "########## Pushing image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
@@ -459,18 +449,18 @@ function cb_push_images {
         	else
                 echo "############ Image ${IMG}${CB_BRANCH} push FAILED!"	        		
 			fi                	
-            if [[ $CB_BRANCH != "latest"  ]]
-            then
-                CMD="docker push ${IMG}:latest"
-                echo "########## Pushing image ${IMG}:latest by executing the command \"$CMD\" ..."
-                $CMD > /dev/null 2>&1
-                if [[ $? -eq 0 ]]
-                then
-	                echo "############ Image ${IMG}:latest pushed successfully!!!"
-	        	else
-	                echo "############ Image ${IMG}:latest push FAILED!"	        		
-				fi                	
-            fi            
+#            if [[ $CB_BRANCH != "latest"  ]]
+#            then
+#                CMD="docker push ${IMG}:latest"
+#                echo "########## Pushing image ${IMG}:latest by executing the command \"$CMD\" ..."
+#                $CMD > /dev/null 2>&1
+#                if [[ $? -eq 0 ]]
+#                then
+#	                echo "############ Image ${IMG}:latest pushed successfully!!!"
+#	        	else
+#	                echo "############ Image ${IMG}:latest push FAILED!"	        		
+#				fi                	
+#            fi            
         fi
     done
     echo "##### Images to Docker repository"    

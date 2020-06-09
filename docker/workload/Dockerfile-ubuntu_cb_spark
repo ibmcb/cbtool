@@ -26,7 +26,7 @@ RUN wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/
 #RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.2.3/spark-2.2.3-bin-hadoop2.7.tgz
 RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.3.4/spark-2.3.4-bin-hadoop2.7.tgz
 RUN /bin/true; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/spark*.tgz
-#
+RUN wget -N -q -P /home/REPLACE_USERNAME http://sderepo.watson.ibm.com/repo/dropbox/cloudbench/spark/spark-2.2.0-bin-ibm-dcs-spark.tgz; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/spark-2.2.0-bin-ibm-dcs-spark.tgz
 # spark-install-man
 
 # gradle-install-pm
@@ -34,7 +34,7 @@ RUN apt-get install -y gradle unzip
 # gradle-install-pm
 
 # numpy-install-pm
-RUN apt-get install -y python3-numpy
+RUN apt-get install -y python-numpy
 # numpy-install-pm
 
 #git-lfs-ARCHx86_64-install-man
@@ -56,7 +56,7 @@ RUN /bin/true; wget -N -q -P /home/REPLACE_USERNAME https://github.com/broadinst
 # gatk4-install-man
 
 # spark-perf-install-man
-RUN cd /home/REPLACE_USERNAME; pip3 install nose; git clone https://github.com/databricks/spark-perf.git
+RUN cd /home/REPLACE_USERNAME; pip install nose; git clone https://github.com/databricks/spark-perf.git
 # spark-perf-install-man
 
 # sparkbench-install-man

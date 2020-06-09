@@ -24,7 +24,9 @@
     @author: Marcio A. Silva, Michael R. Galaxy
 '''
 from time import time, strftime, strptime, localtime
-from os import chmod
+from os import chmod, makedirs
+from os.path import isdir
+from errno import EEXIST
 from random import random
 from datetime import datetime
 from re import sub, split
@@ -160,6 +162,16 @@ def is_valid_temp_attr_list(input_string) :
             raise DataOpsException(_status, _msg)
         else :
             return _is_temp_attr_list
+
+@trace
+def mkdir_p(path):
+    try:
+        makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == EEXIST and isdir(path):
+            pass
+        else:
+            raise
 
 @trace
 def wait_on_process(processid, proc_h, output_list) :
@@ -406,7 +418,8 @@ def create_restart_script(scriptname, cmdline, username, searchcmd, objectname =
     '''
     TBD
     '''
-    _fn = scriptpath + '/' + scriptname + '_' + username + '-' + objectname + '--' + uuid
+    mkdir_p(scriptpath + '/' + username + '/')
+    _fn = scriptpath + '/' + username + '/' + scriptname + '_' + username + '-' + objectname + '--' + uuid
 
     _fn = _fn.replace('---','')
             
@@ -617,3 +630,6 @@ def natural_keys(text):
     return int(text) if text.isdigit() else text
 
   return [ atoi(c) for c in split(r'(\d+)', text) ]
+
+def cmp(a, b):
+    return (a > b) - (a < b)

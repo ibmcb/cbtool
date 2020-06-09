@@ -34,6 +34,7 @@ home = expanduser("~")
 
 from json import dumps
 from lib.remote.process_management import ProcessManagement
+from lib.auxiliary.data_ops import cmp
 from lib.auxiliary.code_instrumentation import  VerbosityFilter, MsgFilter, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import check_url
 
@@ -416,10 +417,17 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_
     _actual_cmdline = _actual_cmdline.replace(";;",';')
     _actual_cmdline = _actual_cmdline.replace(";;",';')
     _actual_cmdline = _actual_cmdline.replace("; ;",';')
+
+    if len(_actual_cmdline) == 1 :
+        _msg = "######## Error! The command to  " + operation + " the dependency " +  depkey + " is empty!"
+        cberr(_msg)
+        exit(4)
+
     while _actual_cmdline[0] == ';' :
         _actual_cmdline = _actual_cmdline[1:]
+
     _actual_cmdline = _actual_cmdline.replace("_equal_",'=')
-    
+
     return _actual_commandline_keys, _actual_cmdline
 
 def expand_command(cmdline, depsdict, process_manager = False) :
@@ -545,7 +553,7 @@ def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
             _commandline = _commandline.replace("REPLACE_USERNAME", depsdict["username"].strip())            
             _commandline = _commandline.replace("/home/root", "/root")       
             _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())
-            _commandline = _commandline.replace("REPLACE_RSYNC", "rsync -a rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb/3rd_party/workload/")
+            _commandline = _commandline.replace("REPLACE_RSYNC", "rsync --inplace -a rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb/3rd_party/workload/")
 
             if depsdict["pip_addr"] :
                 _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"] + " --trusted-host " + depsdict["pip_addr"].split('/')[0] + ' ')
@@ -847,6 +855,7 @@ def compare_versions(depkey, depsdict, version_b) :
     TBD
     '''
     try :
+        _msg = ''
         version_a = depsdict[depkey + "-ver"]
         if version_a.lower() == "any" :
             _result = 0
@@ -860,19 +869,21 @@ def compare_versions(depkey, depsdict, version_b) :
             _version_b = list(map(int, re.sub('(\.0+)+\Z','', version_b).split('.')))
             _result = cmp(_version_a,_version_b)
 
-    except KeyError :
+    except KeyError as e:
+        _msg = "( exception: " + str(e) + ")"
         _result = -1100000
         
     except Exception as e :
+        _msg = "( exception: " + str(e) + ")"
         _result = -1000000
 
     finally :
         if _result > 0 :
             return str(version_b) + " < " + str(version_a) + " NOT OK." 
         elif _result <= -1100000 :
-            return " NOT OK. Unable to find minimum required version for \"" + depkey + "\""        
+            return " NOT OK. Unable to find minimum required version for \"" + depkey + "\"" + _msg        
         elif _result <= -1000000 :
-            return " NOT OK. Version mismatch (wanted: " + str(version_a) + ", provided: " + str(version_b) + ")"
+            return " NOT OK. Version mismatch (wanted: " + str(version_a) + ", provided: " + str(version_b) + ")" + _msg
         else :
             return str(version_b) + " >= " + str(version_a) + " OK.\n"
 
@@ -1069,7 +1080,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
                                                     username = username, \
                                                     venv = options.venv, \
                                                     raise_exception = _raise_exception)
-                    
+
                     if not _status :
                         _dep_missing -= 1
                         _missing_dep.remove(_dep)
