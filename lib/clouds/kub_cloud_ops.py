@@ -34,7 +34,7 @@ import json
 import yaml
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip, check_url, NetworkException
 from .shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -339,7 +339,7 @@ class KubCmds(CommonCloudFunctions) :
 
         self.additional_host_discovery (obj_attr_list)
 
-        obj_attr_list["host_list"] = str2dic(obj_attr_list["host_list"])
+        obj_attr_list["host_list"] = dic2str(obj_attr_list["host_list"])
 
         return True
 
@@ -500,7 +500,7 @@ class KubCmds(CommonCloudFunctions) :
                 self.discover_hosts(obj_attr_list, _time_mark_prs)
             else :
                 obj_attr_list["hosts"] = ''
-                obj_attr_list["host_list"] = str2dic({})
+                obj_attr_list["host_list"] = dic2str({})
                 obj_attr_list["host_count"] = "NA"
 
             obj_attr_list["network_detected"] = "flannel"
