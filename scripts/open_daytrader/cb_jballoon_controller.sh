@@ -16,6 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
+cd ~
 dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
 if [ -e $dir/cb_common.sh ] ; then
 	source $dir/cb_common.sh
