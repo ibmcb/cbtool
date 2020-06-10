@@ -17,7 +17,6 @@
 '''
 
 import requests
-import yaml
 import copy
 from requests.adapters import HTTPAdapter
 from json import loads, dumps
@@ -57,7 +56,7 @@ class Dok8sCmds(KubCmds) :
             extra_parms["kubeyaml"] = False
             if not diag :
                 if "kubeconfig" in extra_parms and extra_parms["kubeconfig"] :
-                    extra_parms["kubeyaml"] = yaml.safe_load(extra_parms["kubeconfig"])
+                    extra_parms["kubeyaml"] = extra_parms["kubeconfig"]
 
             return KubCmds.connect(self, access, credentials, vmc_name, extra_parms, diag, generate_rc)
         except Exception as e :

@@ -97,11 +97,12 @@ function check_ready {
 }
 
 pushd ${dir}/../
-cldid=$(./cb cldlist | grep MY | cut -d "|" -f 2 | grep "^MY" | sed "s/ \+//g")
+cldid=$(./cb clddefault | grep "cloud named" | cut -d "\"" -f 2)
+echo "CLDID: $cldid"
 PREFIX="from lib.api.api_service_client import APIClient; from lib.auxiliary.data_ops import str2dic; api = APIClient('http://localhost:7070');"
 vmcname=$(python3 -c "$PREFIX print(api.vmclist('${cldid}')[0]['name'])")
 echo "Exporting kubeconfig for VMC $vmcname $cldid ..."
-python3 -c "$PREFIX print api.vmcshow('${cldid}', '${vmcname}')['kubeconfig']" > /tmp/kubeconfig.yaml
+python3 -c "$PREFIX print(api.vmcshow('${cldid}', '${vmcname}')['kubeconfig'])" > /tmp/kubeconfig.yaml
 popd
 
 KEY_NAME=kubeVPN-${cldid}-${vmcname}
@@ -492,7 +493,7 @@ echo "Uploading iptables rules ... "
 
 logproto=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'logstore')['protocol'].lower())")
 logprotoupper=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'logstore')['protocol'].upper())")
-logport=$(python3 -c "$PREFIX print api.cldshow('${cldid}', 'logstore')['port'].lower())")
+logport=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'logstore')['port'].lower()))")
 metricport=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'metricstore')['port'].lower())")
 fileport=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'filestore')['port'].lower())")
 apiport=$(python3 -c "$PREFIX print(api.cldshow('${cldid}', 'api_defaults')['port'].lower())")

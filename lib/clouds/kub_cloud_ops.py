@@ -31,6 +31,7 @@ import pykube
 import traceback
 import threading
 import json
+import yaml
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
@@ -113,7 +114,7 @@ class KubCmds(CommonCloudFunctions) :
                     # the cluster already exists.
                     if "kubeyaml" in extra_parms :
                         if extra_parms["kubeyaml"] :
-                            kubeyaml = extra_parms["kubeyaml"]
+                            kubeyaml = yaml.safe_load(extra_parms["kubeyaml"])
 
                     if kubeyaml :
                         _kube_config = pykube.KubeConfig(kubeyaml)
@@ -338,6 +339,8 @@ class KubCmds(CommonCloudFunctions) :
 
         self.additional_host_discovery (obj_attr_list)
 
+        obj_attr_list["host_list"] = str2dic(obj_attr_list["host_list"])
+
         return True
 
     @trace
@@ -497,7 +500,7 @@ class KubCmds(CommonCloudFunctions) :
                 self.discover_hosts(obj_attr_list, _time_mark_prs)
             else :
                 obj_attr_list["hosts"] = ''
-                obj_attr_list["host_list"] = {}
+                obj_attr_list["host_list"] = str2dic({})
                 obj_attr_list["host_count"] = "NA"
 
             obj_attr_list["network_detected"] = "flannel"
