@@ -283,7 +283,9 @@ def get_ssh_key(pub_key_fn, fptype = "common", read_from_file = True) :
     if fptype == "Amazon Elastic Compute Cloud" or fptype == "EC2" or fptype == "ec2" :
         _key_fingerprint = key2ec2fp(pub_key_fn)    
     elif fptype == "IBM Cloud" or fptype == "IBM" or fptype == "ibm" :
-        _key_fingerprint = keyibmfp(_key_contents)
+        _key_fingerprint = keyibmfp(_key_contents.encode('utf-8'))
+    elif fptype == "SoftLayer Cloud" or fptype == "SLR" or fptype == "slr" :
+        _key_fingerprint = keyibmfp(_key_contents.encode('utf-8'))
     else :
         _key_fingerprint = key2fp(_key_contents)
                 

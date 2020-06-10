@@ -336,18 +336,18 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _mgt_metric = apiconn.get_latest_management_data(cloud_name, _vm["uuid"])
 #        print _mgt_metric
     
-    except APIException, obj :
+    except APIException as obj :
         _attach_error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
-    except APINoSuchMetricException, obj :
+    except APINoSuchMetricException as obj :
         _attach_error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
     
     except KeyboardInterrupt :
         print_msg("Aborting this VM.")
     
-    except Exception, msg :
+    except Exception as msg :
         _attach_error = True
         _fmsg = "Problem during experiment: " + str(msg)
     
@@ -413,18 +413,18 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                 apiconn.vmdetach(cloud_name, _vm["uuid"])
                 _delete_time = int(time() - _mark_a)
         
-            except APIException, obj :
+            except APIException as obj :
                 _delete_error = True
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
 
-            except APINoSuchMetricException, obj :
+            except APINoSuchMetricException as obj :
                 _delete_error = True
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
                 
             except KeyboardInterrupt :
                 print_msg("Aborting this VM.")
 
-            except Exception, msg :
+            except Exception as msg :
                 _delete_error = True
                 _fmsg = "Problem during experiment: " + str(msg)
                 

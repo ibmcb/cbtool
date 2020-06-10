@@ -271,7 +271,7 @@ RUN pip3 install --upgrade gcloud google-api-python-client
 # pygce-install-pip
 
 # pydocker-install-pip
-RUN pip3 install --upgrade docker-py==1.8.1 wget
+RUN pip3 install --upgrade docker-py wget
 # pydocker-install-pip
 
 # pylxd-install-pip

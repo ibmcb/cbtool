@@ -585,7 +585,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        self.ec2conn.import_key_pair(key_name, key_type + ' ' + key_contents)
+        self.ec2conn.import_key_pair(key_name, (key_type + ' ' + key_contents).encode('utf-8'))
 
         return True
 
