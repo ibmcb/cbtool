@@ -113,6 +113,7 @@ NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:ami-04b9e92b5572fa0d1
 
 [SIZE_TEMPLATES : EC2_CLOUDCONFIG]
 # Sizes extracted from https://aws.amazon.com/ec2/instance-types/
+01-1024=m1.small
 01-2048=a1.medium
 02-4096=a1-large
 02-8192=m4.large

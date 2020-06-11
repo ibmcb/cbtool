@@ -157,15 +157,20 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not os.path.isfile(ssh_filename) :
                     if not os.path.isfile(cld_attr_lst["space"]["ssh_key_name"]) :
-                        _fmsg = "Error: "
-                        raise Exception("\n   Your " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME parameter is wrong:\n" + \
-                                        "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
-                                        "\n   Please update your configuration and try again.\n")
+                        _cmd = "mkdir -p " + cld_attr_lst["space"]["credentials_dir"] + "; ssh-keygen -q -t rsa -N '' -f " + ssh_filename
+                        _proc_man =  ProcessManagement()
+                        _status, out, err =_proc_man.run_os_command(_cmd)                        
+                        if _status :
+                            _fmsg = "Error: "
+                            raise Exception("\n   Your " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME parameter is wrong:\n" + \
+                                            "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
+                                            "\n   Please update your configuration and try again.\n")
+                        else :
+                            cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
                 else :
                     cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
 
                 _proc_man =  ProcessManagement(username = cld_attr_lst["time"]["username"], cloud_name = cld_attr_lst["cloud_name"])
-
                 self.start_vpnserver(cld_attr_lst)
 
                 # User may have an empty VMC list. Need to be able to handle that.
@@ -2089,6 +2094,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         else :
                             _host_list_attrs = {}
 
+                        for _key,_value in obj_attr_list.items() :
+                            if not isinstance(_value, str) and not isinstance(_value, int) and not isinstance(_value, float):
+                                print(_key + " : " + str(_value) + " ("  + str(type(_value)) + ")")
+                                
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
 
@@ -2338,9 +2347,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _fmsg = "An error has occurred, but no error message was captured"
         
         try :
+                        
             if "hosts" in obj_attr_list and len(obj_attr_list["hosts"]) and obj_attr_list["discover_hosts"].lower() == "true":
 
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
+        
                     self.osci.create_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, \
                                             host_attr_list[_host_uuid], False, True)
 

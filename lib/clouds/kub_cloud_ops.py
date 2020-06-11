@@ -339,8 +339,6 @@ class KubCmds(CommonCloudFunctions) :
 
         self.additional_host_discovery (obj_attr_list)
 
-        obj_attr_list["host_list"] = str2dic(obj_attr_list["host_list"])
-
         return True
 
     @trace
@@ -500,7 +498,7 @@ class KubCmds(CommonCloudFunctions) :
                 self.discover_hosts(obj_attr_list, _time_mark_prs)
             else :
                 obj_attr_list["hosts"] = ''
-                obj_attr_list["host_list"] = str2dic({})
+                obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
 
             obj_attr_list["network_detected"] = "flannel"
@@ -1348,6 +1346,9 @@ class KubCmds(CommonCloudFunctions) :
         finally :
             self.get_extended_info(obj_attr_list)
             
+            if "k8s_instance" in obj_attr_list :
+                del obj_attr_list["k8s_instance"]
+
             if "mgt_004_network_acessible" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
                    

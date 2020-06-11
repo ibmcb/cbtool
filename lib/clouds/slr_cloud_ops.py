@@ -29,6 +29,8 @@ from random import choice, randint
 import SoftLayer
 from SoftLayer import exceptions as slexceptions
 
+import traceback
+
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, is_number
 from lib.remote.network_functions import hostname2ip
@@ -822,7 +824,6 @@ class SlrCmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = \
             _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             _key_id = self.sshman.list_keys(label = obj_attr_list["key_name"])[0]["id"]
@@ -882,6 +883,8 @@ class SlrCmds(CommonCloudFunctions) :
             cbdebug("VM create keyboard interrupt...", True)
 
         except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)            
             _status = 23
             _fmsg = str(e)
     

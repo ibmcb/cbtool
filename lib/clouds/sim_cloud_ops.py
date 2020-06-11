@@ -270,7 +270,6 @@ class SimCmds(CommonCloudFunctions) :
 
         self.additional_host_discovery (obj_attr_list)
         self.populate_interface(obj_attr_list)
-        obj_attr_list["host_list"] = str(obj_attr_list["host_list"])
 
         _status = 0
         _status, _msg = self.common_messages("HOST", obj_attr_list, "discovered", _status, _fmsg)

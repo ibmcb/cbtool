@@ -224,11 +224,11 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["os"] = "bionic-server-cloudimg-amd64"
         _model_to_imguuid["gen"] = "xenial3"
         _model_to_imguuid["plm"] = "bionic-server-cloudimg-amd64.img"
-        _model_to_imguuid["ec2"] = "ami-a9d276c9"
+        _model_to_imguuid["ec2"] = "ami-085925f297f89fce1"
         _model_to_imguuid["gce"] = "ubuntu-1804-bionic-v20190320"
-        _model_to_imguuid["do"] = "44972302"        
+        _model_to_imguuid["do"] = "53893572"        
         _model_to_imguuid["slr"] = "2110219"
-        _model_to_imguuid["kub"] = "ibmcb/ubuntu_cb_nullworkloadcolonmaster"
+        _model_to_imguuid["kub"] = "cb_nullworkloadcolonmaster"
         _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-18_04-LTS-amd64-server-20190320-en-us-30GB"
 
         _model_to_login = {}
@@ -305,7 +305,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                 _command = "sudo getent hosts cloudbencha | awk '{ print $1 }'"
                 _proc_h = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 _resul = _proc_h.communicate()
-                _nop_cloud_ip = _resul[0].replace('\n','')
+                _nop_cloud_ip = str(_resul[0]).strip().replace('\n','')
             _temp_attr_list += ",cloud_ip=" + _nop_cloud_ip
 
         _vms_failed = int(apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]["failed"])

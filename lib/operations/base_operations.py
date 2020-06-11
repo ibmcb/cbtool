@@ -1205,23 +1205,37 @@ class BaseObjectOperations :
                                 _type2imgid = str2dic(_build_maps["type2imgid"])
                                 _imgid2types = str2dic(_build_maps["imgid2types"])
 
+                                _debug_workload = False
+                                if obj_attr_list["prepare_workload"].count("debug") :
+                                    _debug_workload = True
+                                    
+                                obj_attr_list["prepare_workload"] = obj_attr_list["prepare_workload"].replace("debug",'')
+
                                 if obj_attr_list["prepare_workload"] not in _type2imgid :
                                     obj_attr_list["prepare_image_name"] = "cb_" + obj_attr_list["prepare_workload"]
-                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload"]                                    
+                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload"]
                                     _msg = "Could not find a corresponding image name to automatically "
-                                    _msg += " configure the AI type \"" + obj_attr_list["prepare_image_name"] + "\"."
+                                    _msg += "configure the AI type \"" + obj_attr_list["prepare_image_name"] + "\"."
                                     cbwarn(_msg, True)
                                 else :
                                     obj_attr_list["prepare_image_name"] = _type2imgid[obj_attr_list["prepare_workload"]]
                                     obj_attr_list["prepare_workload_names"] = _imgid2types[obj_attr_list["prepare_image_name"]]
 
-                                if not obj_attr_list["prepare_workload_names"].count("nullworkload") :
-                                    obj_attr_list["prepare_workload_names"] = "nullworkload+" + obj_attr_list["prepare_workload_names"]
-                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload_names"].replace('+',',')
+                                    if not obj_attr_list["prepare_workload_names"].count("nullworkload") :
+                                        obj_attr_list["prepare_workload_names"] = "nullworkload+" + obj_attr_list["prepare_workload_names"]
+                                        obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload_names"].replace('+',',')
 
-                                _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] + "/pre_install.sh; "
-                                _generic_boot_cmd += "~/" + obj_attr_list["remote_dir_name"] + "/install --role workload"
-                                _generic_boot_cmd += " --wks " + obj_attr_list["prepare_workload_names"]
+                                if not _debug_workload :  
+                                    _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] + "/pre_install.sh; "
+                                    _generic_boot_cmd += "~/" + obj_attr_list["remote_dir_name"] + "/install --role workload"
+                                    _generic_boot_cmd += " --wks " + obj_attr_list["prepare_workload_names"]
+                                else :
+                                    _msg = "Debug workload active. After deployment ssh into the instance (e.g. \"./cbssh " + obj_attr_list["name"]
+                                    _msg += ") \" and execute \"~/"  +  obj_attr_list["remote_dir_name"] + "/pre_install.sh; " 
+                                    _msg += "~/" + obj_attr_list["remote_dir_name"] 
+                                    _msg += "/install --role workload --wks " + obj_attr_list["prepare_workload_names"] + "\""
+                                    cbwarn(_msg, True)
+                                    _generic_boot_cmd = "/bin/true"
 
                                 if _role_tmp.count(':') == 3 :  
                                     _generic_boot_cmd += " --addr bypass"
@@ -1236,6 +1250,8 @@ class BaseObjectOperations :
                                 obj_attr_list["check_ssh"] = "false"
                                 obj_attr_list["check_boot_complete"] = "wait_for_0"
                                 obj_attr_list["transfer_files"] = "false"
+
+                            obj_attr_list["imageid1"] = obj_attr_list["imageid1"].replace("colon",':')
 
                         obj_attr_list["generic_post_boot_command"] = _generic_boot_cmd  
                         obj_attr_list["boot_volume_imageid1"] = "NA"

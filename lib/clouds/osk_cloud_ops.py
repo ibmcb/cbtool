@@ -1487,9 +1487,12 @@ class OskCmds(CommonCloudFunctions) :
             if "mgt_004_network_acessible" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
                             
-            del obj_attr_list["flavor_instance"]           
+            del obj_attr_list["flavor_instance"]
             del obj_attr_list["boot_volume_imageid1_instance"]
-            
+            obj_attr_list["availability_zone"] = str(obj_attr_list["availability_zone"])
+            obj_attr_list["block_device_mapping"] = str(obj_attr_list["block_device_mapping"])
+            obj_attr_list["cloud_vv_type"] = str(obj_attr_list["cloud_vv_type"])
+
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
                 

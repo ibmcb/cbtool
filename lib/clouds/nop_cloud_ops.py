@@ -226,6 +226,8 @@ class NopCmds(CommonCloudFunctions) :
 
         self.additional_host_discovery (obj_attr_list)
 
+        obj_attr_list["initial_hosts"] = ','.join(obj_attr_list["initial_hosts"])
+
         return True
 
     @trace
@@ -514,14 +516,11 @@ class NopCmds(CommonCloudFunctions) :
 
         _host_list = _vmc_attr_list["hosts"].split(',')
 
-        if len(_host_list) > 2 :
-            _host_uuid = choice(_host_list)
-            _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, _host_uuid, False)
-            obj_attr_list["host_name"] = _host_attr_list["cloud_hostname"]
-            obj_attr_list["host_cloud_ip"] = _host_attr_list["cloud_ip"]
-        else :
-            obj_attr_list["host_name"] = "simhost" + obj_attr_list["name"]
-            obj_attr_list["host_cloud_ip"] = self.generate_random_ip_address()
+        _host_uuid = choice(_host_list)
+        _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, _host_uuid, False)
+        obj_attr_list["host_name"] = _host_attr_list["cloud_hostname"]
+        obj_attr_list["host_cloud_ip"] = _host_attr_list["cloud_ip"]
+
         return True
 
     def vvcreate(self, obj_attr_list) :

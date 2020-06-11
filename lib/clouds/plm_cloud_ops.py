@@ -1406,59 +1406,6 @@ class PlmCmds(CommonCloudFunctions) :
 
         return _xml_file
 
-    def ship_cloud_init_iso(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        
-        _cloud_init_contents = {}        
-        _cloud_init_contents["meta-data"] = "instance-id: " + str(obj_attr_list["cloud_vm_name"]) + "\n"
-        _cloud_init_contents["meta-data"] += "local-hostname: " + str(obj_attr_list["cloud_vm_name"]) + "\n"
-
-        _cloud_init_contents["user-data"] = self.populate_cloudconfig(obj_attr_list)
-
-        _cloud_init_instance_path = "/tmp/" + str(obj_attr_list["cloud_vm_name"])
-
-        if not os.path.exists(_cloud_init_instance_path) :
-            os.makedirs(_cloud_init_instance_path)
-
-        try:
-            for _file in [ "user-data", "meta-data" ] :
-                _cloud_init_fn = _cloud_init_instance_path + '/' + _file
-                _cloud_init_fd = file(_cloud_init_fn, 'w')
-                _cloud_init_fd.write(_cloud_init_contents[_file])
-                _cloud_init_fd.close()
-                os.chmod(_cloud_init_fn, 0o644)
-
-        except IOError as msg :
-            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
-            cberr(_msg, True, False)
-            exit(4)
-
-        except OSError as msg :
-            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
-            cberr(_msg, True, False)
-            exit(4)
-
-        except Exception as e :
-            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(e)
-            cberr(_msg, True, False)
-            exit(4)
-
-        _proc_man = ProcessManagement()
-
-        _iso_fn = str(obj_attr_list["cloud_vm_name"]) + ".iso"
-
-        _geniso_cmd = "cd " + _cloud_init_instance_path + "; "
-        _geniso_cmd += "genisoimage -output " + _iso_fn
-        _geniso_cmd += " -volid cidata -joliet -rock user-data meta-data; "
-        _geniso_cmd += "scp " +  _cloud_init_instance_path + '/' + _iso_fn
-        _geniso_cmd += ' ' + obj_attr_list["host_remote_user"] + "@" + obj_attr_list["host_cloud_ip"] + ":" + obj_attr_list["host_remote_dir"] + _iso_fn
-
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_geniso_cmd)
-
-        return True
-
     @trace
     def generate_mac_addr(self, obj_attr_list) :
         '''
@@ -1494,13 +1441,13 @@ class PlmCmds(CommonCloudFunctions) :
         _mac_prefix = "52:54:00"
         bytes_needed = (17 - len(_mac_prefix)) / 3 - 1
         unique_mac_selector_key = obj_attr_list["cloud_vm_name"] + obj_attr_list["experiment_id"]
-        selector_hd = sha256(unique_mac_selector_key).hexdigest()
+        selector_hd = sha256(unique_mac_selector_key.encode('utf-8')).hexdigest()
         selector_pos = randint(0,len(selector_hd)-2)
         selector_byte = selector_hd[selector_pos:selector_pos+2]
         mac = _mac_prefix  + ":" + selector_byte
 
-        for x in range(0, bytes_needed) :
-            byte = ((int(obj_attr_list["counter"]) >> (8 * ((bytes_needed - 1) - x))) & 0xff)
+        for x in range(0, int(bytes_needed)) :
+            byte = ((int(obj_attr_list["counter"]) >> (8 * ((int(bytes_needed) - 1) - x))) & 0xff)
             mac += (":%02x" % (byte)) 
 
         obj_attr_list["cloud_vm_mac"] =  mac.replace('-', ':')       
@@ -1619,6 +1566,8 @@ class PlmCmds(CommonCloudFunctions) :
     
             _xml_template += "\t\t</interface>\n"
             
+        obj_attr_list["extra_vnics"] = str(obj_attr_list["extra_vnics"])
+
         if obj_attr_list["arch"]  == "ppc64" or obj_attr_list["arch"] == "ppc64le" :
             _port = str(30000 + int(obj_attr_list["counter"]))
             
