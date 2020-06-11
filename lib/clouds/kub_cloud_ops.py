@@ -34,7 +34,7 @@ import json
 import yaml
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip, check_url, NetworkException
 from .shared_functions import CldOpsException, CommonCloudFunctions 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_acmeair_common.sh
 
 CBUSERLOGIN=`get_my_ai_attribute login`

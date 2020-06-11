@@ -19,7 +19,7 @@ RUN apt-get update; apt-get install -y net-tools; sudo ln -sf /sbin/ifconfig /us
 # ifconfig-install-sl
 
 # ip-install-sl
-RUN sudo ln -s /sbin/ip /usr/local/bin/ip
+RUN sudo ln -sf /sbin/ip /usr/local/bin/ip
 # ip-install-sl
 
 # pkill-install-pm
@@ -97,16 +97,16 @@ RUN apt-get install -y nmap
 # nmap-install-pm
 
 # openvpn-install-pm
-RUN apt-get install -y openvpn; sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+RUN apt-get install -y openvpn; sudo ln -sf /usr/sbin/openvpn /usr/local/bin/openvpn
 # openvpn-install-pm
 
 # gmond-install-pm
-RUN apt-get install -y ganglia-monitor; sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+RUN apt-get install -y ganglia-monitor; sudo ln -sf /usr/sbin/gmond /usr/local/bin/gmond
 # service_stop_disable ganglia-monitor
 # gmond-install-pm
 
 # rsyslog-install-pm
-RUN apt-get install -y rsyslog; sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd; sudo mkdir -p /var/log/cloudbench
+RUN apt-get install -y rsyslog; sudo ln -sf /usr/sbin/rsyslogd /usr/local/bin/rsyslogd; sudo mkdir -p /var/log/cloudbench
 # rsyslog-install-pm
 
 # rsyslog-filter-pm

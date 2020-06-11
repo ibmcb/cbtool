@@ -16,6 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 service_restart_enable munge 

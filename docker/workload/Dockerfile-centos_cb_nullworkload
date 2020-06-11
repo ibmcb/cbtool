@@ -16,7 +16,7 @@ RUN ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
 # ifconfig-install-sl
 
 # ip-install-sl
-RUN ln -s /sbin/ip /usr/local/bin/ip
+RUN ln -sf /sbin/ip /usr/local/bin/ip
 # ip-install-sl
 
 # pkill-install-pm
@@ -98,18 +98,18 @@ RUN yum install -y nmap
 
 # openvpn-install-pm
 RUN yum install -y openvpn
-RUN ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+RUN ln -sf /usr/sbin/openvpn /usr/local/bin/openvpn
 # openvpn-install-pm
 
 # gmond-install-pm
 RUN yum install -y ganglia ganglia-gmond.REPLACE_ARCH1
-RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
+RUN ln -sf /usr/sbin/gmond /usr/local/bin/gmond
 # service_stop_disable gmond
 # gmond-install-pm
 
 # rsyslog-install-pm
 RUN yum install -y rsyslog
-RUN ln -s $(sudo which rsyslogd) /usr/local/bin/rsyslogd
+RUN ln -sf $(sudo which rsyslogd) /usr/local/bin/rsyslogd
 # rsyslog-install-pm
 
 # apache-install-pm

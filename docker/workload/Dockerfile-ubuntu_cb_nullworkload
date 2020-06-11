@@ -16,7 +16,7 @@ RUN ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
 # ifconfig-install-sl
 
 # ip-install-sl
-RUN ln -s /sbin/ip /usr/local/bin/ip
+RUN ln -sf /sbin/ip /usr/local/bin/ip
 # ip-install-sl
 
 # pkill-install-pm
@@ -101,18 +101,18 @@ RUN apt-get install -y nmap
 
 # openvpn-install-pm
 RUN apt-get install -y openvpn 
-RUN ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+RUN ln -sf /usr/sbin/openvpn /usr/local/bin/openvpn
 # openvpn-install-pm
 
 # gmond-install-pm
 RUN apt-get install -y ganglia-monitor
-RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
+RUN ln -sf /usr/sbin/gmond /usr/local/bin/gmond
 # service_stop_disable ganglia-monitor
 # gmond-install-pm
 
 # rsyslog-install-pm
 RUN apt-get install -y rsyslog
-RUN ln -s $(sudo which rsyslogd) /usr/local/bin/rsyslogd
+RUN ln -sf $(sudo which rsyslogd) /usr/local/bin/rsyslogd
 RUN mkdir -p /var/log/cloudbench
 # rsyslog-install-pm
 

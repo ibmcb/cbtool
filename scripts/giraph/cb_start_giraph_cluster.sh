@@ -16,6 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 
 if [[ $(echo $my_role | grep -c master) -ne 0 ]]

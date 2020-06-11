@@ -99,7 +99,7 @@ function check_ready {
 pushd ${dir}/../
 cldid=$(./cb clddefault | grep "cloud named" | cut -d "\"" -f 2)
 echo "CLDID: $cldid"
-PREFIX="from lib.api.api_service_client import APIClient; from lib.auxiliary.data_ops import str2dic; api = APIClient('http://localhost:7070');"
+PREFIX="from cbtool.lib.api.api_service_client import APIClient; from cbtool.lib.auxiliary.data_ops import str2dic; api = APIClient('http://localhost:7070');"
 vmcname=$(python3 -c "$PREFIX print(api.vmclist('${cldid}')[0]['name'])")
 echo "Exporting kubeconfig for VMC $vmcname $cldid ..."
 python3 -c "$PREFIX print(api.vmcshow('${cldid}', '${vmcname}')['kubeconfig'])" > /tmp/kubeconfig.yaml
