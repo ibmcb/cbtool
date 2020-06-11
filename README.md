@@ -25,6 +25,8 @@ Subscribe to our mailing list:
 
 5. [Prepare a VM image to be used with the tool](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Preparing-a-VM-to-be-used-with-CBTOOL-on-a-real-cloud)
 
+====> [Are you impatient? Use our workloads instead.](https://github.com/ibmcb/cbtool/wiki/DOC:-Zero-configuration-(almost)-benchmarking-w--Nested-containers)
+
 6. [Deploy your first Virtual Application](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Deploy-your-first-virtual-application)
 
 7. [Run simple experiments](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Run-simple-experiments)
