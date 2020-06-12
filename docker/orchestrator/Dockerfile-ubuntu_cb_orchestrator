@@ -287,8 +287,8 @@ RUN pip3 install --upgrade jsonschema
 USER REPLACE_USERNAME
 # gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
-RUN if [[ $(uname -p) != "ppc64le" ]]; then curl https://sdk.cloud.google.com | bash; else /bin/true; fi
-RUN if [[ $(uname -p) != "ppc64le" ]]; then sudo ln -sf /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud; else /bin/true; fi 
+RUN /bin/true; if [[ $(uname -p) != "ppc64le" ]]; then curl https://sdk.cloud.google.com | bash; else /bin/true; fi
+RUN /bin/true; if [[ $(uname -p) != "ppc64le" ]]; then sudo ln -sf /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud; else /bin/true; fi 
 RUN sudo ln -sf /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
 # gcloud-install-man
 
