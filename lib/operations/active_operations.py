@@ -5386,7 +5386,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _ai_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0, \
                                                                     1000000000000000000)))).upper()
 
-                    _cmd = base_dir + "/cbact"
+                    _cmd = "script -qfec \"" + base_dir + "/cbact"
                     _cmd += " --procid=" + self.pid
                     _cmd += " --osp=" + dic2str(self.osci.oscp())
                     _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5397,7 +5397,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += " --operation=ai-attach"
                     _cmd += " --cn=" + cloud_name
                     _cmd += " --uuid=" + _ai_uuid
-                    _cmd += " --daemon"
+                    _cmd += " --daemon\""
                     #_cmd += "  --debug_host=127.0.0.1"
 
                     _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
@@ -5502,7 +5502,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _current_state = self.osci.get_object_state(cloud_name, "AI", _ai_uuid)
 
                     if _current_state and _current_state == "attached" :                    
-                        _cmd = base_dir + "/cbact"
+                        _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5510,7 +5510,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd += " --operation=ai-detach"
                         _cmd += " --cn=" + cloud_name
                         _cmd += " --uuid=" + _ai_uuid                        
-                        _cmd += " --daemon"
+                        _cmd += " --daemon\""
                         #_cmd += "  --debug_host=127.0.0.1"
 
                         _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
@@ -5636,7 +5636,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _selected_vm = choice(_vm_candidate_list)
 
                         _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                        _cmd = base_dir + "/cbact"
+                        _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5644,7 +5644,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name
                         _cmd += " --uuid=" + _vm_uuid
-                        _cmd += " --daemon"
+                        _cmd += " --daemon\""
                         #_cmd += "  --debug_host=127.0.0.1"
 
                         cbdebug(_cmd)
@@ -5784,7 +5784,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _selected_vm = choice(_vm_candidate_list)
 
                         _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                        _cmd = base_dir + "/cbact"
+                        _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5792,7 +5792,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name
                         _cmd += " --uuid=" + _vm_uuid
-                        _cmd += " --daemon"
+                        _cmd += " --daemon\""
                         #_cmd += "  --debug_host=127.0.0.1"
 
                         cbdebug(_cmd)

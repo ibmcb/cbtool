@@ -488,7 +488,7 @@ class ProcessManagement :
         if _status :
             _msg = "Error while checking for a pid for a process with the "
             _msg += "command line \"" + cmdline + "\" (pid)"
-            raise self.ProcessManagementException(str(_msg), "81918")
+            raise self.ProcessManagementException(str(_msg), "81919")
         else :
             _result_lines = _result_stdout.split('\n')
             for _line in _result_lines :
@@ -535,7 +535,9 @@ class ProcessManagement :
                 # a new process.
                 sleep(3)
         else :
-            _status, _a, _b = self.run_os_command(_cmd)        
+            if cmdline.count("cbact") and cmdline.count("--daemon") :
+                _cmd = "script -qfec \"" + _cmd + "\""
+            _status, _a, _b = self.run_os_command(_cmd)
             # Same comment
             sleep(3)
 
