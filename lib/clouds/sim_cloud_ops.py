@@ -1073,7 +1073,6 @@ class SimCmds(CommonCloudFunctions) :
                     _cmd = "\"" + obj_attr_list["base_dir"] + "/cbact\""
                     _cmd += " --procid=" + self.pid
                     _cmd += " --osp=" + obj_attr_list["osp"]
-                    _cmd += " --msp=" + obj_attr_list["msp"]
                     _cmd += " --operation=performance-emit"
                     _cmd += " --cn=" + obj_attr_list["cloud_name"]
                     _cmd += " --uuid=" + obj_attr_list["uuid"]

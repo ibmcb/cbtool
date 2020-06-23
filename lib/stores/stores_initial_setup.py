@@ -25,6 +25,7 @@
 '''
 
 import socket
+import traceback
 
 from os import mkdir, listdir, path, access, F_OK, W_OK
 
@@ -36,6 +37,7 @@ from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import Nethashget, hostname2ip, NetworkException
 from .redis_datastore_adapter import RedisMgdConn
 from .mongodb_datastore_adapter import MongodbMgdConn
+from .mysql_datastore_adapter import MysqlMgdConn
 
 class StoreSetupException(Exception):
     '''
@@ -47,6 +49,14 @@ class StoreSetupException(Exception):
         self.status = status
     def __str__(self):
         return self.msg
+
+def load_metricstore_adapter(msattrs) :
+    _ms_adapter = __import__("lib.stores." + msattrs["kind"] + "_datastore_adapter", \
+                             fromlist=[msattrs["kind"].capitalize() + "MgdConn"])
+
+    _ms_conn_class = getattr(_ms_adapter, msattrs["kind"].capitalize() + "MgdConn")
+    
+    return _ms_conn_class(msattrs)
 
 def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
     '''
@@ -343,7 +353,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
 
             if _usage == "shared" :          
 
-                _hostport = int(global_objects["metricstore"]["port"])
+                _hostport = int(global_objects["metricstore"]["mongodb_port"])
                 
                 if not pre_check_port(_hostname, _hostport, _protocol) :
                     _proc_man =  ProcessManagement(username = "root")
@@ -366,9 +376,9 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                 _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod -f")
 
                 if not _mongodb_pid :
-                    _hostport = int(global_objects["metricstore"]["port"])
+                    _hostport = int(global_objects["metricstore"]["mongodb_port"])
 
-                    _config_file_contents = global_objects["metricstore"]["config_string"].replace('_', ' ')
+                    _config_file_contents = global_objects["metricstore"]["mongodb_config_string"].replace('_', ' ')
                     _config_file_contents = _config_file_contents.replace("REPLPORT", str(_hostport))
                     _config_file_contents = _config_file_contents.replace("REPLSTORESWORKINGDIR", global_objects["space"]["stores_working_dir"])
                     _config_file_contents = _config_file_contents.replace("--", '=')
@@ -390,8 +400,8 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                         exit(8)
 
                 else :
-                    global_objects["metricstore"]["port"] = _proc_man.get_port_from_pid(_mongodb_pid[0])
-                    _hostport = int(global_objects["metricstore"]["port"])
+                    global_objects["metricstore"]["mongodb_port"] = _proc_man.get_port_from_pid(_mongodb_pid[0])
+                    _hostport = int(global_objects["metricstore"]["mongodb_port"])
 
             _nh_conn = Nethashget(_hostname)
 
@@ -411,8 +421,6 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
             _msg = "The Metric Store of the kind \"MongoDB\" was successfully initialized "
             _msg += "on node: " + str(global_objects["metricstore"])
             cbdebug(_msg)
-            _status = 0
-            
             _status = 0
             
         return _status, _msg
@@ -436,6 +444,115 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
         raise StoreSetupException(_msg, 9)
 
     except Exception as e :
+        _status = 23
+        _msg = str(e)
+        raise StoreSetupException(_msg, 9)
+
+def mysql_metricstore_setup(global_objects, operation = "check") :
+    _protocol = global_objects["metricstore"]["protocol"]
+    _hostname = global_objects["metricstore"]["host"]
+    _databaseid = global_objects["metricstore"]["database"]
+    _timeout = float(global_objects["metricstore"]["timeout"])
+    _username = global_objects["mon_defaults"]["username"]
+    _usage = global_objects["metricstore"]["usage"].lower()
+    _hostport = int(global_objects["metricstore"]["mysql_port"])
+
+    try :
+        if operation == "check" :
+
+            if _usage == "shared" :          
+
+                _hostport = int(global_objects["metricstore"]["mysql_port"])
+                
+                if not pre_check_port(_hostname, _hostport, _protocol) :
+                    _proc_man =  ProcessManagement(username = "mysql")
+                    _mysql_pid = _proc_man.get_pid_from_cmdline("mysqld")
+    
+                    if not _mysql_pid :
+                        _msg = "Unable to detect a shared Mysql server daemon running. "
+                        _msg += "Please try to start one."
+                        print(_msg)
+                        exit(8)
+
+            else :
+                _usage = "private"
+
+                _config_file_fn = global_objects["space"]["stores_working_dir"] + '/' + _username + "_mysqld.conf"
+                _cmd = "mkdir -p " + global_objects["space"]["stores_working_dir"]  + "/logs; mysqld --defaults-file=" + _config_file_fn
+    
+                _proc_man =  ProcessManagement(username = _username)
+                _pid = _proc_man.get_pid_from_cmdline("mysqld --defaults-file=" + _config_file_fn)
+
+                if not _pid :
+                    _hostport = int(global_objects["metricstore"]["mysql_port"])
+
+                    _config_file_contents = global_objects["metricstore"]["mysql_config_string"]
+                    _config_file_contents = _config_file_contents.replace("REPLPORT", str(_hostport))
+                    _config_file_contents = _config_file_contents.replace("REPLUSER", _username)
+                    _config_file_contents = _config_file_contents.replace("REPLSTORESWORKINGDIR", global_objects["space"]["stores_working_dir"])
+                    _config_file_contents = _config_file_contents.replace("--", '=')
+                    _config_file_contents = _config_file_contents.replace('**', '-')
+                    _config_file_contents = _config_file_contents.replace(';','\n')
+
+                    _config_file_fd = open(_config_file_fn, 'w')
+                    _config_file_fd.write(_config_file_contents)
+                    _config_file_fd.close()
+    
+                    _pid = _proc_man.start_daemon(_cmd)
+                    
+                    sleep(5)
+
+                    if not _pid :
+                        _msg = "Unable to detect a private MysqlDB server daemon running. "
+                        _msg += "You may need to issue $ sudo apt-get install apparmor-utils && sudo aa-complain /usr/bin/mysqld, followed by: " + _cmd + ")"
+                        print(_msg)
+                        exit(8)
+
+                else :
+                    global_objects["metricstore"]["mysql_port"] = _proc_man.get_port_from_pid(_pid[0])
+                    _hostport = int(global_objects["metricstore"]["mysql_port"])
+
+            _nh_conn = Nethashget(_hostname)
+
+            _nh_conn.nmap(_hostport, _protocol)
+            _msg = "A Metric Store of the kind \"Mysql\" (" + _usage + ") "
+            _msg += "on node " + _hostname + ", " + _protocol
+            _msg += " port " + str(_hostport) + ", database id \"" + str(_databaseid)
+            _msg += "\" seems to be running."
+            cbdebug(_msg)
+            _status = 0
+
+        _mmc = MysqlMgdConn(global_objects["metricstore"])
+        _mmc.initialize_metric_store(_username)
+        
+        _msg = "The Metric Store of the kind \"Mysql\" was successfully initialized "
+        _msg += "on node: " + str(global_objects["metricstore"]["host"]) + " " + _protocol + " port " + str(_hostport)
+        cbdebug(_msg)
+        _status = 0
+            
+        return _status, _msg
+
+    except ProcessManagement.ProcessManagementException as obj :
+        _status = str(obj.status)
+        _msg = str(obj.msg)
+        raise StoreSetupException(_msg, 9)
+
+    except NetworkException as obj :
+        _msg = "A Metric Store of the kind \"Mysql\" on node "
+        _msg += _hostname + ", " + _protocol + " port " + str(_hostport)
+        _msg += ", database id \"" + str(_databaseid) + "\" seems to be down: "
+        _msg += str(obj.msg) + '.'
+        cberr(_msg)
+        raise StoreSetupException(_msg, 8)
+
+    except MysqlMgdConn.MetricStoreMgdConnException as obj :
+        _status = str(obj.status)
+        _msg = str(obj.msg)
+        raise StoreSetupException(_msg, 9)
+
+    except Exception as e :
+        for line in traceback.format_exc().splitlines() :
+            cberr(line, True)
         _status = 23
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
@@ -648,7 +765,7 @@ def reset(global_objects, soft = True, cloud_name = None) :
         if not soft :
             _msg = "    Flushing Metric Store..."
             print(_msg, end=' ')
-            _mmc = MongodbMgdConn(global_objects["metricstore"])
+            _mmc = load_metricstore_adapter(global_objects["metricstore"])
             _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
             print("done")
 
@@ -661,6 +778,10 @@ def reset(global_objects, soft = True, cloud_name = None) :
         _msg = str(obj.msg)
 
     except MongodbMgdConn.MetricStoreMgdConnException as obj :
+        _status = str(obj.status)
+        _msg = str(obj.msg)
+
+    except MysqlMgdConn.MetricStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
 

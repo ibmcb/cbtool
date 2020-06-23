@@ -62,7 +62,8 @@ class MongodbMgdConn :
         TBD
         '''
         set_my_parameters(self, parameters)
-        self.password = str(self.password)
+        self.username = str(self.mongodb_username)
+        self.port = self.mongodb_port
         self.pid = "TEST_" + getpwuid(os.getuid())[0]
         self.mongodb_conn = False
         
@@ -73,7 +74,7 @@ class MongodbMgdConn :
 
         self.version = pymongo.version.split('.')[0]
 
-    class MetricStoreMgdConnException(Exception):
+    class MetricStoreMgdConnException(BaseException):
         '''
         TBD
         '''

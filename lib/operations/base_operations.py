@@ -1607,7 +1607,7 @@ class BaseObjectOperations :
         obj_attr_list["vpn_server_protocol"] = "TCP"
         
         obj_attr_list["metricstore_host"] = _metric_store_attr_list["host"]
-        obj_attr_list["metricstore_port"] = _metric_store_attr_list["port"]
+        obj_attr_list["metricstore_port"] = _metric_store_attr_list[_metric_store_attr_list["kind"] + "_port"]
         obj_attr_list["metricstore_protocol"] = _metric_store_attr_list["protocol"]
         
         obj_attr_list["logstore_host"] = _log_store["hostname"]
@@ -3197,6 +3197,8 @@ class BaseObjectOperations :
             _fmsg = str(obj.msg)
 
         except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 40
             _fmsg = str(e)
 
@@ -4319,7 +4321,6 @@ class BaseObjectOperations :
                         _cmd = "script -qfec \"" + self.path + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
-                        _cmd += " --msp=" + dic2str(self.msci.mscp())
                         _cmd += " --oop=" + ','.join(_parameters.split())
                         _cmd += " --operation=" + command
                         _cmd += " --cn=" + _obj_attr_list["cloud_name"]
@@ -4346,7 +4347,6 @@ class BaseObjectOperations :
                             _cmd = "script -qfec \"" + self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
-                            _cmd += " --msp=" + dic2str(self.msci.mscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
@@ -4377,7 +4377,6 @@ class BaseObjectOperations :
                             _cmd = "script -qfec \"" + self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
-                            _cmd += " --msp=" + dic2str(self.msci.mscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]

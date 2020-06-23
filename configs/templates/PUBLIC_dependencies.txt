@@ -134,6 +134,9 @@ python-rrdtool-order = 72
 python-dateutil-order = 73
 python-pillow-order = 74
 python-jsonschema-order = 75
+python-mysql-connector-order = 76
+mysql-server-order = 77
+
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -221,6 +224,8 @@ python-rrdtool-install = pm
 python-dateutil-install = pip
 python-pillow-install = pip
 python-jsonschema-install = pip
+python-mysql-connector-install = pip
+mysql-server-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -302,6 +307,8 @@ python-rrdtool-configure = python3 -c "import rrdtool; print(rrdtool.__version__
 python-dateutil-configure = python3 -c "import dateutil; print(dateutil.__version__)"
 python-pillow-configure = python3 -c "import PIL; print(PIL.__version__)"
 python-jsonschema-configure = python3 -c "import jsonschema; print(jsonschema.__version__)"
+python-mysql-connector-configure = python3 -c "import mysql.connector; print(mysql.connector.__version__)"
+mysql-server-configure = mysqld --version | sed 's/ \+/ /g' | cut -d ' ' -f 3 | cut -d '-' -f 1
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -382,6 +389,8 @@ python-rrdtool-ver = ANY
 python-dateutil-ver = ANY
 python-pillow-ver = ANY
 python-jsonschema-ver = ANY
+python-mysql-connector-ver = 2.1.6
+mysql-server-ver = 5.7.30
 ### END - Dependency versions ###
 
 ### START - Dependency tags ###
@@ -463,6 +472,8 @@ python-rrdtool-tag = orchestrator
 python-dateutil-tag = orchestrator
 python-pillow-tag = orchestrator
 python-jsonschema-tag = orchestrator
+python-mysql-connector = base
+mysql-server = orchestrator 
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###

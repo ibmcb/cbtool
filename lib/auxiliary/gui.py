@@ -202,7 +202,7 @@ class Dashboard () :
             _obj_list += self.msci.find_document(self.manage_collection[_obj_type], \
                             {'expid' : expid, 'mgt_901_deprovisioning_request_originated' : { "$exists" : False}, \
                              'mgt_903_deprovisioning_request_completed' : { "$exists" : False}}, \
-                            True, [("mgt_001_provisioning_request_originated", 1)])
+                            allmatches = True, sortkeypairs = [("mgt_001_provisioning_request_originated", 1)])
 
         for attrs in _obj_list :
             _obj_type = attrs["obj_type"]

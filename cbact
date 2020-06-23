@@ -39,8 +39,8 @@ from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit, ReconnectingNewlineSysLogHandler
 from lib.auxiliary.data_ops import str2dic, dic2str
-from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
 from lib.stores.redis_datastore_adapter import RedisMgdConn
+from lib.stores.stores_initial_setup import load_metricstore_adapter
 
 from daemon import DaemonContext
 
@@ -406,14 +406,21 @@ def main(options) :
         _osci = RedisMgdConn(_oscp)
         _osci.experiment_inst = options.procid
 
-        _msci = MongodbMgdConn(str2dic(options.msp)) if options.msp else None
+        _msattrs = False
+        _msci = None
+        if options.msp :
+            _msattrs = str2dic(options.msp)
+        else :
+            _msci = None
 
         if options.cn :
             _dir_defaults = _osci.get_object(options.cn, "GLOBAL", False, "space", False)
-            if _msci is None :
-                _metricstore = _osci.get_object(options.cn, "GLOBAL", False, "metricstore", False)
-                _msci = MongodbMgdConn(_metricstore)
             _base_dir = _dir_defaults["base_dir"]
+            if _msci is None :
+                _msattrs = _osci.get_object(options.cn, "GLOBAL", False, "metricstore", False)
+
+        if _msattrs :
+            _msci = load_metricstore_adapter(_msattrs)
 
         '''
 	    For some historical reason, we're pulling logging options from both Redis and the CLI

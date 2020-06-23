@@ -53,6 +53,7 @@ cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0))
 from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import makeTimestamp
+from lib.stores.stores_initial_setup import load_metricstore_adapter
 
 class NetworkException(Exception) :
     '''
@@ -489,14 +490,7 @@ def get_ms_conn(mscp = None, cn = None) :
         _status = 100
         _fmsg = ""
         _my_uuid, _oscp, _mscp, _lscp = get_stores_parms()
-
-        _ms_adapter = __import__("lib.stores." + _mscp["kind"] + "_datastore_adapter", \
-                                 fromlist=[_mscp["kind"].capitalize() + "MgdConn"])
-
-        _ms_conn_class = getattr(_ms_adapter, _mscp["kind"].capitalize() + "MgdConn")
-        
-        _msci = _ms_conn_class(_mscp)
-        
+        _msci = load_metricstore_adapter(_mscp)
         _status = 0
 
     except ImportError as msg :
@@ -518,7 +512,7 @@ def get_ms_conn(mscp = None, cn = None) :
             exit(2)
         else :
             _msg = "Metric store adapter set up successfully."
-            return _msci, _my_uuid, _mscp["experiment_id"], _mscp["username"]
+            return _msci, _my_uuid, _mscp["experiment_id"], _mscp[_mscp["kind"] + "_username"]
 
 def get_os_conn(oscp = None) :
     '''

@@ -47,6 +47,7 @@ from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.data_ops import str2dic, dic2str, makeTimestamp
 from lib.operations.base_operations import BaseObjectOperations
+from lib.stores.stores_initial_setup import load_metricstore_adapter
 from scripts.common.cb_common import report_app_metrics
 
 qemu_supported = False
@@ -886,7 +887,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _fmt_obj_list += ('|' + _line[1]).ljust(len(_fields[1]))
                                 _fmt_obj_list += '\n'
 
-                        _info = self.msci.get_info()
+                        _msattrs = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "metricstore", False)
+                        _msci = load_metricstore_adapter(_msattrs)
+                        _info = _msci.get_info()
+                        _msci.disconnect()
                         
                         if obj_attr_list["output"] == "print" :  
                             _fmt_obj_list += "------------------------- METRIC STORE -----------------------\n"
@@ -1101,6 +1105,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(obj.msg)
 
         except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
 

@@ -161,6 +161,14 @@ RUN pip3 install --upgrade mongo
 RUN apt-get install -y python3-pymongo-ext
 # python3-pymongo-ext-install-pm
 
+# mysql-server-install-pm
+RUN apt-get install -y mysql-server
+# mysql-server-install-pm
+
+# python-mysql-connector-install-pip
+RUN pip3 install --upgrade mysql-connector
+# python-mysql-connector-install-pip
+
 # pssh-install-pm
 RUN apt-get install -y pssh
 # pssh-install-pm

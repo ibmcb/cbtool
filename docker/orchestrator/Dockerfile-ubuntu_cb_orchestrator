@@ -129,6 +129,14 @@ RUN apt-get install -y mongodb; sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mon
 # mongodb-install-pm
 RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/mongodb.conf
 
+# mysql-server-install-pm
+RUN apt-get install -y mysql-server
+# mysql-server-install-pm
+
+# python-mysql-connector-install-pip
+RUN pip3 install --upgrade mysql-connector
+# python-mysql-connector-install-pip
+
 # pylibvirt-install-pm
 RUN apt-get install -y python3-libvirt
 # pylibvirt-install-pm

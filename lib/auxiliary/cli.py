@@ -50,7 +50,7 @@ from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
 from lib.operations.base_operations import BaseObjectOperations
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
+from lib.stores.stores_initial_setup import load_metricstore_adapter
 from lib.stores.redis_datastore_adapter import RedisMgdConn
 from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds
 from lib.api.api_service_client import *
@@ -174,7 +174,7 @@ class CBCLI(Cmd) :
             del oscp["usage"]
 
             self.osci = RedisMgdConn(oscp)
-            self.msci = MongodbMgdConn(mscp)
+            self.msci = load_metricstore_adapter(mscp)
             self.api_service_url = "http://" + self.cld_attr_lst["api_defaults"]["hostname"]
             self.api_service_url += ":" + self.cld_attr_lst["api_defaults"]["port"]
             
@@ -685,7 +685,6 @@ class CBCLI(Cmd) :
             _base_cmd = "\"" +  self.path + "/cbact\""
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
-            _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
             _base_cmd += " --operation=cloud-api"
 
             # Ensure backwards-compatibility
@@ -770,7 +769,6 @@ class CBCLI(Cmd) :
             _base_cmd = "\"" + self.path + "/cbact\""
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
-            _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
             _base_cmd += " --operation=cloud-gui"
             _base_cmd += " --apiport=" + str(self.cld_attr_lst["api_defaults"]["port"])
             _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
