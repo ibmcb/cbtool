@@ -473,7 +473,7 @@ python-dateutil-tag = orchestrator
 python-pillow-tag = orchestrator
 python-jsonschema-tag = orchestrator
 python-mysql-connector = base
-mysql-server = orchestrator 
+mysql-server = orchestrator
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
