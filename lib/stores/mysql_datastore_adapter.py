@@ -313,7 +313,6 @@ class MysqlMgdConn :
             for _table in _tables :
                 if partial and len(criteria) :
                     statement = "delete from " + _table + self.make_restrictions(criteria)
-                    cbdebug("Restricted flushing statement: " + statement) 
                     cursor.execute(statement) 
                 else :
                     cursor.execute("delete from " + _table)
@@ -402,7 +401,6 @@ class MysqlMgdConn :
 
             _results = []
 
-            cbdebug("Attempting to find document: " + statement, True)
             # FIXME: We need to figure out how to safely allow iterators over
             # the live connection. But for now, let's just extract all the results
             result = cursor.execute(statement)
@@ -449,14 +447,28 @@ class MysqlMgdConn :
 
         try :
             cursor = self.conn_check()
-            if "original_mysql_id" not in document :
-                cursor.close()
-                cbwarn("This document does not have a pre-existing identifier. Cannot update. Will insert first")
-                document["original_mysql_id"] = self.add_document(table, document, disconnect_finish = disconnect_finish)
-                return
 
             if "_id" in document and isinstance(document["_id"], bytes) :
                 document["_id"] = document["_id"].decode("utf-8")
+
+            if "original_mysql_id" not in document :
+                if "_id" in document :
+                    # Attempt to find the original ID first
+                    statement = "select id from " + table + " where _id = '" + document["_id"] + "'"
+                    cursor.execute(statement)
+                    while True :
+                        rows = cursor.fetchmany(1)
+                        if not len(rows) :
+                            break
+                        for (original_mysql_id,) in rows :
+                            document["original_mysql_id"] = original_mysql_id
+
+                if "original_mysql_id" not in document :
+                    cursor.close()
+                    cbwarn("This document does not have a pre-existing identifier. Cannot update. Will insert first")
+                    document["original_mysql_id"] = self.add_document(table, document, disconnect_finish = disconnect_finish)
+                    return
+
             statement = "update " + table + " set document = '" + json.dumps(document) + "' where id = " + str(document["original_mysql_id"])
             result = cursor.execute(statement)
             MysqlMgdConn.catalogs.cbtool["conn"].commit()
@@ -481,7 +493,6 @@ class MysqlMgdConn :
             
             cursor = self.conn_check()
             statement = "delete from " + table + self.make_restrictions(criteria)
-            cbdebug("Attempting to delete: " + statement)
             cursor.execute(statement) 
             MysqlMgdConn.catalogs.cbtool["conn"].commit()
             cursor.close()
@@ -502,7 +513,6 @@ class MysqlMgdConn :
         try :
             cursor = self.conn_check()
             statement = "delete from " + table
-            cbdebug("Attempting to drop all data from table: " + statement)
             cursor.execute(statement) 
             MysqlMgdConn.catalogs.cbtool["conn"].commit()
             cursor.close()
@@ -523,7 +533,6 @@ class MysqlMgdConn :
         try :
             cursor = self.conn_check()
             statement = "select * from " + table + self.make_restrictions(criteria)
-            cbdebug("Attempting count number of rows from: " + statement)
             count = cursor.execute(statement).rowcount
             cursor.close()
             if disconnect_finish :
@@ -547,7 +556,6 @@ class MysqlMgdConn :
                 _result[_attribute + 's'] = []
 
             statement = "select id, document from " + table
-            cbdebug("Attempting get reported attributes from: " + statement)
             cursor.execute(statement)
             while True :
                 rows = cursor.fetchmany(4)
@@ -586,7 +594,6 @@ class MysqlMgdConn :
             cursor = self.conn_check()
             
             statement = "select distinct(expid) from " + table + " where expid is not NULL"
-            cbdebug("Attempting to list all expids: " + statement)
             cursor.execute(statement)
 
             while True :
@@ -639,4 +646,4 @@ class MysqlMgdConn :
             cberr(_msg)
             raise self.MetricStoreMgdConnException(str(_msg), 15)
         except Exception as e :
-            cbdebug("No workey: " + str(e), True)
+            cbdebug("No workey: " + str(e))
