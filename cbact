@@ -65,9 +65,6 @@ def actuator_cli_parsing() :
     parser.add_option("--osp", dest = "osp", metavar = "OSP", \
                       default = None, \
                       help ="Set Object Store Parameters")
-    parser.add_option("--msp", dest = "msp", metavar = "MSP", \
-                      default = None, \
-                      help ="Set Metric Store Parameters")
     parser.add_option("--cn", dest = "cn", metavar = "CN", \
                       default = None, \
                       help ="Set the Cloud name")
@@ -195,7 +192,7 @@ def actuator_cli_parsing() :
 
             return _options
         else :
-            print("The following parameters are mandatory: --osp, --msp, --operation, --oop, --cn")
+            print("The following parameters are mandatory: --osp, --operation, --oop, --cn")
             exit(18)
             
         if not _options.cn and (not _options.syslogp or not _options.syslogf or not _options.syslogh or not _options.syslogr):
