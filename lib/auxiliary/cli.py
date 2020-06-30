@@ -174,7 +174,6 @@ class CBCLI(Cmd) :
             del oscp["usage"]
 
             self.osci = RedisMgdConn(oscp)
-            self.msci = load_metricstore_adapter(mscp)
             self.api_service_url = "http://" + self.cld_attr_lst["api_defaults"]["hostname"]
             self.api_service_url += ":" + self.cld_attr_lst["api_defaults"]["port"]
             
@@ -943,9 +942,6 @@ class CBCLI(Cmd) :
                                                                   "cloud-detach")
 
         if not _status and BaseObjectOperations.default_cloud == self.cld_attr_lst["name"] :
-            # Not sure why we do this. Was there a historical reason for this?
-            # print("Disassociating default cloud: " + BaseObjectOperations.default_cloud)
-            # self.do_clddefault("none")
             self.do_cldlist("", False)
             
         print((message_beautifier(_msg)))
@@ -985,7 +981,7 @@ class CBCLI(Cmd) :
         '''
         TBD
         '''
-        self.passive_operations = PassiveObjectOperations(self.osci, self.msci, [])
+        self.passive_operations = PassiveObjectOperations(self.osci, [])
 
         _status, _msg, _object = self.passive_operations.list_objects(self.cld_attr_lst, \
                                                                       parameters, \
@@ -1003,13 +999,10 @@ class CBCLI(Cmd) :
             if _object["result"][_cloud_name_index]["name"] not in self.attached_clouds :
                 self.attached_clouds.append(_object["result"][_cloud_name_index]["name"])
 
-        self.passive_operations = PassiveObjectOperations(self.osci, \
-                                                          self.msci, \
-                                                          self.attached_clouds)
+        self.passive_operations = PassiveObjectOperations(self.osci, self.attached_clouds)
 
 
         self.active_operations = ActiveObjectOperations(self.osci, \
-                                                self.msci, \
                                                 self.attached_clouds)
 
         if not self.options.remote :

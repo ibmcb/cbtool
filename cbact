@@ -406,21 +406,9 @@ def main(options) :
         _osci = RedisMgdConn(_oscp)
         _osci.experiment_inst = options.procid
 
-        _msattrs = False
-        _msci = None
-        if options.msp :
-            _msattrs = str2dic(options.msp)
-        else :
-            _msci = None
-
         if options.cn :
             _dir_defaults = _osci.get_object(options.cn, "GLOBAL", False, "space", False)
             _base_dir = _dir_defaults["base_dir"]
-            if _msci is None :
-                _msattrs = _osci.get_object(options.cn, "GLOBAL", False, "metricstore", False)
-
-        if _msattrs :
-            _msci = load_metricstore_adapter(_msattrs)
 
         '''
 	    For some historical reason, we're pulling logging options from both Redis and the CLI
@@ -479,8 +467,8 @@ def main(options) :
         _msg += _parameters + '.'
         cbdebug(_msg)
 
-        _active_obj_command = ActiveObjectOperations(_osci, _msci)
-        _passive_obj_command = PassiveObjectOperations(_osci, _msci)
+        _active_obj_command = ActiveObjectOperations(_osci)
+        _passive_obj_command = PassiveObjectOperations(_osci)
             
         if _operation.count("attach") :
             

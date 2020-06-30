@@ -47,7 +47,7 @@ from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.data_ops import str2dic, dic2str, makeTimestamp
 from lib.operations.base_operations import BaseObjectOperations
-from lib.stores.stores_initial_setup import load_metricstore_adapter
+from lib.stores.common_datastore_adapter import MetricStoreMgdConnException
 from scripts.common.cb_common import report_app_metrics
 
 qemu_supported = False
@@ -843,6 +843,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _stats = {}
+            _msci = False
             
             obj_attr_list["cloud_name"] = "undefined"
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
@@ -865,7 +866,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _obj_list = _query_object["object_type_list"].split(',')
                     else :
                         _obj_list = obj_attr_list["type"].upper().split(',')
-
+                    _msci = self.get_msci(obj_attr_list["cloud_name"])
                     _fmt_obj_list = "\n"
 
                     if obj_attr_list["type"] == "all" :
@@ -887,10 +888,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _fmt_obj_list += ('|' + _line[1]).ljust(len(_fields[1]))
                                 _fmt_obj_list += '\n'
 
-                        _msattrs = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "metricstore", False)
-                        _msci = load_metricstore_adapter(_msattrs)
                         _info = _msci.get_info()
-                        _msci.disconnect()
                         
                         if obj_attr_list["output"] == "print" :  
                             _fmt_obj_list += "------------------------- METRIC STORE -----------------------\n"
@@ -1820,7 +1818,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException as obj :
+        except MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1873,7 +1871,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     if _expid.count('*') :
                         _expid = {'$regex':_expid}
                                             
-                    self.msci.flush_metric_store(_username, True, {"expid" : _expid })
+                    self.get_msci(obj_attr_list["cloud_name"]).flush_metric_store(_username, True, {"expid" : _expid })
 
                     _status = 0
             
@@ -1881,7 +1879,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException as obj :
+        except MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1922,6 +1920,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _obj_type = _obj_attr_list["type"].lower()
     
                     _metric_type = _obj_attr_list["metric_type"].lower()
+                    _msci = self.get_msci(obj_attr_list["cloud_name"])
 
                     if _obj_attr_list["unchanged_string"] == "None" :
                         _obj_attr_list["unchanged_string"] = ''
@@ -1997,7 +1996,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     # of the experiment. It is *very* important to have VMs and 
                     # the main CloudbBench host synchronized through NTP
                     _collection_name = "trace_" + _obj_attr_list["username"]                         
-                    _trace = self.msci.find_document(_collection_name, \
+                    _trace = _msci.find_document(_collection_name, \
                                                           _criteria, \
                                                           False, \
                                                           [("command_originated", 1)])
@@ -2017,7 +2016,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     _mgmt_collection_name = "management_" + _obj_type.upper() + '_' + _obj_attr_list["username"]
 
-                    _management_metrics_list = self.msci.find_document(_mgmt_collection_name, {'expid' : _criteria['expid']}, True)
+                    _management_metrics_list = _msci.find_document(_mgmt_collection_name, {'expid' : _criteria['expid']}, True)
                     
                     for _metric in _management_metrics_list :
                         _csv_contents_line = ''
@@ -2067,7 +2066,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _trace_fd.write(_trace_csv_contents_header + '\n')
 
                         _collection_name = "trace_" + _obj_attr_list["username"]                         
-                        _trace_list = self.msci.find_document(_collection_name, \
+                        _trace_list = _msci.find_document(_collection_name, \
                                                               _criteria, \
                                                               True, \
                                                               [("command_originated", 1)])
@@ -2093,7 +2092,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         filters = []
                         if _metric_type != "runtime_os" :
                             filters.append(("time", 1))
-                        _runtime_metric_list = self.msci.find_document(_collection_name, _criteria, True, filters)
+                        _runtime_metric_list = _msci.find_document(_collection_name, _criteria, True, filters)
 
                         _empty = True
 
@@ -2114,7 +2113,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 # value when a metric is not found on the Metric Store.
                                 _last_unchanged_metric[_current_uuid] = {}
     
-                            _tmp_metric = self.msci.find_document(_mgmt_collection_name, {"_id" : _metric["uuid"]})
+                            _tmp_metric = _msci.find_document(_mgmt_collection_name, {"_id" : _metric["uuid"]})
                             for _key in _desired_keys :
                                 if _key in _metric and _key != "uuid" and _key != "time" and _key != "time_h" and _key != "time_cbtool" and _key != "time_cbtool_h" :
                                     _val = str(_metric[_key]["val"])
@@ -2193,7 +2192,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException as obj :
+        except MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -2236,6 +2235,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _obj_type = _obj_attr_list["type"]
 
                     _cloud_name = _obj_attr_list["cloud_name"]
+                    _msci = self.get_msci(_cloud_name)
 
                     _msg = "The following " + _obj_type + "s reported management metrics:\n"
                     _field1 = "Name                        "
@@ -2247,13 +2247,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     #_uuid_to_name_dict = {}
                     
                     _coll_name = "latest_management_" + _obj_type + '_' + _obj_attr_list["username"]
-                    _metrics_list = self.msci.find_document(_coll_name, {}, True)
+                    _metrics_list = _msci.find_document(_coll_name, {}, True)
 
                     for _metric in _metrics_list :
                         _msg += _metric["name"].ljust(len(_field1))
                         _msg += '|' + str( _curr_time- int(_metric["mgt_001_provisioning_request_originated"])).ljust(len(_field2))
                         _msg += '|' + _metric["expid"].ljust(len(_field3))
-                        _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
+                        _nr_samples = _msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
                         _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
 
                         #_uuid_to_name_dict[_metric["_id"]] = _metric["name"]
@@ -2262,7 +2262,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
 
                     _coll_name = "latest_runtime_os_" + _obj_type + '_' + _obj_attr_list["username"]
-                    _metrics_list = self.msci.find_document(_coll_name, {}, True)
+                    _metrics_list = _msci.find_document(_coll_name, {}, True)
 
                     for _metric in _metrics_list :
                         if self.osci.object_exists(_cloud_name, _obj_type, _metric["_id"], False) :
@@ -2271,7 +2271,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _msg += _obj_attr_list["name"].ljust(len(_field1))
                             _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2))
                             _msg += '|' + _metric["expid"].ljust(len(_field3))
-                            _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
+                            _nr_samples = _msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
                             _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
 
                     if _obj_type == "VM" :
@@ -2279,7 +2279,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
 
                         _coll_name = "latest_runtime_app_" + _obj_type + '_' + _obj_attr_list["username"]
-                        _metrics_list = self.msci.find_document(_coll_name, {}, True)
+                        _metrics_list = _msci.find_document(_coll_name, {}, True)
 
                         for _metric in _metrics_list :
                             if self.osci.object_exists(_cloud_name, _obj_type, _metric["_id"], False) :
@@ -2289,7 +2289,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _msg += _obj_attr_list["name"].ljust(len(_field1))
                                 _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2))                                              
                                 _msg += '|' + _metric["expid"].ljust(len(_field3))
-                                _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
+                                _nr_samples = _msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
                                 _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
 
                     _status = 0
@@ -2298,7 +2298,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException as obj :
+        except MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -2532,7 +2532,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     report_app_metrics(_metrics_list, \
                                        _sla_target_list, \
-                                       [self.msci, _vm_uuid, _expid,  _username], \
+                                       [_msci, _vm_uuid, _expid,  _username], \
                                        [self.osci, _vm_uuid, cloud_name], \
                                        False)
                     
@@ -2545,7 +2545,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += "current load will be allowed to finish its course."
                     cbdebug(_msg)
 
-            except self.msci.MetricStoreMgdConnException as obj :
+            except MetricStoreMgdConnException as obj :
                 _error = True
                 _status = 44
                 _fmsg = str(obj.msg)
@@ -2644,7 +2644,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException as obj :
+        except MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -3128,7 +3128,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if not _status :
                             _result["current"] = _new_expid
 
-                    _result["experiment_list"] = self.msci.get_experiment_list("reported_management_VM_metric_names_" + _username)
+                    _result["experiment_list"] = self.get_msci(obj_attr_list["cloud_name"]).get_experiment_list("reported_management_VM_metric_names_" + _username)
                     
                     _status = 0
 

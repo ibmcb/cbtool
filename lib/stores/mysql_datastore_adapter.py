@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
-
 '''
     Created on June 16th, 2020
 
@@ -24,45 +23,22 @@
     @author: Michael Galaxy 
 '''
 
-import os
 import json
 import threading
 import mysql.connector
 
-from time import sleep, time
-from random import randint
-from pwd import getpwuid
-from lib.auxiliary.config import get_my_parameters, set_my_parameters 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.stores.common_datastore_adapter import MetricStoreMgdConn, MetricStoreMgdConnException
 
-class MysqlMgdConn :
-    catalogs = threading.local()
-
+class MysqlMgdConn(MetricStoreMgdConn) :
     @trace
     def __init__(self, parameters) :
-        set_my_parameters(self, parameters)
+        MetricStoreMgdConn.__init__(self, parameters)
         self.username = self.mysql_username
         self.port = self.mysql_port
-        if isinstance(self.password, str) and self.password.lower() == "false" :
-            self.password = False
-        self.pid = "TEST_" + getpwuid(os.getuid())[0]
         self.version = mysql.connector.__version__.split('.')[0]
         self.lastrow_mutex = threading.Lock()
         self.conn_mutex = threading.Lock()
-
-    @trace
-    class MetricStoreMgdConnException(Exception):
-        def __init__(self, msg, status):
-            Exception.__init__(self)
-            self.msg = msg
-            self.status = status
-        def __str__(self):
-            return self.msg
-
-    @trace
-    def mscp(self) :
-        return get_my_parameters(self)
-        
     @trace
     def connect(self, tout) :
         try:
