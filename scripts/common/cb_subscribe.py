@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -23,7 +23,7 @@ import os
 import fnmatch
 
 if len(argv) < 4 :
-    print "Usage: cb_barrier.py <objtype> <channel> <message>"
+    print("Usage: cb_barrier.py <objtype> <channel> <message>")
     exit(1)
 
 _obj_type = argv[1]
@@ -55,7 +55,7 @@ if counter_name and counter_max :
     lock = _osci.acquire_lock(_cn, _obj_type, "barrier", counter_name, 1)
     counter = int(_osci.update_counter(_cn, _obj_type, counter_name, "increment"))
     if counter == counter_max :
-        print "I am leader"
+        print("I am leader")
         leader = True
         _osci.update_counter(_cn, _obj_type, counter_name, "decrement")
         _osci.release_lock(_cn, _obj_type, "barrier", lock)
@@ -67,9 +67,9 @@ if counter_name and counter_max :
                 break
             sleep(0.1)
 
-        print "leader done."
+        print("leader done.")
         exit(0)
-    print "I am follower"
+    print("I am follower")
 
 _sub_channel = _osci.subscribe(_cn, _obj_type, _channel)
 
@@ -92,6 +92,6 @@ if not leader :
     if counter_name and counter_max and lock :
         _osci.release_lock(_cn, _obj_type, "barrier", lock)
 
-    print "follower done"
+    print("follower done")
 
 exit(0)

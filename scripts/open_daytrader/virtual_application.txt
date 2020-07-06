@@ -7,12 +7,12 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = client_open_daytrader->geronimo->mysql
 LOAD_BALANCER_SUPPORTED = $True
+LOAD_GENERATOR_SOURCES = 1
 LOAD_BALANCER = $False
 LOAD_BALANCER_TARGET_PORTS = 8080,9080
 LOAD_BALANCER_TARGET_URL = daytrader
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
-LOAD_GENERATOR_SOURCES = 1
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = client_open_daytrader
@@ -53,7 +53,7 @@ CLIENT_OPEN_DAYTRADER_START1 = cb_run_daytrader.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto
-JAVA_VER = 7
+JAVA_VER = auto
 JAVA_MAX_MEM_HEAP = 0.8
 JAVA_EXTRA_CMD_OPTS = -Xms256m
 NR_QUOTES=4000

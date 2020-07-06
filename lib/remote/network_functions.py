@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -21,12 +21,12 @@
 
     Network primitives for CloudBench
 
-    @author: Michael R. Hines, Marcio A. Silva
+    @author: Michael R. Galaxy, Marcio A. Silva
 '''
 
 import socket
 import struct
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 try :
     import IN
@@ -79,12 +79,14 @@ def get_ip_address() :
         cbdebug(_msg)
     
     _default_if_candidates = []
-    for _line in output_stdout.split('\n') :
+    for _line in output_stdout.decode("utf-8").split('\n') :
         if len(_line) > 0 :
             if _line.count("default") and system() == "Darwin" :
-                _default_if_candidates.append(_line.split()[-1])
+                if _line.split()[-1] not in _default_if_candidates :
+                    _default_if_candidates.append(_line.split()[-1])
             elif _line.split()[0] == "0.0.0.0" and system() == "Linux" :
-                _default_if_candidates.append(_line.split()[-1])
+                if _line.split()[-1] not in _default_if_candidates :
+                    _default_if_candidates.append(_line.split()[-1])
     
     _default_if = False            
     if len(_default_if_candidates) == 1 :
@@ -124,7 +126,7 @@ def get_ip_address() :
         cbdebug(_msg)
     
     _default_ip = False
-    for _line in output_stdout.split('\n') :
+    for _line in output_stdout.decode("utf-8").split('\n') :
         if _line.count("inet") and system() == "Darwin" :
             _default_ip = _line.split()[1]
             break
@@ -164,7 +166,7 @@ def get_syslog_port(username) :
         _msg = "Command \"" + _cmd + "\" execution succeeded"
         cbdebug(_msg)
     
-    _syslog_pid = output_stdout.split()[1]
+    _syslog_pid = output_stdout.decode("utf-8").split()[1]
 
     _cmd = "netstat -aunp | grep 0.0.0.0 | grep " + _syslog_pid
     proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
@@ -179,14 +181,14 @@ def get_syslog_port(username) :
         cbdebug(_msg)
     
     try :
-        _syslog_udp_assoc = output_stdout.split()[3]
+        _syslog_udp_assoc = output_stdout.decode("utf-8").split()[3]
         _syslog_port = _syslog_udp_assoc.split(':')[1]
             
         _msg = "Default syslog port for this CloudBench host found: " + _syslog_port
         cbdebug(_msg)
         return _syslog_port
     
-    except Exception, e :
+    except Exception as e :
         _msg = "Unable to find default syslog port for this CloudBench host: " + _syslog_port
         cberr(_msg)
         raise NetworkException(str(_msg), 1)
@@ -237,7 +239,7 @@ def hostname2ip(hostname, raise_exception = False) :
         _msg = "Error while attempting to resolve the " + _x + " \"" + hostname + "\"."
         _msg += " Please make sure this name is resolvable either in /etc/hosts or DNS."
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg = "Error while attempting to resolve the " + _x + " \"" + hostname + "\":" + str(e)
 
@@ -268,8 +270,8 @@ def get_mtu(ifname) :
     try:
         ifs = ioctl(s, SIOCGIFMTU, ifr)
         mtu = struct.unpack('<H',ifs[16:18])[0]
-    except Exception, s:
-        print 'socket ioctl call failed: {0}'.format(s)
+    except Exception as s:
+        print('socket ioctl call failed: {0}'.format(s))
         raise
  
     return mtu
@@ -282,7 +284,7 @@ def check_url(url, string_to_replace = None, string_replacement = None, tout = 3
         if len(url) :
             if string_to_replace and string_replacement :
                 _url = url.replace(string_to_replace, string_replacement.strip())
-            urllib2.urlopen(urllib2.Request(_url), timeout = tout)
+            urllib.request.urlopen(urllib.request.Request(_url), timeout = tout)
         return True
         
     except:
@@ -348,7 +350,7 @@ class Nethashget :
                 cberr(_msg)
                 raise NetworkException(str(_msg), "1")
 
-        except socket.error, msg :
+        except socket.error as msg :
             self.socket.close()
             self.socket = None
 
@@ -377,7 +379,7 @@ class Nethashget :
             self.socket.connect((self.hostname, self.port if port is None else port))
             return True
         
-        except socket.error, msg :
+        except socket.error as msg :
             _msg = "Unable to connect to " + protocol + " port " + str(port)
             _msg += " on host " + self.hostname + ": " + str(msg)
             cbinfo(_msg)
@@ -401,7 +403,7 @@ class Nethashget :
         if reset :
             try :
                 self.connect()
-            except socket.error, msg :
+            except socket.error as msg :
                 _msg = "ERROR cannot connect to ganglia gmetad to the port "
                 _msg += self.port + " on server " + self.hostname + ": "
                 _msg += str(msg) + '.' 
@@ -418,12 +420,12 @@ class Nethashget :
                     try:
                         _buffer = self.socket.recv(1024)
                     except socket.error as err:
-                        print (err, type(err))
+                        print((err, type(err)))
                         _buffer = ''
                 if(_buffer == ''):
                     break
             except socket.error as err:
-                print (err, type(err))
+                print((err, type(err)))
             if(_buffer == ''):
                 break
 

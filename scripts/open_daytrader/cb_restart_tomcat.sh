@@ -17,6 +17,7 @@
 #/*******************************************************************************
 
 source ~/.bashrc
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_java_home
@@ -43,6 +44,7 @@ DT_EAR=$(find ~ | find ~ | grep daytrader-ear-[0-9]\.[0-9]\.[0-9]\.ear | head -1
 
 GERONIMO_DEPLOY=$(find ~ | grep bin/deploy | grep -v bat | grep -v framework)
 GERONIMO_MAIN=$(find ~ | grep bin/geronimo | grep -v bat | grep -v framework)
+GERONIMO_PROPERTIES=$(find ~ | grep -v karaf | grep /etc/config.properties)
 
 ${SUDO_CMD} chown -R $(whoami):$(whoami) ~/daytrader-parent*
 ${SUDO_CMD} chown -R $(whoami):$(whoami) ~/geronimo-tomcat*
@@ -56,7 +58,9 @@ syslog_netcat "Changing configuration file to point the Geronimo server to MySQL
     
 syslog_netcat "Trying.. sed command output.. next:"
 ${SUDO_CMD} sed -i "s/<config\-property\-setting name=\"ServerName\">.*<\/config\-property\-setting>/<config\-property\-setting name=\"ServerName\">"$DB_IP"<\/config\-property\-setting>/g" $DT_MYSQL_PLAN
-
+syslog_netcat "SED Error: $?"
+JAVA_VERSION=$(${JAVA_HOME}/bin/java -version 2>&1 | grep version | awk '{ print $3 }' | sed 's/"//g' | cut -d '.' -f 2)
+${SUDO_CMD} sed -i "s/jre-1.7=/jre-1.${JAVA_VERSION}=/g" $GERONIMO_PROPERTIES
 syslog_netcat "SED Error: $?"
 
 syslog_netcat "Done changing configuration file to point the Geronimo server to MySQL server running on $DB_IP"

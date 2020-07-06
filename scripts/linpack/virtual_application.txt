@@ -48,7 +48,7 @@ LINPACK_START1 = cb_run_linpack.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 LOAD_FACTOR = 5000
-LINPACK=~/linpack/benchmarks/linpack/xlinpack_xeon64
+LINPACK=~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

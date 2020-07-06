@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -18,17 +18,17 @@
 
 '''
     API Service RPC Relay
-    @author: Michael R. Hines, Marcio A. Silva
+    @author: Michael R. Galaxy, Marcio A. Silva
 '''
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.config import parse_cld_defs_file, get_available_clouds
 from time import sleep
 
-from DocXMLRPCServer import DocXMLRPCServer
+from xmlrpc.server import DocXMLRPCServer
 import sys
 import inspect
 import threading
-import SocketServer
+import socketserver
  
 """
     This class is used to avoid Double-Documentation
@@ -171,7 +171,11 @@ class API():
         return self.active.clddetach({}, name, "cloud-detach")[2]
 
     def cldlist(self, set_default_cloud = "false"):
-        return self.passive.list_objects({}, set_default_cloud, "cloud-list")[2]
+        response = self.passive.list_objects({}, set_default_cloud, "cloud-list")
+        x = {}
+        for k,v in response[2].items() :
+            x[k.decode('utf-8') if isinstance(k, bytes) else k] = v.decode('utf-8') if isinstance(v, bytes) else v
+        return x 
 
     def shell(self, cloud_name, scmd):
         return self.passive.execute_shell(cloud_name + ' ' + scmd, "shell-execute")[2]
@@ -205,6 +209,7 @@ class API():
 
     def cldshow(self, cloud_name, object_type) :
         return self.passive.show_object({"name": cloud_name}, cloud_name + ' ' + object_type, "cloud-show")[2]
+        return response
 
     def statealter(self, cloud_name, identifier, new_state):
         return self.passive.alter_state({"name": cloud_name}, cloud_name + ' ' + identifier + ' ' + new_state, "state-alter")[2]
@@ -614,7 +619,7 @@ class API():
         return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + gfilter, "view-show")[2]
 
     
-class AsyncDocXMLRPCServer(SocketServer.ThreadingMixIn,DocXMLRPCServer): pass
+class AsyncDocXMLRPCServer(socketserver.ThreadingMixIn,DocXMLRPCServer): pass
 
 services = {}
 

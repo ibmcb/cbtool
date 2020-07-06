@@ -7,7 +7,7 @@ DBID = 0
 TIMOUT = $MAIN_TIMEOUT
 USERNAME = $MAIN_USERNAME
 USAGE = private 
-CONFIG_STRING = daemonize_yes; pidfile_REPLSTORESWORKINGDIR/redis.pid; port_REPLPORT; timeout_0; loglevel_notice; logfile_stdout; databases_16; save_900_1; save_300_10; save_60_10000; stop-writes-on-bgsave-error_yes; rdbcompression_yes; rdbchecksum_yes; dbfilename_cloubenchos.rdb; dir_REPLSTORESWORKINGDIR; slave-serve-stale-data_yes; slave-read-only_yes; appendonly_no; appendfsync_no; no-appendfsync-on-rewrite_no; auto-aof-rewrite-percentage_100; auto-aof-rewrite-min-size_64mb; lua-time-limit_5000; slowlog-log-slower-than_10000; slowlog-max-len_128; hash-max-ziplist-entries_512; hash-max-ziplist-value_64; list-max-ziplist-entries_512; list-max-ziplist-value_64; set-max-intset-entries_512; zset-max-ziplist-entries_128; zset-max-ziplist-value_64; activerehashing_yes; client-output-buffer-limit_normal_0_0_0; client-output-buffer-limit_slave_256mb_64mb_60; client-output-buffer-limit_pubsub_32mb_8mb_60
+CONFIG_STRING = daemonize_yes; pidfile_REPLSTORESWORKINGDIR/redis.pid; port_REPLPORT; timeout_0; loglevel_notice; logfile_stdout; databases_16; save_900_1; save_300_10; save_60_10000; stop-writes-on-bgsave-error_yes; rdbcompression_yes; rdbchecksum_yes; dbfilename_cloubenchos.rdb; dir_REPLSTORESWORKINGDIR; slave-serve-stale-data_yes; slave-read-only_yes; appendonly_no; appendfsync_no; no-appendfsync-on-rewrite_no; auto-aof-rewrite-percentage_100; auto-aof-rewrite-min-size_64mb; lua-time-limit_5000; slowlog-log-slower-than_10000; slowlog-max-len_128; hash-max-ziplist-entries_512; hash-max-ziplist-value_64; list-max-ziplist-entries_512; list-max-ziplist-value_64; set-max-intset-entries_512; zset-max-ziplist-entries_128; zset-max-ziplist-value_64; activerehashing_yes; client-output-buffer-limit_normal_0_0_0; client-output-buffer-limit_slave_256mb_64mb_60; client-output-buffer-limit_pubsub_32mb_8mb_60; protected-mode_no
 
 [LOGSTORE]
 SHOW_CMD_STATUS = yes 
@@ -63,7 +63,7 @@ PORT = 27017
 DATABASE = metrics
 TIMEOUT = $MAIN_TIMEOUT
 USAGE = private
-CONFIG_STRING = logpath--REPLSTORESWORKINGDIR/logs/mongod.log; logappend--true; fork--true; port--REPLPORT; dbpath--REPLSTORESWORKINGDIR
+CONFIG_STRING = logpath--REPLSTORESWORKINGDIR/logs/mongod.log; logappend--true; fork--true; port--REPLPORT; bind**ip=0.0.0.0; dbpath--REPLSTORESWORKINGDIR
 
 [FILESTORE]
 KIND = rsync

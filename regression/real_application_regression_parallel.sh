@@ -51,6 +51,7 @@ do
         -h|--help)
         echo $CB_USAGE
         shift
+        exit 0
         ;;
         *)
         # unknown option
@@ -68,7 +69,7 @@ then
     #    sudo pkill -9 -f stores
     sudo rm /tmp/*real_application_regression_test.txt* > /dev/null 2>&1
 #    sudo rm /tmp/*_real_cloud_regression_*.txt > /dev/null 2>&1
-    for i in $(sudo tmux ls | grep cb | awk '{ print $1 }' | sed 's/://g')
+    for i in $(sudo tmux ls | grep cb | grep -v cb: | awk '{ print $1 }' | sed 's/://g')
     do 
         sudo tmux kill-session -t $i > /dev/null 2>&1
     done
@@ -102,13 +103,13 @@ then
         sudo tmux new -d -s cb${workload}
         sudo tmux send-keys -t cb${workload} "su - ${USER}" Enter
         sudo tmux send-keys -t cb${workload} "cd ~/$CB_ACTUAL_DIR" Enter
-        sudo tmux send-keys -t cb${workload} "time ./regression/real_application_regression_test.py --cloud_model $CB_MODEL --types ${workload} --noheader" Enter
+        #sudo tmux send-keys -t cb${workload} "time ./regression/real_application_regression_test.py --cloud_model $CB_MODEL --types ${workload} --experiment_id none --noheader" Enter
     
         actual_workloads=$(echo $workload | sed 's/fake/nullworkload/g')
-        for alias in $(sudo cat ~/$CB_ACTUAL_DIR/util/workloads_alias_mapping.txt | grep "synthetic \|application-stress \|scientific \|transactional \|data-centric " | awk '{ print $1}')
+        for alias in $(sudo cat ~/$CB_ACTUAL_DIR/util/workloads_alias_mapping.txt | grep "synthetic \|application-stress \|scientific \|transactional \|data-centric " | awk '{ print $2}')
         do
             cb_alias=$(echo $alias | cut -d ' ' -f 1)
-            cb_list=$(sudo cat ~/$CB_ACTUAL_DIR/util/workloads_alias_mapping.txt | grep "$alias " | cut -d ' ' -f 2 | sed 's/,/ /g')
+            cb_list=$(sudo cat ~/$CB_ACTUAL_DIR/util/workloads_alias_mapping.txt | grep "$alias " | cut -d ' ' -f 3 | sed 's/,/ /g')
             actual_workloads=$(echo $actual_workloads | sed "s/$cb_alias/$cb_list/g")    
         done
     	wlist=$actual_workloads' '$wlist

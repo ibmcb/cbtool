@@ -7,7 +7,7 @@ DO_LOGIN = need_to_be_configured_by_user
 DO_SSH_KEY_NAME = need_to_be_configured_by_user
 DO_INITIAL_VMCS = need_to_be_configured_by_user
 DO_KEY_NAME = need_to_be_configured_by_user
-DO_NETNAME = private
+DO_NETNAME = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 DO_INITIAL_VMCS_DOC = There are more than 10 DigitalOcean regions to choose from @ https://developers.digitalocean.com

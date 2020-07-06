@@ -1,8 +1,8 @@
 [USER-DEFINED]
 PDM_ACCESS = need_to_be_configured_by_user
 # Name of the ssh key pair 
-PDM_KEY_NAME = cbtool_rsa
-PDM_SSH_KEY_NAME = cbtool_rsa
+PDM_KEY_NAME = need_to_be_configured_by_user
+PDM_SSH_KEY_NAME = need_to_be_configured_by_user
 PDM_LOGIN = need_to_be_configured_by_user
 PDM_INITIAL_VMCS = need_to_be_configured_by_user
 PDM_NETNAME = need_to_be_configured_by_user
@@ -95,7 +95,7 @@ LOGIN = $PDM_LOGIN
 SSH_KEY_NAME = $PDM_SSH_KEY_NAME
 
 [VM_TEMPLATES : PDM_CLOUDCONFIG]
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:ubuntu, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:cb_nullworkloadcolonmaster, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
 [SIZE_TEMPLATES : PDM_CLOUDCONFIG]
 X-Y=X-Y

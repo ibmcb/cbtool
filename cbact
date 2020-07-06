@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -135,10 +135,10 @@ def actuator_cli_parsing() :
     if _options.debug_host is not None :
         try :
             import debug
-            print str(sys.path)
+            print(str(sys.path))
             import pydevd
             pydevd.settrace(host=_options.debug_host)
-        except ImportError, msg :
+        except ImportError as msg :
             cbwarn("Failed to import debug file for remote debugging: " + str(msg), True)
             _options.debug_host = None
             pass
@@ -174,15 +174,15 @@ def actuator_cli_parsing() :
         _options.osp = _options.osp[:-1]
         _from_file = True
 
-    except IOError, msg :
+    except IOError as msg :
         _status = 10
         _fmsg = str(msg) 
 
-    except OSError, msg :
+    except OSError as msg :
         _status = 20
         _fmsg = str(msg) 
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
         
@@ -190,16 +190,16 @@ def actuator_cli_parsing() :
         if _options.operation and _options.osp and (_options.operation in ["cloud-api", "cloud-gui" ] or _options.cn) :
             if (_options.operation in [ "cloud-api", "cloud-gui"]) and \
                     (not _options.apiport or not _options.apihost) :
-                print "The following parameters are mandatory: --apiport, --apihost"
+                print("The following parameters are mandatory: --apiport, --apihost")
                 exit(19)
 
             return _options
         else :
-            print "The following parameters are mandatory: --osp, --msp, --operation, --oop, --cn"
+            print("The following parameters are mandatory: --osp, --msp, --operation, --oop, --cn")
             exit(18)
             
         if not _options.cn and (not _options.syslogp or not _options.syslogf or not _options.syslogh or not _options.syslogr):
-                print "The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp, --syslogr"
+                print("The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp, --syslogr")
                 exit(20)
 
 def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest, protocol) :
@@ -368,18 +368,18 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest,
 
         _status = 0
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
 
     finally :
         if _status :
             _msg = "Failure while setting up syslog channel: " + _fmsg
-            print _msg
+            print(_msg)
             exit(2)
         else :
             _msg = "Syslog channel set up successfully."
-            print _msg
+            print(_msg)
             return True
 
 def main(options) :
@@ -415,13 +415,13 @@ def main(options) :
                 _msci = MongodbMgdConn(_metricstore)
             _base_dir = _dir_defaults["base_dir"]
 
-	'''
-	 For some historical reason, we're pulling logging options from both Redis and the CLI
-	 This is OK for instances of the actuator that run on the orchestrator machine
-         itself, but for the load manager, it breaks when it runs over the VPN.
-         The modification here is that if and only if we're running as the load manager
-         then use the CLI values instead of the Redis values for logging.
-	'''
+        '''
+	    For some historical reason, we're pulling logging options from both Redis and the CLI
+	    This is OK for instances of the actuator that run on the orchestrator machine
+            itself, but for the load manager, it breaks when it runs over the VPN.
+            The modification here is that if and only if we're running as the load manager
+            then use the CLI values instead of the Redis values for logging.
+        '''
         if _operation.count("execute") or not options.cn :
             _log_defaults = {
                              "hostname" : options.syslogh,
@@ -707,7 +707,7 @@ def main(options) :
         _status = 27
         _fmsg = "CTRL-C Exiting"
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _fmsg = str(e)
 

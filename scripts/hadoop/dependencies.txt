@@ -17,7 +17,7 @@ hibench-install = git
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = /tmp/cb_is_java_installed.sh openjdk 7
+java-configure = /tmp/cb_is_java_installed.sh openjdk 8
 hadoop-configure = /tmp/cb_is_hadoop_installed.sh 2
 hibench-configure = ls -la /home/REPLACE_USERNAME/HiBench
 ### END - Tests ###

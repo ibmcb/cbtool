@@ -35,12 +35,12 @@ if os.access(api_file_name, os.F_OK) :
     except :
         _msg = "Unable to open file containing API connection information "
         _msg += "(" + api_file_name + ")."
-        print _msg
+        print(_msg)
         exit(4)
 else :
     _msg = "Unable to locate file containing API connection information "
     _msg += "(" + api_file_name + ")."
-    print _msg
+    print(_msg)
     exit(4)
 
 _path_set = False
@@ -57,13 +57,13 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 from lib.api.api_service_client import *
 
 _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
+print(_msg)
 api = APIClient(_api_conn_info)
 
 #---------------------------------- END CB API ---------------------------------
 
 if len(argv) < 4 :
-    print "./" + argv[0] + "<cloud name> <type> <role>"
+    print("./" + argv[0] + "<cloud name> <type> <role>")
     exit(1)
 
 cloud_name = argv[1]
@@ -72,7 +72,7 @@ needed_role = argv[3]
 
 expid = "ft_" + makeTimestamp().replace(" ", "_")
 
-print "Going to resume VM role " + needed_role + " from first saved App of type " + needed_type + "..."
+print("Going to resume VM role " + needed_role + " from first saved App of type " + needed_type + "...")
 
 try :
     error = False
@@ -80,7 +80,7 @@ try :
     api.cldalter(cloud_name, "time", "experiment_id", "not_ready_yet")
     apps = api.applist(cloud_name, "all")
     if len(apps) == 0 :
-        print "No saved Apps available. Make some."
+        print("No saved Apps available. Make some.")
         exit(1)
 
     found = None
@@ -97,19 +97,19 @@ try :
 
             if name is None:
                 app = None
-                print needed_role + " vm not found."
+                print(needed_role + " vm not found.")
                 exit(1)
 
             break
 
     if not found :
         app = None
-        print needed_type + " application not found."
+        print(needed_type + " application not found.")
         exit(1)
 
     api.cldalter(cloud_name, "time", "experiment_id", expid)
 
-    print "Found App " + app["name"] + ". Generating scripts..."
+    print("Found App " + app["name"] + ". Generating scripts...")
 
     file1 = "/home/mrhines/ftvm/vmstatus.sh"
     file2 = "/home/mrhines/ftvm/qemudebug.sh"
@@ -123,54 +123,54 @@ try :
     f.write("sudo virsh qemu-monitor-command " + vm["cloud_vm_name"] + " --hmp --cmd \"info status\"\n")
     f.write("sudo virsh qemu-monitor-command " + vm["cloud_vm_name"] + " --hmp --cmd \"info migrate\"\n")
     f.close()
-    os.chmod(file1, 0755)
+    os.chmod(file1, 0o755)
     f = open(file2, 'w+')
     f.write("#!/usr/bin/env bash\n")
     f.write("gdb /home/mrhines/ftvm/x86_64-softmmu/qemu-system-x86_64 --pid $(pgrep -f " + vm["cloud_vm_name"] + ") -ex \"handle SIGUSR2 noprint\" -ex \"set do_event_callbacks = 0\" -ex \"set do_timer_callbacks = 1\" -ex \"continue\"\n")
     f.close()
-    os.chmod(file2, 0755)
+    os.chmod(file2, 0o755)
 
     f = open(file3, 'w+')
     f.write("#!/usr/bin/env bash\n")
     f.write("ping " + vm["cloud_ip"] + "\n")
     f.close()
-    os.chmod(file3, 0755)
+    os.chmod(file3, 0o755)
 
     f = open(file4, 'w+')
     f.write("#!/usr/bin/env bash\n")
     f.write("sudo virsh console " + vm["cloud_uuid"] + "\n")
     f.close()
-    os.chmod(file4, 0755)
+    os.chmod(file4, 0o755)
 
     appdetails = api.appshow(cloud_name, app['uuid'])
     if appdetails["state"] == "save" :
-        print "App " + app["name"] + " " + app["uuid"] + " is saved, restoring ..."
+        print("App " + app["name"] + " " + app["uuid"] + " is saved, restoring ...")
         api.apprestore(cloud_name, app["uuid"])
 
-    print "Attaching SVM to VM " + name + " ..."
+    print("Attaching SVM to VM " + name + " ...")
     svm = api.svmattach(cloud_name, uuid)
 
-    print "Attached. Waiting until CTRL-C terminate..."
+    print("Attached. Waiting until CTRL-C terminate...")
     while True :
         sleep(10)
 
-except APIException, obj :
+except APIException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 except KeyboardInterrupt :
-    print "Aborting this APP."
-except Exception, msg :
+    print("Aborting this APP.")
+except Exception as msg :
     error = True
-    print "Problem during experiment: " + str(msg)
+    print("Problem during experiment: " + str(msg))
 
 finally :
     if app is not None :
         try :
             if error :
-                print "Putting app back to sleep..."
+                print("Putting app back to sleep...")
                 api.appsave(cloud_name, app["uuid"])
             else :
-                print "Destroying application..."
+                print("Destroying application...")
                 api.appdetach(cloud_name, app["uuid"], True)
-        except APIException, obj :
-            print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
+        except APIException as obj :
+            print("Error finishing up: (" + str(obj.status) + "): " + obj.msg)

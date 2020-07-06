@@ -4,7 +4,7 @@ Created on Aug 27, 2011
 
 PLM Object OperationsLibrary
 
-@author: Marcio A. Silva, Michael R. Hines
+@author: Marcio A. Silva, Michael R. Galaxy
 '''
 from time import time
 from socket import gethostbyname

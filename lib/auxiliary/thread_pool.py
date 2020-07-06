@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 from time import sleep
 import copy
@@ -41,9 +41,9 @@ class Worker(Thread):
                 self.aborted = False
                 self.pool.results.append(func(*args, **kargs))
                 self.aborted = True
-            except Exception, e:
+            except Exception as e:
                 #print ("THREAD FAILED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
-                print e
+                print(e)
             finally :
                 #print ("THREAD FINISHED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
                 self.tasks.task_done()

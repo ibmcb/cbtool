@@ -1,5 +1,4 @@
-
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 Gartner, Inc.
@@ -18,7 +17,7 @@
 '''
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
 class VcdCmds(LibcloudCmds) :
     @trace

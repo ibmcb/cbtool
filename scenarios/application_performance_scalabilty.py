@@ -66,7 +66,7 @@ def subscribe(options, api, channel) :
     '''
     _obj_stor_attr = api.waiton(options.cloud_name,"VM",channel,"getsubscription",1)
 
-    redis_conn = redis.Redis(host = _obj_stor_attr["host"], port = 6379, db = _obj_stor_attr["dbid"])
+    redis_conn = redis.Redis(host = _obj_stor_attr["host"], port = 6379, db = _obj_stor_attr["dbid"], decode_responses=True)
         
     redis_conn_pubsub = redis_conn.pubsub()
     redis_conn_pubsub.subscribe(_obj_stor_attr["subscription"])

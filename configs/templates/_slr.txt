@@ -1,9 +1,9 @@
 [USER-DEFINED]
 SLR_ACCESS = need_to_be_configured_by_user
 SLR_CREDENTIALS = need_to_be_configured_by_user
-SLR_KEY_NAME = cbtool_rsa
+SLR_KEY_NAME = need_to_be_configured_by_user
 SLR_INITIAL_VMCS = need_to_be_configured_by_user
-SLR_SSH_KEY_NAME = cbtool_rsa
+SLR_SSH_KEY_NAME = need_to_be_configured_by_user
 SLR_LOGIN = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
@@ -96,7 +96,7 @@ LOGIN = $SLR_LOGIN
 SSH_KEY_NAME = $SLR_SSH_KEY_NAME
 
 [VM_TEMPLATES : SLR_CLOUDCONFIG]
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:2354286, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:2110219, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
 [SIZE_TEMPLATES : SLR_CLOUDCONFIG]
 X-Y=X-Y

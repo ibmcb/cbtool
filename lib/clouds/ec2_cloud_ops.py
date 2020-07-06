@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -30,7 +30,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip
 
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 from boto.ec2 import regions
 from boto import exception as AWSException 
@@ -88,11 +88,11 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 _fmsg = "Unknown " + self.get_description() + " region (" + region + ")"
                 
-        except AWSException, obj:
+        except AWSException as obj:
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -136,11 +136,11 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -172,13 +172,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         _map_id_to_name = {}
         
         _wanted_images = []
-        for _vm_role in vm_templates.keys() :
+        for _vm_role in list(vm_templates.keys()) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             if _imageid not in _wanted_images and _imageid != "to_replace" :
                 if self.is_cloud_image_uuid(_imageid) :
                     _wanted_images.append(_imageid)
                 else :
-                    if _imageid in _map_name_to_id :
+                    if _imageid in _map_name_to_id and _map_name_to_id[_imageid] != _imageid :
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     else :                        
                         _x_img = self.ec2conn.get_all_images(filters = {"name": _imageid + '*'})
@@ -187,7 +187,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                             vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                             _wanted_images.append(_x_img[0].id)
                         else :
-                            _map_name_to_id[_imageid] = "ami-" + '0' + ''.join(["%s" % randint(0, 9) for num in range(0, 6)])
+                            _map_name_to_id[_imageid] = _imageid
                             vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
 
                         _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
@@ -240,8 +240,8 @@ class Ec2Cmds(CommonCloudFunctions) :
                 for _reservation in _reservations :
                     for _instance in _reservation.instances :
                         if "Name" in _instance.tags :
-                            if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and _instance.state == u'running' :
-                                cbdebug("Terminating instance: " + _instance.tags[u'Name'], True)
+                            if _instance.tags['Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and _instance.state == 'running' :
+                                cbdebug("Terminating instance: " + _instance.tags['Name'], True)
                                 _instance.terminate()
                                 _running_instances = True
                 sleep(int(obj_attr_list["update_frequency"]))
@@ -254,8 +254,8 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             if len(_volumes) :
                 for unattachedvol in _volumes :
-                    if "Name" in unattachedvol.tags and unattachedvol.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
-                        cbdebug("Terminating volume: " + unattachedvol.tags[u'Name'], True)
+                    if "Name" in unattachedvol.tags and unattachedvol.tags['Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
+                        cbdebug("Terminating volume: " + unattachedvol.tags['Name'], True)
                         unattachedvol.delete()
                     else:
                         _msg = unattachedvol.id + ' ' + unattachedvol.status
@@ -264,15 +264,15 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -316,15 +316,15 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -356,15 +356,15 @@ class Ec2Cmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -394,11 +394,11 @@ class Ec2Cmds(CommonCloudFunctions) :
                 for _reservation in _reservations :
                     for _instance in _reservation.instances :
                         if "Name" in _instance.tags :
-                            if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                            if _instance.tags['Name'].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                                 if str(_instance.update()).count("running") :
                                     _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
@@ -506,12 +506,12 @@ class Ec2Cmds(CommonCloudFunctions) :
                 else :
                     return False
                     
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
@@ -541,11 +541,11 @@ class Ec2Cmds(CommonCloudFunctions) :
                 obj_attr_list["boot_volume_imageid1"] = _candidate_images[0].id 
                 _status = 0
             
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -568,7 +568,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -585,7 +585,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        self.ec2conn.import_key_pair(key_name, key_type + ' ' + key_contents)
+        self.ec2conn.import_key_pair(key_name, (key_type + ' ' + key_contents).encode('utf-8'))
 
         return True
 
@@ -623,12 +623,12 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 return False
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
@@ -662,7 +662,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -718,11 +718,11 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -731,7 +731,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -796,15 +796,15 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 _status = 0
                     
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -929,19 +929,22 @@ class Ec2Cmds(CommonCloudFunctions) :
                     _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
                     _status = 916
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
         finally :
+            if _status and _reservation is not False :
+                cbdebug("Error after VM creation. Cleanup...", True)
+                self.vmdestroy_repeat(obj_attr_list)
             
             if "instance_obj" in obj_attr_list : 
                 del obj_attr_list["instance_obj"]
@@ -996,15 +999,15 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status, _fmsg = self.vvdestroy(obj_attr_list, "vvuid")
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1080,11 +1083,11 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _fmsg = "This instance does not exist"
                 _status = 1098
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1132,15 +1135,15 @@ class Ec2Cmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
     
@@ -1208,11 +1211,11 @@ class Ec2Cmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except AWSException, obj :
+        except AWSException as obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             

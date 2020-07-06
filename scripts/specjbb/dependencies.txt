@@ -15,13 +15,13 @@ specjbb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = /tmp/cb_is_java_installed.sh openjdk 7
+java-configure = /tmp/cb_is_java_installed.sh openjdk 8
 specjbb-configure = ls /home/REPLACE_USERNAME/SPECjbb2015_1_00/
 ### END - Tests ###
 
 ### START - Dependency versions ###
 java-ver = ANY
-speccjbb-ver = ANY
+specjbb-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###

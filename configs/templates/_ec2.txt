@@ -2,11 +2,11 @@
 EC2_ACCESS = need_to_be_configured_by_user 
 EC2_SECURITY_GROUP = need_to_be_configured_by_user 
 EC2_CREDENTIALS = need_to_be_configured_by_user 
-EC2_KEY_NAME = cbtool_rsa
+EC2_KEY_NAME = need_to_be_configured_by_user
 EC2_INITIAL_VMCS = need_to_be_configured_by_user 
-EC2_SSH_KEY_NAME = cbtool_rsa
+EC2_SSH_KEY_NAME = need_to_be_configured_by_user
 EC2_LOGIN = need_to_be_configured_by_user
-EC2_NETNAME = private
+EC2_NETNAME = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 EC2_ACCESS_DOC = Please enter the AWS access key id used with the Amazon API.\nThe key is a long, boring hash string.
@@ -113,7 +113,8 @@ NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:ami-04b9e92b5572fa0d1
 
 [SIZE_TEMPLATES : EC2_CLOUDCONFIG]
 # Sizes extracted from https://aws.amazon.com/ec2/instance-types/
-01-2048=ai.medium
+01-1024=m1.small
+01-2048=a1.medium
 02-4096=a1-large
 02-8192=m4.large
 04-8192=a1.xlarge

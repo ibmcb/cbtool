@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -17,6 +17,6 @@
 #/*******************************************************************************
 
 serverJVM = AdminControl.queryNames("type=JVM,process=server1,*")
-print 'generating heap dump for ' + serverJVM
+print('generating heap dump for ' + serverJVM)
 AdminControl.invoke(serverJVM,"generateHeapDump")
-print 'done'
+print('done')

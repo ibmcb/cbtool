@@ -9,6 +9,7 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_acmeair_common.sh
 
 START=`provision_application_start`

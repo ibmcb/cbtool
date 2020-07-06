@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -39,13 +39,12 @@ from keystoneauth1.identity import v3
 from keystoneauth1 import session
 
 from novaclient import client as novac
-from novaclient import exceptions as novaexceptions
 from glanceclient import client as glancec
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic
 from lib.remote.network_functions import hostname2ip
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 class OskCmds(CommonCloudFunctions) :
     '''
@@ -191,11 +190,11 @@ class OskCmds(CommonCloudFunctions) :
                                     
                 _status = 0
 
-        except novaexceptions, obj:
+        except novaclient.exceptions as obj:
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -243,7 +242,7 @@ class OskCmds(CommonCloudFunctions) :
                         _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
                         _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_verify) + ", cert = " + str(_cacert) + "); "
                         _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
-                    print _dmsg
+                    print(_dmsg)
                     
                 raise CldOpsException(_msg, _status)
             else :
@@ -289,17 +288,11 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-            cberr(_fmsg, True)    
-            return False
-
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -396,13 +389,13 @@ class OskCmds(CommonCloudFunctions) :
                 _registered_imageid_list.append(_registered_image.id)
                 _map_name_to_id[_registered_image.name] = _registered_image.id
                 
-        for _vm_role in vm_templates.keys() :            
+        for _vm_role in list(vm_templates.keys()) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
             if _imageid != "to_replace" :
-                if _imageid in _map_name_to_id :                     
+                if _imageid in _map_name_to_id and _map_name_to_id[_imageid] != _imageid :
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                 else :
-                    _map_name_to_id[_imageid] = self.generate_random_uuid(_imageid)
+                    _map_name_to_id[_imageid] = _imageid
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])   
 
                 _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
@@ -432,7 +425,7 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"] = {}
     
             self.build_host_map(obj_attr_list["name"])
-            _host_list = self.host_map.keys()
+            _host_list = list(self.host_map.keys())
 
             obj_attr_list["host_count"] = len(_host_list)
 
@@ -445,16 +438,12 @@ class OskCmds(CommonCloudFunctions) :
             self.populate_interface(obj_attr_list)
             
             _status = 0
-
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = int(obj.status)
             _fmsg = str(obj.msg)
                     
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -493,7 +482,7 @@ class OskCmds(CommonCloudFunctions) :
                 _running_instances = False
                 
                 _criteria = {}                              
-                _criteria['all_tenants'] = 1
+                _criteria["all_tenants"] = int(obj_attr_list["all_tenants"])
                 _vmc_name = obj_attr_list["name"]
                 _instances = self.oskconncompute[_vmc_name].servers.list(search_opts = _criteria)
                 
@@ -552,15 +541,11 @@ class OskCmds(CommonCloudFunctions) :
                     if _volume_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                         _volume.delete()
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = int(obj.status)
             _fmsg = str(obj.msg)
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -623,7 +608,7 @@ class OskCmds(CommonCloudFunctions) :
                     self.get_network_list(obj_attr_list["name"], obj_attr_list)
     
                     _networks = {}
-                    for _net in self.networks_attr_list.keys() :
+                    for _net in list(self.networks_attr_list.keys()) :
                         if "type" in self.networks_attr_list[_net] :
                             _type = self.networks_attr_list[_net]["type"]
     
@@ -632,15 +617,11 @@ class OskCmds(CommonCloudFunctions) :
                     _time_mark_prc = int(time())
                     obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - _time_mark_prs
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
-
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
                         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -673,15 +654,11 @@ class OskCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -715,7 +692,7 @@ class OskCmds(CommonCloudFunctions) :
                         if _instance.status == "ACTIVE" :
                             _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
@@ -759,7 +736,7 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         
-        _networks = instance.addresses.keys()
+        _networks = list(instance.addresses.keys())
 
         if len(_networks) :
             if _networks.count(obj_attr_list["run_netname"]) :
@@ -847,7 +824,7 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _search_opts = {}
             _call = "NA"
-            _search_opts['all_tenants'] = 1
+            _search_opts["all_tenants"] = int(obj_attr_list["all_tenants"])
             
             if identifier != "all" :
                 if obj_type == "vm" :
@@ -900,22 +877,7 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 return False
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
-
-            if identifier not in self.api_error_counter :
-                self.api_error_counter[identifier] = 0
-            
-            self.api_error_counter[identifier] += 1
-            
-            if self.api_error_counter[identifier] > self.max_api_errors :            
-                raise CldOpsException(_fmsg, _status)
-            else :
-                cbwarn(_fmsg)
-                return False
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
             if identifier not in self.api_error_counter :
@@ -989,12 +951,8 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["boot_volume_imageid1_instance"] = _imageid
                 
                 _status = 0
-            
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -1047,11 +1005,7 @@ class OskCmds(CommonCloudFunctions) :
                                                 
                     _status = 0
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -1107,12 +1061,7 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 return False
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-            raise CldOpsException(_fmsg, _status)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -1242,20 +1191,16 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
-
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
 
         except KeyboardInterrupt :
             _status = 42
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1293,15 +1238,11 @@ class OskCmds(CommonCloudFunctions) :
                     
             _status =  0
                     
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1525,20 +1466,16 @@ class OskCmds(CommonCloudFunctions) :
                 cberr(_fmsg)
                 _status = 100
                 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
-
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
 
         except KeyboardInterrupt :
             _status = 42
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1549,10 +1486,22 @@ class OskCmds(CommonCloudFunctions) :
             
             if "mgt_004_network_acessible" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
-                            
-            del obj_attr_list["flavor_instance"]           
-            del obj_attr_list["boot_volume_imageid1_instance"]
-            
+
+            if "flavor_instance" in obj_attr_list :
+                del obj_attr_list["flavor_instance"]
+
+            if "boot_volume_imageid1_instance" in obj_attr_list :                
+                del obj_attr_list["boot_volume_imageid1_instance"]
+
+            if "availability_zone" in obj_attr_list :            
+                obj_attr_list["availability_zone"] = str(obj_attr_list["availability_zone"])
+
+            if "block_device_mapping" in obj_attr_list :            
+                obj_attr_list["block_device_mapping"] = str(obj_attr_list["block_device_mapping"])
+
+            if "cloud_vv_type" in obj_attr_list :            
+                obj_attr_list["cloud_vv_type"] = str(obj_attr_list["cloud_vv_type"])
+
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
                 
@@ -1620,15 +1569,11 @@ class OskCmds(CommonCloudFunctions) :
                     
                 self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
                         
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1706,15 +1651,11 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1775,15 +1716,11 @@ class OskCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1862,12 +1799,8 @@ class OskCmds(CommonCloudFunctions) :
                 _status = 1098
             
             _status = 0
-    
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-        
-        except Exception, e :
+
+        except Exception as e :
             _status = 349201
             _fmsg = str(e)
             
@@ -1948,11 +1881,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -2118,19 +2047,15 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
 #            if self.oskconncompute :
-#                self.oskconncompute.novaclient.http.close()
+#                self.oskconncompute.novaclientlient.http.close()
 
 #            if self.oskconnstorage and self.use_cinderclient == "true":
-#                self.oskconnstorage.novaclient.http.close()
+#                self.oskconnstorage.novaclientlient.http.close()
 
 #            if self.oskconnnetwork :
 #                self.oskconnnetwork.neutronclient.http.close()
 
             _status = 0
-
-        except novaexceptions, obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
 
         except AttributeError :
             # If the "close" method does not exist, proceed normally.
@@ -2138,7 +2063,7 @@ class OskCmds(CommonCloudFunctions) :
             cbwarn(_msg)
             _status = 0
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2217,7 +2142,7 @@ class OskCmds(CommonCloudFunctions) :
 
             if len(vm_defaults["floating_pool"]) < 2 :
                 if len(_floating_pool_dict) == 1 :
-                    vm_defaults["floating_pool"] = _floating_pool_dict.keys()[0]
+                    vm_defaults["floating_pool"] = list(_floating_pool_dict.keys())[0]
 #                    vm_defaults["floating_pool"] = _floating_pool_list[0].name
  
                     _msg = "A single floating IP pool (\"" 
@@ -2232,7 +2157,7 @@ class OskCmds(CommonCloudFunctions) :
             
             _floating_pool_found = False
     
-            for _floating_pool in _floating_pool_dict.keys() :
+            for _floating_pool in list(_floating_pool_dict.keys()) :
                 if _floating_pool == vm_defaults["floating_pool"] :
                     vm_defaults["floating_pool_id"] = _floating_pool_dict[_floating_pool]
                     _floating_pool_found = True                        
@@ -2313,7 +2238,7 @@ class OskCmds(CommonCloudFunctions) :
                         _msg += _netname + "\", and attaching a floating IP from pool \""
                         _msg += vm_defaults["floating_pool"] + "\"."
                         #cbdebug(_msg)
-                        print _msg
+                        print(_msg)
                         
                         if "jumphost_ip" in _obj_attr_list :
                             del _obj_attr_list["jumphost_ip"]
@@ -2336,22 +2261,16 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " address \"" + _obj_attr_list["prov_cloud_ip"] + "\""
                 _msg += " already assigned to it"
                 #cbdebug(_msg)
-                print _msg
+                print(_msg)
                 
                 vm_defaults["jumphost_ip"] = _obj_attr_list["prov_cloud_ip"]
 
             else :
                 return True
-            
-        except CldOpsException, obj :
+
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
-            cberr(_fmsg, True)    
-            return False
-        
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
             cberr(_fmsg, True)    
             return False
                             
@@ -2361,7 +2280,7 @@ class OskCmds(CommonCloudFunctions) :
             cbdebug("VM create keyboard interrupt...", True)
             return False
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             cberr(_fmsg, True)    
@@ -2443,11 +2362,11 @@ class OskCmds(CommonCloudFunctions) :
 
             _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = int(obj.status)
             _fmsg = str(obj.msg)
                     
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -2483,7 +2402,7 @@ class OskCmds(CommonCloudFunctions) :
             _host, _ip = hostname2ip(_service_host)
             return _host.split('.')[0]
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -2537,7 +2456,7 @@ class OskCmds(CommonCloudFunctions) :
     
             return True
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -2567,12 +2486,8 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["flavor_instance"] = _flavor
             obj_attr_list["flavor"] = _flavor.id
-            
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -2707,22 +2622,7 @@ class OskCmds(CommonCloudFunctions) :
                 
             return _fip
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
-
-            if identifier not in self.api_error_counter :
-                self.api_error_counter[identifier] = 0
-            
-            self.api_error_counter[identifier] += 1
-            
-            if self.api_error_counter[identifier] > self.max_api_errors :            
-                raise CldOpsException(_fmsg, _status)
-            else :
-                cbwarn(_fmsg)
-                return False
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
 
@@ -2761,22 +2661,7 @@ class OskCmds(CommonCloudFunctions) :
                 self.oskconnnetwork[obj_attr_list["name"]].delete_floatingip(obj_attr_list["cloud_floating_ip_uuid"])                
             return True
 
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
-
-            if identifier not in self.api_error_counter :
-                self.api_error_counter[identifier] = 0
-            
-            self.api_error_counter[identifier] += 1
-            
-            if self.api_error_counter[identifier] > self.max_api_errors :            
-                raise CldOpsException(_fmsg, _status)
-            else :
-                cbwarn(_fmsg)
-                return False
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
 
@@ -2838,7 +2723,7 @@ class OskCmds(CommonCloudFunctions) :
 
             return True
 
-        except novaexceptions, obj:
+        except novaclient.exceptions as obj:
             _status = int(obj.error_code)
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
 
@@ -2853,7 +2738,7 @@ class OskCmds(CommonCloudFunctions) :
                 cbwarn(_fmsg)
                 return False
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
 
@@ -2916,22 +2801,8 @@ class OskCmds(CommonCloudFunctions) :
                 identifier = instance.name
             instance.delete()
             return True
-        
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = "(While removing instance(s) through API call \"delete\") " + str(obj.error_message)
 
-            if identifier not in self.api_error_counter :
-                self.api_error_counter[identifier] = 0
-            
-            self.api_error_counter[identifier] += 1
-            
-            if self.api_error_counter[identifier] > self.max_api_errors :            
-                raise CldOpsException(_fmsg, _status)
-            else :
-                return False
-
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = "(While removing instance(s) through API call \"delete\") " + str(obj.error_message)
             if identifier not in self.api_error_counter :

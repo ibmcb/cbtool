@@ -19,7 +19,7 @@ giraph-install = git
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = /tmp/cb_is_java_installed.sh openjdk 7
+java-configure = /tmp/cb_is_java_installed.sh openjdk 8
 hadoop-configure = /tmp/cb_is_hadoop_installed.sh 1
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 giraph-configure = find /home/REPLACE_USERNAME | grep giraph-examples | grep dependencies | grep jar

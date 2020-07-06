@@ -19,7 +19,7 @@
 
     Kubernetes Cloud Object Operations Library
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 
 from time import time, sleep, mktime, strptime
@@ -31,11 +31,12 @@ import pykube
 import traceback
 import threading
 import json
+import yaml
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip, check_url, NetworkException
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 # `extensions/v1beta1` is not allowed after k8s 1.16+
 k8s_version = "apps/v1"
@@ -94,7 +95,7 @@ class KubCmds(CommonCloudFunctions) :
         # We need to handle multiple VMCs simultaneously in a thread-safe manner.
         try :
             getattr(KubCmds.catalogs, "kubeconn")
-        except AttributeError, e :
+        except AttributeError as e :
             cbdebug("Initializing thread local connection: ")
 
             KubCmds.catalogs.kubeconn = {}
@@ -113,7 +114,7 @@ class KubCmds(CommonCloudFunctions) :
                     # the cluster already exists.
                     if "kubeyaml" in extra_parms :
                         if extra_parms["kubeyaml"] :
-                            kubeyaml = extra_parms["kubeyaml"]
+                            kubeyaml = yaml.safe_load(extra_parms["kubeyaml"])
 
                     if kubeyaml :
                         _kube_config = pykube.KubeConfig(kubeyaml)
@@ -140,7 +141,7 @@ class KubCmds(CommonCloudFunctions) :
                                 _endpoint = _x.name
                             authenticated = True
                             break
-                        except Exception, e :
+                        except Exception as e :
                             cbwarn(vmc_name + " not ready yet...", True)
                             # If we are in cleanup mode (force_all == True), then
                             # don't attempt to cleanup the cluster forever. The cluster
@@ -162,7 +163,7 @@ class KubCmds(CommonCloudFunctions) :
                 self.additional_rc_contents = "export KUBECONFIG=" + access + "\n"
                 _status = 0
             
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -208,11 +209,11 @@ class KubCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -247,7 +248,7 @@ class KubCmds(CommonCloudFunctions) :
         _registered_image_list = []
         _registered_imageid_list = []
 
-        for _vm_role in vm_templates.keys() :            
+        for _vm_role in list(vm_templates.keys()) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             if _imageid != "to_replace" :
                 if _imageid in _map_name_to_id :                     
@@ -279,7 +280,7 @@ class KubCmds(CommonCloudFunctions) :
         ip = possible_ip 
         try :
             name, ip = hostname2ip(possible_ip, True)
-        except NetworkException, e :
+        except NetworkException as e :
             cbwarn("DNS did not work. Assuming IP address: " + possible_ip)
 
         return name, ip
@@ -455,7 +456,7 @@ class KubCmds(CommonCloudFunctions) :
             _msg = "Ok"
             _status = 0
                         
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -512,11 +513,11 @@ class KubCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -554,11 +555,11 @@ class KubCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -591,7 +592,7 @@ class KubCmds(CommonCloudFunctions) :
                     if _container.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
                         _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = str(e)
@@ -742,11 +743,11 @@ class KubCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _xfmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _xfmsg = str(e)
             
@@ -796,7 +797,7 @@ class KubCmds(CommonCloudFunctions) :
                 obj_attr_list["boot_volume_imageid1"] = "TBD" 
                 _status = 0
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -818,7 +819,7 @@ class KubCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -864,7 +865,7 @@ class KubCmds(CommonCloudFunctions) :
                 if "status" in _instance.obj :
                     if "containerStatuses" in _instance.obj["status"] :
                         if "state" in _instance.obj["status"]["containerStatuses"][0] : 
-                            _instance_status = _instance.obj["status"]["containerStatuses"][0]["state"].keys()[0]
+                            _instance_status = list(_instance.obj["status"]["containerStatuses"][0]["state"].keys())[0]
             
             if str(_instance_status) == "running" :
                 obj_attr_list["k8s_instance"] = _instance.obj
@@ -902,7 +903,7 @@ class KubCmds(CommonCloudFunctions) :
             else :
                 return False
         
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -938,7 +939,7 @@ class KubCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -972,11 +973,11 @@ class KubCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -998,11 +999,11 @@ class KubCmds(CommonCloudFunctions) :
                                 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1325,7 +1326,7 @@ class KubCmds(CommonCloudFunctions) :
                 _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
                 _status = 916
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = obj.status
@@ -1336,7 +1337,7 @@ class KubCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -1344,7 +1345,10 @@ class KubCmds(CommonCloudFunctions) :
 
         finally :
             self.get_extended_info(obj_attr_list)
-            
+
+            if "k8s_instance" in obj_attr_list :
+                del obj_attr_list["k8s_instance"]
+
             if "mgt_004_network_acessible" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
                    
@@ -1412,11 +1416,11 @@ class KubCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1476,11 +1480,11 @@ class KubCmds(CommonCloudFunctions) :
                         
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1582,7 +1586,7 @@ class KubCmds(CommonCloudFunctions) :
                         self.annotate_time_breakdown(obj_attr_list, "instance_" + _event_info["reason"].lower() + "_time", _epoch - _mark_a, False)
                         _mark_a = _epoch
                 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             

@@ -16,6 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_load_gen $@
@@ -68,7 +69,7 @@ execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 bandwidth:$(cat /tmp/iperf_bw):Mbps \
 jitter:$(cat /tmp/iperf_jitter):ms \
 loss:$(cat /tmp/iperf_loss):pct \
-$(common_metrics)    
+$(common_metrics)
     
 unset_load_gen
 

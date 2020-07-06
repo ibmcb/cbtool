@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -36,7 +36,7 @@ from pymongo import MongoClient
 from pymongo import errors as PymongoException
 
 def print_standalone(str) :
-    print str
+    print(str)
 
 def trace_nothing(aFunc):
     return aFunc
@@ -97,7 +97,7 @@ class MongodbMgdConn :
             if tout > 0:            
                 
                 _conn = MongoClient(host = self.host, port = self.port, \
-                                    max_pool_size=10)
+                                    maxPoolSize=10)
             else :
                 _conn = MongoClient(host = self.host, port = self.port, \
                                     max_pool_size=10)
@@ -111,7 +111,7 @@ class MongodbMgdConn :
             cbdebug(_msg)            
             return self.mongodb_conn
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             True
 
         except :
@@ -134,7 +134,7 @@ class MongodbMgdConn :
             cbdebug(_msg)            
             return self.mongodb_conn
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to establish a connection with the MongoDB "
             _msg += "server on host " + self.host + " port "
             _msg += str(self.port) + "database " + str(self.database) + ": "
@@ -158,7 +158,7 @@ class MongodbMgdConn :
                 cbdebug(_msg)
                 return self.mongodb_conn
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to terminate a connection with the MongoDB "
             _msg += "server on host " + self.host + " port "
             _msg += str(self.port) + "database " + str(self.database) + ": "
@@ -184,7 +184,7 @@ class MongodbMgdConn :
             try :
                 self.connect(self.timeout)
                 
-            except self.MetricStoreMgdConnException, obj :
+            except self.MetricStoreMgdConnException as obj :
                 raise self.MetricStoreMgdConnException(obj.msg, 2)
             
             if len(self.password) > 2 and self.password.lower() != "false" :
@@ -195,17 +195,17 @@ class MongodbMgdConn :
                     _auth_cmd += "', pwd: '" + self.password + "', roles: [ { role:"
                     _auth_cmd += " 'readWrite', db: 'metrics' } ]})\" " 
                     _auth_cmd += self.host + ":" + str(self.port) + '/' + self.database
-                    
+
                     self.mongodb_conn[self.database].authenticate(self.username, self.password, mechanism='MONGODB-CR')
 
-                except PymongoException, errmsg :
+                except PymongoException as errmsg :
                     _msg = "Unable to authenticate against the database \"" + self.database
                     _msg += "\":" + str(errmsg) + ". \nPlease create the user there (i.e., directly on "
                     _msg += self.host + ") using the following command:\n"                    
                     _msg += _auth_cmd
                     raise self.MetricStoreMgdConnException(_msg, 2)
     
-                except Exception, e:
+                except Exception as e:
                     _msg = "Unable to authenticate against the database \"" + self.database
                     _msg += "\":" + str(e) + ". \nPlease create the user there (i.e., directly on "
                     _msg += self.host + ") using the following command:\n"               
@@ -257,7 +257,7 @@ class MongodbMgdConn :
             self.disconnect()
             return True
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to initialize all documents on "
             _msg += "\" on collection \"" + _collection + "\": " 
             _msg += str(msg) + '.'
@@ -299,7 +299,7 @@ class MongodbMgdConn :
             self.disconnect()
             return True
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to initialize all documents on "
             _msg += "\" on collection \"" + _collection + "\": " 
             _msg += str(msg) + '.'
@@ -326,7 +326,7 @@ class MongodbMgdConn :
                 self.disconnect()
             return True
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to insert document \"" + document
             _msg += "\" on collection \"" + collection + "\": " 
             _msg += str(msg) + '.'
@@ -366,7 +366,7 @@ class MongodbMgdConn :
 
             return _results
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to retrieve documents from the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -398,7 +398,7 @@ class MongodbMgdConn :
             if disconnect_finish :
                 self.disconnect()
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to update documents from the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -425,7 +425,7 @@ class MongodbMgdConn :
             if disconnect_finish :
                 self.disconnect()
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to remove document from the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -448,7 +448,7 @@ class MongodbMgdConn :
                 self.disconnect()
             return True
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to drop all documents from the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -471,7 +471,7 @@ class MongodbMgdConn :
                 self.disconnect()
             return _matches.count()
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to count documents on the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -509,7 +509,7 @@ class MongodbMgdConn :
                 self.disconnect()
             return _result
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to get reported attributes on the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -534,7 +534,7 @@ class MongodbMgdConn :
 
             return _start_time, _end_time
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to get time boundaries on the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -565,7 +565,7 @@ class MongodbMgdConn :
 
             return _experiment_list
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to get time boundaries on the collection \""
             _msg += collection + ": " 
             _msg += str(msg) + '.'
@@ -594,7 +594,7 @@ class MongodbMgdConn :
             
             return _output
 
-        except PymongoException, msg :
+        except PymongoException as msg :
             _msg = "Unable to get info database " + self.database + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)

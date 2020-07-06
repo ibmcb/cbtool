@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2015 DigitalOcean, inc. 
@@ -19,12 +19,12 @@
 '''
     Created on Oct 31st, 2015
 
-    @author: Michael R. Hines
+    @author: Michael R. Galaxy
 '''
 
 import socket
 import struct
-import IN
+#import IN
 import sys
 from subprocess import PIPE,Popen
 from platform import system
@@ -48,11 +48,11 @@ class Nethashget :
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.hostname, int(self.port)))
 
-    def path_mtu_discover(self, port = False) :
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.connect((self.hostname, (port if port else (self.port if self.port is not None else 9999))))
-        self.socket.setsockopt(socket.IPPROTO_IP, IN.IP_MTU_DISCOVER, IN.IP_PMTUDISC_DO)
-        return self.socket.getsockopt(socket.IPPROTO_IP, getattr(IN, 'IP_MTU', 14))
+    #def path_mtu_discover(self, port = False) :
+    #    self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #    self.socket.connect((self.hostname, (port if port else (self.port if self.port is not None else 9999))))
+    #    self.socket.setsockopt(socket.IPPROTO_IP, IN.IP_MTU_DISCOVER, IN.IP_PMTUDISC_DO)
+    #    return self.socket.getsockopt(socket.IPPROTO_IP, getattr(IN, 'IP_MTU', 14))
 
     def nmap(self, port = None, protocol = "TCP", reverse = False) :
         try :
@@ -75,7 +75,7 @@ class Nethashget :
                 print(_msg)
                 return False
 
-        except socket.error, msg :
+        except socket.error as msg :
             if not reverse :
                 _msg = "Unable to connect to " + protocol + " port " + str(port)
                 _msg += " on host " + self.hostname + ": " + str(msg)
@@ -92,8 +92,8 @@ class Nethashget :
 
 nm = Nethashget(sys.argv[1], sys.argv[2])
 if nm.nmap(protocol = sys.argv[3]) :
-    print "open"
+    print("open")
     exit(0)
 else :
-    print "closed"
+    print("closed")
     exit(1)

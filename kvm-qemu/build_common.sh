@@ -24,12 +24,15 @@ CB_ALLINONE=0
 CB_PRESERVE_ON_ERROR=0
 CB_DISTROS="ubuntu"
 CB_USERNAME="cbuser"
+touch /tmp/cb_kvm_failed
 git rev-parse --abbrev-ref HEAD > /dev/null 2>&1
 if [[ $? -eq 0 ]]
 then
     CB_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    CB_GIT_HASH=$(git rev-parse HEAD)    
 else
     CB_BRANCH="master"
+    CB_GIT_HASH="HEAD"
 fi
 CB_WKS="all"
 CB_VERB=''
@@ -45,7 +48,7 @@ CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,cfhcable.dl.sourceforge.net,versaweb.
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,managedway.dl.sourceforge.net,akamai.bintray.com,cdn.kernel.org,dualstack.k.shared.global.fastly.net,ftp.us.debian.org,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,repo.maven.apache.org,www.nas.nasa.gov,math.nist.gov,svn.apache.org,cdn.mysql.com,download.schedmd.com,ftp.ports.debian.org,
 CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,master.dl.sourceforge.net,cran.us.r-project.org,s3.amazonaws.com,newcontinuum.dl.sourceforge.net,keyserver.ubuntu.com
-CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,mirrors.adn.networklayer.com
+CB_KVMQEMU_URIS_LIST=$CB_KVMQEMU_URIS_LIST,mirrors.adn.networklayer.com,repo.mongodb.org,www.mongodb.org
 
 if [ $0 != "-bash" ] ; then
     pushd `dirname "$0"` 2>&1 > /dev/null
@@ -119,7 +122,7 @@ else
 fi
 
 function cache_resolve_dns {
-    fcdns=/tmp/cache_resolve_dns
+    fcdns=/tmp/cb_cache_resolve_dns
     touch $fcdns
     for turi in $(echo $CB_KVMQEMU_URIS_LIST | sed 's/,,/,/g' | sed 's/,/ /g')
     do
@@ -236,9 +239,9 @@ function create_base_images {
             if [[ $CB_ALLINONE -ne 0 ]]
             then
                 sudo sed -i "s^#all-in-one ^^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
-                sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_                    
+                sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://$CB_RSYNC_DIRECT/ --inplace --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_                    
             else 
-                sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://$CB_RSYNC_DIRECT/ --exclude 3rd_party/workload/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
+                sudo sed -i "s^REPLACE_RSYNC_DOWNLOAD^rsync -a rsync://$CB_RSYNC_DIRECT/ --inplace --exclude 3rd_party/workload/ --exclude old_data/ --exclude tsam/ --exclude data/ --exclude jar/ --exclude windows/^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
             fi
     
             sudo virt-customize -a cb_base_${CB_KVMQEMU_BIMG} $CB_VERB --hostname cbinst --commands-from-file $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
@@ -336,19 +339,20 @@ function create_workload_images {
                 else
                     CMD=""
                 fi
-                
+
                 CMD=$CMD"chown -R ${CB_USERNAME}:${CB_USERNAME} /home/${CB_USERNAME};"
                 CMD=$CMD"sudo -u $CB_USERNAME bash -c \"cd /home/$CB_USERNAME/$CB_BASE_DIR/; git pull\"; "
                 CMD=$CMD"sudo -u $CB_USERNAME /home/$CB_USERNAME/$CB_BASE_DIR/install -r workload --wks ${_CB_WKS} --cleanupimageid --filestore $CB_RSYNC"
                 echo "######### Creating workload image \"${CB_KVMQEMU_WIMG_FN}\" by executing the command \"$CMD\""
-                sudo virt-customize -m 4096 -a ${CB_KVMQEMU_WIMG_FN} $CB_VERB --hostname cbinst \
+                sudo virt-customize -m 8192 -a ${CB_KVMQEMU_WIMG_FN} $CB_VERB --hostname cbinst \
                 --run-command "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections" \
-                --upload /tmp/cache_resolve_dns:/root/cache_resolve_dns \
+                --upload /tmp/cb_cache_resolve_dns:/root/cache_resolve_dns \
                 --run-command "sudo -u $CB_USERNAME /usr/local/bin/tempconfigetchosts" \
                 --run-command "$CMD" \
                 --run-command "sudo -u $CB_USERNAME /home/$CB_USERNAME/$CB_BASE_DIR/configure -r workload --wks ${_CB_WKS}" \
                 --run-command "sudo -u $CB_USERNAME /usr/local/bin/preinjectkeys /home/${CB_USERNAME}/$CB_BASE_DIR $CB_USERNAME" \
-                --run-command "sudo cp -f /etc/hosts.original /etc/hosts"
+                --run-command "sudo cp -f /etc/hosts.original /etc/hosts" \
+                --run-command "echo \"###### Image \\\"${_CB_WKS}\\\" built on $(date) (from host \\\"$(hostname -s)\\\") with CloudBench version \\\"${CB_BRANCH} ${CB_GIT_HASH}\\\"\" >> /etc/motd"
                 COUT=$?
                 if [[ $COUT -ne 0 ]]
                 then
@@ -429,7 +433,7 @@ function create_orchestrator_images {
         echo "####### Creating orchestrator image \"${CB_KVMQEMU_OIMG_FN}\" by executing the command \"$CMD\""        
         sudo virt-customize -a ${CB_KVMQEMU_OIMG_FN} $CB_VERB --hostname cbinst \
         --run-command "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections" \
-        --upload /tmp/cache_resolve_dns:/root/cache_resolve_dns \
+        --upload /tmp/cb_cache_resolve_dns:/root/cache_resolve_dns \
         --upload $CB_KVMQEMU_S_DIR/base/installrlibs.R:/usr/local/bin/installrlibs \
         --run-command "sudo -u $CB_USERNAME /usr/local/bin/tempconfigetchosts" \
         --run-command "$CMD" \
@@ -437,7 +441,8 @@ function create_orchestrator_images {
         --run-command "sudo -u $CB_USERNAME /usr/local/bin/preinjectkeys /home/${CB_USERNAME}/$CB_BASE_DIR $CB_USERNAME" \
         --run-command "sudo chmod +x /usr/local/bin/installrlibs" \
         --run-command "/usr/local/bin/installrlibs" \
-        --run-command "sudo cp -f /etc/hosts.original /etc/hosts"
+        --run-command "sudo cp -f /etc/hosts.original /etc/hosts" \
+        --run-command "echo \"###### Image \\\"${_CB_WKS}\\\" built on $(date) (from host \\\"$(hostname -s)\\\") with CloudBench version \\\"${CB_BRANCH} ${CB_GIT_HASH}\\\"\" >> /etc/motd"        	        	
         COUT=$?
         if [[ $COUT -ne 0 ]]
         then

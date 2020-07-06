@@ -19,7 +19,7 @@ multichase-install = man
 ### START - Tests ###
 git-configure = gcc -v
 git-configure = git --version
-multichase-configure = ls -la ~/multichase/multichase
+multichase-configure = ls -la /home/REPLACE_USERNAME/multichase/multichase
 ### END - Tests ###
 
 ### START - Dependency versions ###

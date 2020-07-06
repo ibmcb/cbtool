@@ -26,7 +26,7 @@ RUN wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/
 #RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.2.3/spark-2.2.3-bin-hadoop2.7.tgz
 RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.cs.utah.edu/spark/spark-2.3.4/spark-2.3.4-bin-hadoop2.7.tgz
 RUN /bin/true; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/spark*.tgz
-#
+RUN wget -N -q -P /home/REPLACE_USERNAME http://sderepo.watson.ibm.com/repo/dropbox/cloudbench/spark/spark-2.2.0-bin-ibm-dcs-spark.tgz; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/spark-2.2.0-bin-ibm-dcs-spark.tgz
 # spark-install-man
 
 # gradle-install-pm

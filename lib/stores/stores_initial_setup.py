@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -34,8 +34,8 @@ from time import sleep
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import Nethashget, hostname2ip, NetworkException
-from redis_datastore_adapter import RedisMgdConn
-from mongodb_datastore_adapter import MongodbMgdConn
+from .redis_datastore_adapter import RedisMgdConn
+from .mongodb_datastore_adapter import MongodbMgdConn
 
 class StoreSetupException(Exception):
     '''
@@ -80,7 +80,7 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
                     if not _redis_pid :
                         _msg = "Unable to detect a shared Redis server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"                    
-                        print _msg
+                        print(_msg)
                         exit(8)
 
             else :
@@ -110,7 +110,7 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
                     if not _redis_pid :
                         _msg = "Unable to detect a private Redis server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"
-                        print _msg
+                        print(_msg)
                         exit(8)
                 else :
                     global_objects["objectstore"]["port"] = _proc_man.get_port_from_pid(_redis_pid[0]) 
@@ -185,7 +185,7 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
 
         return _status, _msg
     
-    except NetworkException, obj :
+    except NetworkException as obj :
         _msg = "An Object Store of the kind \"Redis\" on node "
         _msg += _hostname + ", " + _protocol + " port " + str(_hostport)
         _msg += ", database id \"" + str(_databaseid)
@@ -193,12 +193,12 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 
-    except ProcessManagement.ProcessManagementException, obj :
+    except ProcessManagement.ProcessManagementException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
             
-    except RedisMgdConn.ObjectStoreMgdConnException, obj :
+    except RedisMgdConn.ObjectStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
@@ -210,7 +210,7 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
         _msg += " or stores directory " + _stores_path + " could not be created."
         raise StoreSetupException(_msg, 9)
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
@@ -243,7 +243,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                     if not _rsyslog_pid :
                         _msg = "Unable to detect a shared rsyslog server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"                    
-                        print _msg
+                        print(_msg)
                         exit(8)
 
             else :
@@ -288,7 +288,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                     if not _rsyslog_pid :
                         _msg = "Unable to detect a private rsyslog server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"
-                        print _msg
+                        print(_msg)
                         exit(8)
 
                 else :
@@ -312,17 +312,17 @@ def syslog_logstore_setup(global_objects, operation = "check") :
         _status = 0
         return _status, _msg
     
-    except ProcessManagement.ProcessManagementException, obj :
+    except ProcessManagement.ProcessManagementException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
         
-    except NetworkException, obj :
+    except NetworkException as obj :
         _msg = "Syslog Log Store network error: " + str(obj.msg) + '.'
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
@@ -353,7 +353,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                     if not _mongodb_pid :
                         _msg = "Unable to detect a shared MongoDB server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"                    
-                        print _msg
+                        print(_msg)
                         exit(8)
 
             else :
@@ -371,6 +371,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                     _config_file_contents = global_objects["metricstore"]["config_string"].replace('_', ' ')
                     _config_file_contents = _config_file_contents.replace("REPLPORT", str(_hostport))
                     _config_file_contents = _config_file_contents.replace("REPLSTORESWORKINGDIR", global_objects["space"]["stores_working_dir"])
+                    _config_file_contents = _config_file_contents.replace("**", "_")
                     _config_file_contents = _config_file_contents.replace("--", '=')
                     _config_file_contents = _config_file_contents.replace(';','\n')
 
@@ -386,7 +387,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                     if not _mongodb_pid :
                         _msg = "Unable to detect a private MongoDB server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"
-                        print _msg
+                        print(_msg)
                         exit(8)
 
                 else :
@@ -417,12 +418,12 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
             
         return _status, _msg
 
-    except ProcessManagement.ProcessManagementException, obj :
+    except ProcessManagement.ProcessManagementException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
 
-    except NetworkException, obj :
+    except NetworkException as obj :
         _msg = "A Metric Store of the kind \"MongoDB\" on node "
         _msg += _hostname + ", " + _protocol + " port " + str(_hostport)
         _msg += ", database id \"" + str(_databaseid) + "\" seems to be down: "
@@ -430,12 +431,12 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 
-    except MongodbMgdConn.MetricStoreMgdConnException, obj :
+    except MongodbMgdConn.MetricStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
@@ -471,7 +472,7 @@ def rsync_filestore_setup(global_objects, operation = "check") :
                     if not _rsync_pid :
                         _msg = "Unable to detect a shared rsync server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"                    
-                        print _msg
+                        print(_msg)
                         exit(8)
 
             else :
@@ -516,7 +517,7 @@ def rsync_filestore_setup(global_objects, operation = "check") :
                     if not _rsync_pid :
                         _msg = "Unable to detect a private rsyslog server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"
-                        print _msg
+                        print(_msg)
                         exit(8)
 
                 else :
@@ -540,17 +541,17 @@ def rsync_filestore_setup(global_objects, operation = "check") :
         _status = 0
         return _status, _msg
     
-    except ProcessManagement.ProcessManagementException, obj :
+    except ProcessManagement.ProcessManagementException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
         
-    except NetworkException, obj :
+    except NetworkException as obj :
         _msg = "Rsync File Store network error: " + str(obj.msg) + '.'
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
@@ -576,7 +577,7 @@ def reset(global_objects, soft = True, cloud_name = None) :
         _filestore_config_file_fn = _stores_wk_dir + '/' + _filestore_username + "_rsync.conf"
             
         _msg = "    Killing all processes..."
-        print _msg,
+        print(_msg, end=' ')
         _proc_man =  ProcessManagement()
         _proc_man.run_os_command("pkill -9 -u " + _username + " -f cbact")
         _proc_man.run_os_command("pkill -9 -u " + _username + " -f cloud-api")
@@ -587,7 +588,7 @@ def reset(global_objects, soft = True, cloud_name = None) :
         _proc_man.run_os_command("pkill -9 -u " + _username + " -f capture-")
         _proc_man.run_os_command("pkill -9 -u " + _username + " -f gmetad.py")
         _proc_man.run_os_command("pkill -9 -u " + _username + " -f gtkCBUI_")
-        print "done"
+        print("done")
 
         _proc_man.run_os_command("screen -wipe")
 
@@ -596,7 +597,7 @@ def reset(global_objects, soft = True, cloud_name = None) :
         _proc_man.run_os_command("rm -rf /tmp/" + _username + "_*-*-*-*-*_avg_acc")
         
         _msg = "    Flushing Object Store..." 
-        print _msg,
+        print(_msg, end=' ')
         _rmc = RedisMgdConn(global_objects["objectstore"])
 
         '''
@@ -610,10 +611,10 @@ def reset(global_objects, soft = True, cloud_name = None) :
             cloud_name = None
         _rmc.flush_object_store(cloud_name)
 
-        print "done"
+        print("done")
 
         _msg = "    Flushing Log Store..."
-        print _msg,
+        print(_msg, end=' ')
         if global_objects["logstore"]["usage"].lower() != "shared" :
             _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
         _file_list = []
@@ -635,7 +636,7 @@ def reset(global_objects, soft = True, cloud_name = None) :
         
         global_objects["logstore"]["just_restarted"] = True
         
-        print "done"
+        print("done")
         
         #_msg = "Flushing File Store..."
         #print _msg,
@@ -647,28 +648,28 @@ def reset(global_objects, soft = True, cloud_name = None) :
         
         if not soft :
             _msg = "    Flushing Metric Store..."
-            print _msg,
+            print(_msg, end=' ')
             _mmc = MongodbMgdConn(global_objects["metricstore"])
             _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
-            print "done"
+            print("done")
 
-        print '\n'                        
+        print('\n')                        
         _msg = ""
         _status = 0
 
-    except ProcessManagement.ProcessManagementException, obj :
+    except ProcessManagement.ProcessManagementException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
 
-    except MongodbMgdConn.MetricStoreMgdConnException, obj :
+    except MongodbMgdConn.MetricStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
 
-    except RedisMgdConn.ObjectStoreMgdConnException, obj :
+    except RedisMgdConn.ObjectStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
 
-    except Exception, e :
+    except Exception as e :
         _status = 23
         _msg = str(e)
     
@@ -688,5 +689,5 @@ def pre_check_port(hostname, hostport, protocol) :
         _nh_conn.nmap(hostport, protocol)
         return True
 
-    except NetworkException, obj :
+    except NetworkException as obj :
         return False

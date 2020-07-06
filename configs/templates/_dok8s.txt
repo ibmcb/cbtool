@@ -1,8 +1,8 @@
 [USER-DEFINED]
 DOK8S_ACCESS = https://api.digitalocean.com/v2 
 # Name of the ssh key pair 
-DOK8S_KEY_NAME = cbtool_rsa
-DOK8S_SSH_KEY_NAME = cbtool_rsa
+DOK8S_KEY_NAME = need_to_be_configured_by_user
+DOK8S_SSH_KEY_NAME = need_to_be_configured_by_user
 DOK8S_LOGIN = need_to_be_configured_by_user
 DOK8S_INITIAL_VMCS = none
 DOK8S_NETNAME = need_to_be_configured_by_user

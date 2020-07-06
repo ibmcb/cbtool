@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
-source ./build_common.sh
+if [ $0 != "-bash" ] ; then
+    pushd `dirname "$0"` 2>&1 > /dev/null
+fi
+CBDIR=$(pwd)
+if [ $0 != "-bash" ] ; then
+    popd 2>&1 > /dev/null
+fi
+
+source $CBDIR/build_common.sh
 
 CB_USAGE="Usage: $0 -r built image location [-w Workload] [-l CB Username/login] [-b branch] [-o distros] [--noskip] [--verbose] [--allinone] [--preserve] [--ubuntubi <filename or url>] [--centosbi <filename or url>]"
 
@@ -114,10 +122,10 @@ then
     CB_KVMQEMU_DISTROS_IMG_LIST=$CB_KVMQEMU_UBUNTU_BASE' '$CB_KVMQEMU_CENTOS_BASE
 fi
 
-cat $CB_KVMQEMU_S_DIR/../util/workloads_alias_mapping.txt | awk '{ print $1 }' | grep ^${CB_WKS}$ > /dev/null 2>&1
+cat $CB_KVMQEMU_S_DIR/../util/workloads_alias_mapping.txt | awk '{ print $1 }' | grep "#[[:space:]]$CB_WKS[[:space:]]" > /dev/null 2>&1
 if [[ $? -eq 0 ]]
 then
-    CB_WKS=$(cat $CB_KVMQEMU_S_DIR/../util/workloads_alias_mapping.txt | grep $CB_WKS[[:space:]] | cut -d ' ' -f 2)
+	CB_WKS=$(cat $CB_DOCKER_BASE_DIR/../util/workloads_alias_mapping.txt | grep "#[[:space:]]$CB_WKS[[:space:]]" | cut -d ' ' -f 2)
 fi
 
 download_base_images

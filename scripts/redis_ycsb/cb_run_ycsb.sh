@@ -16,9 +16,9 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
-cd ~
 
 set_load_gen $@
 

@@ -35,12 +35,12 @@ if os.access(api_file_name, os.F_OK) :
     except :
         _msg = "Unable to open file containing API connection information "
         _msg += "(" + api_file_name + ")."
-        print _msg
+        print(_msg)
         exit(4)
 else :
     _msg = "Unable to locate file containing API connection information "
     _msg += "(" + api_file_name + ")."
-    print _msg
+    print(_msg)
     exit(4)
 
 _path_set = False
@@ -57,13 +57,13 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 from lib.api.api_service_client import *
 
 _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
+print(_msg)
 api = APIClient(_api_conn_info)
 
 #---------------------------------- END CB API ---------------------------------
 
 if len(argv) < 2 :
-        print "./" + argv[0] + " <cloud_name>"
+        print("./" + argv[0] + " <cloud_name>")
         exit(1)
 
 cloud_name = argv[1]
@@ -82,13 +82,13 @@ try :
     _start_time = time()
 
     _msg = "Attaching all VMCs...."
-    print _msg
+    print(_msg)
     _key = "all_vmcs_attached"
-    print _key + '=' + api.vmcattach(cloud_name, "all")["all_vmcs_attached"]
+    print(_key + '=' + api.vmcattach(cloud_name, "all")["all_vmcs_attached"])
     
     _msg = "Changing the experiment identifier..."
-    print _msg
-    print api.expid(cloud_name, "loadrange")
+    print(_msg)
+    print(api.expid(cloud_name, "loadrange"))
 
     _msg = "Deploying the initial Vapp Submitter that will be used to take the"
     _msg += " to a predefined minimum provision load level..."
@@ -108,7 +108,7 @@ try :
     _msg = "VApp Submitter \"" + _vapps_name + "\" deployed. Will now wait until"
     _msg += " the number of VMs provisioned reaches "
     _msg += str(int(_total_vms_on_the_cloud * _initial_provision_load)) + "...."
-    print _msg
+    print(_msg)
 
     _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])
 
@@ -116,7 +116,7 @@ try :
         _current_time = int(time() - _start_time)
         _msg = "Number of provisioned VMs is " + str(_provisioned_vms) 
         _msg += " after " + str(_current_time) + " seconds"
-        print _msg
+        print(_msg)
         sleep(_update_interval)
         _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])
 
@@ -124,7 +124,7 @@ try :
     _msg += str(_actual_initial_provision_load) + ")."
     _msg += " Stopping the first VappSubmmiter (" + _vapps_name + ") and "
     _msg += "deploying a second to implement a variable provisioning load..."
-    print _msg
+    print(_msg)
 
     api.appdrsdetach(cloud_name, _vapps_name)
 
@@ -142,7 +142,7 @@ try :
             _current_time = int(time() - _start_time)
             _msg = "Number of provisioned VMs is " + str(_provisioned_vms) 
             _msg += " after " + str(_current_time) + " seconds"
-            print _msg
+            print(_msg)
             sleep(_update_interval)
             _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])    
 
@@ -150,19 +150,19 @@ try :
         _msg += str(_actual_variable_provision_load) + ")."
         _msg += " Stopping the second VappSubmmiter (" + _vapps_name + ") and "
         _msg += "waiting for some VMs to be naturally removed..."
-        print _msg
+        print(_msg)
         
         api.statealter(cloud_name, _vapps_name, "stopped")
 
         for _obj in api.stateshow(cloud_name) :
             if _obj["name"] == _vapps_name :
-                print _obj["name"] + " is " + _obj["state"]
+                print(_obj["name"] + " is " + _obj["state"])
     
         while _provisioned_vms > int(_actual_initial_provision_load) :
             _current_time = int(time() - _start_time)
             _msg = "Number of provisioned VMs is " + str(_provisioned_vms) 
             _msg += " after " + str(_current_time) + " seconds"
-            print _msg
+            print(_msg)
             sleep(_update_interval)
             _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])
     
@@ -170,28 +170,28 @@ try :
         _msg += str(_actual_initial_provision_load) + ") again."
         _msg += " Re-activating the second VappSubmmiter (" + _vapps_name + ") and "
         _msg += "waiting for some VMs to be provisioned again..."
-        print _msg
+        print(_msg)
 
         api.statealter(cloud_name, _vapps_name, "attached")
 
         for _obj in api.stateshow(cloud_name) :
             if _obj["name"] == _vapps_name :
-                print _obj["name"] + " is " + _obj["state"]
+                print(_obj["name"] + " is " + _obj["state"])
 
-except APIException, obj :
+except APIException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
-except APINoSuchMetricException, obj :
+except APINoSuchMetricException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
 except KeyboardInterrupt :
-    print "Aborting this VM."
+    print("Aborting this VM.")
 
-except Exception, msg :
+except Exception as msg :
     error = True
-    print "Problem during experiment: " + str(msg)
+    print("Problem during experiment: " + str(msg))
 
 finally :
         if _error :
