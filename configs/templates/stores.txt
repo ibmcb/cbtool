@@ -57,13 +57,17 @@ CONFIG_STRING = DOLLARModLoad_imtcp.so; DOLLARModLoad_imudp.so; DOLLARInputTCPSe
 KIND = mongodb
 PROTOCOL = TCP
 HOST = $MANAGER_IP
-USERNAME = $MAIN_USERNAME
+MONGODB_USERNAME = $MAIN_USERNAME
+MYSQL_USERNAME = root
 PASSWORD = $False
-PORT = 27017 
+MONGODB_PORT = 27017 
+MYSQL_PORT = 33306
 DATABASE = metrics
 TIMEOUT = $MAIN_TIMEOUT
 USAGE = private
-CONFIG_STRING = logpath--REPLSTORESWORKINGDIR/logs/mongod.log; logappend--true; fork--true; port--REPLPORT; bind**ip=0.0.0.0; dbpath--REPLSTORESWORKINGDIR
+CONFIG_STRING = $False
+MONGODB_CONFIG_STRING = logpath--REPLSTORESWORKINGDIR/logs/mongod.log; logappend--true; fork--true; port--REPLPORT; bind**ip=0.0.0.0; dbpath--REPLSTORESWORKINGDIR
+MYSQL_CONFIG_STRING = [mysqld]; user--REPLUSER; log_error--REPLSTORESWORKINGDIR/logs/mysql.err; general_log_file--REPLSTORESWORKINGDIR/logs/mysql.log; skip_grant_tables; bind**address--0.0.0.0; socket--REPLSTORESWORKINGDIR/mysql.sock; pid**file--REPLSTORESWORKINGDIR/mysql.pid; datadir--REPLSTORESWORKINGDIR/; port--REPLPORT; daemonize--TRUE; performance-schema--TRUE; show_compatibility_56--ON;
 
 [FILESTORE]
 KIND = rsync

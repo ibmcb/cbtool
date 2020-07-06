@@ -129,6 +129,14 @@ RUN apt-get install -y mongodb; sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mon
 # mongodb-install-pm
 RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/mongodb.conf
 
+# mysql-server-install-pm
+RUN apt-get install -y mysql-server
+# mysql-server-install-pm
+
+# python-mysql-connector-install-pip
+RUN pip3 install --upgrade mysql-connector
+# python-mysql-connector-install-pip
+
 # pylibvirt-install-pm
 RUN apt-get install -y python3-libvirt
 # pylibvirt-install-pm
@@ -171,7 +179,7 @@ RUN pip3 install --upgrade mongo
 
 # pssh-install-pm
 RUN apt-get install -y pssh
-RUN ln -s /usr/bin/parallel-ssh /usr/local/bin/pssh
+RUN ln -sf /usr/bin/parallel-ssh /usr/local/bin/pssh
 # pssh-install-pm
 
 # docutils-install-pip
@@ -289,8 +297,8 @@ USER REPLACE_USERNAME
 # gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
 RUN bash -c "export CLOUDSDK_CORE_DISABLE_PROMPTS=1; if [[ $(uname -p) != "ppc64le" ]]; then curl https://sdk.cloud.google.com | bash; else /bin/true; fi"
-RUN bash -c "if [[ $(uname -p) != "ppc64le" ]]; then sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud; else /bin/true; fi"
-RUN sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
+RUN bash -c "if [[ $(uname -p) != "ppc64le" ]]; then sudo ln -sf /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud; else /bin/true; fi"
+RUN sudo ln -sf /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
 # gcloud-install-man
 
 WORKDIR /home/REPLACE_USERNAME/
@@ -300,13 +308,11 @@ RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party/workload; \
 cp____-f____/home/REPLACE_USERNAME/cbtool/util/manually_download_files.txt____/home/REPLACE_USERNAME/cbtool/3rd_party/workload; /bin/true
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/monitor-core.git
-WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/monitor-core
-RUN git checkout origin/python3 -B python3
 # gmetad-python-install-git
 
 # pyhtml-install-git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
-RUN sudo rm -rf HTML.py; git clone https://github.com/ibmcb/HTML.py.git; cd HTML.py; git checkout origin/python3 -B python3; sudo python3 setup.py install
+RUN sudo rm -rf HTML.py; git clone https://github.com/ibmcb/HTML.py.git; cd HTML.py; sudo python3 setup.py install
 # pyhtml-install-git
 
 # bootstrap-install-git

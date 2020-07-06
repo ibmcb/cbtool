@@ -43,7 +43,7 @@ import traceback
 path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../")
 path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../../")
 
-from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
+from lib.stores.stores_initial_setup import load_metricstore_adapter
 from time import time, strftime, strptime, localtime
 from datetime import datetime
 import copy
@@ -166,7 +166,7 @@ class APIClient(Server):
             if use_vpn_ip == "true" :
                 self.msattrs['host'] = self.cldshow(cloud_name, "vpn")["server_bootstrap"]
 
-        self.msci = MongodbMgdConn(self.msattrs)
+        self.msci = load_metricstore_adapter(self.msattrs)
         self.username = self.cldshow(cloud_name, "time")["username"] if username is None else username
         self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
 

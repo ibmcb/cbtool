@@ -42,7 +42,8 @@ from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_vali
 from lib.remote.network_functions import Nethashget 
 from lib.remote.ssh_ops import repeated_ssh
 from lib.remote.process_management import ProcessManagement
-from lib.stores.stores_initial_setup import syslog_logstore_setup
+from lib.stores.stores_initial_setup import syslog_logstore_setup, load_metricstore_adapter
+from lib.stores.common_datastore_adapter import MetricStoreMgdConnException
 
 class BaseObjectOperations :
     '''
@@ -52,14 +53,14 @@ class BaseObjectOperations :
     proc_man_os_command = ProcessManagement(connection_timeout = 120)
 
     @trace
-    def __init__ (self, osci, msci, attached_clouds = []) :
+    def __init__ (self, osci, attached_clouds = []) :
         '''
         TBD
         '''
         self.username = getpwuid(os.getuid())[0]
         self.pid = "TEST_" + self.username 
         self.osci = osci
-        self.msci = msci 
+        self.msci = {}
         self.path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../.."
         self.attached_clouds = attached_clouds
         self.thread_pools = {}
@@ -90,6 +91,19 @@ class BaseObjectOperations :
             _msg += "experiment? " + str(obj.msg) + ""
             cberr(_msg)
             raise self.ObjectOperationException(_msg, obj.status)
+
+    @trace
+    def get_msci(self, cloud_name) :
+        '''
+        With the introduction of mysql and shared redis support, the API no longer can have
+        a single connection to the backend database. The connection must be a per-cloud connection.
+        We no longer metric store credentials on the command line anyway, so this is doubly required.
+        '''
+        if cloud_name not in self.msci :
+            _msattrs = self.osci.get_object(cloud_name, "GLOBAL", False, "metricstore", False)
+            self.msci[cloud_name] = load_metricstore_adapter(_msattrs)
+
+        return self.msci[cloud_name]
 
     @trace
     def set_cloud_operations_instance(self, cloud_model) :
@@ -1535,7 +1549,8 @@ class BaseObjectOperations :
             obj_attr_list["command"] = obj_attr_list["command"].replace("-", '').replace("cloud", "cld")
 
             if _operation + "_parallel" not in obj_attr_list and not cmd.count("api-check") and not cmd.count("list") :
-                if self.msci :
+                msci = self.get_msci(obj_attr_list["cloud_name"])
+                if msci :
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                     self.record_management_metrics(obj_attr_list["cloud_name"], _obj_type, obj_attr_list, "trace")
 
@@ -1607,7 +1622,7 @@ class BaseObjectOperations :
         obj_attr_list["vpn_server_protocol"] = "TCP"
         
         obj_attr_list["metricstore_host"] = _metric_store_attr_list["host"]
-        obj_attr_list["metricstore_port"] = _metric_store_attr_list["port"]
+        obj_attr_list["metricstore_port"] = _metric_store_attr_list[_metric_store_attr_list["kind"] + "_port"]
         obj_attr_list["metricstore_protocol"] = _metric_store_attr_list["protocol"]
         
         obj_attr_list["logstore_host"] = _log_store["hostname"]
@@ -2083,7 +2098,7 @@ class BaseObjectOperations :
             for _metric_name in _mon_parameters[_collection_name.lower()].split(',') :
                 _document[_metric_name] = "1"
                            
-            self.msci.update_document(_collection_name + '_' + _mon_parameters["username"], _document)
+            self.get_msci(obj_attr_list["cloud_name"]).update_document(_collection_name + '_' + _mon_parameters["username"], _document)
 
         return True
 
@@ -2343,7 +2358,7 @@ class BaseObjectOperations :
             obj_attr_list["drivers_nr"] = _nr_drivers
 
             obj_attr_list["osp"] = dic2str(self.osci.oscp())
-            obj_attr_list["msp"] = dic2str(self.msci.mscp())
+            obj_attr_list["msp"] = dic2str(self.get_msci(obj_attr_list["cloud_name"]).mscp())
                         
             if obj_attr_list["staging"] + "_complete" in obj_attr_list :
                 self.osci.publish_message(obj_attr_list["cloud_name"], \
@@ -3067,6 +3082,7 @@ class BaseObjectOperations :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _mon_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "mon_defaults", False)
+            _msci = self.get_msci(cloud_name)
 
             if operation == "trace" :
 
@@ -3080,7 +3096,7 @@ class BaseObjectOperations :
                     if _key in _trace_key_list :
                         _trace_attr_list[_key] = obj_attr_list[_key]
 
-                self.msci.add_document(_trace_key, _trace_attr_list)            
+                _msci.add_document(_trace_key, _trace_attr_list)            
 
                 _status = 0
 
@@ -3118,31 +3134,31 @@ class BaseObjectOperations :
                         _mgt_attr_list["utc_offset_delta"] = self.compute_utc_offset(cloud_name, obj_type, obj_attr_list)
 
                         if obj_type.upper() == "HOST" :
-                            self.msci.update_document(_management_key, _mgt_attr_list)
-                            self.msci.update_document(_latest_key, _mgt_attr_list)
+                            _msci.update_document(_management_key, _mgt_attr_list)
+                            _msci.update_document(_latest_key, _mgt_attr_list)
                         else :
 
-                            self.msci.add_document(_management_key, _mgt_attr_list)
-                            self.msci.add_document(_latest_key, _mgt_attr_list)
+                            _msci.add_document(_management_key, _mgt_attr_list)
+                            _msci.add_document(_latest_key, _mgt_attr_list)
                             
                     elif operation == "runstate" :
-                        self.msci.update_document(_management_key, _mgt_attr_list)
-                        self.msci.update_document(_latest_key, _mgt_attr_list)
+                        _msci.update_document(_management_key, _mgt_attr_list)
+                        _msci.update_document(_latest_key, _mgt_attr_list)
 
                     elif operation == "detach" :
 
                         _criteria = { "_id" : obj_attr_list["uuid"] }
 
-                        self.msci.update_document(_management_key, _mgt_attr_list)
-                        self.msci.delete_document(_latest_key, _criteria)
+                        _msci.update_document(_management_key, _mgt_attr_list)
+                        _msci.delete_document(_latest_key, _criteria)
 
                         # This was added directly by the VM, but it has to be
                         # deleted by us.
-                        self.msci.delete_document("latest_runtime_app_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
+                        _msci.delete_document("latest_runtime_app_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
 
                         # This was added directly by gmetad, but it has to be
                         # deleted by us.
-                        self.msci.delete_document("latest_runtime_os_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
+                        _msci.delete_document("latest_runtime_os_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
 
                 elif obj_type.upper() == "AI" :
 
@@ -3179,8 +3195,8 @@ class BaseObjectOperations :
                                 _mgt_attr_list["utc_offset_delta"] = \
                                 self.compute_utc_offset(cloud_name, "VM", _vm_attr_list)
     
-                                self.msci.add_document(_management_key, _mgt_attr_list)
-                                self.msci.add_document(_latest_key, _mgt_attr_list)
+                                _msci.add_document(_management_key, _mgt_attr_list)
+                                _msci.add_document(_latest_key, _mgt_attr_list)
 
                 _status = 0
 
@@ -3192,11 +3208,13 @@ class BaseObjectOperations :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException as obj :
+        except MetricStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
         except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 40
             _fmsg = str(e)
 
@@ -4319,7 +4337,6 @@ class BaseObjectOperations :
                         _cmd = "script -qfec \"" + self.path + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
-                        _cmd += " --msp=" + dic2str(self.msci.mscp())
                         _cmd += " --oop=" + ','.join(_parameters.split())
                         _cmd += " --operation=" + command
                         _cmd += " --cn=" + _obj_attr_list["cloud_name"]
@@ -4346,7 +4363,6 @@ class BaseObjectOperations :
                             _cmd = "script -qfec \"" + self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
-                            _cmd += " --msp=" + dic2str(self.msci.mscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
@@ -4377,7 +4393,6 @@ class BaseObjectOperations :
                             _cmd = "script -qfec \"" + self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
-                            _cmd += " --msp=" + dic2str(self.msci.mscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]

@@ -161,6 +161,14 @@ RUN pip3 install --upgrade mongo
 RUN apt-get install -y python3-pymongo-ext
 # python3-pymongo-ext-install-pm
 
+# mysql-server-install-pm
+RUN apt-get install -y mysql-server
+# mysql-server-install-pm
+
+# python-mysql-connector-install-pip
+RUN pip3 install --upgrade mysql-connector
+# python-mysql-connector-install-pip
+
 # pssh-install-pm
 RUN apt-get install -y pssh
 # pssh-install-pm
@@ -221,15 +229,12 @@ RUN git clone https://github.com/ibmcb/cbtool.git; cd cbtool; git checkout REPLA
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/monitor-core.git
-WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/monitor-core
-RUN git checkout origin/python3 -B python3 
 # gmetad-python-install-git
 
 # pyhtml-install-git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/HTML.py.git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/HTML.py
-RUN git checkout origin/python3 -B python3 
 RUN sudo python3 setup.py install
 # pyhtml-install-git
 

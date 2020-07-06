@@ -50,7 +50,7 @@ from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
 from lib.operations.base_operations import BaseObjectOperations
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
+from lib.stores.stores_initial_setup import load_metricstore_adapter
 from lib.stores.redis_datastore_adapter import RedisMgdConn
 from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds
 from lib.api.api_service_client import *
@@ -174,7 +174,6 @@ class CBCLI(Cmd) :
             del oscp["usage"]
 
             self.osci = RedisMgdConn(oscp)
-            self.msci = MongodbMgdConn(mscp)
             self.api_service_url = "http://" + self.cld_attr_lst["api_defaults"]["hostname"]
             self.api_service_url += ":" + self.cld_attr_lst["api_defaults"]["port"]
             
@@ -685,7 +684,6 @@ class CBCLI(Cmd) :
             _base_cmd = "\"" +  self.path + "/cbact\""
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
-            _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
             _base_cmd += " --operation=cloud-api"
 
             # Ensure backwards-compatibility
@@ -770,7 +768,6 @@ class CBCLI(Cmd) :
             _base_cmd = "\"" + self.path + "/cbact\""
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
-            _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
             _base_cmd += " --operation=cloud-gui"
             _base_cmd += " --apiport=" + str(self.cld_attr_lst["api_defaults"]["port"])
             _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
@@ -945,9 +942,6 @@ class CBCLI(Cmd) :
                                                                   "cloud-detach")
 
         if not _status and BaseObjectOperations.default_cloud == self.cld_attr_lst["name"] :
-            # Not sure why we do this. Was there a historical reason for this?
-            # print("Disassociating default cloud: " + BaseObjectOperations.default_cloud)
-            # self.do_clddefault("none")
             self.do_cldlist("", False)
             
         print((message_beautifier(_msg)))
@@ -987,7 +981,7 @@ class CBCLI(Cmd) :
         '''
         TBD
         '''
-        self.passive_operations = PassiveObjectOperations(self.osci, self.msci, [])
+        self.passive_operations = PassiveObjectOperations(self.osci, [])
 
         _status, _msg, _object = self.passive_operations.list_objects(self.cld_attr_lst, \
                                                                       parameters, \
@@ -1005,13 +999,10 @@ class CBCLI(Cmd) :
             if _object["result"][_cloud_name_index]["name"] not in self.attached_clouds :
                 self.attached_clouds.append(_object["result"][_cloud_name_index]["name"])
 
-        self.passive_operations = PassiveObjectOperations(self.osci, \
-                                                          self.msci, \
-                                                          self.attached_clouds)
+        self.passive_operations = PassiveObjectOperations(self.osci, self.attached_clouds)
 
 
         self.active_operations = ActiveObjectOperations(self.osci, \
-                                                self.msci, \
                                                 self.attached_clouds)
 
         if not self.options.remote :

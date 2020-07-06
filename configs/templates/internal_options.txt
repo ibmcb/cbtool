@@ -378,7 +378,7 @@ VM_ATTRIBUTES += cloud_hostname, vmc_name, vmc_cloud_ip, host_name,
 VM_ATTRIBUTES += host_cloud_ip, role, size, imageid1, ai, ai_name, type, aidrs, 
 VM_ATTRIBUTES += aidrs_name, pattern, utc_offset_delta, tenant, netname,
 VM_ATTRIBUTES += total_ai_provisioning_time, instance_preparation_on_vm, application_start_on_vm,
-VM_ATTRIBUTES += comments, abort, node
+VM_ATTRIBUTES += comments, abort, node, canonical_id
 
 ### Layout of the trace file
 TRACE_HEADER = TRACE_ATTRIBUTES
@@ -388,7 +388,7 @@ TRACE_HEADER = TRACE_ATTRIBUTES
 VM_ID1 = uuid, name, last_known_state, cloud_ip, cloud_name, model,
 VM_ID1 += cloud_hostname, tenant, netname, host_name, host_cloud_ip, vmc_name, vmc_cloud_ip, 
 VM_ID1 += role, size, imageid1, ai, ai_name, type, aidrs, aidrs_name, pattern, 
-VM_ID1 += utc_offset_delta, abort, comments, instance_preparation_on_vm, application_start_on_vm
+VM_ID1 += utc_offset_delta, abort, comments, instance_preparation_on_vm, application_start_on_vm, canonical_id
 HS_ID1 = uuid, name, cloud_ip, model, vmc_name, vmc_cloud_ip, total_ai_provisioning_time
 CRT_M = mgt_001_provisioning_request_originated_abs,
 CRT_M += mgt_001_provisioning_request_originated, 
@@ -415,7 +415,7 @@ HOST_MANAGEMENT_METRICS_HEADER = HS_ID1, CRT_M, DST_M
 # Layout "components"
 TSTAMP_APP = time, time_h, time_cbtool, time_cbtool_h
 TSTAMP_OS = time, time_h
-VM_ID2 = uuid, name, role, ai_name, type, host_name, aidrs_name, sla_provisioning
+VM_ID2 = uuid, name, role, ai_name, type, host_name, aidrs_name, sla_provisioning, canonical_id
 HS_ID2 = uuid, name
 #CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle, 
 #CPU_M += cpu_user, cpu_system, cpu_wio, cpu_intr, cpu_sintr, cpu_nice
