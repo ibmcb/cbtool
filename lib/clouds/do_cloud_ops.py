@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2015 DigitalOcean, Inc.
@@ -13,16 +13,16 @@
 '''
     Created on Oct 31, 2015
     DigitalOcean Object Operations Library
-    @author: Michael R. Hines, Darrin Eden
+    @author: Michael R. Galaxy, Darrin Eden
 '''
 
 from time import time
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import is_number
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
-from shared_functions import CldOpsException
+from .shared_functions import CldOpsException
 
 class DoCmds(LibcloudCmds) :
     @trace
@@ -65,25 +65,34 @@ class DoCmds(LibcloudCmds) :
         return True
     
     @trace
-    def pre_vmcreate_process(self, obj_attr_list, keys) :
+    def pre_vmcreate_process(self, obj_attr_list, credentials_list, keys) :
         '''
         TBD
         '''
 
+        # This needs to be empty on each creation.
+        # It changes from create to create, depending
+        # on which tenant is used and what the userdata
+        # will be.
+
+        self.vmcreate_kwargs["ex_create_attr"] = {}
+
         obj_attr_list["region"] = obj_attr_list["vmc_name"]
 
-        for _location in LibcloudCmds.locations :
-            if _location.id == obj_attr_list["region"] :
-                obj_attr_list["libcloud_location_inst"] = _location
-                break
+        if "libcloud_location_inst" not in obj_attr_list :
+            for _location in LibcloudCmds.locations :
+                if _location.id == obj_attr_list["region"] :
+                    obj_attr_list["libcloud_location_inst"] = _location
+                    break
 
         if obj_attr_list["netname"] == "private" :
             self.vmcreate_kwargs["ex_create_attr"]["private_networking"] = True
 
         obj_attr_list["libcloud_call_type"] = "create_node_with_mixed_arguments"
 
-        self.vmcreate_kwargs["ex_create_attr"]["ssh_keys"] = keys
-        self.vmcreate_kwargs["ex_user_data"] = obj_attr_list["userdata"]
+        if keys :
+            self.vmcreate_kwargs["ex_create_attr"]["ssh_keys"] = keys
+            self.vmcreate_kwargs["ex_user_data"] = obj_attr_list["userdata"]
 
     @trace
     def get_description(self) :

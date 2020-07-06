@@ -1,6 +1,7 @@
 ### START - Dependency installation order ###
 kernbuild-order = 92
 kernbench-order = 93
+kerndata-order = 94
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -12,16 +13,19 @@ kernbench-order = 93
 # man = "manual"
 kernbuild-install = pm
 kernbench-install = git
+kerndata-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
 kernbuild-configure = gcc -v
-kernbench-configure = ls -l /home/REPLACE_USERNAME/ltp/utils/benchmark/kernbench-0.42/kernbench
+kernbench-configure = ls -l /home/REPLACE_USERNAME/foo/ltp/utils/benchmark/kernbench-0.42/kernbench
+kerndata-configure = ls -l /home/REPLACE_USERNAME/foo/linux/scripts/genksyms/Makefile
 ### END - Tests ###
 
 ### START - Dependency versions ###
 kernbuild-ver = ANY
 kernbench-ver = ANY
+kerndata-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###

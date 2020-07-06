@@ -3,11 +3,11 @@ MAIN_UPDATE_ATTEMPTS = 180
 AS_ACCESS = https://portal.azure.com/
 AS_CREDENTIALS = need_to_be_configured_by_user
 AS_LOGIN = need_to_be_configured_by_user
-AS_SSH_KEY_NAME = cbtool_rsa
+AS_SSH_KEY_NAME = need_to_be_configured_by_user
+AS_KEY_NAME = need_to_be_configured_by_user
 AS_INITIAL_VMCS = need_to_be_configured_by_user
-AS_KEY_NAME = cbtool_rsa
 AS_CLOUD_SERVICE_PREFIX = cbtool
-AS_NETNAME = private
+AS_NETNAME = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 AS_INITIAL_VMCS_DOC = There are multiple regions to choose from @ https://azure.microsoft.com/en-us/regions/
@@ -55,6 +55,10 @@ USERDATA = $True
 USERDATA_SSH = $True
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
+PUBLISHER = $EMPTY
+OFFER = $EMPTY
+RESOURCE_GROUP = auto
+STORAGE_ACCOUNT = auto
 
 [AI_DEFAULTS : AS_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 1
@@ -80,25 +84,23 @@ KEY_NAME = $AS_KEY_NAME
 SSH_KEY_NAME = $AS_SSH_KEY_NAME
 ACCESS = $AS_ACCESS
 SECURITY_GROUPS = not_yet_applicable
-
-[AI_TEMPLATES : HADOOP ]
-HADOOP_HOME = /usr/local/hadoop
+GLOBAL_IMAGES = $True
 
 [VM_TEMPLATES : AS_CLOUDCONFIG ]
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:cf5002d59cfb4234b3336cac8e587838__Ubuntu-18_04-LTS-amd64-server-20191113-en-us-30GB, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:CanonicalcolonUbuntuServercolon18.04-LTScolon18.04.202006101, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
 [SIZE_TEMPLATES : AS_CLOUDCONFIG]
 # Sizes extracted from https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
-01-256=ExtraSmall
-01-512=ExtraSmall
-01-1024=Small
-01-2048=Small
-01-2560=Small
-02-2048=Medium
-04-2048=Large
-08-4096=ExtraLarge
-02-4096=Medium
-02-5120=Large
-04-16384=A5
-08-16384=A6
-16-16384=A7
+01-256=Standard_B1ls
+01-512=Standard_B1ls
+01-1024=Standard_B1s
+01-2048=Standard_B1ms
+01-2560=Standard_B2s
+02-2048=Standard_B2s
+04-2048=Standard_A4_v2
+08-4096=Standard_F8s_v2
+02-4096=Standard_F8s_v2
+02-5120=Standard_F8s_v2
+04-16384=Standard_B4ms
+08-16384=Standard_A8_v2
+16-16384=Standard_F16

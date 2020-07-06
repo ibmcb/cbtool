@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -21,7 +21,7 @@
 
     Active Object Operations Library
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 from os import chmod, access, F_OK
 from random import choice, randint
@@ -41,7 +41,7 @@ from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_
 from lib.clouds.shared_functions import CldOpsException
 from lib.remote.network_functions import Nethashget
 from lib.remote.network_functions import Nethashget, hostname2ip, NetworkException
-from base_operations import BaseObjectOperations
+from .base_operations import BaseObjectOperations
 
 import copy
 import threading
@@ -49,6 +49,7 @@ import os
 import sys
 import socket
 import telnetlib
+import traceback
 
 class ActiveObjectOperations(BaseObjectOperations) :
     '''
@@ -156,15 +157,20 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not os.path.isfile(ssh_filename) :
                     if not os.path.isfile(cld_attr_lst["space"]["ssh_key_name"]) :
-                        _fmsg = "Error: "
-                        raise Exception("\n   Your " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME parameter is wrong:\n" + \
-                                        "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
-                                        "\n   Please update your configuration and try again.\n")
+                        _cmd = "mkdir -p " + cld_attr_lst["space"]["credentials_dir"] + "; ssh-keygen -q -t rsa -N '' -f " + ssh_filename
+                        _proc_man =  ProcessManagement()
+                        _status, out, err =_proc_man.run_os_command(_cmd)                        
+                        if _status :
+                            _fmsg = "Error: "
+                            raise Exception("\n   Your " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME parameter is wrong:\n" + \
+                                            "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
+                                            "\n   Please update your configuration and try again.\n")
+                        else :
+                            cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
                 else :
                     cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
 
                 _proc_man =  ProcessManagement(username = cld_attr_lst["time"]["username"], cloud_name = cld_attr_lst["cloud_name"])
-
                 self.start_vpnserver(cld_attr_lst)
 
                 # User may have an empty VMC list. Need to be able to handle that.
@@ -259,7 +265,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # This needs to be better coded later. Right now, it is just a fix to avoid
                 # the problems caused by the fact that git keeps resetting RSA's private key
                 # back to 644 (which are too open).
-                chmod(cld_attr_lst["space"]["ssh_key_name"], 0600)
+                chmod(cld_attr_lst["space"]["ssh_key_name"], 0o600)
                 
                 if str(cld_attr_lst["vm_defaults"]["create_jumphost"]).lower() != "false" :
 
@@ -273,7 +279,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _msg += " to confirm that this host can be used as a \""
                         _msg += "jump box\"..."
                         #cbdebug(_msg, True)
-                        print _msg, 
+                        print(_msg, end=' ')
 
                         _jump_box_host_fn = cld_attr_lst["space"]["generated_configurations_dir"] 
                         _jump_box_host_fn += "/" + cld_attr_lst["name"]
@@ -310,7 +316,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                             cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
 
-                            print "done\n"
+                            print("done\n")
                     else :
                         _msg = "The attribute \"CREATE_JUMPHOST\" in Global Object "
                         _msg += " VM_DEFAULTS is set to \"True\", but the actual "
@@ -319,7 +325,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         cberr(_msg, True)
                         exit(1)                
                 
-                _all_global_objects = cld_attr_lst.keys()
+                _all_global_objects = list(cld_attr_lst.keys())
                 cld_attr_lst["client_should_refresh"] = str(0.0)
 
                 _remove_from_global_objects = [ "name", "model", "user-defined", \
@@ -369,21 +375,29 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _msg = _smsg + "\nThe experiment identifier is " + _expid + "\n"
             cld_attr_lst["cloud_name"] = _cld_name
                 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _msg = _fmsg + str(msg)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
-        except OSError, msg :
+        except OSError as msg :
             _status = 8
             _msg = _fmsg + str(msg)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _msg = _fmsg + str(msg)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
-        except DataOpsException, obj :
+        except DataOpsException as obj :
             _status = 8
             _msg = _fmsg + str(msg)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
         # Chicken and the egg problem:
         # Can't catch this exception if the import fails
@@ -392,20 +406,28 @@ class ActiveObjectOperations(BaseObjectOperations) :
         #    _status = str(obj.msg)
         #    _msg = _fmsg + str(obj.msg)
 
-        except StoreSetupException, obj :
+        except StoreSetupException as obj :
             _status = str(obj.status)
             _msg = _fmsg + str(obj.msg)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _msg = _fmsg + str(obj.msg)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
-        except socket.gaierror, e :
+        except socket.gaierror as e :
             _status = 24
             _msg = _fmsg + " vmc: " + cld_attr_lst["vmc_defaults"]["access"] + str(e)
-        except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
+        except Exception as e :
             _status = 23
             _msg = _fmsg + str(e)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
         
         finally :
             if _status :
@@ -482,13 +504,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     tmp = Nethashget(cld_attr_lst["vpn"]["management_ip"])
                     tmp.nmap(int(cld_attr_lst["vpn"]["management_port"]), "TCP")
                     tn = telnetlib.Telnet(cld_attr_lst["vpn"]["management_ip"], int(cld_attr_lst["vpn"]["management_port"]), 1)
-                    tn.write("log all\r\n")
-                    tn.write("exit\n")
+                    tn.write(b"log all\r\n")
+                    tn.write(b"exit\n")
                     lines = []
                     while True :
                         try :
-                            lines.append(tn.read_until("\n", 1))
-                        except Exception, e :
+                            lines.append(tn.read_until(b"\n", 1).decode("utf-8"))
+                        except Exception as e :
                             break
                     tn.close
                     lines.reverse()
@@ -500,7 +522,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 cbwarn("VPN Bootstrap changed to: " + bip, True)
                                 cld_attr_lst["vpn"]["server_bootstrap"] = bip
                             break
-                except Exception, e: 
+                except TypeError as e:
+                    for line in traceback.format_exc().splitlines() :
+                        cbwarn(line, True)
+                except Exception as e: 
                     pass
 
                 if client_not_found :
@@ -509,7 +534,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _vpn_pid = False
                 
-                print "Checking for a running VPN daemon.....",
+                print("Checking for a running VPN daemon.....", end=' ')
                 
                 _proc_man = ProcessManagement(username = "root")
                 _base_cmd = "openvpn --config " + _vpn_server_config
@@ -555,11 +580,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
     
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -569,7 +594,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)         
                 exit(_status)       
             else :
-                print ''
+                print('')
                 cbdebug(_msg)
                 return True
 
@@ -697,19 +722,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg =  str(obj.msg)
 
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _msg = _fmsg + str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -867,11 +892,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
         
                     _result = obj_attr_list
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -917,27 +942,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status, _fmsg = _cld_conn.vmccleanup(obj_attr_list)
                     _result = obj_attr_list
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1039,23 +1064,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
                 _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1112,15 +1137,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except IndexError, msg :
+        except IndexError as msg :
             _status = 40
             _fmsg = str(msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
 
@@ -1168,7 +1195,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             Blacklists are for Anti-Colocation. Please don't break them. =) 
             FT depends on anti-colocation. Others might also in the future.
             '''
-            if "vmc_pool_blacklist" in obj_attr_list.keys() :
+            if "vmc_pool_blacklist" in list(obj_attr_list.keys()) :
                 _blacklist = obj_attr_list["vmc_pool_blacklist"].split(",")
                 for _bad_pool in _blacklist :
                     for _idx in range(0, len(_vmc_pools)) :
@@ -1176,7 +1203,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             del _vmc_pools[_idx]
                             break
 
-            elif "host_name_blacklist" in obj_attr_list.keys() :
+            elif "host_name_blacklist" in list(obj_attr_list.keys()) :
                 _blacklist = obj_attr_list["host_name_blacklist"].split(",")
                 for _bad_host in _blacklist :
                     for _idx in range(0, len(_hosts)) :
@@ -1222,7 +1249,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # Will have to think about changing it later. It is quite 
                 # inefficient, considering that there is a "pool" attribute
                 # being loaded already
-                for _key in obj_attr_list.keys() :
+                for _key in list(obj_attr_list.keys()) :
                     if _key.count("pref_pool") :
                         _pref_pool_role = _key.split("_pref_pool")[0]
                         _pref_pool_name = obj_attr_list[_key].upper()
@@ -1251,7 +1278,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         for _vitem in _vmc_uuid_list :
                             _vmc_uuid_names[_vitem.split("|")[1]] = _vitem
 
-                        _vitem_names = _vmc_uuid_names.keys()
+                        _vitem_names = list(_vmc_uuid_names.keys())
                         _vitem_names.sort(key=natural_keys)
                         _vmc_uuid_list = []
 
@@ -1410,7 +1437,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
 
                 if obj_attr_list["role"] not in _container_templates :
-                    _fmsg = "To use nested containers, you need to define a section named [CONTAINER_TEMPLATES] which instructs CloudBench which container images to use using the role \"" + obj_attr_list["role"] + "\". See the templates for an example and try again."
+                    _fmsg = "To use nested containers, you need to define a section named [CONTAINER_TEMPLATES] which instructs "
+                    _fmsg += "CloudBench which container images to use using the role \"" + obj_attr_list["role"] + "\". "
+                    _fmsg += "See the templates for an example and try again."
                     _status = 5335
                     raise CldOpsException(_fmsg, _status)
 
@@ -1450,27 +1479,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
                 
-        except KeyError, msg :
+        except KeyError as msg :
             _status = 40
             _fmsg = "Unknown VM role: " + str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except DataOpsException, obj :
+        except DataOpsException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             for line in traceback.format_exc().splitlines() :
@@ -1551,7 +1580,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                  "ai_templates", False)
             _ai_template_attr_list = {}
             _app_type = obj_attr_list["type"]
-            for _attrib, _val in _ai_templates.iteritems() :
+            for _attrib, _val in _ai_templates.items() :
                 if _attrib.count(_app_type) :
                     _ai_template_attr_list[_attrib] = _val
 
@@ -1567,7 +1596,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             # only "driver_hadoop_setup1"
             _x = len(_app_type) + 1
 
-            for _key, _value in _ai_template_attr_list.iteritems() :
+            for _key, _value in _ai_template_attr_list.items() :
                 if _key.count(_app_type) :
                     if _key[_x:] in obj_attr_list : 
                         if obj_attr_list[_key[_x:]] == "default" :
@@ -1623,23 +1652,25 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM objects need to be aborted...", True)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 41
             _fmsg = str(obj.msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ValueGeneration.ValueGenerationException, obj :
+        except ValueGeneration.ValueGenerationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except DataOpsException, obj :
+        except DataOpsException as obj :
             _status = 43
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
 
@@ -1695,7 +1726,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # only "max_ais"
                 _x = len(obj_attr_list["pattern"]) + 1
             
-                for _key, _value in _aidrs_templates.iteritems() :
+                for _key, _value in _aidrs_templates.items() :
                     if _key.count(obj_attr_list["pattern"]) :
                         if _key[_x:] in obj_attr_list : 
                             if obj_attr_list[_key[_x:]] == "default" :
@@ -1709,15 +1740,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1761,7 +1792,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # only "max_ais"
                 _x = len(obj_attr_list["pattern"]) + 1
             
-                for _key, _value in _vmcrs_templates.iteritems() :
+                for _key, _value in _vmcrs_templates.items() :
                     if _key.count(obj_attr_list["pattern"]) :
                         if _key[_x:] in obj_attr_list : 
                             if obj_attr_list[_key[_x:]] == "default" :
@@ -1775,15 +1806,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1826,7 +1857,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # only "max_ais"
                 _x = len(obj_attr_list["pattern"]) + 1
             
-                for _key, _value in _firs_templates.iteritems() :
+                for _key, _value in _firs_templates.items() :
                     if _key.count(obj_attr_list["pattern"]) :
                         if _key[_x:] in obj_attr_list : 
                             if obj_attr_list[_key[_x:]] == "default" :
@@ -1840,15 +1871,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1976,7 +2007,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.osci.pending_object_set(_cloud_name, _obj_type, \
                                         obj_attr_list["uuid"], "status", "Initializing...")
 
-                    for pkey in obj_attr_list.keys() :
+                    for pkey in list(obj_attr_list.keys()) :
                         self.osci.pending_object_set(_cloud_name, _obj_type, \
                             obj_attr_list["uuid"], pkey, obj_attr_list[pkey])
 
@@ -2059,13 +2090,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if "userdata" in obj_attr_list :
                             obj_attr_list["userdata"] = "/var/lib/cloud/" + obj_attr_list["cloud_vm_uuid"] + "/user-data.txt"
 
+                        if "host_list" in obj_attr_list :
+                            _host_list_attrs = copy.deepcopy(obj_attr_list["host_list"])
+                            del obj_attr_list["host_list"]
+                        else :
+                            _host_list_attrs = {}
+
+                        for _key,_value in obj_attr_list.items() :
+                            if not isinstance(_value, str) and not isinstance(_value, int) and not isinstance(_value, float):
+                                print(_key + " : " + str(_value) + " ("  + str(type(_value)) + ")")
+
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
 
                         _created_object = True
 
                         if _obj_type == "VMC" :
-                            self.post_attach_vmc(obj_attr_list)
+                            self.post_attach_vmc(obj_attr_list, _host_list_attrs)
     
                         elif _obj_type == "VM" :
 
@@ -2113,27 +2154,39 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         _post_attach = True
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
 
@@ -2288,7 +2341,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
 
     @trace
-    def post_attach_vmc(self, obj_attr_list) :
+    def post_attach_vmc(self, obj_attr_list, host_attr_list) :
         '''
         TBD
         '''
@@ -2301,7 +2354,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
         
                     self.osci.create_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, \
-                                            obj_attr_list["host_list"][_host_uuid], False, True)
+                                            host_attr_list[_host_uuid], False, True)
 
                 if not "attach_parallel" in obj_attr_list :
                     self.update_host_os_perfmon(obj_attr_list)
@@ -2321,15 +2374,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except IndexError, msg :
+        except IndexError as msg :
             _status = 40
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -2587,7 +2640,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     
                     _msg += obj_attr_list["prepare_image_name"] + "\" on the CLI\n"
                     cbdebug(_msg)
-                    print '\n' + _msg                    
+                    print('\n' + _msg)
+
                 else :
                     _msg = "Performed generic VM post_boot configuration on " + obj_attr_list["log_string"] 
                     _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
@@ -2622,19 +2676,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                           1, \
                                           3600)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cberr(line, True)
             _status = 23
@@ -2718,15 +2772,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                            1, \
                                            3600)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2810,7 +2864,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2863,7 +2917,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2915,7 +2969,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2948,11 +3002,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2985,11 +3039,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _status = 0
                 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3033,15 +3087,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _fmsg = "This AI is part of the AIDRS " + obj_attr_list["aidrs"] + '.'
                 _fmsg += "Please detach this AS instead."
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3071,7 +3125,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             sleep(20)
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3095,7 +3149,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3118,7 +3172,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3231,27 +3285,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     else :
                         True
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg =  str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3316,11 +3370,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             _status = 0
 
-        except IndexError, msg :
+        except IndexError as msg :
             _status = 40
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3363,11 +3417,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg =  str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3407,11 +3461,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except IndexError, msg :
+        except IndexError as msg :
             _status = 40
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3436,11 +3490,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             _status = 0
 
-        except IndexError, msg :
+        except IndexError as msg :
             _status = 40
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3465,11 +3519,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             _status = 0
 
-        except IndexError, msg :
+        except IndexError as msg :
             _status = 40
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3493,11 +3547,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             _status = 0
 
-        except IndexError, msg :
+        except IndexError as msg :
             _status = 40
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3588,23 +3642,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3694,27 +3748,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status = 34095 
                         _fmsg = "GTK process creation failed."
                     
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3830,27 +3884,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status = 78
     
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4030,27 +4084,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status = 0
                     _result = obj_attr_list
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4103,27 +4157,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _result = obj_attr_list
                     _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4235,27 +4289,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     
                     _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4385,19 +4439,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 cbdebug(_msg)
                                 _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4523,23 +4577,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _fmsg += "specified (to the \"" + _target_state + "\" state)."
                     _status = 791
             
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ImportError, msg :
+        except ImportError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _status = 8
             _fmsg = str(msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4613,15 +4667,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status, _fmsg = self.airunstate_actual(obj_attr_list)
                         _result = obj_attr_list
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4899,15 +4953,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _fmsg += "\"" + _current_state + "\" state."
                     _status = 817
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -4965,15 +5019,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         break
                 _result = obj_attr_list
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -5007,7 +5061,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         try :
                 
-            for _object in obj_attr_list["parallel_operations"].keys() :
+            for _object in list(obj_attr_list["parallel_operations"].keys()) :
                 
                 obj_attr_list["parallel_operations"][_object][operation_type + "_parallel"] = "true"
                 _command = obj_attr_list["parallel_operations"][_object]["parameters"]
@@ -5068,7 +5122,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
             # Make sure the operations succeeded
             if not _child_failure :
-                for _object in obj_attr_list["parallel_operations"].keys() :
+                for _object in list(obj_attr_list["parallel_operations"].keys()) :
                     _obj_type = obj_attr_list["parallel_operations"][_object]["operation"].split('-')[0].upper()
                     _obj_uuid = obj_attr_list["parallel_operations"][_object]["uuid"]
                     _command = obj_attr_list["parallel_operations"][_object]["parameters"]
@@ -5119,19 +5173,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if _thread_pool :
                 _thread_pool.abort()
             
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 45
             _fmsg = str(obj.msg)
             if _thread_pool :
                 _thread_pool.abort()
                 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
             if _thread_pool :
                 _thread_pool.abort()
                 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             if _thread_pool :
@@ -5334,7 +5388,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _ai_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0, \
                                                                     1000000000000000000)))).upper()
 
-                    _cmd = base_dir + "/cbact"
+                    _cmd = "script -qfec \"" + base_dir + "/cbact"
                     _cmd += " --procid=" + self.pid
                     _cmd += " --osp=" + dic2str(self.osci.oscp())
                     _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5345,7 +5399,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += " --operation=ai-attach"
                     _cmd += " --cn=" + cloud_name
                     _cmd += " --uuid=" + _ai_uuid
-                    _cmd += " --daemon"
+                    _cmd += " --daemon\""
                     #_cmd += "  --debug_host=127.0.0.1"
 
                     _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
@@ -5450,7 +5504,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _current_state = self.osci.get_object_state(cloud_name, "AI", _ai_uuid)
 
                     if _current_state and _current_state == "attached" :                    
-                        _cmd = base_dir + "/cbact"
+                        _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5458,7 +5512,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd += " --operation=ai-detach"
                         _cmd += " --cn=" + cloud_name
                         _cmd += " --uuid=" + _ai_uuid                        
-                        _cmd += " --daemon"
+                        _cmd += " --daemon\""
                         #_cmd += "  --debug_host=127.0.0.1"
 
                         _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
@@ -5584,7 +5638,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _selected_vm = choice(_vm_candidate_list)
 
                         _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                        _cmd = base_dir + "/cbact"
+                        _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5592,7 +5646,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name
                         _cmd += " --uuid=" + _vm_uuid
-                        _cmd += " --daemon"
+                        _cmd += " --daemon\""
                         #_cmd += "  --debug_host=127.0.0.1"
 
                         cbdebug(_cmd)
@@ -5732,7 +5786,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _selected_vm = choice(_vm_candidate_list)
 
                         _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                        _cmd = base_dir + "/cbact"
+                        _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -5740,7 +5794,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name
                         _cmd += " --uuid=" + _vm_uuid
-                        _cmd += " --daemon"
+                        _cmd += " --daemon\""
                         #_cmd += "  --debug_host=127.0.0.1"
 
                         cbdebug(_cmd)
@@ -5837,7 +5891,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         break
                     
             sub_channel.unsubscribe()
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             vm["msg"] = "Failed to run initialized VM: " + str(obj)
             vm["status"] = obj.status
             vm["result"] = None 
@@ -5879,7 +5933,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                          "Paused waiting for run command from user [" + vm["result"]["uuid"] + "]...")
             sub_channel.unsubscribe()
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             vm["status"] = obj.status
             vm["info"] = str(obj)
             vm["result"] = None
@@ -5932,7 +5986,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                          "Paused waiting for run command from user [" + app["result"]["uuid"] + "]...")
             sub_channel.unsubscribe()
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             app["status"] = obj.status
             app["info"] = str(obj)
             app["result"] = None
@@ -5968,7 +6022,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         break
                     
             sub_channel.unsubscribe()
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             app["msg"] = "Failed to run initialized Application: " + str(obj)
             app["status"] = obj.status
             app["result"] = None

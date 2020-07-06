@@ -1,10 +1,10 @@
 [USER-DEFINED]
 OS_ACCESS = AUTO
 OS_CREDENTIALS = need_to_be_configured_by_user
-OS_KEY_NAME = cbtool_rsa
+OS_KEY_NAME = need_to_be_configured_by_user
 OS_SECURITY_GROUPS = need_to_be_configured_by_user
 OS_INITIAL_VMCS = need_to_be_configured_by_user
-OS_SSH_KEY_NAME = cbtool_rsa
+OS_SSH_KEY_NAME = need_to_be_configured_by_user
 OS_LOGIN = need_to_be_configured_by_user
 OS_NETNAME = need_to_be_configured_by_user
 

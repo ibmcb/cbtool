@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -38,6 +38,7 @@ from subprocess import PIPE,Popen
 import re
 import os
 import fnmatch
+from functools import reduce
 
 _home = os.environ["HOME"]
 
@@ -113,20 +114,20 @@ def parsefile(file_contents) :
         attrs = parse(words[1])
     
         if event == 'MapAttempt':
-            if attrs.has_key("START_TIME"):
+            if "START_TIME" in attrs:
                 mapStartTime[attrs["TASKID"]] = int(attrs["START_TIME"])/1000
-            elif attrs.has_key("FINISH_TIME"):
+            elif "FINISH_TIME" in attrs:
                 taskStatus[attrs["TASKID"]] = attrs["TASK_STATUS"]
                 if taskStatus[attrs["TASKID"]] == "SUCCESS": 
                     mapEndTime[attrs["TASKID"]] = int(attrs["FINISH_TIME"])/1000
-                    if attrs.has_key("HOSTNAME"):    
+                    if "HOSTNAME" in attrs:    
                         hostName[attrs["TASKID"]] = attrs["HOSTNAME"]
     
         elif event == 'ReduceAttempt':
-            if attrs.has_key("START_TIME"):
+            if "START_TIME" in attrs:
                 isReduceStarted = 1;
                 reduceStartTime[attrs["TASKID"]] = int(attrs["START_TIME"]) / 1000
-            elif attrs.has_key("FINISH_TIME"):
+            elif "FINISH_TIME" in attrs:
                 isReduceFinished = 1;
                 taskStatus[attrs["TASKID"]] = attrs["TASK_STATUS"]
                 if taskStatus[attrs["TASKID"]] == "SUCCESS": 
@@ -136,36 +137,36 @@ def parsefile(file_contents) :
                     hostName[attrs["TASKID"]] = attrs["HOSTNAME"]
     
         elif event == 'Task':
-            if attrs["TASK_TYPE"] == "REDUCE" and attrs.has_key("COUNTERS"):
+            if attrs["TASK_TYPE"] == "REDUCE" and "COUNTERS" in attrs:
                 for n,v in re.findall(counterPat, attrs["COUNTERS"]):
                     if n == "File Systems.HDFS bytes written":
                         reduceBytes[attrs["TASKID"]] = int(v)
     
         elif event == 'Job':
-            if attrs.has_key("JOBID"):
+            if "JOBID" in attrs:
                 jobId = attrs["JOBID"]
-            if attrs.has_key("JOBNAME"):
+            if "JOBNAME" in attrs:
                 jobName = attrs["JOBNAME"]
-            if attrs.has_key("SUBMIT_TIME"):
+            if "SUBMIT_TIME" in attrs:
                 jobSubmitTimeAbs = int(attrs["SUBMIT_TIME"]) 
-            if attrs.has_key("LAUNCH_TIME"):
+            if "LAUNCH_TIME" in attrs:
                 jobLaunchTimeAbs = int(attrs["LAUNCH_TIME"]) 
-            if attrs.has_key("FINISH_TIME"):
+            if "FINISH_TIME" in attrs:
                 jobFinishTimeAbs = int(attrs["FINISH_TIME"]) 
-            if attrs.has_key("JOB_STATUS"):
+            if "JOB_STATUS" in attrs:
                 jobStatus = attrs["JOB_STATUS"]  
     
     if isReduceStarted == 1 : 
-        startTime = reduce(min, reduceStartTime.values()) 
+        startTime = reduce(min, list(reduceStartTime.values())) 
     else : 
-        startTime = reduce(min,mapStartTime.values()) 
-    startTime = min(reduce(min, mapStartTime.values()), startTime )
+        startTime = reduce(min,list(mapStartTime.values())) 
+    startTime = min(reduce(min, list(mapStartTime.values())), startTime )
     
     if isReduceFinished == 1 : 
-        endTime =  reduce(max, reduceEndTime.values())
+        endTime =  reduce(max, list(reduceEndTime.values()))
     else : 
-        endTime = reduce(max, mapEndTime.values()) 
-    endTime = max(reduce(max, mapEndTime.values()), endTime)
+        endTime = reduce(max, list(mapEndTime.values())) 
+    endTime = max(reduce(max, list(mapEndTime.values())), endTime)
     
     jobSubmitTime = jobSubmitTimeAbs/1
     jobFinishTime = jobFinishTimeAbs/1

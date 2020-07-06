@@ -17,7 +17,7 @@
 '''
     API Service XML-RPC Relay
 
-    @author: Michael R. Hines
+    @author: Michael R. Galaxy
 
     This is the "library" of the API.
 
@@ -32,12 +32,13 @@
 '''
 
 from sys import path
-from xmlrpclib import Server
-import xmlrpclib
+from xmlrpc.client import Server
+import xmlrpc.client
 import pwd
 import sys
 import re
 import os
+import traceback
 
 path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../")
 path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../../")
@@ -137,13 +138,15 @@ class APIClient(Server):
                 mutex.acquire()
                 resp = func(*args, **kwargs)
                 mutex.release()
-            except Exception, e :
+            except Exception as e :
                 mutex.release()
+                for line in traceback.format_exc().splitlines() :
+                    print(line)
                 raise e
             if int(resp["status"]) :
                 raise APIException(str(resp["status"]), resp["msg"])
             if self.print_message :
-                print resp["msg"]
+                print(resp["msg"])
             return resp["result"]
         return wrapped
 
@@ -178,7 +181,7 @@ class APIClient(Server):
          client side without writing ANOTHER lookup table.
         '''
 
-        _orig_Method = xmlrpclib._Method
+        _orig_Method = xmlrpc.client._Method
 
         '''
         XML-RPC doesn't support keyword arguments,
@@ -191,7 +194,7 @@ class APIClient(Server):
                     args.append(("kwargs", kwargs))
                 return _orig_Method.__call__(self, *args)
 
-        xmlrpclib._Method = KeywordArgMethod
+        xmlrpc.client._Method = KeywordArgMethod
 
         Server.__init__(self, service_url)
 
@@ -209,10 +212,10 @@ class APIClient(Server):
         TBD
         '''
         info = self.vmshow(cloud_name, identifier)
-        print identifier + " configured: (" + info["vcpus"] + ", " + info["vmemory"] + ")"
+        print(identifier + " configured: (" + info["vcpus"] + ", " + info["vmemory"] + ")")
 
         if "configured_size" in info :
-            print "   Eclipsed size: (" + info["vcpus_max"] + ", " + info["vmemory_max"] + ")"
+            print("   Eclipsed size: (" + info["vcpus_max"] + ", " + info["vmemory_max"] + ")")
 
         if info["ai"] != "none" :
             app = self.appshow(cloud_name, info["ai_name"])
@@ -268,12 +271,12 @@ class APIClient(Server):
             self.reset_refresh(cloud_name)
             return True
 
-        except APIException, obj :
-            print "Check VM API Problem (" + str(obj.status) + "): " + obj.msg
+        except APIException as obj :
+            print("Check VM API Problem (" + str(obj.status) + "): " + obj.msg)
             return False
 
-        except socket.error, obj :
-            print "API not available: " + str(obj)
+        except socket.error as obj :
+            print("API not available: " + str(obj))
             return False
 
     def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False, samples = 0, expid = "auto") :

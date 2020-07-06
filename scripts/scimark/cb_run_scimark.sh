@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 SCIMARK_HOME=`get_my_ai_attribute_with_default scimark_home "~"`
 

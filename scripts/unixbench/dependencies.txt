@@ -21,7 +21,7 @@ unixbench-install = git
 ### START - Tests ###
 git-configure = gcc -v
 git-configure = git --version
-perl-configure = perl -v -e 'require Time::HiRes'
+perl-configure = perl -v -e 'require Time::HiRes' | grep "(v" | awk '{ print $9 }' | sed 's/(v//g' | sed 's/)//g'
 unixbench-configure = ls -la /home/REPLACE_USERNAME/byte-unixbench/UnixBench/Run
 ### END - Tests ###
 

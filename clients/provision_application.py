@@ -40,12 +40,12 @@ if os.access(api_file_name, os.F_OK) :
     except :
         _msg = "Unable to open file containing API connection information "
         _msg += "(" + api_file_name + ")."
-        print _msg
+        print(_msg)
         exit(4)
 else :
     _msg = "Unable to locate file containing API connection information "
     _msg += "(" + api_file_name + ")."
-    print _msg
+    print(_msg)
     exit(4)
 
 _path_set = False
@@ -62,13 +62,13 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 from lib.api.api_service_client import *
 
 _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
+print(_msg)
 api = APIClient(_api_conn_info)
 
 #---------------------------------- END CB API ---------------------------------
 
 if len(argv) < 3 :
-        print "./" + argv[0] + " <cloud_name> <vapp type>"
+        print("./" + argv[0] + " <cloud_name> <vapp type>")
         exit(1)
 
 cloud_name = argv[1]
@@ -78,58 +78,58 @@ try :
     error = False
     app = None
 
-    print "Setting new expid" 
+    print("Setting new expid") 
     api.expid(cloud_name, "NEWEXPID")
     api.typealter(cloud_name, "nullworkload", "sut", "10_x_tinyvm")
-    print "creating new application..."
+    print("creating new application...")
     _start = time()
     app = api.appattach(cloud_name, workload)
 
-    print app["name"]
-    print time()-_start
+    print(app["name"])
+    print(time()-_start)
     for vm in app["vms"].split(",") :
         uuid, role, name = vm.split("|")
-        print "Management performance metrics for VM \"" + name + "...."
+        print("Management performance metrics for VM \"" + name + "....")
         _mgt_metric = api.get_latest_management_data(cloud_name, uuid)
-        print _mgt_metric
+        print(_mgt_metric)
 
     # 'app' is a dicitionary containing all the details of the VMs and
     # applications the were created in the cloud
 
-    print "CTRL-C to unpause..."
+    print("CTRL-C to unpause...")
     while True :
         # Get some data from the monitoring system
         for vm in app["vms"].split(",") :
             uuid, role, name = vm.split("|")
-            print "Application performance metrics for VM \"" + name + "...."
+            print("Application performance metrics for VM \"" + name + "....")
             _app_metric = api.get_latest_app_data(cloud_name, uuid)
-            print _app_metric        
+            print(_app_metric)        
         sleep(10)
 
-    print "destroying application..."
+    print("destroying application...")
 
     api.appdetach(cloud_name, app["uuid"])
 
-except APIException, obj :
+except APIException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
-except APINoSuchMetricException, obj :
+except APINoSuchMetricException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
 except KeyboardInterrupt :
-    print "Aborting this APP."
+    print("Aborting this APP.")
 
-except Exception, msg :
+except Exception as msg :
     error = True
-    print "Problem during experiment: " + str(msg)
+    print("Problem during experiment: " + str(msg))
 
 finally :
     if app is not None :
         try :
             if error :
-                print "Destroying application..."
+                print("Destroying application...")
                 api.appdetach(cloud_name, app["uuid"])
-        except APIException, obj :
-            print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
+        except APIException as obj :
+            print("Error finishing up: (" + str(obj.status) + "): " + obj.msg)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -20,7 +20,7 @@
 
     Common Functions Shared by all Clouds.
 
-    @author: Michael R. Hines, Marcio A. Silva
+    @author: Michael R. Galaxy, Marcio A. Silva
 '''
 import threading
 import re
@@ -80,7 +80,7 @@ class CommonCloudFunctions:
             _lock = self.osci.acquire_lock(cloud_name, obj_type, obj_id, id_str, 1)
             return _lock
 
-        except RedisMgdConn.ObjectStoreMgdConnException, obj :
+        except RedisMgdConn.ObjectStoreMgdConnException as obj :
             _msg = str(obj.msg)
             cberr(_msg)
             return False
@@ -94,7 +94,7 @@ class CommonCloudFunctions:
             self.osci.release_lock(cloud_name, obj_type, obj_id, lock)
             return True
 
-        except RedisMgdConn.ObjectStoreMgdConnException, obj :
+        except RedisMgdConn.ObjectStoreMgdConnException as obj :
             _msg = str(obj.msg)
             cberr(_msg)
             return False
@@ -127,7 +127,7 @@ class CommonCloudFunctions:
             else :
                 _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -148,8 +148,8 @@ class CommonCloudFunctions:
         _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", 
                                               False, obj_attr_list["vmc"], False)
         for _uuid in _vmc_attr_list["hosts"].split(",") :
-            _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", 
-                                                  False, _uuid, False)
+            _host_attr_list = eval(self.osci.get_object(obj_attr_list["cloud_name"], "HOST", 
+                                                  False, _uuid, False))
             _host_list.append((_host_attr_list["name"], _uuid))
         
         return _host_list 
@@ -237,7 +237,7 @@ class CommonCloudFunctions:
 
                         _sub_channel.unsubscribe()
                         obj_attr_list[done_key] = True 
-                    except Exception, e :
+                    except Exception as e :
                         cberr(obj_attr_list["log_string"] + " listen starting failed: " + str(e), True)
                         self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "STARTING", obj_attr_list["cloud_vm_uuid"])
                         _sub_channel.unsubscribe()
@@ -444,7 +444,7 @@ class CommonCloudFunctions:
 
                             obj_attr_list[done_key] = True 
                             _sub_channel.unsubscribe()
-                        except Exception, e :
+                        except Exception as e :
                             cberr(obj_attr_list["log_string"] + " listen vms_booting failed: " + str(e), True)
                             self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
                             _sub_channel.unsubscribe()
@@ -726,7 +726,7 @@ class CommonCloudFunctions:
 
                         obj_attr_list[done_key] = True 
                         _sub_channel.unsubscribe()
-                    except Exception, e :
+                    except Exception as e :
                         cberr(_target_name + " listen pausing failed: " + str(e), True)
                         self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "PAUSING", _cloud_vm_uuid)
                         _sub_channel.unsubscribe()
@@ -785,15 +785,15 @@ class CommonCloudFunctions:
                     
             obj_attr_list[_current_staging + "_complete"] = int(time())
             
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except OSError, obj :
+        except OSError as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cberr(line, True)
             _status = 23
@@ -836,7 +836,7 @@ class CommonCloudFunctions:
         # Keys that are common inputs to most API functions
         default_keys = {"cloud_vm_uuid" : "tag", "vmc_cloud_ip" : "hypervisor_ip"}
 
-        for key in default_keys.keys() :
+        for key in list(default_keys.keys()) :
             if key in attrs :
                 kwargs[default_keys[key]] = attrs[key]
                 
@@ -885,7 +885,7 @@ class CommonCloudFunctions:
                     iface = _ivmcs[hostname]
                     try :
                         obj_attr_list["host_list"][_host_uuid][op + "_interface"] = gethostbyname(iface)
-                    except Exception, msg :
+                    except Exception as msg :
                         _fmsg = "Could not lookup interface " + iface + " for hostname " + hostname + " (probably bad /etc/hosts): " + str(msg)
                         raise CldOpsException(_fmsg, 1295)
 
@@ -930,7 +930,7 @@ class CommonCloudFunctions:
                     
                     self.get_ssh_keys(vmc_name, key_name, _key_contents, _key_fingerprint, _registered_key_pairs, internal, connection)
     
-                    for _key_pair in _registered_key_pairs.keys() :
+                    for _key_pair in list(_registered_key_pairs.keys()) :
                         if _key_pair == key_name :
                             _msg = "A key named \"" + key_name + "\" was found "
                             _msg += "on VMC " + vmc_name + ". Checking if the key"
@@ -973,7 +973,7 @@ class CommonCloudFunctions:
                         try :
                             self.create_ssh_key(vmc_name, key_name, _key_type, _key_contents, _key_fingerprint, vm_defaults, connection)
     
-                        except Exception, e :
+                        except Exception as e :
                             if vm_defaults["abort_after_ssh_upload_failure"] :
                                 raise e
                             else :
@@ -1031,7 +1031,7 @@ class CommonCloudFunctions:
             if "nest_containers_base_image"  in _vm_templates :
                 del _vm_templates["nest_containers_base_image"]
 
-        for _vm_role in _vm_templates.keys() :
+        for _vm_role in list(_vm_templates.keys()) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             if self.is_cloud_image_uuid(_imageid) :
                 if _imageid not in _required_imageid_list :
@@ -1043,7 +1043,7 @@ class CommonCloudFunctions:
         _detected_imageids = {}
         _undetected_imageids = {}
 
-        for _imageid in _required_imageid_list.keys() :
+        for _imageid in list(_required_imageid_list.keys()) :
             
             # Unfortunately we have to check image names one by one,
             # because they might be appended by a generic suffix for
@@ -1097,7 +1097,7 @@ class CommonCloudFunctions:
 
         obj_attr_list["cloudinit_keys"] += ',' + obj_attr_list["pubkey_contents"] 
 
-        obj_attr_list["cloudinit_keys"] = obj_attr_list["cloudinit_keys"].replace("____",' ').split(',')
+        obj_attr_list["cloudinit_keys"] = obj_attr_list["cloudinit_keys"].replace("____",' ')
 
         cloudconfig = "#cloud-config\n"
         cloudconfig += "ssh_pwauth: true\n"
@@ -1116,14 +1116,14 @@ class CommonCloudFunctions:
 
         if obj_attr_list["userdata_ssh"].lower() == "true" :        
             cloudconfig += "  ssh_authorized_keys:\n"
-            for _k in obj_attr_list["cloudinit_keys"] : 
+            for _k in obj_attr_list["cloudinit_keys"].split(',') : 
                 if len(_k) > 370 :
                     cloudconfig += "   - " + _k + '\n'
 
         if obj_attr_list["userdata_ssh"].lower() == "true" :
             cloudconfig += "\n\n"
             cloudconfig += "  ssh_authorized_keys:\n"
-            for _k in obj_attr_list["cloudinit_keys"] : 
+            for _k in obj_attr_list["cloudinit_keys"].split(',') : 
                 if len(_k) > 370 :
                     cloudconfig += "   - " + _k + '\n'
         cloudconfig += "\n"
@@ -1207,7 +1207,7 @@ class CommonCloudFunctions:
                 
         # Check to see if the user requested packages to be installed for this VM role via cloud-init
         if obj_attr_list["cloudinit_packages"].lower() != "false" :
-            cbdebug("Will instruct cloud-init to install: " + obj_attr_list["cloudinit_packages"] + " on " + obj_attr_list["log_string"], True)
+            cbdebug("Will instruct cloud-init to install packages \"" + obj_attr_list["cloudinit_packages"].replace(';',' ') + "\" on " + obj_attr_list["log_string"], True)
             cloudconfig += """
 packages:"""
             for package in obj_attr_list["cloudinit_packages"].split(";") :
@@ -1321,7 +1321,7 @@ packages:"""
         TBD
         '''
         _mac_template = [ 0x00, 0x16, 0x3e, randint(0x00, 0x7f), randint(0x00, 0xff), randint(0x00, 0xff) ]
-        _mac = ':'.join(map(lambda x: "%02x" % x, _mac_template))
+        _mac = ':'.join(["%02x" % x for x in _mac_template])
         return _mac
 
     @trace       
@@ -1517,17 +1517,17 @@ packages:"""
                         if "weight" in _diskio_info :
                             obj_attr_list["lvirt_diskio_soft_limit"] = str(_diskio_info["weight"])
 
-        except libvirt.libvirtError, msg :
+        except libvirt.libvirtError as msg :
             _fmsg = "Error while attempting to connect to libvirt daemon running on "
             _fmsg += "hypervisor (" + _hypervisor_type + ") \"" + _host_ip + "\":"
             _fmsg += msg
             cberr(_fmsg)
 
-        except ProcessManagement.ProcessManagementException, obj:
+        except ProcessManagement.ProcessManagementException as obj:
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1574,7 +1574,7 @@ packages:"""
                 else :
                     obj_attr_list["vm_extra_parms"] += ','
                                         
-                for _key in _temp_dict.keys() :
+                for _key in list(_temp_dict.keys()) :
                     if not _key.count("staging") :
                         obj_attr_list["vm_extra_parms"] += _key + '=' + _temp_dict[_key] + ','
                     else :
@@ -1605,7 +1605,7 @@ packages:"""
         '''
         if "time_breakdown_keys" not in obj_attr_list :
             obj_attr_list["time_breakdown_keys"] = ''
-            for _key in obj_attr_list.keys() :
+            for _key in list(obj_attr_list.keys()) :
                 if _key.count(obj_attr_list["model"]) and _key.count("_time") :
                     obj_attr_list["time_breakdown_keys"] += _key + ','
             
@@ -1708,7 +1708,7 @@ packages:"""
     def vmdestroy_repeat_and_check(self, obj_attr_list) :
         try :
             _status, _fmsg = self.vmdestroy(obj_attr_list)
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = obj.msg
         return _status, _fmsg
@@ -1841,7 +1841,7 @@ packages:"""
             if operation == "creating" :
                 _msg = "Starting instance \"" + obj_attr_list["cloud_vm_name"] 
                 _msg += "\" on " + self.get_description()
-                _msg += ", using the image \"" + obj_attr_list["imageid1"] + "\""
+                _msg += ", using the image \"" + str(obj_attr_list["imageid1"]) + "\""
                 _msg += " (" + str(obj_attr_list["boot_volume_imageid1"])
                 
                 if "hypervisor_type" in obj_attr_list :
@@ -2061,7 +2061,7 @@ packages:"""
             self.take_action_if_requested("AI", obj_attr_list, current_step)                    
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -2079,7 +2079,7 @@ packages:"""
             _status = 0            
             self.take_action_if_requested("AI", obj_attr_list, current_step)            
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -2095,4 +2095,57 @@ packages:"""
             delay = min(delay * 2, int(obj_attr_list["max_backoff"]))
             cbdebug("Backoff increased to " + str(delay) + " seconds.", False if "update_frequency" in obj_attr_list and (delay > (int(obj_attr_list["update_frequency"]) * 2)) else True)
         return delay
+    
+    @trace    
+    def ship_cloud_init_iso(self, obj_attr_list) :
+        '''
+        TBD
+        '''
 
+        _cloud_init_contents = {}
+        _cloud_init_contents["meta-data"] = "instance-id: " + str(obj_attr_list["cloud_vm_name"]) + "\n"
+        _cloud_init_contents["meta-data"] += "local-hostname: " + str(obj_attr_list["cloud_vm_name"]) + "\n"
+
+        _cloud_init_contents["user-data"] = self.populate_cloudconfig(obj_attr_list)
+
+        _cloud_init_instance_path = "/tmp/" + str(obj_attr_list["cloud_vm_name"])
+
+        if not os.path.exists(_cloud_init_instance_path) :
+            os.makedirs(_cloud_init_instance_path)
+
+        try:
+            for _file in [ "user-data", "meta-data" ] :
+                _cloud_init_fn = _cloud_init_instance_path + '/' + _file
+                _cloud_init_fd = open(_cloud_init_fn, 'w')
+                _cloud_init_fd.write(_cloud_init_contents[_file])
+                _cloud_init_fd.close()
+                os.chmod(_cloud_init_fn, 0o644)
+
+        except IOError as msg :
+            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
+            cberr(_msg, True, False)
+            exit(4)
+
+        except OSError as msg :
+            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
+            cberr(_msg, True, False)
+            exit(4)
+
+        except Exception as e :
+            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(e)
+            cberr(_msg, True, False)
+            exit(4)
+
+        _proc_man = ProcessManagement()
+
+        _iso_fn = str(obj_attr_list["cloud_vm_name"]) + ".iso"
+
+        _geniso_cmd = "cd " + _cloud_init_instance_path + "; "
+        _geniso_cmd += "genisoimage -output " + _iso_fn
+        _geniso_cmd += " -volid cidata -joliet -rock user-data meta-data; "
+        _geniso_cmd += "scp " +  _cloud_init_instance_path + '/' + _iso_fn
+        _geniso_cmd += ' ' + obj_attr_list["host_remote_user"] + "@" + obj_attr_list["host_cloud_ip"] + ":" + obj_attr_list["host_remote_dir"] + _iso_fn
+
+        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_geniso_cmd)
+
+        return True

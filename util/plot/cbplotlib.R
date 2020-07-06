@@ -568,7 +568,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv, dtb) {
 	################## END Provisioning vs VM ##################
 
 	if (length(dtb) > 1) {
-		
+
 		################## START Provisioning vs VM (Cloud-Specific info) ##################
 		msg <- paste("# Preparing Provisioning Latency for VMs/Containers (Cloud-Specific", 
 				"information) .... #", sep = '')

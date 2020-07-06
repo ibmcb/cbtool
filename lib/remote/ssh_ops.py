@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -21,7 +21,7 @@
 
     General purpose connection to remote machines with through ssh
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 
 from time import sleep
@@ -184,7 +184,7 @@ class SSHMgdConn :
                     local_hash = hashlib.sha256()
                     local_hash.update(open(local_file, 'r').read())
                     local_hex = local_hash.hexdigest()
-                except Exception, msg :
+                except Exception as msg :
                     _msg = "Failed to verify SCP integrity: " + str(msg)
                     cberr(_msg)
                     return False, output_list
@@ -283,7 +283,9 @@ def get_ssh_key(pub_key_fn, fptype = "common", read_from_file = True) :
     if fptype == "Amazon Elastic Compute Cloud" or fptype == "EC2" or fptype == "ec2" :
         _key_fingerprint = key2ec2fp(pub_key_fn)    
     elif fptype == "IBM Cloud" or fptype == "IBM" or fptype == "ibm" :
-        _key_fingerprint = keyibmfp(_key_contents)
+        _key_fingerprint = keyibmfp(_key_contents.encode('utf-8'))
+    elif fptype == "SoftLayer Cloud" or fptype == "SLR" or fptype == "slr" :
+        _key_fingerprint = keyibmfp(_key_contents.encode('utf-8'))
     else :
         _key_fingerprint = key2fp(_key_contents)
                 
@@ -327,4 +329,4 @@ def get_public_rsa_fingerprint(pubkey_contents):
     return fingerprint 
 
 def insert_char_every_n_chars(string, char='\n', every=64):
-    return char.join(string[i:i + every] for i in xrange(0, len(string), every)) 
+    return char.join(string[i:i + every] for i in range(0, len(string), every)) 

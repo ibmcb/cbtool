@@ -7,13 +7,15 @@ setuptools.setup(
   name = 'cbtool',
 
 
-  version = '2.0.11',
+  version = '3.0.1',
   author = 'Marcio Silva, Michael Galaxy',
   author_email = 'cbtool-admin@googlegroups.com',
   description = 'CloudBench: Cloud Rapid Experimentation and Analysis Toolkit',
   long_description=long_description,
   long_description_content_type="text/markdown",
   url = 'https://github.com/ibmcb/cbtool',
+
+  python_requires='>=3.6',
 
   # Currently, the only thing we provided on PyPi is the core library.
   # Getting a fully-fledged instance of CB installed will require
@@ -28,9 +30,9 @@ setuptools.setup(
     'Intended Audience :: Developers',
     'Topic :: Software Development :: Build Tools',
     'License :: OSI Approved :: Apache Software License',
-    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3.6',
   ],
-  download_url = 'https://github.com/ibmcb/cbtool/archive/2.0.tar.gz',
+  download_url = 'https://github.com/ibmcb/cbtool/archive/3.0.tar.gz',
   keywords = ['cloudbench', 'cloud', 'benchmarking', "spec"],
 
   # Currently, we've only listed packages listed as `= pip`

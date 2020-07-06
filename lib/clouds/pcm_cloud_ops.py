@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -37,7 +37,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import hostname2ip
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 class PcmCmds(CommonCloudFunctions) :
     '''
@@ -90,15 +90,15 @@ class PcmCmds(CommonCloudFunctions) :
 
             _status -= 100
 
-        except LXDError.ClientConnectionFailed, obj:
+        except LXDError.ClientConnectionFailed as obj:
             _status = 18127
             _fmsg = str(obj.message)
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -142,11 +142,11 @@ class PcmCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -167,7 +167,7 @@ class PcmCmds(CommonCloudFunctions) :
         _prov_netname_found = False
         _run_netname_found = False
 
-        for _endpoint in self.lxdconn.keys() :
+        for _endpoint in list(self.lxdconn.keys()) :
 
             _msg = "Checking if the " + _net_str + " can be "
             _msg += "found on VMC " + vmc_name + " (endpoint " + _endpoint + ")..."
@@ -200,7 +200,7 @@ class PcmCmds(CommonCloudFunctions) :
         TBD
         '''
 
-        for _endpoint in self.lxdconn.keys() :
+        for _endpoint in list(self.lxdconn.keys()) :
 
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
 
@@ -215,10 +215,10 @@ class PcmCmds(CommonCloudFunctions) :
                 if len(_registered_image.aliases) :
                     _map_name_to_id[_registered_image.aliases[0]["name"]] = _registered_image.fingerprint
 
-            for _vm_role in vm_templates.keys() :            
+            for _vm_role in list(vm_templates.keys()) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
                 if _imageid != "to_replace" :
-                    if _imageid in _map_name_to_id :                     
+                    if _imageid in _map_name_to_id and _map_name_to_id[_imageid] != _imageid :
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     else :
                         _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
@@ -348,15 +348,15 @@ class PcmCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
                         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -408,11 +408,11 @@ class PcmCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -443,11 +443,11 @@ class PcmCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -481,7 +481,7 @@ class PcmCmds(CommonCloudFunctions) :
                         if _container.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                             _nr_instances += 1
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _nr_instances = "NA"
             _fmsg = str(e)
@@ -544,7 +544,7 @@ class PcmCmds(CommonCloudFunctions) :
         _call = "NA"
         
         if endpoints == "all" :
-            _endpoints = self.lxdconn.keys()
+            _endpoints = list(self.lxdconn.keys())
         else :
             _endpoints = [endpoints]
                       
@@ -560,15 +560,15 @@ class PcmCmds(CommonCloudFunctions) :
 
             _status = 0
         
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _xfmsg = str(obj.msg)
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _xfmsg = str(obj)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _xfmsg = str(e)
             
@@ -630,11 +630,11 @@ class PcmCmds(CommonCloudFunctions) :
                 _fmsg += " to " + self.get_description()
                 _status = 1927
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -656,11 +656,11 @@ class PcmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -718,7 +718,7 @@ class PcmCmds(CommonCloudFunctions) :
             else :
                 return False
         
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -743,7 +743,7 @@ class PcmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''        
-        obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(choice(self.lxdconn.keys()), True)
+        obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(choice(list(self.lxdconn.keys())), True)
         
         return True
 
@@ -768,11 +768,11 @@ class PcmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -794,11 +794,11 @@ class PcmCmds(CommonCloudFunctions) :
                                 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -900,11 +900,11 @@ class PcmCmds(CommonCloudFunctions) :
                 _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
                 _status = 916
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
 
@@ -913,7 +913,7 @@ class PcmCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -980,15 +980,15 @@ class PcmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1043,15 +1043,15 @@ class PcmCmds(CommonCloudFunctions) :
                         
                 _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1102,15 +1102,15 @@ class PcmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -1165,11 +1165,11 @@ class PcmCmds(CommonCloudFunctions) :
                                 break
             _status = 0
 
-        except LXDError.LXDAPIException, obj:
+        except LXDError.LXDAPIException as obj:
             _status = 18127
             _fmsg = str(obj)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -1217,11 +1217,11 @@ class PcmCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except ProcessManagement.ProcessManagementException, obj:
+        except ProcessManagement.ProcessManagementException as obj:
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 

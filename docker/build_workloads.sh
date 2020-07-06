@@ -111,10 +111,10 @@ do
         shift
 done
 
-cat $CB_DOCKER_BASE_DIR/../util/workloads_alias_mapping.txt | awk '{ print $1 }' | grep $CB_WKS > /dev/null 2>&1
+cat $CB_DOCKER_BASE_DIR/../util/workloads_alias_mapping.txt | awk '{ print $1 }' | grep "#[[:space:]]$CB_WKS[[:space:]]" > /dev/null 2>&1
 if [[ $? -eq 0 ]]
 then
-	CB_WKS=$(cat $CB_DOCKER_BASE_DIR/../util/workloads_alias_mapping.txt | grep $CB_WKS[[:space:]] | cut -d ' ' -f 2)
+	CB_WKS=$(cat $CB_DOCKER_BASE_DIR/../util/workloads_alias_mapping.txt | grep "#[[:space:]]$CB_WKS[[:space:]]" | cut -d ' ' -f 2)
 fi
 
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_CENTOS_BASE

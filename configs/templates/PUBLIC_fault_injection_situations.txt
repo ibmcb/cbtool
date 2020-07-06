@@ -3,6 +3,10 @@
 #FAULT : Command___or___sequence___of___commands___used___to___inject___a___fault
 #REPAIR : Command___or___sequence___of___commands___used___to___repair___the___fault
 
+[FI_TEMPLATES : DEMO]
+FAULT = touch___/tmp/cb_this_node_is_failed
+REPAIR = rm___-rf___/tmp/cb_this_node_is_failed;touch___/tmp/cb_this_node_is_repaired
+
 [FI_TEMPLATES : KEYSTONE-SS]
 FAULT = service___keystone___stop
 REPAIR = service___keystone___start

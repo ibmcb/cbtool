@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-linpack-order = 82
+linpack-order = 95
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -13,7 +13,7 @@ linpack-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-linpack-configure = xlinpack_xeon64 -e
+linpack-configure = cd /home/REPLACE_USERNAME/linpack/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack; ./xlinpack_xeon64 -e
 ### END - Tests ###
 
 ### START - Dependency versions ###

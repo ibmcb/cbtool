@@ -15,12 +15,13 @@ parboil-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-cuda-configure = which cuda
-parboil-configure = ~/parboil/parboil list
+cuda-configure = /usr/bin/nvcc -V | grep release | cut -d ',' -f 3 | sed 's/ V//g'
+parboil-configure = /home/REPLACE_USERNAME/parboil/parboil list
 ### END - Tests ###
 
 ### START - Dependency versions ###
-cuda-ver = ANY
+#cuda-ver = 8
+cuda-ver = 9
 parboil-ver = ANY
 ### END - Dependency versions ###
 

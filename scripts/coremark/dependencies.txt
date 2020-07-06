@@ -13,7 +13,7 @@ coremark-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-coremark-configure = ls -la /home/REPLACE_USERNAME/3rd_party/_coremark-1.0
+coremark-configure = ls -la /home/REPLACE_USERNAME/coremark/
 ### END - Tests ###
 
 ### START - Dependency versions ###

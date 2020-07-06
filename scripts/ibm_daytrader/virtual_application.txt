@@ -7,7 +7,7 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = client_ibm_daytrader->was->db2
 LOAD_BALANCER_SUPPORTED = $True
-LOAD_BALANCER = $False
+LOAD_GENERATOR_SOURCES = 1
 LOAD_BALANCER_TARGET_PORTS = 9080
 LOAD_BALANCER_TARGET_URL = daytrader
 LOAD_BALANCER_PORT = 9080

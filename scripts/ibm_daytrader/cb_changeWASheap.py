@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-print 'changing WAS heap size to: ' + sys.argv[0] + ' and ' + sys.argv[1]
+print('changing WAS heap size to: ' + sys.argv[0] + ' and ' + sys.argv[1])
 jvm = AdminConfig.list('JavaVirtualMachine').split('\r\n')[0]
 AdminConfig.modify(jvm, [['initialHeapSize', sys.argv[0]], ['maximumHeapSize', sys.argv[1]]])
 AdminConfig.save()

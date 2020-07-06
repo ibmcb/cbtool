@@ -1,6 +1,7 @@
 #
 #
 #
+upload /tmp/cb_cache_resolve_dns:/root/cache_resolve_dns
 upload REPLACE_PATH/base/tempconfigetchosts.sh:/usr/local/bin/tempconfigetchosts
 upload REPLACE_PATH/base/preinjectkeys.sh:/usr/local/bin/preinjectkeys
 upload REPLACE_PATH/base/getmyips.sh:/usr/local/bin/getmyips
@@ -18,20 +19,21 @@ chmod 0755:/usr/local/bin/fixulimits
 #
 chmod 0755:/usr/local/bin/installrlibs
 
-upload /tmp/cache_resolve_dns:/root/cache_resolve_dns
-
 run-command /usr/local/bin/tempconfigetchosts
 
 run-command sed -i '/^#.* partner/s/^#//' /etc/apt/sources.list
 
-install sudo,rsync,python2.7,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt,pwgen,htop,libyaml-0-2
-install net-tools,psmisc,ntp,git,wget,python-pip,gcc,make,bc,sshpass,curl,screen,ncftp,lftp,haproxy,vim,netcat-openbsd,nmap
-install openvpn,ganglia-monitor,rsyslog,apache2,redis-server,mongodb,sudo,python-libvirt,python-dev,pssh,jq,iptables,openssh-server
+install sudo,rsync,python2.7,unzip,python3-setuptools,python3-pip,python3-requests,python3-requests-toolbelt,pwgen,htop,libyaml-0-2
+install net-tools,psmisc,ntp,git,wget,python3-pip,gcc,make,bc,sshpass,curl,screen,ncftp,lftp,haproxy,vim,netcat-openbsd,nmap
+install openvpn,ganglia-monitor,rsyslog,apache2,redis-server,mongodb,sudo,python3-libvirt,python3-dev,pssh,jq,iptables,openssh-server
 install libffi-dev,libssl-dev,libxml2-dev,libxslt1-dev,libjpeg8-dev,zlib1g-dev,build-essential,dkms
-install rrdtool,python-rrdtool,pwgen,python-docutils,language-pack-en,subnetcalc,haveged,python-libxml2,uuid
+install rrdtool,python3-rrdtool,pwgen,language-pack-en,subnetcalc,haveged,python3-libxml2,uuid,ipcalc
 
 run-command sudo cp /bin/nc /usr/local/bin/netcat
 
+run-command cd /root/; curl -O https://dl.minio.io/server/minio/release/linux-amd64/minio; mv /root/minio /usr/local/bin; chmod +x /usr/local/bin/minio
+run-command apt-get -y install s3fs 
+run-command cd /root/; curl -O https://rclone.org/install.sh; chmod +x /root/install.sh; /root/install.sh; /bin/true
 run-command curl -sL https://ibm.biz/idt-installer | bash
 
 run-command sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf
@@ -44,11 +46,11 @@ run-command sed -i -e 's^#module(load="imudp")^module(load="imudp")^g' /etc/rsys
 run-command bash -c "echo -e \"local5.*  \t\t\t\t /var/log/cloudbench/remote.log\" >> /etc/rsyslog.conf"
 run-command bash -c "echo -e \"local6.* \t\t\t\t /var/log/cloudbench/local.log\" >> /etc/rsyslog.conf"
 
-run-command sudo pip install -i https://pypi.python.org/simple/ requests==2.12
-run-command sudo pip install -i https://pypi.python.org/simple/ docutils 
-run-command sudo pip install -i https://pypi.python.org/simple/ python-daemon
-run-command sudo pip install -i https://pypi.python.org/simple/ --upgrade pyasn1-modules
-run-command sudo pip install -i https://pypi.python.org/simple/ --upgrade docker-py==1.8.1 wget markup httplib2shim pylxd mongo beaker webob redis==2.10.6 
+run-command sudo pip3 install -i https://pypi.python.org/simple/ requests==2.12
+run-command sudo pip3 install -i https://pypi.python.org/simple/ docutils 
+run-command sudo pip3 install -i https://pypi.python.org/simple/ python-daemon
+run-command sudo pip3 install -i https://pypi.python.org/simple/ --upgrade pyasn1-modules
+run-command sudo pip3 install -i https://pypi.python.org/simple/ --upgrade docker-py wget markup httplib2shim pylxd mongo beaker webob redis 
 
 run-command curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 run-command add-apt-repository "deb https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"

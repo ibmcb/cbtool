@@ -16,6 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_load_gen $@
@@ -172,6 +173,7 @@ kernel_time:${kernel}:sec \
 driver_time:${driver}:sec \
 compute_time:${compute}:sec \
 wall_time:${wall}:sec \
+latency:${wall}:sec \
 $(common_metrics)
  
 unset_load_gen

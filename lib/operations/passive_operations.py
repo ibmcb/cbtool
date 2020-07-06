@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -21,7 +21,7 @@
 
     Passive Object Operations Library
 
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 from os import makedirs, access, F_OK
 from time import asctime, localtime, sleep, time, strftime
@@ -54,7 +54,7 @@ qemu_supported = False
 try :
     import libvirt
 except ImportError:
-    cberr("Libvirt cannot be imported on this VM", True)
+    cbwarn("Libvirt cannot be imported on this VM")
     pass    
 
 try :
@@ -62,7 +62,7 @@ try :
     from libvirt_qemu import qemuMonitorCommand
     qemu_supported = True
 except ImportError:
-    cberr("QEMU scraper cannot run without qemuMonitorCommand", True)
+    cbwarn("QEMU scraper cannot run without qemuMonitorCommand")
     pass
 
 slope_str2int = {'zero':0,
@@ -103,7 +103,7 @@ class Gmetric:
     def send(self, NAME, VAL, TYPE='', UNITS='', SLOPE='both',
              TMAX=60, DMAX=0, GROUP="", SPOOF=""):
         if SLOPE not in slope_str2int:
-            raise ValueError("Slope must be one of: " + str(self.slope.keys()))
+            raise ValueError("Slope must be one of: " + str(list(self.slope.keys())))
         if TYPE not in self.type:
             raise ValueError("Type must be one of: " + str(self.type))
         if len(NAME) == 0:
@@ -314,7 +314,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _obj_uuid = _obj
                             try :
                                 _obj_attrs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, _obj_uuid, False)
-                            except self.osci.ObjectStoreMgdConnException, e :
+                            except self.osci.ObjectStoreMgdConnException as e :
                                 if _obj_type == "CLOUD" :
                                     # We have stabilized the use of a shared Redis database. Unfortunately,
                                     # this allows multiple users to leave leftover information in the database,
@@ -389,15 +389,21 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 _fmt_obj_list = "No objects available."
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 2
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                print(line)
             _status = 24
             _fmsg = str(e)
 
@@ -459,7 +465,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             try :
                                 _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, \
                                                                     _obj_id, False)
-                            except self.osci.ObjectStoreMgdConnException, e :
+                            except self.osci.ObjectStoreMgdConnException as e :
                                 if e.status == 23 :
                                     cbwarn("Could not find: " + _obj_id + ". Continuing.")
                                 else :
@@ -467,7 +473,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             
                             _result[_obj_id] = {}
     
-                            for _attrib, _value in iter(sorted(_obj_attribs.iteritems())) :
+                            for _attrib, _value in iter(sorted(_obj_attribs.items())) :
                                 _fmt_obj_attr_list += '|' + _obj_id.ljust(len(_fields[0]) - 1)
                                 _fmt_obj_attr_list += '|' + _attrib.ljust(len(_fields[1]) - 1)
                                 _fmt_obj_attr_list += '|' + _value.ljust(len(_fields[2]) - 1)
@@ -534,7 +540,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             
                             _obj_attribs["state"] = "pending"
     
-                        for _attrib, _value in iter(sorted(_obj_attribs.iteritems())) :
+                        for _attrib, _value in iter(sorted(_obj_attribs.items())) :
                             if _attrib in _obj_select_attribs or \
                             _obj_select_attribs[0] == "all" :
                                 _fmt_obj_attr_list += '|' + \
@@ -550,17 +556,21 @@ class PassiveObjectOperations(BaseObjectOperations) :
         
                     _status = 0
 
-        except self.ObjectOperationException, obj :
-            _status = 8
-            _fmsg = str(obj.msg)
-
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.ObjectOperationException as obj :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except self.osci.ObjectStoreMgdConnException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
+            _status = 8
+            _fmsg = str(obj.msg)
+
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
 
@@ -702,15 +712,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                     _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _xfmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _xfmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _xfmsg = str(e)
 
@@ -791,15 +801,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1083,15 +1093,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1185,15 +1195,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1269,15 +1279,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint false", "stats-get", True)                    
                         _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -1326,15 +1336,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _result = obj_attr_list
                 _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1383,7 +1393,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg += obj_attr_list["specified_time"] + " (" + str(_time_to_wait)
                 _msg += " seconds). The command line interface will be blocked"
                 _msg += " during the waiting."
-                print _msg
+                print(_msg)
                 
                 _start_time = int(time())
                 _elapsed_time = 0
@@ -1395,15 +1405,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _elapsed_time = int(time()) - _start_time
                     _msg = "Waited " + str(_elapsed_time) + " seconds... (" 
                     _msg += str(float(_elapsed_time)*100/float(_time_to_wait)) + "%)" 
-                    print _msg
+                    print(_msg)
 
                 _status = 0
 
-        except ValueGeneration.ValueGenerationException, obj :
+        except ValueGeneration.ValueGenerationException as obj :
             _status = 28
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1479,7 +1489,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += "waiting " + str(_check_interval) + " seconds between "
                     _msg += "samples, for a maximum of " + str(_time_limit) + " seconds."
                     _msg += " The counter is assumed to be " + _direction + '.'
-                    print _msg
+                    print(_msg)
                 
                     while _time_elapsed < _time_limit :
                         sleep(_check_interval)
@@ -1506,15 +1516,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fmsg += " does not exist."
                     _status = 34
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1574,7 +1584,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += " with a timeout of " + str(obj_attr_list["timeout"]) + " seconds "
                     _msg += "(object \"" + _obj_type + "\" listening for messages with"
                     _msg += " the keyword \"" + obj_attr_list["keyword"] + "\")"
-                    print _msg
+                    print(_msg)
     
                     for _message in _sub_channel.listen() :
                         if _message["type"] == "message" :
@@ -1592,11 +1602,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 _status = 0
                 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1641,11 +1651,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1702,7 +1712,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     unused, unused2 = _cld_conn.vm_fixpause(obj_attr_list)
                     _status = 0
                         
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
             
@@ -1801,15 +1811,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _status = 0
                     
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -1862,15 +1872,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _status = 0
             
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2154,7 +2164,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _plot_fd.write("$CB_BASE_DIR/util/plot/cbplotgen.R --directory $CB_BASE_DIR/data  --expid " + _criteria["expid"] + " --cleanup --provisionmetrics --runtimemetrics " + _dtb1 + '\n')
                     _plot_fd.write("#$CB_BASE_DIR/util/plot/cbplotgen.R --directory $CB_BASE_DIR/data  --expid " + _criteria["expid"] + " --cleanup --provisionmetrics --runtimemetrics " + _dtb2 + '\n')                    
                     _plot_fd.close()
-                    os.chmod(_plot_fn, 0755)
+                    os.chmod(_plot_fn, 0o755)
 
                     if _empty :
                         _msg = "No samples of " + _metric_type + " metrics for "
@@ -2174,15 +2184,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2279,15 +2289,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2338,7 +2348,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             for line in traceback.format_exc().splitlines() :
                 cbwarn(line, True)
             _status = 23
@@ -2375,15 +2385,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _vm_list = _cld_conn.get_vm_instances(_obj_attr_list) 
                 if _vm_list :
                     for _vm in _vm_list :
-                        print _vm.name, _vm.id, _vm.status
+                        print(_vm.name, _vm.id, _vm.status)
                         sleep(float(_obj_attr_list["update_frequency"]))
             _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2530,17 +2540,17 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += "current load will be allowed to finish its course."
                     cbdebug(_msg)
 
-            except self.msci.MetricStoreMgdConnException, obj :
+            except self.msci.MetricStoreMgdConnException as obj :
                 _error = True
                 _status = 44
                 _fmsg = str(obj.msg)
 
-            except self.osci.ObjectStoreMgdConnException, obj :
+            except self.osci.ObjectStoreMgdConnException as obj :
                 _error = True                
                 _status = 40
                 _fmsg = str(obj.msg)
     
-            except Exception, e :
+            except Exception as e :
                 _error = True                
                 _status = 23
                 _fmsg = str(e)
@@ -2613,31 +2623,31 @@ class PassiveObjectOperations(BaseObjectOperations) :
 #                        _cmd = _ssh_cmd + ' ' + _vm_attr_list["prov_cloud_ip"] + " \"" + _cmd.replace(_vm,'') + "\""
 
 #                    _proc_man =  ProcessManagement()                                                 
-                    print "running shell command: \"" + _actual_cmd + "\"...."
+                    print("running shell command: \"" + _actual_cmd + "\"....")
                     _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_actual_cmd)
                     result_dict = {"stdout": _result_stdout, "stderr": _result_stderr}
  
                     if not _status :
-                        print "stdout:\n " + _result_stdout
+                        print("stdout:\n " + _result_stdout)
 
                         if len(_result_stderr) :
-                            print "stderr:\n " + _result_stderr
+                            print("stderr:\n " + _result_stderr)
                     else :
                         _fmsg = _result_stderr
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2690,7 +2700,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _tmp_dict[_category].append(_ai_type)
                             
                         _list = ''
-                        for _category in _tmp_dict.keys() :
+                        for _category in list(_tmp_dict.keys()) :
                             _list += '\n' + _category + ":\n"
                             for _ai_type in sorted(_tmp_dict[_category]) :
                                 _list += "  " + _ai_type + '\n'
@@ -2735,11 +2745,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 
                     _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2791,7 +2801,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if obj_attr_list["global_object"] == "vm_templates" :
                             if obj_attr_list["attribute_name"] in _object_contents :
                                 _result = str2dic(_object_contents[obj_attr_list["attribute_name"]])
-                                for _key,_value in _result.items() :
+                                for _key,_value in list(_result.items()) :
                                     _formatted_result.append(_key + ": " + _value)
     
                         elif obj_attr_list["global_object"] == "ai_templates" or \
@@ -2800,7 +2810,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                             _result = {}
                             _profiles = ""
-                            for _key, _value in _object_contents.items() :
+                            for _key, _value in list(_object_contents.items()) :
 
                                 if _key.count(obj_attr_list["attribute_name"]) :
 
@@ -2923,11 +2933,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmsg += obj_attr_list["object_attribute"] 
                         _fmsg += " (" + obj_attr_list["attribute_name"] + ")"
                         
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3035,15 +3045,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                     _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = 8
             _xfmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _xfmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _xfmsg = str(e)
 
@@ -3117,11 +3127,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3175,7 +3185,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -3292,7 +3302,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 
                 if isinstance(value, str) :
                     self.deliver(g, key, value, spoof, attrs)
-                elif isinstance(value, int) or isinstance(value, long) :
+                elif isinstance(value, int) or isinstance(value, int) :
                     self.deliver(g, key, str(value), spoof, attrs)
                 elif isinstance(value, float) :
                     self.deliver(g, key, str(value), spoof, attrs)
@@ -3344,10 +3354,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         cv.notify()
                         cv.release()
                     
-            except self.osci.ObjectStoreMgdConnException, msg :
+            except self.osci.ObjectStoreMgdConnException as msg :
                 cberr("Migration checker subscription channel broken: " + str(msg) + ", trying again in 5 seconds...")
                 sleep(5)
-            except ConnectionError, msg :
+            except ConnectionError as msg :
                 cberr("Migration checker subscription channel broken: " + str(msg) + ", trying again in 5 seconds...")
                 sleep(5)
                     
@@ -3395,11 +3405,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 else :
                     self.get_stats_all_domains(cloud_name, g, ips, domains, agg_ip, vms)
     
-            except Exception, msg:
+            except Exception as msg:
                 cberr("Failure: " + str(msg))
                 try :
                     count = 1
-                except Exception, msg:
+                except Exception as msg:
                     cberr("Failed to re-list during failure: " + str(msg))
                     pass
                 
@@ -3429,7 +3439,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
             _status = 0
             
-        except BaseObjectOperations.ObjectOperationException, msg :
+        except BaseObjectOperations.ObjectOperationException as msg :
             _status = 30
             _fmsg = str(msg)
             

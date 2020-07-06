@@ -273,7 +273,7 @@ PROPAGATED_ATTRIBUTES = netname, imageid1, login, resource_limits, userdata, ima
 PROPAGATED_ATTRIBUTES += cloud_vv, cloud_vv_type, boot_from_volume, avalability_zone, compute_node, 
 PROPAGATED_ATTRIBUTES += data_dir, data_fstyp, data_size, data_fileserver_ip, data_fileserver_path, 
 PROPAGATED_ATTRIBUTES += extra_ports, extra_devices, ports_base, extra_ports_base, privileged, 
-PROPAGATED_ATTRIBUTES += sla_provisioning_target, ports_base, namespace, abstraction
+PROPAGATED_ATTRIBUTES += sla_provisioning_target, ports_base, namespace, abstraction, extra_netnames
 TIME_BREAKDOWN_STEP = 1
 # Most clouds don't use (or allow access to) libvirt,
 # so, enable this only in the right clouds.
@@ -665,55 +665,3 @@ LB = imageids:1, imageid1:ubuntu_cb_nullworkload
 TPCC = imageids:1, imageid1:ubuntu_cb_tpcc
 
 [SIZE_TEMPLATES]
-
-# These are just defaults, because ibmcb is publicly accessible.
-# Each cloud will likely need to override them if they use
-# private docker repositories. But this is enough to get the
-# user started using the public container images.
-[CONTAINER_TEMPLATES]
-TINYVM = imageids:1, imageid1:ubuntu_cb_nullworkload
-CASSANDRA = imageids:1, imageid1:ubuntu_cb_ycsb
-YCSB = imageids:1, imageid1:ubuntu_cb_ycsb
-SEED = imageids:1, imageid1:ubuntu_cb_ycsb
-HADOOPSLAVE = imageids:1, imageid1:ubuntu_cb_hadoop
-HADOOPMASTER = imageids:1, imageid1:ubuntu_cb_hadoop
-MONGO_CFG_SERVER = imageids:1, imageid1:ubuntu_cb_hadoop
-MONGODB = imageids:1, imageid1:ubuntu_cb_open_daytrader
-MONGOS = imageids:1, imageid1:ubuntu_cb_netperf
-NETCLIENT = imageids:1, imageid1:ubuntu_cb_netperf
-NETSERVER = imageids:1, imageid1:ubuntu_cb_netperf
-REDIS = imageids:1, imageid1:ubuntu_cb_nuttcp
-FIO = imageids:1, imageid1:ubuntu_cb_fio
-DRIVER_FIO = imageids:1, imageid1:ubuntu_cb_fio
-FEN_HPC = imageids:1, imageid1:ubuntu_cb_hpcc
-CN_HPC = imageids:1, imageid1:ubuntu_cb_hpcc
-DRIVER_FILEBENCH = imageids:1, imageid1:ubuntu_cb_filebench
-FILEBENCH = imageids:1, imageid1:ubuntu_cb_filebench
-GIRAPHMASTER = imageids:1, imageid1:ubuntu_cb_giraph
-GIRAPHSLAVE = imageids:1, imageid1:ubuntu_cb_giraph
-IPERFCLIENT = imageids:1, imageid1:ubuntu_cb_iperf
-IPERFSERVER = imageids:1, imageid1:ubuntu_cb_iperf
-XPINGRECEIVER = imageids:1, imageid1:ubuntu_cb_xping
-XPINGSENDER = imageids:1, imageid1:ubuntu_cb_xping
-DDGEN = imageids:1, imageid1:ubuntu_cb_ddgen
-POSTMARK = imageids:1, imageid1:ubuntu_cb_postmark
-BTEST = imageids:1, imageid1:ubuntu_cb_btest
-UNIXBENCH = imageids:1, imageid1:ubuntu_cb_unixbench
-OLDISIMDRIVER = imageids:1, imageid1:ubuntu_cb_oldisim
-OLDISIMLB = imageids:1, imageid1:ubuntu_cb_oldisim
-OLDISIMLEAF = imageids:1, imageid1:ubuntu_cb_oldisim
-OLDISIMROOT = imageids:1, imageid1:ubuntu_cb_oldisim
-APACHE = imageids:1, imageid1:ubuntu_cb_wrk
-WRK = imageids:1, imageid1:ubuntu_cb_wrk
-WRK2 = imageids:1, imageid1:ubuntu_cb_wrk2
-NODEJS = imageids:1, imageid1:ubuntu_cb_wrk2
-MEMTIER = imageids:1, imageid1:ubuntu_cb_memtier
-SCIMARK = imageids:1, imageid1:ubuntu_cb_scimark
-MULTICHASE = imageids:1, imageid1:ubuntu_cb_multichase
-SYSBENCH = imageids:1, imageid1:ubuntu_cb_sysbench
-MYSQL = imageids:1, imageid1:ubuntu_cb_sysbench
-BONNIE = imageids:1, imageid1:ubuntu_cb_bonnie
-LINPACK = imageids:1, imageid1:ubuntu_cb_linpack
-KERNBENCH = imageids:1, imageid1:ubuntu_cb_kernbench
-LB = imageids:1, imageid1:ubuntu_cb_nullworkload
-TPCC = imageids:1, imageid1:ubuntu_cb_tpcc

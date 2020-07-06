@@ -1,11 +1,11 @@
 [USER-DEFINED]
 PLM_ACCESS = need_to_be_configured_by_user
 PLM_INITIAL_VMCS = need_to_be_configured_by_user 
-PLM_KEY_NAME = cbtool_rsa
-PLM_SSH_KEY_NAME = cbtool_rsa
+PLM_KEY_NAME = need_to_be_configured_by_user
+PLM_SSH_KEY_NAME = need_to_be_configured_by_user
 PLM_LOGIN = need_to_be_configured_by_user
-PLM_NETNAME = default
-PLM_POOLNAME = default
+PLM_NETNAME = need_to_be_configured_by_user
+PLM_POOLNAME = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 PLM_ACCESS_DOC = Please enter the comma-separated list of URLs that should be use to remotely interact with multiple Libvirt(d) hosts\nThis is usually in the form of qem+tcp://<address1>,qemu+tcp://<address2>

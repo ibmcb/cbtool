@@ -4,7 +4,7 @@ Created on Aug 3, 2012
 
 Parallel Libvirt Manager
 
-@author: Michael R. Hines, Marcio A. Silva
+@author: Michael R. Galaxy, Marcio A. Silva
 '''
 
 import sys, os, tty, termios, atexit, threading, SocketServer, signal, inspect, xmlrpclib, resource, socket

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -30,7 +30,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException
 from lib.remote.network_functions import hostname2ip
-from shared_functions import CldOpsException, CommonCloudFunctions 
+from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 class NopCmds(CommonCloudFunctions) :
     '''
@@ -66,7 +66,7 @@ class NopCmds(CommonCloudFunctions) :
 
             _status = 0
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -110,11 +110,11 @@ class NopCmds(CommonCloudFunctions) :
             else :
                 _status = 1
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _fmsg = str(obj.msg)
             _status = 2
 
-        except Exception, msg :
+        except Exception as msg :
             _fmsg = str(msg)
             _status = 23
 
@@ -147,15 +147,14 @@ class NopCmds(CommonCloudFunctions) :
         
         _registered_imageid_list = []
         if True :
-            for _vm_role in vm_templates.keys() :
+            for _vm_role in list(vm_templates.keys()) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if _imageid != "to_replace" :
                     if not self.is_cloud_image_uuid(_imageid) :
                         if _imageid in _map_name_to_id :
                             vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                         else :
-                            _map_name_to_id[_imageid] = self.generate_random_uuid(_imageid)
-                            _map_uuid_to_name[_map_name_to_id[_imageid]] = _imageid                                              
+                            _map_name_to_id[_imageid] = _imageid
                             vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
     
                         if _map_name_to_id[_imageid] not in _registered_imageid_list :
@@ -226,6 +225,8 @@ class NopCmds(CommonCloudFunctions) :
 
         self.additional_host_discovery (obj_attr_list)
 
+        obj_attr_list["initial_hosts"] = ','.join(obj_attr_list["initial_hosts"])
+
         return True
 
     @trace
@@ -240,7 +241,7 @@ class NopCmds(CommonCloudFunctions) :
             self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
             _status = 0
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -289,11 +290,11 @@ class NopCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -324,11 +325,11 @@ class NopCmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -347,7 +348,7 @@ class NopCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"                        
             _nr_instances = self.osci.count_object(obj_attr_list["cloud_name"], "VM", "RESERVATIONS")
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -434,7 +435,7 @@ class NopCmds(CommonCloudFunctions) :
                     _status = 1817
 #                    obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(obj_attr_list["imageid1"])
             
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -457,7 +458,7 @@ class NopCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
             
@@ -514,14 +515,11 @@ class NopCmds(CommonCloudFunctions) :
 
         _host_list = _vmc_attr_list["hosts"].split(',')
 
-        if len(_host_list) > 2 :
-            _host_uuid = choice(_host_list)
-            _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, _host_uuid, False)
-            obj_attr_list["host_name"] = _host_attr_list["cloud_hostname"]
-            obj_attr_list["host_cloud_ip"] = _host_attr_list["cloud_ip"]
-        else :
-            obj_attr_list["host_name"] = "simhost" + obj_attr_list["name"]
-            obj_attr_list["host_cloud_ip"] = self.generate_random_ip_address()
+        _host_uuid = choice(_host_list)
+        _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, _host_uuid, False)
+        obj_attr_list["host_name"] = _host_attr_list["cloud_hostname"]
+        obj_attr_list["host_cloud_ip"] = _host_attr_list["cloud_ip"]
+
         return True
 
     def vvcreate(self, obj_attr_list) :
@@ -545,11 +543,11 @@ class NopCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -571,11 +569,11 @@ class NopCmds(CommonCloudFunctions) :
                                 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -632,7 +630,7 @@ class NopCmds(CommonCloudFunctions) :
                 _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                
                 _status = 916
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -641,7 +639,7 @@ class NopCmds(CommonCloudFunctions) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM create keyboard interrupt...", True)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -690,11 +688,11 @@ class NopCmds(CommonCloudFunctions) :
             
             _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -751,11 +749,11 @@ class NopCmds(CommonCloudFunctions) :
             
             _status = 0
             
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     
@@ -825,11 +823,11 @@ class NopCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
+        except CldOpsException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
     

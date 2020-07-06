@@ -104,10 +104,10 @@ try :
             _cloud_model = _cloud["model"]
             break
     if not _cloud_attached :
-        print "Cloud " + _cloud_name + " not attached"
+        print("Cloud " + _cloud_name + " not attached")
         exit(1)
     ai_return_state=True
-    print "Launching AI %s" % _workload
+    print("Launching AI %s" % _workload)
     vms=[]
     _launch = None
     _ignore_ai = []
@@ -196,20 +196,20 @@ try :
     [x.start() for x in threads]
     [x.join() for x in threads]
 #----------------------- Remove existing VMs. ----------------------------------
-    print "Removing all AIs"
+    print("Removing all AIs")
     for apps in api.applist(_cloud_name) :
         api.appdetach(_cloud_name,apps['uuid'])
 
-except APIException, obj :
+except APIException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
-except APINoSuchMetricException, obj :
+except APINoSuchMetricException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
 except KeyboardInterrupt :
-    print "Aborting this VM."
+    print("Aborting this VM.")
 
 #except Exception, msg :
 #    error = True
@@ -219,7 +219,7 @@ finally :
     if app is not None :
         try :
             if error :
-                print "Destroying VM..."
+                print("Destroying VM...")
                 api.appdetach(_cloud_name, app["uuid"])
-        except APIException, obj :
-            print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
+        except APIException as obj :
+            print("Error finishing up: (" + str(obj.status) + "): " + obj.msg)

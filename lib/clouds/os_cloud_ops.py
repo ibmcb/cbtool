@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2018 IBM Corp.
@@ -29,16 +29,16 @@
 '''
     Created on Jan 30, 2018
     OpenStack Object Operations Library
-    @author: Marcio Silva, Michael R. Hines
+    @author: Marcio Silva, Michael R. Galaxy
 '''
 
 from time import time
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import is_number
-from libcloud_common import LibcloudCmds
+from .libcloud_common import LibcloudCmds
 
-from shared_functions import CldOpsException
+from .shared_functions import CldOpsException
 
 #from libcloud.compute.drivers.azure import ConfigurationSet,ConfigurationSetInputEndpoint
 
@@ -52,7 +52,6 @@ class OsCmds(LibcloudCmds) :
                               use_volumes = True, \
                               use_networks = True, \
                               use_security_groups = True, \
-                              use_floating_ips = True, \
                               use_public_ips = False, \
                               use_get_image = True, \
                               verify_ssl = False, \
@@ -160,7 +159,7 @@ class OsCmds(LibcloudCmds) :
         return driver
 
     @trace
-    def extra_vmc_setup(self, vmc_name, vmc_defaults, vm_defaults, vm_templates, _local_conn) :
+    def extra_vmc_setup(self, vmc_name, vmc_defaults, vm_defaults, vm_templates, connection) :
         '''
         TBD
         '''
@@ -170,6 +169,10 @@ class OsCmds(LibcloudCmds) :
         vm_defaults["access"] = self.access
 
         vmc_defaults["access"] = self.access
+
+        if not LibcloudCmds.floating_ip_pools :
+            cbdebug(" Caching " + self.get_description()  + " Floating IP pools...", True)
+            LibcloudCmds.floating_ip_pools = connection.ex_list_floating_ip_pools()
         
         return True
 
@@ -192,7 +195,7 @@ class OsCmds(LibcloudCmds) :
         return True
     
     @trace
-    def pre_vmcreate_process(self, obj_attr_list, keys) :
+    def pre_vmcreate_process(self, obj_attr_list, connection, keys) :
         '''
         TBD
         '''
@@ -241,12 +244,43 @@ class OsCmds(LibcloudCmds) :
         self.vmcreate_kwargs["ex_keyname"] = keys[0]
         self.vmcreate_kwargs["networks"] = _networks       
         self.vmcreate_kwargs["ex_metadata"] =  {}
-        
-        if "cloud_floating_ip_uuid" in obj_attr_list :
+
+        obj_attr_list["cloud_floating_ip_uuid"] = "NA"
+        obj_attr_list["cloud_floating_ip"] = "NA"
+        if obj_attr_list["use_floating_ip"].lower() == "true" :
+
+            for _floating_pool in LibcloudCmds.floating_ip_pools :
+                if _floating_pool.name == obj_attr_list["floating_pool"] :
+                    break
+
+            _mark_a = time()
+            _fip = connection.ex_create_floating_ip(ip_pool = _floating_pool.name)
+            self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
+            obj_attr_list["cloud_floating_ip_uuid"] = _fip.id
+            obj_attr_list["cloud_floating_ip"] = _fip.ip_address
             self.vmcreate_kwargs["ex_metadata"]["cloud_floating_ip_uuid"] = obj_attr_list["cloud_floating_ip_uuid"]
-        if "cloud_floating_ip" in obj_attr_list :            
             self.vmcreate_kwargs["ex_metadata"]["cloud_floating_ip"] = obj_attr_list["cloud_floating_ip"]
-                
+
+    @trace
+    def post_vmcreate_process(self, obj_attr_list, connection) :
+        '''
+        TBD
+        '''
+        if obj_attr_list["cloud_floating_ip_uuid"] != "NA" :
+            _mark_a = time()
+            _fip = self.get_adapter(_credentials_list).ex_attach_floating_ip_to_node(self.get_instances(obj_attr_list), obj_attr_list["cloud_floating_ip"])
+            self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
+
+    @trace    
+    def post_vmdelete_process(self, obj_attr_list, connection) :
+        '''
+        TBD
+        '''    
+        if "cloud_floating_ip" in obj_attr_list :
+            if obj_attr_list["cloud_floating_ip"] != "NA" :
+                connection.ex_delete_floating_ip(self.get_adapter(_credentials_list).ex_get_floating_ip(obj_attr_list["cloud_floating_ip"]))
+        return True
+
     @trace
     def get_description(self) :
         '''

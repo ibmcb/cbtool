@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -21,7 +21,7 @@
 
     CloudBench Command Processor Command Line Interface
 
-    @author: Marcio Silva, Michael R. Hines
+    @author: Marcio Silva, Michael R. Galaxy 
 '''
 
 from sys import stdout, path, argv
@@ -58,7 +58,7 @@ def main() :
     _version = get_version(_path)
 
     _name = _path.split('/')[-2].capitalize()
-    print _name + " version is \"" + _version + "\""
+    print(str(_name) + " version is \"" + str(_version.decode("utf-8")) + "\"")
 
     if not os.path.exists(_3rd_party) :
         os.mkdir(_3rd_party)
@@ -71,12 +71,12 @@ def main() :
         from lib.auxiliary.dependencies import dependency_checker_installer
         _msg = "Looks like this is the first time that CloudBench is executed"
         _msg += " on this node. Will check for dependencies..."
-        print _msg
+        print(_msg)
 
         _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], "configure", options)
         if _status :
-            print _msg
-            print "\n Please add the missing dependency(ies) and re-run configure again."
+            print(_msg)
+            print("\n Please add the missing dependency(ies) and re-run configure again.")
             exit(_status)
     
     _args = _cmd_processor.args
@@ -94,7 +94,7 @@ def main() :
         _msg = "Executing \"" + ("hard" if options.hard_reset else "soft")
         _msg += "\" reset: (killing all running toolkit processes"
         _msg += " and flushing stores) before starting the experiment......"
-        print _msg
+        print(_msg)
         _default_cloud_to_flush = None
         if options.soft_reset_cloud == "startup_cloud" :
             if "startup_cloud" in _cmd_processor.cld_attr_lst["user-defined"] :
@@ -111,9 +111,9 @@ def main() :
                     break
 
             if found :
-                print "Only flush registered cloud: " + _default_cloud_to_flush.upper()
+                print("Only flush registered cloud: " + _default_cloud_to_flush.upper())
             else :
-                print "Error: " + _default_cloud_to_flush.upper() + " not found."
+                print("Error: " + _default_cloud_to_flush.upper() + " not found.")
                 exit(1)
         
         _status, _msg = reset(_cmd_processor.cld_attr_lst, soft = False if options.hard_reset else True, cloud_name = _default_cloud_to_flush)
@@ -121,7 +121,7 @@ def main() :
             _msg = "\"" + ("Hard" if options.hard_reset else "Soft")
             _msg += "\" reset executed successfully."
         else : 
-            print "Error:" + _msg
+            print("Error:" + _msg)
             exit()
 
     _cmd_processor.start_api_and_gui()
@@ -135,7 +135,7 @@ def main() :
             if _cmd_processor.cld_attr_lst["user-defined"]["startup_cloud"].lower() == cloud :
                 for _command in available_clouds[cloud] :
                     _command = _command.replace("__COMMA__",',').strip()
-                    print "\n ############################# Executing command \"" + _command + "\" (specified on the configuration file) \n"
+                    print("\n ############################# Executing command \"" + _command + "\" (specified on the configuration file) \n")
                     _cmd_processor.onecmd(_command)
                     if _command.count("cldattach") :
                         _cmd_processor.do_clddefault(cloud.upper())
@@ -148,7 +148,7 @@ def main() :
 
         for _command in _initial_command.split(",") :
             _command = _command.replace("__COMMA__",',').strip()
-            print "\n ############################# Executing command \"" + _command + "\" (specified on the command line) \n"
+            print("\n ############################# Executing command \"" + _command + "\" (specified on the command line) \n")
             _cmd_processor.onecmd(_command)
     else :
         if options.tracefile :

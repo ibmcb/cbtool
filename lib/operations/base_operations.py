@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -20,11 +20,12 @@
 
     Base Object Operations Library
     
-    @author: Marcio A. Silva, Michael R. Hines
+    @author: Marcio A. Silva, Michael R. Galaxy
 '''
 import socket
 import re
 import os 
+import traceback
 
 from os import chmod, access, F_OK
 from time import time, sleep, timezone, localtime, altzone
@@ -83,7 +84,7 @@ class BaseObjectOperations :
         try :
             return self.osci.get_object(cloud_name, "CLOUD", False, cloud_name, False)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _msg = "Unable to get parameters for the cloud " + cloud_name
             _msg += ". Are you sure that this cloud is attached to this "
             _msg += "experiment? " + str(obj.msg) + ""
@@ -116,12 +117,12 @@ class BaseObjectOperations :
 
             return True
 
-        except ImportError, msg :
+        except ImportError as msg :
             _msg = str(msg)
             cberr(_msg)
             raise self.ObjectOperationException(8, _msg)
 
-        except AttributeError, msg :
+        except AttributeError as msg :
             _msg = str(msg)
             cberr(_msg)
             raise self.ObjectOperationException(8, _msg)
@@ -1204,23 +1205,37 @@ class BaseObjectOperations :
                                 _type2imgid = str2dic(_build_maps["type2imgid"])
                                 _imgid2types = str2dic(_build_maps["imgid2types"])
 
+                                _debug_workload = False
+                                if obj_attr_list["prepare_workload"].count("debug") :
+                                    _debug_workload = True
+                                    
+                                obj_attr_list["prepare_workload"] = obj_attr_list["prepare_workload"].replace("debug",'')
+
                                 if obj_attr_list["prepare_workload"] not in _type2imgid :
                                     obj_attr_list["prepare_image_name"] = "cb_" + obj_attr_list["prepare_workload"]
-                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload"]                                    
+                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload"]
                                     _msg = "Could not find a corresponding image name to automatically "
-                                    _msg += " configure the AI type \"" + obj_attr_list["prepare_image_name"] + "\"."
+                                    _msg += "configure the AI type \"" + obj_attr_list["prepare_image_name"] + "\"."
                                     cbwarn(_msg, True)
                                 else :
                                     obj_attr_list["prepare_image_name"] = _type2imgid[obj_attr_list["prepare_workload"]]
                                     obj_attr_list["prepare_workload_names"] = _imgid2types[obj_attr_list["prepare_image_name"]]
 
-                                if not obj_attr_list["prepare_workload_names"].count("nullworkload") :
-                                    obj_attr_list["prepare_workload_names"] = "nullworkload+" + obj_attr_list["prepare_workload_names"]
-                                    obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload_names"].replace('+',',')
+                                    if not obj_attr_list["prepare_workload_names"].count("nullworkload") :
+                                        obj_attr_list["prepare_workload_names"] = "nullworkload+" + obj_attr_list["prepare_workload_names"]
+                                        obj_attr_list["prepare_workload_names"] = obj_attr_list["prepare_workload_names"].replace('+',',')
 
-                                _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] + "/pre_install.sh; "
-                                _generic_boot_cmd += "~/" + obj_attr_list["remote_dir_name"] + "/install --role workload"
-                                _generic_boot_cmd += " --wks " + obj_attr_list["prepare_workload_names"]
+                                if not _debug_workload :  
+                                    _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] + "/pre_install.sh; "
+                                    _generic_boot_cmd += "~/" + obj_attr_list["remote_dir_name"] + "/install --role workload"
+                                    _generic_boot_cmd += " --wks " + obj_attr_list["prepare_workload_names"]
+                                else :
+                                    _msg = "Debug workload active. After deployment ssh into the instance (e.g. \"./cbssh " + obj_attr_list["name"]
+                                    _msg += ") \" and execute \"~/"  +  obj_attr_list["remote_dir_name"] + "/pre_install.sh; " 
+                                    _msg += "~/" + obj_attr_list["remote_dir_name"] 
+                                    _msg += "/install --role workload --wks " + obj_attr_list["prepare_workload_names"] + "\""
+                                    cbwarn(_msg, True)
+                                    _generic_boot_cmd = "/bin/true"
 
                                 if _role_tmp.count(':') == 3 :  
                                     _generic_boot_cmd += " --addr bypass"
@@ -1235,6 +1250,8 @@ class BaseObjectOperations :
                                 obj_attr_list["check_ssh"] = "false"
                                 obj_attr_list["check_boot_complete"] = "wait_for_0"
                                 obj_attr_list["transfer_files"] = "false"
+
+                            obj_attr_list["imageid1"] = obj_attr_list["imageid1"].replace("colon",':')
 
                         obj_attr_list["generic_post_boot_command"] = _generic_boot_cmd  
                         obj_attr_list["boot_volume_imageid1"] = "NA"
@@ -1522,16 +1539,22 @@ class BaseObjectOperations :
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                     self.record_management_metrics(obj_attr_list["cloud_name"], _obj_type, obj_attr_list, "trace")
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
+            _status = 32
             _fmsg = str(e)
 
         finally :
@@ -1858,14 +1881,14 @@ class BaseObjectOperations :
 
             _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _fmsg = str(obj.msg)
             
-        except KeyError, e :
+        except KeyError as e :
             _fmsg = str(e)
             _status = 2341
         
@@ -1976,11 +1999,11 @@ class BaseObjectOperations :
 
             _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _fmsg = str(obj.msg)
         
         finally :
@@ -2026,7 +2049,7 @@ class BaseObjectOperations :
 
             _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _fmsg = str(obj.msg)
             _status = 0
         
@@ -2056,7 +2079,7 @@ class BaseObjectOperations :
         for _collection_name in _collection_names :
             _document = {}
             _document["expid"] = self.expid
-            _document["_id"] = b64encode(sha1(_document["expid"]).digest())
+            _document["_id"] = b64encode(sha1(_document["expid"].encode('utf-8')).digest())
             for _metric_name in _mon_parameters[_collection_name.lower()].split(',') :
                 _document[_metric_name] = "1"
                            
@@ -2089,11 +2112,11 @@ class BaseObjectOperations :
             else :
                 _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception as e :
             _status = 23
             _fmsg = str(e)
 
@@ -2335,8 +2358,8 @@ class BaseObjectOperations :
 
             _status = 0
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 33
             _fmsg = str(e)
 
         finally :
@@ -2487,8 +2510,8 @@ class BaseObjectOperations :
             else :
                 _status = 0
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 24
             _fmsg = str(e)
 
         finally :
@@ -2852,8 +2875,8 @@ class BaseObjectOperations :
                             _fmsg += _xfmsg
                             break
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 38
             _fmsg = str(e)
 
         finally :
@@ -2905,8 +2928,8 @@ class BaseObjectOperations :
 
             _status = 0
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 25
             _fmsg = str(e)
     
         finally :
@@ -2981,8 +3004,8 @@ class BaseObjectOperations :
 
             _status = 0
     
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 34
             _fmsg = str(e)
     
         finally :
@@ -3017,12 +3040,12 @@ class BaseObjectOperations :
 
             _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
     
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 26
             _fmsg = str(e)
     
         finally :
@@ -3053,7 +3076,7 @@ class BaseObjectOperations :
                 _trace_attr_list["expid"] = self.expid
                 _trace_attr_list["dashboard_polled"] = False
                 
-                for _key in obj_attr_list.keys() :
+                for _key in list(obj_attr_list.keys()) :
                     if _key in _trace_key_list :
                         _trace_attr_list[_key] = obj_attr_list[_key]
 
@@ -3073,7 +3096,7 @@ class BaseObjectOperations :
 
                     _key_list = _mon_defaults[obj_type.lower() + "_attributes"].split(',')
 
-                    for _key in obj_attr_list.keys() :
+                    for _key in list(obj_attr_list.keys()) :
                         if _key in _key_list or _key.count("mgt") or (_key.count(obj_attr_list["model"] + '_')) :
                             _mgt_attr_list[_key] = obj_attr_list[_key]
                             
@@ -3088,7 +3111,7 @@ class BaseObjectOperations :
                         self.compute_sla(cloud_name, obj_type, obj_attr_list, operation, _mgt_attr_list)
 
                         # HACK alert - Repeating code here is not good
-                        for _key in obj_attr_list.keys() :
+                        for _key in list(obj_attr_list.keys()) :
                             if _key in _key_list or _key.count("mgt"):
                                 _mgt_attr_list[_key] = obj_attr_list[_key]
 
@@ -3145,7 +3168,7 @@ class BaseObjectOperations :
                                 
                                 self.get_from_pending(cloud_name, "VM", _vm_attr_list)
     
-                                for _key in _vm_attr_list.keys() :
+                                for _key in list(_vm_attr_list.keys()) :
                                     if _key in _key_list or _key.count("mgt") or (_key.count(obj_attr_list["model"] + '_')) :
                                         _mgt_attr_list[_key] = _vm_attr_list[_key]
     
@@ -3161,20 +3184,20 @@ class BaseObjectOperations :
 
                 _status = 0
 
-        except self.ObjectOperationException, obj :
+        except self.ObjectOperationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.msci.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 40
             _fmsg = str(e)
 
         finally :
@@ -3336,7 +3359,7 @@ class BaseObjectOperations :
         _total_provisioning_time = 0
         
         if "sla_provisioning_target" in obj_attr_list :            
-            for _key in obj_attr_list.keys() :
+            for _key in list(obj_attr_list.keys()) :
                 if _key.count("mgt_00") :
                     if not _key.count("originated") and not _key.count("sla") :
                         _total_provisioning_time += int(obj_attr_list[_key])
@@ -3411,12 +3434,12 @@ class BaseObjectOperations :
 
                 _status = 0
 
-        except ValueGeneration.ValueGenerationException, obj :
+        except ValueGeneration.ValueGenerationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 27
             _fmsg = str(e)
 
         finally :
@@ -3480,16 +3503,16 @@ class BaseObjectOperations :
             else :             
                 _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except ValueGeneration.ValueGenerationException, obj :
+        except ValueGeneration.ValueGenerationException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 35
             _fmsg = str(e)
 
         finally :
@@ -3526,12 +3549,12 @@ class BaseObjectOperations :
                 
             _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 28
             _fmsg = str(e)
 
         finally :
@@ -3560,12 +3583,12 @@ class BaseObjectOperations :
                 _value = _obj_attr_list[obj_attr]
                 _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 39
             _fmsg = str(e)
 
         finally :
@@ -3599,12 +3622,12 @@ class BaseObjectOperations :
             else :
                 False
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 29
             _fmsg = str(e)
 
         finally :
@@ -3663,12 +3686,12 @@ class BaseObjectOperations :
                     _status = 1827
                     _fmsg = "Unknown counter type: " + counter
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 36
             _fmsg = str(e)
 
         finally :
@@ -3697,12 +3720,12 @@ class BaseObjectOperations :
 
             _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 30
             _fmsg = str(e)
 
         finally :
@@ -3727,7 +3750,8 @@ class BaseObjectOperations :
                 s.bind((hostname, int(port)))
                 s.close()
                 break
-            except socket.error, (value, message) :
+            except socket.error as xxx_todo_changeme :
+                (value, message) = xxx_todo_changeme.args
                 if value == 98 : 
                     cbwarn("Previous port " + str(port) + " taken! ...")
                     if try_once :
@@ -3777,7 +3801,7 @@ class BaseObjectOperations :
                         obj_attr_list[name + "_port"] = _curr_port
                         _status = 0
                         break
-        except Exception, e :
+        except Exception as e :
             throw = e 
             
         finally :
@@ -3810,7 +3834,7 @@ class BaseObjectOperations :
                 del used_ports[str(obj_attr_list[name + "_port"])]
                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, \
                                   False, used_name, dic2str(used_ports), False)
-        except Exception, e :
+        except Exception as e :
             throw = e 
             
         finally :
@@ -3923,16 +3947,16 @@ class BaseObjectOperations :
                 cbdebug(_msg, True)
                 _status = 0
 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 41
             _fmsg = str(e)
 
         finally :
@@ -4000,16 +4024,16 @@ class BaseObjectOperations :
             else :
                 _status = 1111
                 
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = 40
             _fmsg = str(obj.msg)
 
-        except ProcessManagement.ProcessManagementException, obj :
+        except ProcessManagement.ProcessManagementException as obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 31
             _fmsg = str(e)
 
         finally :
@@ -4028,6 +4052,19 @@ class BaseObjectOperations :
         TBD
         '''
         msg = message_beautifier(msg)
+        if isinstance(result, dict) :
+            x = {}
+            for k,v in result.items() :
+                x[k.decode('utf-8') if isinstance(k, bytes) else k] = v.decode('utf-8') if isinstance(v, bytes) else v
+            result = x
+        elif isinstance(result, list) :
+            if len(result) == 1 :
+                if isinstance(result[0], dict) :
+                    x = {}
+                    for k,v in result[0].items() :
+                        x[k.decode('utf-8') if isinstance(k, bytes) else k] = v.decode('utf-8') if isinstance(v, bytes) else v
+                    result[0] = x
+
         return status, msg, {"status" : status, "msg" : msg, "result" : result}
 
     @trace
@@ -4133,7 +4170,7 @@ class BaseObjectOperations :
 
         # Then we create a role x type table
         _role2type = {}
-        for _role in cld_attr_list["vm_templates"].keys() :
+        for _role in list(cld_attr_list["vm_templates"].keys()) :
             for _entry in cld_attr_list["ai_templates"] :
                 if _entry.count("_sut") :
                     _type = _entry.replace("_sut",'')
@@ -4175,7 +4212,7 @@ class BaseObjectOperations :
 
         # We can finally build our imgid x types table.
         _imgid2types = {}
-        for _type in _type2imgid.keys() :
+        for _type in list(_type2imgid.keys()) :
             _imgid = _type2imgid[_type]
             if _imgid not in _imgid2types :
                 _imgid2types[_imgid] = []
@@ -4226,7 +4263,7 @@ class BaseObjectOperations :
 
                         if _inter_spawn_time :
                             _msg += "Wait time between each operation is " + _inter_spawn_time + " seconds."
-                        print _msg
+                        print(_msg)
 
             _obj_attr_list = {}
 
@@ -4279,7 +4316,7 @@ class BaseObjectOperations :
                                                                              1000000000000000000)))).upper()
                         _obj_attr_list["uuid"] = _obj_uuid
         
-                        _cmd = "\"" + self.path + "/cbact\""
+                        _cmd = "script -qfec \"" + self.path + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -4287,7 +4324,7 @@ class BaseObjectOperations :
                         _cmd += " --operation=" + command
                         _cmd += " --cn=" + _obj_attr_list["cloud_name"]
                         _cmd += " --uuid=" + _obj_uuid
-                        _cmd += " --daemon"
+                        _cmd += " --daemon\""
                         #_cmd += "  --debug_host=localhost"
                         
                     elif command.count("detach") and not command.count("detachall") :
@@ -4306,7 +4343,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = "\"" + self.path + "/cbact\""
+                            _cmd = "script -qfec \"" + self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -4314,7 +4351,7 @@ class BaseObjectOperations :
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
                             _cmd += " --uuid=" + _obj_uuid
-                            _cmd += " --daemon"
+                            _cmd += " --daemon\""
                             #_cmd += "  --debug_host=localhost"
     
                     elif command.count("runstate") or \
@@ -4337,7 +4374,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = "\"" + self.path + "/cbact\""
+                            _cmd = "script -qfec \"" + self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -4345,7 +4382,7 @@ class BaseObjectOperations :
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
                             _cmd += " --uuid=" + _obj_uuid
-                            _cmd += " --daemon"
+                            _cmd += " --daemon\""
                             #_cmd += "  --debug_host=localhost"
                     else :
                         _msg = "Unknown Operation" + command
@@ -4378,12 +4415,12 @@ class BaseObjectOperations :
                             
                     _result = _obj_attr_list
                     
-        except self.osci.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException as obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
-            _status = 23
+        except Exception as e :
+            _status = 37
             _fmsg = str(e)
 
         finally :

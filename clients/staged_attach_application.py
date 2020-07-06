@@ -38,12 +38,12 @@ if os.access(api_file_name, os.F_OK) :
     except :
         _msg = "Unable to open file containing API connection information "
         _msg += "(" + api_file_name + ")."
-        print _msg
+        print(_msg)
         exit(4)
 else :
     _msg = "Unable to locate file containing API connection information "
     _msg += "(" + api_file_name + ")."
-    print _msg
+    print(_msg)
     exit(4)
 
 _path_set = False
@@ -60,13 +60,13 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 from lib.api.api_service_client import *
 
 _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
+print(_msg)
 api = APIClient(_api_conn_info)
 
 #---------------------------------- END CB API ---------------------------------
 
 if len(argv) < 2 :
-        print "./" + argv[0] + " <cloud_name>"
+        print("./" + argv[0] + " <cloud_name>")
         exit(1)
 
 cloud_name = argv[1]
@@ -74,7 +74,7 @@ cloud_name = argv[1]
 start = int(time())
 expid = "daytrader_" + makeTimestamp(start).replace(" ", "_")
 
-print "starting experiment: " + expid
+print("starting experiment: " + expid)
 
 app = None
 error = False
@@ -86,35 +86,35 @@ try :
     _tmp_app = api.appinit(cloud_name, "daytrader")
     uuid = _tmp_app["uuid"]
 
-    print "Started an APP with uuid = " + uuid 
+    print("Started an APP with uuid = " + uuid) 
 
     for vm in _tmp_app["vms"] :
-        print _tmp_app["vms"][vm]["role"]
+        print(_tmp_app["vms"][vm]["role"])
 
     # The structure of the 'app' dictionary has changed
     # So get a new copy
     app = api.apprun(cloud_name, _tmp_app["uuid"])
 
-    print "Resumed APP with uuid = " + app["uuid"]
+    print("Resumed APP with uuid = " + app["uuid"])
 
-    print str(app)
+    print(str(app))
     
     api.appalter(cloud_name, app["uuid"], "load_level", 20)
     
 
-except APIException, obj :
+except APIException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 except KeyboardInterrupt :
-    print "Aborting this experiment."
-except Exception, msg :
+    print("Aborting this experiment.")
+except Exception as msg :
     error = True
-    print "Problem during experiment: " + str(msg)
+    print("Problem during experiment: " + str(msg))
 
 finally :
     try :
         if app :
-            print "Destroying APP.."
+            print("Destroying APP..")
             api.appdetach(cloud_name, app["uuid"])
-    except APIException, obj :
-        print "Error cleaning up: (" + str(obj.status) + "): " + obj.msg
+    except APIException as obj :
+        print("Error cleaning up: (" + str(obj.status) + "): " + obj.msg)

@@ -16,13 +16,14 @@
 # limitations under the License.
 #/*******************************************************************************
 
+cd ~
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_load_gen $@
 
 LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
-LINPACK=`get_my_ai_attribute_with_default linpack ~/linpack/benchmarks/linpack/xlinpack_xeon64`
+LINPACK=`get_my_ai_attribute_with_default linpack ~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack/xlinpack_xeon64`
 eval LINPACK=${LINPACK}
 
 sudo ls ${LINPACK} 2>&1 > /dev/null

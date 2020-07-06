@@ -41,12 +41,12 @@ if os.access(api_file_name, os.F_OK) :
     except :
         _msg = "Unable to open file containing API connection information "
         _msg += "(" + api_file_name + ")."
-        print _msg
+        print(_msg)
         exit(4)
 else :
     _msg = "Unable to locate file containing API connection information "
     _msg += "(" + api_file_name + ")."
-    print _msg
+    print(_msg)
     exit(4)
 
 _path_set = False
@@ -63,13 +63,13 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 from lib.api.api_service_client import *
 
 _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
+print(_msg)
 api = APIClient(_api_conn_info)
 
 #---------------------------------- END CB API ---------------------------------
 
 if len(argv) < 2 :
-        print "./" + argv[0] + " <cloud_name>"
+        print("./" + argv[0] + " <cloud_name>")
         exit(1)
 
 cloud_name = argv[1]
@@ -78,30 +78,30 @@ try :
     error = False
     hosts = None
 
-    print "Getting hostlist on cloud \"" + cloud_name + "\"....."
+    print("Getting hostlist on cloud \"" + cloud_name + "\".....")
     _hosts = api.hostlist(cloud_name)
-    print _hosts
+    print(_hosts)
 
     for _host in _hosts :
         _host_data = api.hostshow(cloud_name, _host["name"])
-        print _host_data
+        print(_host_data)
 
-except APIException, obj :
+except APIException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
-except APINoSuchMetricException, obj :
+except APINoSuchMetricException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 
-except Exception, msg :
+except Exception as msg :
     error = True
-    print "Problem during experiment: " + str(msg)
+    print("Problem during experiment: " + str(msg))
 
 finally :
     if hosts is not None :
         try :
             if error :
-                print "Unable to get host list"
-        except APIException, obj :
-            print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
+                print("Unable to get host list")
+        except APIException as obj :
+            print("Error finishing up: (" + str(obj.status) + "): " + obj.msg)

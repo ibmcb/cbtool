@@ -2,36 +2,6 @@
 
 dir="$(dirname "$(readlink -f "$0")")"
 
-RUNNING_CB=$(sudo ps aux | grep -v grep | grep -e "python.*cb " | grep "\-c")
-if [[ $? -eq 0 ]]
-then
-    CONFIG_FILE=
-    for WORD in $RUNNING_CB
-    do
-    
-        if [[ CONFIG_FILE -eq 1 ]]
-        then
-            CONFIG_FILE=$WORD
-            break
-        fi
-        
-        if [[ $WORD == "--config" || $WORD == "-c" ]]
-        then
-            CONFIG_FILE=1
-        fi
-    done
- fi
-
-if [[ ! -z $3 ]]
-then
-    CONFIG_FILE=$3
-fi
-
-if [[ ! -z $CONFIG_FILE ]]
-then
-    CONFIG_FILE="--config $CONFIG_FILE"
-fi
-
 if [[ -z $1 ]]
 then
     echo "need a VM cloudbench identifier (e.g. vm_10)"
@@ -40,24 +10,61 @@ then
 fi
 VMID=$1
 
-if [[ ! -z $2 ]]
+CONFIG_FILE=
+RUNNING_DOCKER=$(sudo docker ps -a | grep ${USER} | grep cbon)
+if [[ $? -eq 0 ]]
 then
-    CB_EXECUTABLE=$2/cb
-else
-    CB_EXECUTABLE=$dir/../cb
+	CB_DOCKER="docker exec -it $(echo $RUNNING_DOCKER | awk '{ print $1 }')" 
+	CB_EXECUTABLE=/home/cbuser/repos/cloudbench/cb
+else 
+	RUNNING_CB=$(sudo ps aux | grep -v grep | grep -e "python.*cb " | grep "\-c")
+	if [[ $? -eq 0 ]]
+	then
+	    for WORD in $RUNNING_CB
+	    do
+	    
+	        if [[ CONFIG_FILE -eq 1 ]]
+	        then
+	            CONFIG_FILE=$WORD
+	            break
+	        fi
+	        
+	        if [[ $WORD == "--config" || $WORD == "-c" ]]
+	        then
+	            CONFIG_FILE=1
+	        fi
+	    done
+	 fi
+	
+	if [[ ! -z $3 ]]
+	then
+	    CONFIG_FILE=$3
+	fi
+	
+	if [[ ! -z $CONFIG_FILE ]]
+	then
+	    CONFIG_FILE="--config $CONFIG_FILE"
+	fi
+
+	if [[ ! -z $2 ]]
+	then
+	    CB_EXECUTABLE=$2/cb
+	else
+	    CB_EXECUTABLE=$dir/../cb
+	fi
+	
+	if [[ ! -f $CB_EXECUTABLE ]]
+	then
+	    echo "Unable to find CB executable in $CB_EXECUTABLE. Please specificy a directory for it with $0 <VM IDENTIFIER> [CB DIR] [CLOUD CONFIGURATION FILE]"
+	    exit 1
+	fi
 fi
 
-if [[ ! -f $CB_EXECUTABLE ]]
-then
-    echo "Unable to find CB executable in $CB_EXECUTABLE. Please specificy a directory for it with $0 <VM IDENTIFIER> [CB DIR] [CLOUD CONFIGURATION FILE]"
-    exit 1
-fi
-
-INFO=$($CB_EXECUTABLE $CONFIG_FILE vmshow $VMID)
+INFO=$($CB_DOCKER $CB_EXECUTABLE $CONFIG_FILE vmshow $VMID)
 
 VMIP=$(echo "$INFO" | grep "|prov_cloud_ip" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMLOGIN=$(echo "$INFO" | grep "|login" | grep -v "login=" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
-VMKEY=$(echo "$INFO" | grep "|identity" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
+VMKEY=$(echo "$INFO" | grep "|identity" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | sed 's/\$//g' | tr -d '\r' | cut -d " " -f 2)
 VMSSHCONF=$(echo "$INFO" | grep "|ssh_config_file" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMSSHPORT=$(echo "$INFO" | grep "|prov_cloud_port" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 
@@ -99,6 +106,6 @@ SSH_CMD_PART4="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 echo "logging in: cloudbench ID: $VMID => $VMLOGIN@$VMIP"
 
-ssh ${SSH_CMD_PART1} ${SSH_CMD_PART2} ${SSH_CMD_PART3} ${SSH_CMD_PART4} ${SSH_CMD_PART5} $VMIP "${*:2}"
+$CB_DOCKER ssh ${SSH_CMD_PART1} ${SSH_CMD_PART2} ${SSH_CMD_PART3} ${SSH_CMD_PART4} ${SSH_CMD_PART5} $VMIP "${*:2}"
 
 echo -e "\n\nExit code for command \nssh ${SSH_CMD_PART1} ${SSH_CMD_PART2} ${SSH_CMD_PART3} ${SSH_CMD_PART4} ${SSH_CMD_PART5} $VMIP \"${*:2}\"\nhas the value of $?"

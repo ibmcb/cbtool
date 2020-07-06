@@ -39,12 +39,12 @@ if os.access(api_file_name, os.F_OK) :
     except :
         _msg = "Unable to open file containing API connection information "
         _msg += "(" + api_file_name + ")."
-        print _msg
+        print(_msg)
         exit(4)
 else :
     _msg = "Unable to locate file containing API connection information "
     _msg += "(" + api_file_name + ")."
-    print _msg
+    print(_msg)
     exit(4)
 
 _path_set = False
@@ -61,13 +61,13 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 from lib.api.api_service_client import *
 
 _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
+print(_msg)
 api = APIClient(_api_conn_info)
 
 #---------------------------------- END CB API ---------------------------------
 
 if len(argv) < 2 :
-        print "./" + argv[0] + " <cloud_name>"
+        print("./" + argv[0] + " <cloud_name>")
         exit(1)
 
 cloud_name = argv[1]
@@ -75,7 +75,7 @@ cloud_name = argv[1]
 start = int(time())
 expid = "singleai_" + makeTimestamp(start).replace(" ", "_")
 
-print "starting experiment: " + expid
+print("starting experiment: " + expid)
 
 try :
     app = None
@@ -84,10 +84,10 @@ try :
     api.cldalter(cloud_name, "time", "experiment_id", expid)
 
     _tmp_app = api.appattach(cloud_name, "fio", "default", "default", "none", "none", "none", "empty=empty", "async")
-    print str(_tmp_app)
+    print(str(_tmp_app))
     uuid = _tmp_app["uuid"]
 
-    print "Started an App with uuid = " + uuid 
+    print("Started an App with uuid = " + uuid) 
     while True :
         sleep(10)
         applist = api.applist(cloud_name, "pending")
@@ -97,25 +97,25 @@ try :
                 pending = True
                 break
         if not pending :
-            print "Attach complete."
+            print("Attach complete.")
             app = api.appshow(cloud_name, uuid)
             break
         else :
-            print "UUID " + uuid + " is still attaching..."
+            print("UUID " + uuid + " is still attaching...")
 
-except APIException, obj :
+except APIException as obj :
     error = True
-    print "API Problem (" + str(obj.status) + "): " + obj.msg
+    print("API Problem (" + str(obj.status) + "): " + obj.msg)
 except KeyboardInterrupt :
-    print "Aborting this experiment."
-except Exception, msg :
+    print("Aborting this experiment.")
+except Exception as msg :
     error = True
-    print "Problem during experiment: " + str(msg)
+    print("Problem during experiment: " + str(msg))
 
 finally :
     try :
         if app :
-            print "Destroying App.."
+            print("Destroying App..")
             api.appdetach(cloud_name, app["uuid"])
-    except APIException, obj :
-        print "Error cleaning up: (" + str(obj.status) + "): " + obj.msg
+    except APIException as obj :
+        print("Error cleaning up: (" + str(obj.status) + "): " + obj.msg)
