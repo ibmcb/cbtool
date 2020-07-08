@@ -1297,7 +1297,10 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            self.pre_vmcreate_process(obj_attr_list, _local_conn, {})
+            # What is this for? There's a duplicate call below. Calling twice into
+            # other adapters is causing difficulty. Please re-work so this not
+            # called twice.
+            #self.pre_vmcreate_process(obj_attr_list, _local_conn, {})
 
             _mark_a = time()
             obj_attr_list["libcloud_image_inst"] = self.get_images(obj_attr_list)
@@ -1411,6 +1414,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
                 obj_attr_list["host_name"] = _reservation.name
+                obj_attr_list["canonical_id"] = _reservation.id
 
                 _status = 0
 

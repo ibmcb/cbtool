@@ -24,14 +24,9 @@
     @author: Marcio A. Silva
 '''
 
-import os
 import pymongo
 
-from time import sleep, time
-from random import randint
-from pwd import getpwuid
-from lib.auxiliary.config import get_my_parameters, set_my_parameters 
-
+from lib.stores.common_datastore_adapter import MetricStoreMgdConn, MetricStoreMgdConnException
 from pymongo import MongoClient
 from pymongo import errors as PymongoException
 
@@ -51,19 +46,16 @@ except :
     cbcrit = print_standalone
     trace = trace_nothing
 
-class MongodbMgdConn :
+class MongodbMgdConn(MetricStoreMgdConn) :
     '''
     TBD
     '''
 
     @trace
     def __init__(self, parameters) :
-        '''
-        TBD
-        '''
-        set_my_parameters(self, parameters)
-        self.password = str(self.password)
-        self.pid = "TEST_" + getpwuid(os.getuid())[0]
+        MetricStoreMgdConn.__init__(self, parameters)
+        self.username = str(self.mongodb_username)
+        self.port = self.mongodb_port
         self.mongodb_conn = False
         
         if pymongo.has_c() is False:
@@ -73,20 +65,6 @@ class MongodbMgdConn :
 
         self.version = pymongo.version.split('.')[0]
 
-    class MetricStoreMgdConnException(Exception):
-        '''
-        TBD
-        '''
-        def __init__(self, msg, status):
-            Exception.__init__(self)
-            self.msg = msg
-            self.status = status
-        def __str__(self):
-            return self.msg
-
-    def mscp(self) :
-        return get_my_parameters(self)
-        
     @trace
     def connect(self, tout) :
         '''
@@ -187,7 +165,7 @@ class MongodbMgdConn :
             except self.MetricStoreMgdConnException as obj :
                 raise self.MetricStoreMgdConnException(obj.msg, 2)
             
-            if len(self.password) > 2 and self.password.lower() != "false" :
+            if self.password and len(self.password) > 2 and str(self.password).lower() != "false" :
                 try :
                     _auth_cmd = "mongo -u \"<YOUR ADMIN\" -p \"<YOUR ADMINPASS>\" "
                     _auth_cmd += "--authenticationDatabase \"admin\" --eval "

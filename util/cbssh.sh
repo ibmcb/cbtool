@@ -10,11 +10,14 @@ then
 fi
 VMID=$1
 
+docker=$(which docker)
 CONFIG_FILE=
-RUNNING_DOCKER=$(sudo docker ps -a | grep ${USER} | grep cbon)
-if [[ $? -eq 0 ]]
+if [[ x"$docker" != x ]] ; then
+	RUNNING_DOCKER=$(sudo ${docker} ps -a 2>&1 | grep ${USER} | grep cbon)
+fi
+if [[ x"$docker" != x ]] && [[ $? -eq 0 ]]
 then
-	CB_DOCKER="docker exec -it $(echo $RUNNING_DOCKER | awk '{ print $1 }')" 
+	CB_DOCKER="docker exec -it $(echo $RUNNING_DOCKER 2>&1 | awk '{ print $1 }')" 
 	CB_EXECUTABLE=/home/cbuser/repos/cloudbench/cb
 else 
 	RUNNING_CB=$(sudo ps aux | grep -v grep | grep -e "python.*cb " | grep "\-c")

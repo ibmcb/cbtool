@@ -1138,10 +1138,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 0
 
         except IndexError as msg :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 40
             _fmsg = str(msg)
 
         except self.ObjectOperationException as obj :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -2812,7 +2816,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _cmd = self.path + "/cbact"
             _cmd += " --procid=" + self.pid
             _cmd += " --osp=" + dic2str(self.osci.oscp())
-            _cmd += " --msp=" + dic2str(self.msci.mscp())
             _cmd += " --uuid=" + obj_attr_list["uuid"] 
             _cmd += " --operation=aidr-submit"
             _cmd += " --cn=" + obj_attr_list["cloud_name"]
@@ -2839,7 +2842,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _cmd = self.path + "/cbact"
             _cmd += " --procid=" + self.pid
             _cmd += " --osp=" + dic2str(self.osci.oscp())
-            _cmd += " --msp=" + dic2str(self.msci.mscp())
             _cmd += " --uuid=" + obj_attr_list["uuid"] 
             _cmd += " --operation=aidr-remove"
             _cmd += " --cn=" + obj_attr_list["cloud_name"]
@@ -2890,7 +2892,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _cmd = self.path + "/cbact"
             _cmd += " --procid=" + self.pid
             _cmd += " --osp=" + dic2str(self.osci.oscp())
-            _cmd += " --msp=" + dic2str(self.msci.mscp())
             _cmd += " --uuid=" + obj_attr_list["uuid"] 
             _cmd += " --operation=vmcr-submit"
             _cmd += " --cn=" + obj_attr_list["cloud_name"]
@@ -2942,7 +2943,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _cmd = self.path + "/cbact"
             _cmd += " --procid=" + self.pid
             _cmd += " --osp=" + dic2str(self.osci.oscp())
-            _cmd += " --msp=" + dic2str(self.msci.mscp())
             _cmd += " --uuid=" + obj_attr_list["uuid"] 
             _cmd += " --operation=fir-submit"
             _cmd += " --cn=" + obj_attr_list["cloud_name"]
@@ -5391,7 +5391,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd = "script -qfec \"" + base_dir + "/cbact"
                     _cmd += " --procid=" + self.pid
                     _cmd += " --osp=" + dic2str(self.osci.oscp())
-                    _cmd += " --msp=" + dic2str(self.msci.mscp())
 
                     _cmd += " --oop=" + cloud_name + ',' + _aidrs_attr_list["type"] + ',' + _aidrs_attr_list["load_level"]
                     _cmd += ',' + _aidrs_attr_list["load_duration"] + ',' + _aidrs_attr_list["lifetime"]  + ',' + object_uuid
@@ -5507,7 +5506,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
-                        _cmd += " --msp=" + dic2str(self.msci.mscp())
                         _cmd += " --oop=" + cloud_name + ',' + _ai_name + ',true'
                         _cmd += " --operation=ai-detach"
                         _cmd += " --cn=" + cloud_name
@@ -5641,7 +5639,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
-                        _cmd += " --msp=" + dic2str(self.msci.mscp())
                         _cmd += " --oop=" + cloud_name + ',' + _vm_name + ',' + object_uuid
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name
@@ -5789,7 +5786,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd = "script -qfec \"" + base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
-                        _cmd += " --msp=" + dic2str(self.msci.mscp())
                         _cmd += " --oop=" + cloud_name + ',' + _vm_name + ',' + object_uuid
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name

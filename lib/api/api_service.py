@@ -209,7 +209,6 @@ class API():
 
     def cldshow(self, cloud_name, object_type) :
         return self.passive.show_object({"name": cloud_name}, cloud_name + ' ' + object_type, "cloud-show")[2]
-        return response
 
     def statealter(self, cloud_name, identifier, new_state):
         return self.passive.alter_state({"name": cloud_name}, cloud_name + ' ' + identifier + ' ' + new_state, "state-alter")[2]

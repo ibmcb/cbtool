@@ -328,15 +328,12 @@ RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party/workload
 RUN cp____-f____/home/REPLACE_USERNAME/cbtool/util/manually_download_files.txt____/home/REPLACE_USERNAME/cbtool/3rd_party/workload; /bin/true
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/monitor-core.git
-WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/monitor-core
-RUN git checkout origin/python3 -B python3
 # gmetad-python-install-git
 
 # pyhtml-install-git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/HTML.py.git
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/HTML.py
-RUN git checkout origin/python3 -B python3
 RUN sudo python3 setup.py install
 # pyhtml-install-git
 
