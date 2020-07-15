@@ -54,6 +54,7 @@ from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import makeTimestamp
 from lib.stores.stores_initial_setup import load_metricstore_adapter
+from lib.stores.common_datastore_adapter import MetricStoreMgdConnException
 
 class NetworkException(Exception) :
     '''
@@ -918,7 +919,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
         _status = 0
         
-    except _msci.MetricStoreMgdConnException as obj :
+    except MetricStoreMgdConnException as obj :
         for line in traceback.format_exc().splitlines() :
             cberr(line)
         _status = obj.status
