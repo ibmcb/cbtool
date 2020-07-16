@@ -65,10 +65,22 @@ ${SUDO_CMD} sed -i '/innodb_buffer_pool_dump_at_shutdown/d' ${MYSQL_CONF_FILE}
 ${SUDO_CMD} sed -i '/innodb_buffer_pool_load_at_startup/d' ${MYSQL_CONF_FILE}
 
 # Set mysql's memory cache size to be a percentage of main memory
-kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
-mb=$(echo "$kb / 1024 * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
-${SUDO_CMD} su -c "echo 'innodb_buffer_pool_size = ${mb}M' >> ${MYSQL_CONF_FILE}"
+check_container
+if [ ${IS_CONTAINER} -eq 1 ] && [ `get_my_vm_attribute model` == "pdm" ] ; then
+        size=`get_my_vm_attribute size`
+	syslog_netcat "MySQL is running on bare metal, will use a container size of: ${size}"
+        mb_total=$(echo $size | cut -d "-" -f 2)
+	mb=$(echo "${mb_total} * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
+else
+	syslog_netcat "MySQL is running in a VM."
+        # We are in a VM
+        kb=$(cat /proc/meminfo  | sed -e "s/ \+/ /g" | grep MemTotal | cut -d " " -f 2)
+        mb=$(echo "$kb / 1024 * ${MYSQL_RAM_PERCENTAGE} / 100" | bc)
+fi
 
+syslog_netcat "Calculated cache size: ${mb} MB"
+
+${SUDO_CMD} su -c "echo 'innodb_buffer_pool_size = ${mb}M' >> ${MYSQL_CONF_FILE}"
 ${SUDO_CMD} su -c "echo 'innodb_io_capacity = ${MYSQL_INNODB_IO_CAPACITY}' >> ${MYSQL_CONF_FILE}"
 ${SUDO_CMD} su -c "echo 'innodb_log_file_size = ${MYSQL_INNODB_LOG_FILE_SIZE}' >> ${MYSQL_CONF_FILE}"
 ${SUDO_CMD} su -c "echo 'query_cache_size = ${MYSQL_QUERY_CACHE_SIZE}' >> ${MYSQL_CONF_FILE}"

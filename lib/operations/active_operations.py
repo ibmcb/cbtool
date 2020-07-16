@@ -32,7 +32,7 @@ from uuid import uuid5, NAMESPACE_DNS
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, dic2str, get_boostrap_command, selectively_print_message, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, get_bootstrap_command, selectively_print_message, DataOpsException
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
@@ -2478,7 +2478,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             cbdebug(_msg)
             
             _msg = "Bootstrapping " + obj_attr_list["log_string"]  + ": creating file"
-            _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
+            _msg += " cb_os_parameters.txt in \"" + obj_attr_list["login"] 
             _msg += "\" user's home dir on IP address " 
             _msg += obj_attr_list["prov_cloud_ip"] + "..."
 
@@ -2495,7 +2495,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _actual_tries = int(obj_attr_list["update_attempts"])                
                 
-                _bcmd = get_boostrap_command(obj_attr_list, self.osci)
+                _bcmd = get_bootstrap_command(obj_attr_list, cloud_init = False)
                 
                 _msg = "BOOTSTRAP: " + _bcmd
                 cbdebug(_msg)
