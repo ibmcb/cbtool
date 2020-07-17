@@ -27,6 +27,7 @@ from random import choice, randint
 from os.path import expanduser
 
 import docker
+import traceback
 from docker.errors import APIError
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -76,7 +77,7 @@ class PdmCmds(CommonCloudFunctions) :
                 _endpoint, _endpoint_name, _endpoint_ip= self.parse_endpoint(_endpoint, "tcp", "2375")
                 
                 if _endpoint_ip not in self.dockconn :
-                    self.dockconn[_endpoint_ip] = docker.APIClient(base_url = _endpoint, timeout = 180)
+                    self.dockconn[_endpoint_ip] = docker.DockerClient(base_url = _endpoint, timeout = 180)
 
                 _host_info = self.dockconn[_endpoint_ip].info()
                 
@@ -168,11 +169,11 @@ class PdmCmds(CommonCloudFunctions) :
             _msg += "found on VMC " + vmc_name + " (endpoint " + _endpoint + ")..."
             cbdebug(_msg, True)
 
-            for _network in self.dockconn[_endpoint].networks() :
-                if _network["Name"] == _prov_netname :
+            for _network in self.dockconn[_endpoint].networks.list() :
+                if _network.name == _prov_netname :
                     _prov_netname_found = True
                     
-                if _network["Name"] == _run_netname :
+                if _network.name == _run_netname :
                     _run_netname_found = True                    
 
         if not _prov_netname_found : 
@@ -202,40 +203,26 @@ class PdmCmds(CommonCloudFunctions) :
 
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
 
-            _registered_image_list = self.dockconn[_endpoint].images()
+            _registered_image_list = self.dockconn[_endpoint].images.list()
+            _registered_image_name_list = []
 
-            _registered_image_tags = []
-            for _image in _registered_image_list :
-                if _image["RepoTags"] :
-                    _image_tag = _image["RepoTags"][0].split(':')[0]
-                    if _image_tag not in _registered_image_tags :
-                        _registered_image_tags.append(_image_tag)
-
-            _attempted_pulls = []
+            # Don't pre-download images. Ask the docker server to tell us
+            # if the image exists first. We will downloaded the first time the
+            # instance passes through vmcreate() instead, just as we do for VMs.
             for _vm_role in list(vm_templates.keys()) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-                if self.is_cloud_image_uuid(_imageid) :
-                    if _imageid in _map_id_to_name :
-                        _imageid = _map_id_to_name[_imageid]
-
-                if not self.is_cloud_image_uuid(_imageid) :
-                    try :
-                        if _imageid not in _registered_image_tags and _imageid not in _attempted_pulls and not _imageid.count("_to_replace") :
-                            _msg = "    Pulling docker image \"" + _imageid + "\"..."
-                            cbdebug(_msg, True)
-                            if _imageid not in _attempted_pulls :
-                                _attempted_pulls.append(_imageid)
-                            self.dockconn[_endpoint].pull(_imageid)
-                    except :
-                        pass
-                
-            _registered_image_list = self.dockconn[_endpoint].images()
-            _registered_imageid_list = []
-
-            for _registered_image in _registered_image_list :
-                _registered_imageid_list.append(_registered_image["Id"].split(':')[1])
-                if _registered_image["RepoTags"] :
-                    _map_name_to_id[_registered_image["RepoTags"][0].split(':')[0]] = _registered_image["Id"].split(':')[1]
+                search = vm_defaults["image_prefix"] + _imageid
+                try :
+                    # Remote docker pulls cannot operate with sha1 hashes. Stick to names only,
+                    # and incorporate the remote prefix, in case one exists. This forces the use
+                    # of a private or remote registry (such as the dockerhub). 
+                    # Locally-only built images will no longer work.
+                    data = self.dockconn[_endpoint].images.get_registry_data(search)
+                    if search not in _registered_image_name_list :
+                        _registered_image_name_list.append(search)
+                    _map_name_to_id[_imageid] = search 
+                except docker.errors.NotFound as e :
+                    pass
                 
             for _vm_role in list(vm_templates.keys()) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
@@ -244,12 +231,18 @@ class PdmCmds(CommonCloudFunctions) :
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     else :
                         _map_name_to_id[_imageid] = _imageid
-                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
-
+                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
             
-            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name, vm_defaults)
+            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_image_name_list, _map_id_to_name, vm_defaults)
 
+            # active_operations has code to prepend the prefix, even though we've already done it.
+            # Undo that.
+            for _vm_role in list(vm_templates.keys()) :
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+                if _imageid.count(vm_defaults["image_prefix"]) :
+                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _imageid.replace(vm_defaults["image_prefix"], ""))
+            
             if not _detected_imageids :
                 return _detected_imageids
 
@@ -350,22 +343,23 @@ class PdmCmds(CommonCloudFunctions) :
                 _running_instances = False
 
                 for _endpoint in self.dockconn :
-                    _container_list = self.dockconn[_endpoint].containers(all=True)
+                    _container_list = self.dockconn[_endpoint].containers.list(all=True)
                     for _container in _container_list :
-                        for _name in _container["Names"] :
+                        _name = _container.name
+                        if _name[0] == "/" :
                             _name = _name[1:]
-                            if _name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                        if _name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
 
-                                _running_instances = True
-    
-                                _msg = "Terminating instance: " 
-                                _msg += _container["Id"] + " (" + str(_name) + ")"
-                                cbdebug(_msg, True)
-                                
-                                if  _container["State"] == "running" :
-                                    self.dockconn[_endpoint].kill(_container["Id"])
-    
-                                self.dockconn[_endpoint].remove_container(_container["Id"])
+                            _running_instances = True
+
+                            _msg = "Terminating instance: " 
+                            _msg += _container.id + " (" + str(_name) + ")"
+                            cbdebug(_msg, True)
+                            
+                            if  _container.status == "running" :
+                                _container.kill()
+
+                            _container.remove()
                             
                 sleep(_wait)
 
@@ -383,11 +377,11 @@ class PdmCmds(CommonCloudFunctions) :
             self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
 
             for _endpoint in self.dockconn :
-                _volume_list = self.dockconn[_endpoint].volumes()["Volumes"]
+                _volume_list = self.dockconn[_endpoint].volumes.list()
                 if _volume_list :
                     for _volume in _volume_list :
-                        if _volume["Name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
-                            self.dockconn[_endpoint].remove_volume(name=_volume["Name"])
+                        if _volume.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                            _volume.remove()
 
             _msg = "Ok"
             _status = 0
@@ -518,10 +512,11 @@ class PdmCmds(CommonCloudFunctions) :
                 for _endpoint in self.dockconn :
                     _container_list = self.dockconn[_endpoint].containers(all=True)
                     for _container in _container_list :
-                        for _name in _container["Names"] :
+                        _name = _container.name
+                        if _name[0] == "/" :
                             _name = _name[1:]
-                            if _name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
-                                _nr_instances += 1
+                        if _name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                            _nr_instances += 1
 
         except Exception as e :
             _status = 23
@@ -556,7 +551,7 @@ class PdmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''             
-        _networks = list(self.instance_info["NetworkSettings"]["Networks"].keys())
+        _networks = list(obj_attr_list["instance_info"]["NetworkSettings"]["Networks"].keys())
                 
         if len(_networks) :
             
@@ -570,9 +565,9 @@ class PdmCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 _run_network = _networks[0]
             
-            _address = self.instance_info["NetworkSettings"]["Networks"][_run_network]["IPAddress"]
+            _address = obj_attr_list["instance_info"]["NetworkSettings"]["Networks"][_run_network]["IPAddress"]
 
-            _mac = self.instance_info["NetworkSettings"]["Networks"][_run_network]["MacAddress"]
+            _mac = obj_attr_list["instance_info"]["NetworkSettings"]["Networks"][_run_network]["MacAddress"]
 
             if len(_address) :
 
@@ -614,19 +609,25 @@ class PdmCmds(CommonCloudFunctions) :
                 if obj_type == "vm" :
                     _call = "containers()"
                     if identifier == "all" :
-                        _instances += self.dockconn[_endpoint].containers(all=True)
+                        _instances += self.dockconn[_endpoint].containers.list(all=True)
                         
                     else :
-                        _instances += self.dockconn[_endpoint].containers(filters = {"name" : identifier})
+                        _instance_list = self.dockconn[_endpoint].containers.list(all=True, filters = {"name" : identifier})
+                        for _instance in _instance_list :
+                            _name = _instance.name
+                            if _name[0] == "/" :
+                                _name = _name[1:]
+                            if identifier == _name :
+                                _instances.append(_instance)
                         
                 else :
                     _call = "volumes()"                    
                     if identifier == "all" :
-                        _instances += self.dockconn[_endpoint].volumes()
+                        _instances += self.dockconn[_endpoint].volumes.list()
      
                     else :
-                        for _volume in self.dockconn[_endpoint].volumes()["Volumes"] :
-                            if _volume["Name"] == identifier :
+                        for _volume in self.dockconn[_endpoint].volumes.list() :
+                            if _volume.name == identifier :
                                 _instances += _volume
                         
             if len(_instances) == 1 :
@@ -645,6 +646,8 @@ class PdmCmds(CommonCloudFunctions) :
         except Exception as e :
             _status = 23
             _xfmsg = "Exception " + str(e)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             
         finally :
             
@@ -675,43 +678,44 @@ class PdmCmds(CommonCloudFunctions) :
             
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _image_list = self.dockconn[obj_attr_list["host_cloud_ip"]].images()
+            _image_list = self.dockconn[obj_attr_list["host_cloud_ip"]].images.list()
 
             _fmsg = "Please check if the defined image name is present on this "
             _fmsg +=  self.get_description()
 
             _candidate_images = []
+            imagename = obj_attr_list["imageid1"]
 
             for _image in _image_list :                
-                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
-                    if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
+                if self.is_cloud_image_uuid(imagename) :
+                    if _image.id.split(':')[1] == imagename :
                         _candidate_images.append(_image)
                 else :
-                    if _image["RepoTags"] :
-                        if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
+                    if len(_image.tags) :
+                        if _image.tags[0].count(imagename) :
                             _candidate_images.append(_image)   
 
             if not len(_candidate_images) :
-                self.dockconn[obj_attr_list["host_cloud_ip"]].pull(obj_attr_list["imageid1"])
+                self.dockconn[obj_attr_list["host_cloud_ip"]].images.pull(imagename)
 
-                _image_list = self.dockconn[obj_attr_list["host_cloud_ip"]].images()
+                _image_list = self.dockconn[obj_attr_list["host_cloud_ip"]].images.list()
                 _candidate_images = []
     
                 for _image in _image_list :
-                    if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
-                        if _image["RepoTags"] :                        
-                            if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
+                    if self.is_cloud_image_uuid(imagename) :
+                        if len(_image.tags) :
+                            if _image.tags[0].count(imagename) :
                                 _candidate_images.append(_image)
                     else :
-                        if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
+                        if _image.id.split(':')[1] == imagename :
                             _candidate_images.append(_image)  
 
             if len(_candidate_images) :
-                obj_attr_list["boot_volume_imageid1"] = _candidate_images[0]["Id"]
-                obj_attr_list["imageid1"] = _candidate_images[0]["RepoTags"][0]
+                obj_attr_list["boot_volume_imageid1"] = _candidate_images[0].id
+                obj_attr_list["imageid1"] = _candidate_images[0].tags[0]
                 _status = 0
             else :
-                _fmsg = "Unable to pull image \"" + obj_attr_list["imageid1"] + "\""
+                _fmsg = "Unable to pull image \"" + imagename + "\""
                 _fmsg += " to "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
                 _status = 1927
             
@@ -725,7 +729,7 @@ class PdmCmds(CommonCloudFunctions) :
             
         finally :
             if _status :
-                _msg = "Image Name (" +  obj_attr_list["imageid1"] + ") not found: " + _fmsg
+                _msg = "Image Name (" +  imagename + ") not found: " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
@@ -769,10 +773,10 @@ class PdmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        if len(imageid) == 64 and is_number(imageid, True) :
-            return True
-        
-        return False
+        #if len(imageid) == 64 and is_number(imageid, True) :
+        #    return True
+        #return False 
+        return True
 
     @trace
     def is_vm_running(self, obj_attr_list):
@@ -788,14 +792,16 @@ class PdmCmds(CommonCloudFunctions) :
             _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
 
             if _instance :
-                _instance_state = _instance["State"]
+                _instance_state = _instance.status
             else :
                 _instance_state = "non-existent"
 
             if _instance_state == "running" :
-                self.instance_info = _instance
+                obj_attr_list["instance_info"] = _instance.attrs
                 
-                _instance_name = _instance["Names"][0][1:]
+                _instance_name = _instance.name
+                if _instance_name[0] == "/" :
+                    _instance_name = _instance_name[1:]
                 _host_name = _instance_name.replace(obj_attr_list["cloud_vm_name"],'')
                 _host_name = _host_name.replace('/','').strip()
                                 
@@ -861,7 +867,7 @@ class PdmCmds(CommonCloudFunctions) :
 
                 obj_attr_list["last_known_state"] = "about to send volume create request"                                
                 _mark_a = time()
-                _vv = self.dockconn[obj_attr_list["host_cloud_ip"]].create_volume(name=obj_attr_list["cloud_vv_name"], driver=obj_attr_list["cloud_vv_type"])
+                _vv = self.dockconn[obj_attr_list["host_cloud_ip"]].volumes.create(name=obj_attr_list["cloud_vv_name"], driver=obj_attr_list["cloud_vv_type"])
                 self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
                 
                 if obj_attr_list["cloud_vv_type"] == "local" :
@@ -909,8 +915,7 @@ class PdmCmds(CommonCloudFunctions) :
                     
                 if _instance :
                     self.common_messages("VV", obj_attr_list, "destroying", 0, '')
-    
-                self.dockconn[obj_attr_list["host_cloud_ip"]].remove_volume(name=obj_attr_list["cloud_vv_name"])
+                    _instance.remove()
                                 
             _status = 0
 
@@ -961,7 +966,6 @@ class PdmCmds(CommonCloudFunctions) :
 
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 obj_attr_list["prov_cloud_port"] = int(obj_attr_list["ports_base"]) + int(obj_attr_list["name"].replace("vm_",''))
-                _ports_mapping = [ (22, 'tcp') ]
                 _port_bindings = { '22/tcp' : ('0.0.0.0', obj_attr_list["prov_cloud_port"])}
 
                 if obj_attr_list["check_boot_complete"] == "tcp_on_22":
@@ -972,10 +976,8 @@ class PdmCmds(CommonCloudFunctions) :
                     _extra_port_list = obj_attr_list["extra_ports"].split(',')
                     for _extra_port in _extra_port_list :
                         _extra_mapped_port = int(obj_attr_list["extra_ports_base"]) + len(_extra_port_list) - 1 + int(obj_attr_list["name"].replace("vm_",'')) + _extra_port_list.index(_extra_port)
-                        _ports_mapping += [ (int(_extra_port), 'tcp') ]
                         _port_bindings[ _extra_port + '/tcp'] = ('0.0.0.0', _extra_mapped_port)
             else :
-                _ports_mapping = None
                 _port_bindings = None
 
             _devices = []
@@ -1011,47 +1013,42 @@ class PdmCmds(CommonCloudFunctions) :
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
-            _volumes = []
-            _binds = []
+            _volumes = {} 
             
             if "cloud_vv" in obj_attr_list :
                 if "data_dir" in obj_attr_list :
                     _mapped_dir = obj_attr_list["data_dir"]
                 else :
                     _mapped_dir = "/mnt/cbvol1"
-                _binds = [ obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir + ":rw"]                
-                _volumes = [ _mapped_dir ]
+                _volumes = { _mapped_dir: { 'bind': obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir, 'mode': "rw" } }
 
             self.pre_vmcreate_process(obj_attr_list)
 
             _mark_a = time()
-            _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
-                                                                                            port_bindings = _port_bindings, 
-                                                                                            binds = _binds, \
-                                                                                            mem_limit = str(_memory) + 'm', \
-                                                                                            devices = _devices, \
-                                                                                            shm_size = obj_attr_list["shm_size"], \
-                                                                                            privileged = _privileged, 
-                                                                                            ulimits = [{"name": "nofile", "soft": 32768, "hard": 32768}])
             self.annotate_time_breakdown(obj_attr_list, "create_host_config_time", _mark_a)
 
             _mark_a = time()
-            _instance = self.dockconn[obj_attr_list["host_cloud_ip"]].create_container(image = obj_attr_list["imageid1"], \
+            _instance = self.dockconn[obj_attr_list["host_cloud_ip"]].containers.create(image = obj_attr_list["imageid1"], \
                                                                                  hostname = obj_attr_list["cloud_vm_name"], \
                                                                                  detach = True, \
                                                                                  name = obj_attr_list["cloud_vm_name"], \
-                                                                                 ports = _ports_mapping, \
+                                                                                 network_mode = obj_attr_list["netname"], \
+                                                                                 mem_limit = str(_memory) + 'm', \
+                                                                                 ports = _port_bindings, \
+                                                                                 devices = _devices, \
+                                                                                 privileged = _privileged, 
+                                                                                 ulimits = [{"name": "nofile", "soft": 32768, "hard": 32768}], \
+                                                                                 shm_size = obj_attr_list["shm_size"], \
                                                                                  volumes = _volumes, \
-                                                                                 host_config = _host_config, \
 #                                                                                 command = "/sbin/my_init", \
                                                                                  environment = {"CB_SSH_PUB_KEY" : obj_attr_list["pubkey_contents"], "CB_LOGIN" : obj_attr_list["login"]})
 
             self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
                         
-            obj_attr_list["cloud_vm_uuid"] = _instance["Id"]
+            obj_attr_list["cloud_vm_uuid"] = _instance.id
 
             _mark_a = time()
-            self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
+            _instance.start()
             self.annotate_time_breakdown(obj_attr_list, "instance_start_time", _mark_a)
                         
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
@@ -1071,6 +1068,8 @@ class PdmCmds(CommonCloudFunctions) :
         except APIError as obj:
             _status = 18127
             _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
         except CldOpsException as obj :
             _status = obj.status
@@ -1084,8 +1083,13 @@ class PdmCmds(CommonCloudFunctions) :
         except Exception as e :
             _status = 23
             _fmsg = str(e)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
         finally :
+
+            if "instance_info" in obj_attr_list :
+                del obj_attr_list["instance_info"]
 
             if "mgt_003_provisioning_request_completed" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)
@@ -1129,15 +1133,19 @@ class PdmCmds(CommonCloudFunctions) :
 
             _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
 
-            if len(_instance) :
+            if _instance :
                 self.common_messages("VM", obj_attr_list, "destroying", 0, '')
                                     
-                if  _instance["State"] == "running" :                    
-                    self.dockconn[_host_ip].kill(obj_attr_list["cloud_vm_uuid"])
+                if isinstance(_instance, list) and len(_instance) == 1:
+                    cbdebug("Instance is: " + str(_instance), True)
+                    _instance = _instance[0]
 
-                self.dockconn[_host_ip].remove_container(_instance["Id"])
+                if  _instance.status == "running" :
+                    _instance.kill()
 
-                while len(_instance) and _curr_tries < _max_tries :
+                _instance.remove()
+
+                while _instance and _curr_tries < _max_tries :
                     _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
                                            obj_attr_list["cloud_vm_name"])
 
@@ -1164,6 +1172,8 @@ class PdmCmds(CommonCloudFunctions) :
             _fmsg = str(obj.msg)
 
         except Exception as e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
     
@@ -1210,7 +1220,7 @@ class PdmCmds(CommonCloudFunctions) :
 
                 self.common_messages("VM", obj_attr_list, "capturing", 0, '')
 
-                self.dockconn[_host_ip].commit(_instance["Id"], repository=obj_attr_list["captured_image_name"])
+                self.dockconn[_host_ip].containers.commit(_instance.id, repository=obj_attr_list["captured_image_name"])
 
                 sleep(_wait)
 
@@ -1273,13 +1283,13 @@ class PdmCmds(CommonCloudFunctions) :
 
             if _instance :
                 if _ts == "fail" :
-                    self.dockconn[_host_ip].pause(obj_attr_list["cloud_vm_uuid"])
+                    _instance.pause()
                 elif _ts == "save" :
-                    self.dockconn[_host_ip].stop(obj_attr_list["cloud_vm_uuid"])
+                    _instance.stop()
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
-                    self.dockconn[_host_ip].unpause(obj_attr_list["cloud_vm_uuid"])
+                    _instance.unpause()
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-                    self.dockconn[_host_ip].start(obj_attr_list["cloud_vm_uuid"])
+                    _instance.start()
             
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
@@ -1334,21 +1344,22 @@ class PdmCmds(CommonCloudFunctions) :
                          obj_attr_list["vmc_name"], obj_attr_list)
 
             for _endpoint in self.dockconn :
-                _image_list = self.dockconn[_endpoint].images()
+                _image_list = self.dockconn[_endpoint].images.list()
 
                 for _image in _image_list :
-                    if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :                 
-                        if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
-                            if _image["RepoTags"] :
-                                obj_attr_list["imageid1"] = _image["RepoTags"][0]
-                            obj_attr_list["boot_volume_imageid1"] = _image["Id"]                            
-                            self.dockconn[_endpoint].remove_image(_image["Id"])
+                    imagename = obj_attr_list["imageid1"]
+                    if self.is_cloud_image_uuid(imagename) :
+                        if _image.id.split(':')[1] == imagename :
+                            if len(_image.tags) :
+                                obj_attr_list["imageid1"] = _image.tags[0]
+                            obj_attr_list["boot_volume_imageid1"] = _image.id
+                            self.dockconn[_endpoint].images.remove()
                             break
                     else :
-                        if _image["RepoTags"] :                        
-                            if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
-                                obj_attr_list["boot_volume_imageid1"] = _image["Id"]                        
-                                self.dockconn[_endpoint].remove_image(_image["Id"])
+                        if len(_image.tags) :                        
+                            if _image.tags[0].count(imagename) :
+                                obj_attr_list["boot_volume_imageid1"] = _image.id
+                                self.dockconn[_endpoint].images.remove()
                                 break
                         
             _status = 0

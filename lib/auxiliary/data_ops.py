@@ -351,7 +351,7 @@ def value_suffix(value, in_kilobytes = False) :
         _value = int(value)
     return _value
 
-def get_boostrap_command(obj_attr_list, cloud_init = False) :
+def get_bootstrap_command(obj_attr_list, cloud_init = False) :
     '''
     TBD
     '''

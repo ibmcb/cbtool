@@ -56,7 +56,7 @@ setuptools.setup(
           'softlayer',
           'boto',
           'apache-libcloud',
-          'pydocker',
+          'docker',
           'pylxd',
           'pykube',
           'docutils',

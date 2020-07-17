@@ -50,7 +50,7 @@ run-command sudo pip3 install -i https://pypi.python.org/simple/ requests==2.12
 run-command sudo pip3 install -i https://pypi.python.org/simple/ docutils 
 run-command sudo pip3 install -i https://pypi.python.org/simple/ python-daemon
 run-command sudo pip3 install -i https://pypi.python.org/simple/ --upgrade pyasn1-modules
-run-command sudo pip3 install -i https://pypi.python.org/simple/ --upgrade docker-py wget markup httplib2shim pylxd mongo beaker webob redis 
+run-command sudo pip3 install -i https://pypi.python.org/simple/ --upgrade docker wget markup httplib2shim pylxd mongo beaker webob redis 
 
 run-command curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 run-command add-apt-repository "deb https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"

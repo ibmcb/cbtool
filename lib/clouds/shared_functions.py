@@ -36,7 +36,7 @@ from uuid import uuid5, UUID, NAMESPACE_DNS
 from socket import gethostbyname
 from random import randint
 
-from lib.auxiliary.data_ops import str2dic, dic2str, value_suffix, get_boostrap_command, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, value_suffix, get_bootstrap_command, DataOpsException
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import Nethashget, hostname2ip
 from lib.stores.redis_datastore_adapter import RedisMgdConn
@@ -1043,6 +1043,9 @@ class CommonCloudFunctions:
         _detected_imageids = {}
         _undetected_imageids = {}
 
+        #cbdebug("Required list: " + str(_required_imageid_list), True)
+        #cbdebug("Registered list: " + str(registered_imageid_list), True)
+        #cbdebug("Mapped list: " + str(map_id_to_name), True)
         for _imageid in list(_required_imageid_list.keys()) :
             
             # Unfortunately we have to check image names one by one,
@@ -1051,6 +1054,7 @@ class CommonCloudFunctions:
             # times as if it were different images.
             _image_detected = False
             for _registered_imageid in registered_imageid_list :
+                #cbdebug("Comparing " + _registered_imageid + " to " + _imageid, True)
                 if str(_registered_imageid).count(_imageid) :
                     _image_detected = True
                     _detected_imageids[_imageid] = "detected"
@@ -1254,7 +1258,7 @@ packages:"""
         _bootstrap_script += _pad + "chmod 777 /var/log/cloudbench\n"
         _bootstrap_script += _pad + "\n"
         
-        _bootstrap_script += get_boostrap_command(obj_attr_list, True)
+        _bootstrap_script += get_bootstrap_command(obj_attr_list, True)
         
         _bootstrap_script += _pad + "if [[ $(cat " + obj_attr_list["remote_dir_home"] + "/cb_os_parameters.txt | grep -c \"#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "\") -ne 0 ]]\n"
         _bootstrap_script += _pad + "then\n"
