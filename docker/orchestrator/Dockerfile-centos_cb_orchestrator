@@ -278,9 +278,9 @@ RUN pip3 install --upgrade apache-libcloud
 RUN pip3 install --upgrade gcloud google-api-python-client
 # pygce-install-pip
 
-# pydocker-install-pip
+# docker-install-pip
 RUN pip3 install --upgrade docker wget
-# pydocker-install-pip
+# docker-install-pip
 
 # pylxd-install-pip
 RUN pip3 install --upgrade pylxd

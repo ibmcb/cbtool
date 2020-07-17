@@ -7,7 +7,7 @@ setuptools.setup(
   name = 'cbtool',
 
 
-  version = '3.0.3',
+  version = '3.0.4',
   author = 'Marcio Silva, Michael Galaxy',
   author_email = 'cbtool-admin@googlegroups.com',
   description = 'CloudBench: Cloud Rapid Experimentation and Analysis Toolkit',
