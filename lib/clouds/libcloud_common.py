@@ -621,6 +621,8 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+            _search = "cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]
+
             for credentials_list in obj_attr_list["credentials"].split(";"):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
 
@@ -637,7 +639,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                     _reservations = self.get_adapter(credentials_list).list_nodes(*self.get_list_node_args(obj_attr_list))
 
                     for _reservation in _reservations :
-                        if _reservation.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) :
+                        _match = "-".join(_reservation.name.split("-")[:3])
+                    
+                        if _match == _search :
                             if _reservation.state in [ NodeState.PENDING, NodeState.STOPPED ] :
                                 cbdebug("Instance " + _reservation.name + " still has a pending event. waiting to destroy...")
                                 if _reservation.state == NodeState.STOPPED :
@@ -682,7 +686,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                         _volumes = self.get_adapter(credentials_list).list_volumes()
                         for _volume in _volumes :
-                            if _volume.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) :
+                            _match = "-".join(_volume.name.split("-")[:3])
+                        
+                            if _match == _search :
                                 try :
                                     cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
                                     _volume.destroy()
