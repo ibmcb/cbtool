@@ -341,8 +341,14 @@ class RedisMgdConn :
             _dropped = 0
             try :
                 for key in self.redis_conn.scan_iter("*" + cloud_name + "*") :
-                    _dropped += 1
-                    self.redis_conn.delete(key)
+                    parts = key.split(":")
+                    # Do not delete keys where cloud names have matching substrings.
+                    for part in parts :
+                        # Only delete the exact cloud name
+                        if part == cloud_name :
+                            _dropped += 1
+                            self.redis_conn.delete(key)
+                            break
                 _members = self.redis_conn.smembers(self.experiment_inst + ":CLOUD")
                 cbdebug("Dropped " + str(_dropped) + " keys for cloud " + cloud_name)
                 for _member in _members :
@@ -404,7 +410,6 @@ class RedisMgdConn :
             self.redis_conn.delete(obj_inst + ":GLOBAL:vm_roles")
             self.redis_conn.delete(obj_inst + ":GLOBAL")
 
-            #self.flush_object_store()
             return True
 
         except ConnectionError as msg :
