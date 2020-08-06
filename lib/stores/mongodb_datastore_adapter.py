@@ -118,7 +118,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += str(self.port) + "database " + str(self.database) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
     def disconnect(self) :
@@ -142,7 +142,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += str(self.port) + "database " + str(self.database) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
     def conn_check(self, hostov = False, dbov = False, tout = False) :
@@ -162,8 +162,8 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             try :
                 self.connect(self.timeout)
                 
-            except self.MetricStoreMgdConnException as obj :
-                raise self.MetricStoreMgdConnException(obj.msg, 2)
+            except MetricStoreMgdConnException as obj :
+                raise MetricStoreMgdConnException(obj.msg, 2)
             
             if self.password and len(self.password) > 2 and str(self.password).lower() != "false" :
                 try :
@@ -181,14 +181,14 @@ class MongodbMgdConn(MetricStoreMgdConn) :
                     _msg += "\":" + str(errmsg) + ". \nPlease create the user there (i.e., directly on "
                     _msg += self.host + ") using the following command:\n"                    
                     _msg += _auth_cmd
-                    raise self.MetricStoreMgdConnException(_msg, 2)
+                    raise MetricStoreMgdConnException(_msg, 2)
     
                 except Exception as e:
                     _msg = "Unable to authenticate against the database \"" + self.database
                     _msg += "\":" + str(e) + ". \nPlease create the user there (i.e., directly on "
                     _msg += self.host + ") using the following command:\n"               
                     _msg += _auth_cmd
-                    raise self.MetricStoreMgdConnException(_msg, 2)
+                    raise MetricStoreMgdConnException(_msg, 2)
 
     @trace
     def initialize_metric_store(self, username) :
@@ -240,7 +240,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += "\" on collection \"" + _collection + "\": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     def flush_metric_store(self, username, partial = False, criteria = {}) :
         '''
@@ -282,7 +282,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += "\" on collection \"" + _collection + "\": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
     def add_document(self, collection, document, disconnect_finish = False) :
@@ -309,7 +309,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += "\" on collection \"" + collection + "\": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
  
     @trace
     def find_document(self, collection, criteria, allmatches = False, \
@@ -349,7 +349,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)       
+            raise MetricStoreMgdConnException(str(_msg), 1)       
 
     @trace
     def update_document(self, collection, document, disconnect_finish = False) :
@@ -381,7 +381,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
     def delete_document(self, collection, criteria, disconnect_finish = False) :
@@ -408,7 +408,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
     def cleanup_collection(self, collection, disconnect_finish = False) :
@@ -431,7 +431,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
     def count_document(self, collection, criteria, disconnect_finish = False) :
@@ -454,7 +454,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     def get_reported_objects(self, collection, disconnect_finish = False) :
         '''
@@ -492,7 +492,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     def get_time_boundaries(self, collection, disconnect_finish = False) :
         '''
@@ -517,7 +517,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     def get_experiment_list(self, collection, disconnect_finish = False) :
         '''
@@ -548,7 +548,7 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg += collection + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
     def get_info(self) :
@@ -576,4 +576,4 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to get info database " + self.database + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 1)
+            raise MetricStoreMgdConnException(str(_msg), 1)

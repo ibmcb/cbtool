@@ -535,8 +535,6 @@ class ProcessManagement :
                 # a new process.
                 sleep(3)
         else :
-            if cmdline.count("cbact") and cmdline.count("--daemon") :
-                _cmd = "script -qfec \"" + _cmd + "\""
             _status, _a, _b = self.run_os_command(_cmd)
             # Same comment
             sleep(3)
