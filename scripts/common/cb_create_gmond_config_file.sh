@@ -27,6 +27,7 @@ COLLECTOR_UNICAST_IP=`get_my_ai_attribute_with_default metric_aggregator_ip none
 COLLECTOR_MULTICAST_IP=`get_global_sub_attribute mon_defaults collector_multicast_ip`
 COLLECTOR_MULTICAST_PORT=`get_global_sub_attribute mon_defaults collector_vm_multicast_port`
 COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_port`
+COLLECTOR_VM_INTERVAL=`get_global_sub_attribute mon_defaults collector_vm_interval`
 
 cat << EOF > $GMOND_VMS
 globals {
@@ -131,15 +132,15 @@ modules {
 include ('${python_modules}/*.conf')
 
 collection_group {
-  collect_every = 60
-  time_threshold = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
+  time_threshold = ${COLLECTOR_VM_INTERVAL}
   metric {
     name = "heartbeat"
   }
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
   metric {
     name = "cpu_speed"
     title = "CPU Speed"
@@ -167,7 +168,7 @@ collection_group {
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
 
   metric {
     name = "cpu_user"
@@ -228,7 +229,7 @@ collection_group {
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
 
   metric {
     name = "load_one"
@@ -248,7 +249,7 @@ collection_group {
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
   metric {
     name = "proc_run"
     value_threshold = "1.0"
@@ -262,7 +263,7 @@ collection_group {
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
   metric {
     name = "mem_free"
     value_threshold = "1.0"
@@ -306,7 +307,7 @@ collection_group {
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
   metric {
     name = "bytes_out"
     value_threshold = 4096
@@ -330,7 +331,7 @@ collection_group {
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
   metric {
     name = "disk_total"
     value_threshold = 1.0
@@ -339,7 +340,7 @@ collection_group {
 }
 
 collection_group {
-  collect_every = 60
+  collect_every = ${COLLECTOR_VM_INTERVAL}
   metric {
     name = "disk_free"
     value_threshold = 1.0
