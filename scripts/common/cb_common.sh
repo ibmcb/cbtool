@@ -2196,7 +2196,7 @@ EOF
     do
         for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
         do
-            echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LBP check" >> $f
+            echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | head -1 | awk '{ print $2 }') $BACKEND_IP:$LBP check" >> $f
         done
     done
     sudo ls /etc/haproxy/haproxy.cfg.backup
