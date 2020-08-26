@@ -878,7 +878,6 @@ class GUI(object):
         session.save()
         
     def d3_process(self, mon, data, result, category, label):
-        print(("There are " + str(data.count()) + " records"))
         fin = 0
         for document in data:
             if fin % 500 == 0 :
@@ -1165,7 +1164,6 @@ class GUI(object):
                     data = mon.msci.find_document(mon.collections[category], {"expid": expid, "uuid" : uuid, label : { "$exists" : True} }, True)
                 else :
                     data = mon.msci.find_document(mon.collections[category], {"expid": expid}, True)
-                data.batch_size(100000)
 #                p = multiprocessing.Process(target = self.d3_process, args = (mon, data, result, category, label))
 #                p.start()
 #                p.join()
