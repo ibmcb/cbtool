@@ -47,7 +47,7 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, cloud_name, overri
     print(_msg)
 
     _counter = 0
-    _reg_tst_expl_fh = open(path[0] + '/' + reg_tst_expl_fn, 'w', 0)
+    _reg_tst_expl_fh = open(path[0] + '/' + reg_tst_expl_fn, 'w')
 
     if not override_cb_dir :
         _cb_dir = path[0] + "/../"
@@ -62,7 +62,7 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, cloud_name, overri
 
     for _nr in range(0,2) :
         for _line_number, _line_contents in enumerate(reg_tst_f_contents) :
-            if _line_contents.strip() > 0 and _line_contents[0] == "#" :
+            if len(_line_contents.strip()) > 0 and _line_contents[0] == "#" :
                 continue
             _line_contents = _line_contents.strip('\n')
             _line_contents = _line_contents.replace("CB_DIRECTORY", _cb_dir)
