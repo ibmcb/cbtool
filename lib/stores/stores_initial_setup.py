@@ -35,6 +35,7 @@ from time import sleep
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import Nethashget, hostname2ip, NetworkException
+from lib.stores.common_datastore_adapter import MetricStoreMgdConn, MetricStoreMgdConnException
 from .redis_datastore_adapter import RedisMgdConn
 from .mongodb_datastore_adapter import MongodbMgdConn
 from .mysql_datastore_adapter import MysqlMgdConn
@@ -439,7 +440,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 
-    except MongodbMgdConn.MetricStoreMgdConnException as obj :
+    except MetricStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
@@ -546,7 +547,7 @@ def mysql_metricstore_setup(global_objects, operation = "check") :
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 
-    except MysqlMgdConn.MetricStoreMgdConnException as obj :
+    except MetricStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
         raise StoreSetupException(_msg, 9)
@@ -778,11 +779,11 @@ def reset(global_objects, soft = True, cloud_name = None) :
         _status = str(obj.status)
         _msg = str(obj.msg)
 
-    except MongodbMgdConn.MetricStoreMgdConnException as obj :
+    except MetricStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
 
-    except MysqlMgdConn.MetricStoreMgdConnException as obj :
+    except MetricStoreMgdConnException as obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
 

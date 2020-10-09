@@ -39,6 +39,8 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         self.version = mysql.connector.__version__.split('.')[0]
         self.lastrow_mutex = threading.Lock()
         self.conn_mutex = threading.Lock()
+        self.update_mutex = threading.Lock()
+
     @trace
     def connect(self, tout) :
         try:
@@ -67,11 +69,11 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
                 _msg = "Something is wrong with your MySQL user name or password."
                 cberr(_msg)
-                raise self.MetricStoreMgdConnException(str(_msg), 1)
+                raise MetricStoreMgdConnException(str(_msg), 1)
             else:
                 _msg = "Unknown MySQL error: " + str(err)
                 cberr(_msg)
-                raise self.MetricStoreMgdConnException(str(_msg), 2)
+                raise MetricStoreMgdConnException(str(_msg), 2)
 
     @trace
     def disconnect(self) :
@@ -91,7 +93,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg += str(self.port) + "database " + str(MysqlMgdConn.catalogs.cbtool["database"]) + ": "
             _msg += str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 3)
+            raise MetricStoreMgdConnException(str(_msg), 3)
 
     @trace
     def conn_check(self, hostov = False, dbov = False, tout = False) :
@@ -120,9 +122,9 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 
             try :
                 self.connect(self.timeout)
-            except self.MetricStoreMgdConnException as obj :
+            except MetricStoreMgdConnException as obj :
                 self.conn_mutex.release()
-                raise self.MetricStoreMgdConnException(obj.msg, 2)
+                raise MetricStoreMgdConnException(obj.msg, 2)
             except Exception as e :
                 self.conn_mutex.release()
                 raise(e)
@@ -143,7 +145,6 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             if not MysqlMgdConn.catalogs.cbtool["database"] :
                 cursor.execute("create database " + self.database)
                 cursor.execute("use " + self.database)
-                MysqlMgdConn.catalogs.cbtool["conn"].commit()
                 MysqlMgdConn.catalogs.cbtool["database"] = True 
 
             _latest_tables = [ \
@@ -191,6 +192,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                         cursor.execute("CREATE INDEX `uuid_idx` ON `" + _table + "`(`uuid`)")
                         cursor.execute("CREATE INDEX `dashboard_polled_idx` ON `" + _table + "`(`dashboard_polled`)")
             cursor.close()
+            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             self.disconnect()
             return True
 
@@ -199,7 +201,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to complete database initialization: "
             _msg += str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 4)
+            raise MetricStoreMgdConnException(str(_msg), 4)
 
     def make_restrictions(self, criteria, join = "and", level = 0) :
         full_list = ""
@@ -209,14 +211,14 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             if isinstance(_value, set) :
                 _msg = "1) We cannot yet handle this criteria: " + str(criteria)
                 cberr(_msg)
-                raise self.MetricStoreMgdConnException(_msg, 41)
+                raise MetricStoreMgdConnException(_msg, 41)
             elif isinstance(_value, dict) :
                 for subkey in _value.keys() :
                     if subkey.lower() == "$exists" :
                         if not isinstance(_value[subkey], bool) :
                             _msg = "2) We cannot yet handle this criteria: " + str(_value)
                             cberr(_msg)
-                            raise self.MetricStoreMgdConnException(_msg, 41)
+                            raise MetricStoreMgdConnException(_msg, 41)
 
                         if _value[subkey] :
                             restrictions.append("document->>'$." + _key + "' IS NOT NULL")
@@ -225,7 +227,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                     else :
                         _msg = "3) We cannot yet handle this criteria: " + str(subkey)
                         cberr(_msg)
-                        raise self.MetricStoreMgdConnException(_msg, 41)
+                        raise MetricStoreMgdConnException(_msg, 41)
             elif isinstance(_value, list) :
                 # Handle this group below 
                 continue
@@ -247,7 +249,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                         if not isinstance(subitem, dict) :
                             _msg = "4) We cannot yet handle this criteria: " + str(subitem)
                             cberr(_msg)
-                            raise self.MetricStoreMgdConnException(_msg, 41)
+                            raise MetricStoreMgdConnException(_msg, 41)
                         subdict.update(subitem)
                     sub_restrictions = self.make_restrictions(subdict, join = _key[1:], level = level + 1)
                     if sub_restrictions.strip() != "" :
@@ -255,7 +257,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 else :
                     _msg = "5) We cannot yet handle this criteria: " + str(_value)
                     cberr(_msg)
-                    raise self.MetricStoreMgdConnException(_msg, 41)
+                    raise MetricStoreMgdConnException(_msg, 41)
 
         if full_list.strip() != "" :
             if level == 0 :
@@ -293,15 +295,15 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 else :
                     cursor.execute("delete from " + _table)
 
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             cursor.close()
+            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             self.disconnect()
             return True
         except mysql.connector.Error as err :
             self.disconnect()
             _msg = "Unable to flush metric store: " + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 5)
+            raise MetricStoreMgdConnException(str(_msg), 5)
 
     @trace
     def add_document(self, table, document, disconnect_finish = False) :
@@ -316,11 +318,12 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 document["_id"] = document["_id"].decode("utf-8")
             statement = "insert into " + table + " (document) values ('" + json.dumps(document) + "')"
             result = cursor.execute(statement)
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             if cursor.rowcount != 1 :
-                raise self.MetricStoreMgdConnException("Add failed", 65)
-            lastrowid = cursor.lastrowid
+                MysqlMgdConn.catalogs.cbtool["conn"].rollback()
+                raise MetricStoreMgdConnException("Add failed w/ statement: " + statement, 65)
             cursor.close()
+            MysqlMgdConn.catalogs.cbtool["conn"].commit()
+            lastrowid = cursor.lastrowid
             if disconnect_finish :
                 self.disconnect()
 
@@ -329,10 +332,10 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to insert document into table \"" + table + "\": " 
             _msg += str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 6)
+            raise MetricStoreMgdConnException(str(_msg), 6)
         except Exception as e :
             self.lastrow_mutex.release()
-            raise self.MetricStoreMgdConnException(str(e), 64)
+            raise MetricStoreMgdConnException(str(e), 64)
 
         self.lastrow_mutex.release()
         return lastrowid 
@@ -415,12 +418,13 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to retrieve documents from the table \""
             _msg += table + ": "  + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 7)       
+            raise MetricStoreMgdConnException(str(_msg), 7)       
 
     @trace
     def update_document(self, table, document, disconnect_finish = False) :
         table = table.replace('-',"dash")
 
+        self.update_mutex.acquire()
         try :
             cursor = self.conn_check()
 
@@ -443,23 +447,29 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                     cursor.close()
                     cbwarn("This document does not have a pre-existing identifier. Cannot update. Will insert first")
                     document["original_mysql_id"] = self.add_document(table, document, disconnect_finish = disconnect_finish)
+                    self.update_mutex.release()
                     return
 
             statement = "update " + table + " set document = '" + json.dumps(document) + "' where id = " + str(document["original_mysql_id"])
             result = cursor.execute(statement)
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
-            if cursor.rowcount != 1 :
-                raise self.MetricStoreMgdConnException("Update failed", 66)
             cursor.close()
+            MysqlMgdConn.catalogs.cbtool["conn"].commit()
 
             if disconnect_finish :
                 self.disconnect()
 
         except mysql.connector.Error as err :
+            self.update_mutex.release()
             _msg = "Unable to update documents from the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 8)
+            raise MetricStoreMgdConnException(str(_msg), 8)
+        except Exception as e :
+            self.update_mutex.release()
+            cberr(_msg)
+            raise MetricStoreMgdConnException(str(_msg), 67)
+
+        self.update_mutex.release()
 
     @trace
     def delete_document(self, table, criteria, disconnect_finish = False) :
@@ -470,8 +480,8 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             cursor = self.conn_check()
             statement = "delete from " + table + self.make_restrictions(criteria)
             cursor.execute(statement) 
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             cursor.close()
+            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             if disconnect_finish :
                 self.disconnect()
 
@@ -479,7 +489,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to remove document from the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 9)
+            raise MetricStoreMgdConnException(str(_msg), 9)
 
     # FIXME: I am unable to find any callers of this function
     @trace
@@ -490,8 +500,8 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             cursor = self.conn_check()
             statement = "delete from " + table
             cursor.execute(statement) 
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             cursor.close()
+            MysqlMgdConn.catalogs.cbtool["conn"].commit()
             if disconnect_finish :
                 self.disconnect()
             return True
@@ -500,7 +510,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to drop all documents from the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 10)
+            raise MetricStoreMgdConnException(str(_msg), 10)
 
     @trace
     def count_document(self, table, criteria, disconnect_finish = False) :
@@ -519,7 +529,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to count documents on the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 11)
+            raise MetricStoreMgdConnException(str(_msg), 11)
 
     def get_reported_objects(self, table, disconnect_finish = False) :
         table = table.replace('-',"dash")
@@ -557,7 +567,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to get reported attributes on the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 12)
+            raise MetricStoreMgdConnException(str(_msg), 12)
 
     # I could not find any code that uses this function
     #def get_time_boundaries(self, table, disconnect_finish = False) :
@@ -589,7 +599,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to get time experiment list for table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 14)
+            raise MetricStoreMgdConnException(str(_msg), 14)
 
     @trace
     def get_info(self) :
@@ -620,6 +630,6 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg = "Unable to get info for database " + self.database + ": " 
             _msg += str(err)
             cberr(_msg)
-            raise self.MetricStoreMgdConnException(str(_msg), 15)
+            raise MetricStoreMgdConnException(str(_msg), 15)
         except Exception as e :
             cbdebug("No workey: " + str(e))

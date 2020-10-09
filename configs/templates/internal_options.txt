@@ -366,6 +366,7 @@ COLLECTOR_VM_SUMMARIZER_PORT = 8652
 FILLER_STRING=NA
 #UNCHANGED_STRING=(unchanged)
 UNCHANGED_STRING=None
+COLLECTOR_VM_INTERVAL = 15
 
 # Attributes recorded during management operations
 TRACE_ATTRIBUTES = command_originated, command, name, vmc_arrived, 

@@ -703,8 +703,8 @@ class CBCLI(Cmd) :
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
             _base_cmd += " --syslogr=" + self.cld_attr_lst["logstore"]["protocol"]
             _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
-            _cmd = _base_cmd + " --daemon"
-            #_cmd = _base_cmd + " --debug_host=localhost"
+            #_base_cmd += " --debug_host=localhost"
+            _cmd = "screen -d -m bash -c '" + _base_cmd + "'"
             cbdebug(_cmd)
             
             _api_pid = _proc_man.start_daemon(_cmd, \

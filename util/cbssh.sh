@@ -15,7 +15,9 @@ CONFIG_FILE=
 if [[ x"$docker" != x ]] ; then
 	RUNNING_DOCKER=$(sudo ${docker} ps -a 2>&1 | grep ${USER} | grep cbon)
 fi
-if [[ x"$docker" != x ]] && [[ $? -eq 0 ]]
+# FIXME: This broke regular cbssh because it drops into this target instead of the fallthrough.
+# Please try to detect docker usage with another workaround.
+if [[ ! false ]] && [[ x"$docker" != x ]] && [[ $? -eq 0 ]]
 then
 	CB_DOCKER="docker exec -it $(echo $RUNNING_DOCKER 2>&1 | awk '{ print $1 }')" 
 	CB_EXECUTABLE=/home/cbuser/repos/cloudbench/cb

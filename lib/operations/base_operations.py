@@ -4334,14 +4334,14 @@ class BaseObjectOperations :
                                                                              1000000000000000000)))).upper()
                         _obj_attr_list["uuid"] = _obj_uuid
         
-                        _cmd = "script -qfec \"" + self.path + "/cbact"
+                        _cmd = self.path + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --oop=" + ','.join(_parameters.split())
                         _cmd += " --operation=" + command
                         _cmd += " --cn=" + _obj_attr_list["cloud_name"]
                         _cmd += " --uuid=" + _obj_uuid
-                        _cmd += " --daemon\""
+                        _cmd += " --daemon"
                         #_cmd += "  --debug_host=localhost"
                         
                     elif command.count("detach") and not command.count("detachall") :
@@ -4360,14 +4360,14 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = "script -qfec \"" + self.path + "/cbact"
+                            _cmd = self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
                             _cmd += " --uuid=" + _obj_uuid
-                            _cmd += " --daemon\""
+                            _cmd += " --daemon"
                             #_cmd += "  --debug_host=localhost"
     
                     elif command.count("runstate") or \
@@ -4390,14 +4390,14 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = "script -qfec \"" + self.path + "/cbact"
+                            _cmd = self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
                             _cmd += " --uuid=" + _obj_uuid
-                            _cmd += " --daemon\""
+                            _cmd += " --daemon"
                             #_cmd += "  --debug_host=localhost"
                     else :
                         _msg = "Unknown Operation" + command
