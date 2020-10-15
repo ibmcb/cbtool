@@ -893,6 +893,8 @@ class LibcloudCmds(CommonCloudFunctions) :
             if len(node.private_ips) > 0 :
                 if obj_attr_list["run_netname"].lower() != "public" :
                     obj_attr_list["run_cloud_ip"] = node.private_ips[0]
+                elif len(node.public_ips) > 0 :
+                    obj_attr_list["run_cloud_ip"] = node.public_ips[0]
 
                 if not self.use_public_ips :
                     obj_attr_list["run_cloud_ip"] = node.private_ips[0]
