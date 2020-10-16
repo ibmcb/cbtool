@@ -156,7 +156,9 @@ def main() :
                 options.tracefile = path[0] + "/" + options.tracefile
             _msg = "Loading trace file commands from: " + options.tracefile
             print (_msg)
-            _cmd_processor.cmdqueue.extend(file(options.tracefile))
+
+            with open(options.tracefile) as f:
+                _cmd_processor.cmdqueue.extend(f.read().splitlines())
 
         while True :
             try :
