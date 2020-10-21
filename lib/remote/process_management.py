@@ -127,6 +127,7 @@ class ProcessManagement :
             _cmd += _connection_timeout            
             _cmd += _established_timeout
             _cmd += " -o StrictHostKeyChecking=no"
+            _cmd += " -o IdentitiesOnly=yes"
             _cmd += " -o UserKnownHostsFile=/dev/null "
             _cmd += " -o BatchMode=yes " 
             _cmd += _username
@@ -481,7 +482,7 @@ class ProcessManagement :
         _cmd = _cmd + " | grep -v grep" 
 
         if self.hostname != "127.0.0.1" and self.hostname != "localhost" :
-            _cmd = "ssh " + self.hostname + ' ' + _cmd
+            _cmd = "ssh -o IdentitiesOnly=yes " + self.hostname + ' ' + _cmd
 
         _status, _result_stdout, _result_stderr = self.run_os_command(_cmd)
 

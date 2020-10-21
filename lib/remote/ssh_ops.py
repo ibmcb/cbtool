@@ -87,6 +87,7 @@ class SSHMgdConn :
                 continue
                 
             _cmd = "ssh -i " + self.priv_keys[index]
+            _cmd += " -o IdentitiesOnly=yes "
             _cmd += " -o StrictHostKeyChecking=no "
             _cmd += "-o UserKnownHostsFile=/dev/null "
             _cmd += "-l " + self.logins[index] + " "
@@ -143,7 +144,7 @@ class SSHMgdConn :
         procs = []
         
         for index in range (0, len(self.ips)) :
-            _cmd = "ssh -i " + self.priv_keys[index] + " -o StrictHostKeyChecking=no "
+            _cmd = "ssh -i " + self.priv_keys[index] + " -o StrictHostKeyChecking=no -o IdentitiesOnly=yes "
             _cmd += " -l " + self.logins[index] + " "
             _cmd += self.ips[index] + " \"" + hash_cmd + "\""
             _msg = "SSH: " + _cmd

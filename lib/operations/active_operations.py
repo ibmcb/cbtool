@@ -294,6 +294,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _command += " -o StrictHostKeyChecking=no"
                         _command += " -o UserKnownHostsFile=/dev/null"
                         _command += " -o BatchMode=yes "                                                  
+                        _command += " -o IdentitiesOnly=yes "
                         _command += ' ' + cld_attr_lst["vm_defaults"]["jumphost_login"] 
                         _command += '@' + cld_attr_lst["vm_defaults"]["jumphost_ip"]
                         _command += " \"which nc\""
@@ -1222,7 +1223,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _vm_location = obj_attr_list["host_name"]
 
             if _vm_location.upper() != "AUTO"  :
-                
+
                 if _vm_location.upper() in _hosts :
                     _host_attr_list = self.osci.get_object(_cn, \
                                                            "HOST", \
@@ -1302,22 +1303,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             while True :
                                 _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_placement", "vmc_placement", 1)
                                 assert(_vmc_lock)
-                                cbdebug("Waiting: " + str(obj_attr_list["placement_order"]) + " for AI " + str(obj_attr_list["ai"]))
+                                cbdebug("Waiting: " + obj_attr_list["name"] + ", " + str(obj_attr_list["placement_order"]) + " for AI " + str(obj_attr_list["ai"]))
                                 placement_leader = self.osci.pending_object_get(_cn, "AI", obj_attr_list["ai"], "placement_leader", failcheck = False)
 
                                 if isinstance(placement_leader, bool) and not placement_leader :
-                                    cbdebug("Initializing placement leader: 0")
+                                    cbdebug("Initializing placement leader: 0, " + obj_attr_list["name"])
                                     self.osci.pending_object_set(_cn, "AI", obj_attr_list["ai"], "placement_leader", 0)
                                     placement_leader = 0
                                 else :
-                                    cbdebug("Got leader: " + str(placement_leader))
+                                    cbdebug("Got leader: " + obj_attr_list["name"] + ", " + str(placement_leader))
 
                                 if int(placement_leader) == int(obj_attr_list["placement_order"]) :
-                                    cbdebug("It's my turn! " + obj_attr_list["name"])
+                                    cbdebug("It's my turn! " + obj_attr_list["name"] + ", " + obj_attr_list["name"])
                                     self.osci.pending_object_set(_cn, "AI", obj_attr_list["ai"], "placement_leader", int(placement_leader) + 1)
                                     break
                                 else :
-                                    cbdebug("Placement leader: " + str(placement_leader))
+                                    cbdebug("Placement leader: " + obj_attr_list["name"] + ", " + str(placement_leader))
 
                                 self.osci.release_lock(_cn, "VMC", "vmc_placement", _vmc_lock)
                                 sleep(1)
@@ -2448,7 +2449,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _actual_tries = int(obj_attr_list["update_attempts"])
 
-            _ssh_cmd_log = "ssh -p " + str(obj_attr_list["prov_cloud_port"]) + " -i " + obj_attr_list["identity"]
+            _ssh_cmd_log = "ssh -o IdentitiesOnly=yes -p " + str(obj_attr_list["prov_cloud_port"]) + " -i " + obj_attr_list["identity"]
             _ssh_cmd_log += ' ' + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"]
             
             if obj_attr_list["role"] == "check" :
@@ -3716,7 +3717,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " remote-viewer " + uri
                     elif operation == "login" :
                         cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " gnome-terminal --maximize -e \\\"bash -c 'ssh " + \
-                                "-o StrictHostKeyChecking=no -i " + obj_attr_list["identity"] + " " + \
+                                "-o IdentitiesOnly=yes -o StrictHostKeyChecking=no -i " + obj_attr_list["identity"] + " " + \
                                 obj_attr_list["login"] + "@" + obj_attr_list["cloud_ip"] + "; echo connection closed; sleep 120d'\\\""
                                 
                     cmd = "screen -d -m -S gtkCBUI_" + obj_attr_list["cloud_name"] + str(port) + " bash -c \"" + cmd + "\""

@@ -107,7 +107,7 @@ else :
     SSH_CMD_PART2="-F $VMSSHCONF"
 fi
 
-SSH_CMD_PART4="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+SSH_CMD_PART4="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes"
 
 echo "logging in: cloudbench ID: $VMID => $VMLOGIN@$VMIP"
 

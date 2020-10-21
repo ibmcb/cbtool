@@ -58,6 +58,7 @@ then
     setup_rclocal_restarts
 fi
 
+sysctl -w vm.nr_hugepages=2800
 run_dhcp_additional_nics
 refresh_hosts_file
 automount_data_dirs

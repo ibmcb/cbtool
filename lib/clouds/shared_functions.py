@@ -168,6 +168,12 @@ class CommonCloudFunctions:
 
         _endpoint_ip_port = endpoint.split('//')[1]
 
+        if _endpoint_ip_port.count("/") :
+            _endpoint_ip_port = _endpoint_ip_port.split("/")[0]
+
+        if _endpoint_ip_port.count("@") :
+            _endpoint_ip_port = _endpoint_ip_port.split("@")[1]
+
         _endpoint_name, _endpoint_ip = hostname2ip(_endpoint_ip_port.split(':')[0], True)                
                 
         return endpoint, _endpoint_name, _endpoint_ip
@@ -2135,56 +2141,3 @@ packages:"""
             cbdebug("Backoff increased to " + str(delay) + " seconds.", False if "update_frequency" in obj_attr_list and (delay > (int(obj_attr_list["update_frequency"]) * 2)) else True)
         return delay
     
-    @trace    
-    def ship_cloud_init_iso(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-
-        _cloud_init_contents = {}
-        _cloud_init_contents["meta-data"] = "instance-id: " + str(obj_attr_list["cloud_vm_name"]) + "\n"
-        _cloud_init_contents["meta-data"] += "local-hostname: " + str(obj_attr_list["cloud_vm_name"]) + "\n"
-
-        _cloud_init_contents["user-data"] = self.populate_cloudconfig(obj_attr_list)
-
-        _cloud_init_instance_path = "/tmp/" + str(obj_attr_list["cloud_vm_name"])
-
-        if not os.path.exists(_cloud_init_instance_path) :
-            os.makedirs(_cloud_init_instance_path)
-
-        try:
-            for _file in [ "user-data", "meta-data" ] :
-                _cloud_init_fn = _cloud_init_instance_path + '/' + _file
-                _cloud_init_fd = open(_cloud_init_fn, 'w')
-                _cloud_init_fd.write(_cloud_init_contents[_file])
-                _cloud_init_fd.close()
-                os.chmod(_cloud_init_fn, 0o644)
-
-        except IOError as msg :
-            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
-            cberr(_msg, True, False)
-            exit(4)
-
-        except OSError as msg :
-            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(msg)
-            cberr(_msg, True, False)
-            exit(4)
-
-        except Exception as e :
-            _msg = "######Error writing file \"" + _cloud_init_fn  + "\":" + str(e)
-            cberr(_msg, True, False)
-            exit(4)
-
-        _proc_man = ProcessManagement()
-
-        _iso_fn = str(obj_attr_list["cloud_vm_name"]) + ".iso"
-
-        _geniso_cmd = "cd " + _cloud_init_instance_path + "; "
-        _geniso_cmd += "genisoimage -output " + _iso_fn
-        _geniso_cmd += " -volid cidata -joliet -rock user-data meta-data; "
-        _geniso_cmd += "scp " +  _cloud_init_instance_path + '/' + _iso_fn
-        _geniso_cmd += ' ' + obj_attr_list["host_remote_user"] + "@" + obj_attr_list["host_cloud_ip"] + ":" + obj_attr_list["host_remote_dir"] + _iso_fn
-
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_geniso_cmd)
-
-        return True
