@@ -27,6 +27,11 @@ FIO_CREATE_ON_OPEN=$(get_my_ai_attribute_with_default fio_create_on_open 1)
 # file size to test in MB
 FIO_FILE_SIZE=$(get_my_ai_attribute_with_default fio_file_size 128M)
 
+FIO_THINKTIME=$(get_my_ai_attribute_with_default fio_thinktime none)
+FIO_NUM_BLOCKS=$(get_my_ai_attribute_with_default fio_num_blocks 0)
+FIO_RATE_PROCESS=$(get_my_ai_attribute_with_default fio_rate_process none)
+FIO_BLKSPLIT=$(get_my_ai_attribute_with_default fio_blksplit none)
+
 FIO_DATA_DIR=$(get_my_ai_attribute_with_default fio_data_dir /fiotest)
 FIO_IODEPTH=$(get_my_ai_attribute_with_default fio_iodepth 8)
 FIO_SYNC=$(get_my_ai_attribute_with_default fio_sync 0)
@@ -52,6 +57,15 @@ sed -i "s^LOAD_PROFILE^$LOAD_PROFILE^g" ~/*.fiojob
 sed -i "s^LOAD_LEVEL^$LOAD_LEVEL^g" ~/*.fiojob
 sed -i "s^FIO_FILE_SIZE^${FIO_FILE_SIZE}^g" ~/*.fiojob
 sed -i "s^FIO_INVALIDATE^${FIO_INVALIDATE}m^g" ~/*.fiojob
+
+if [[ $FIO_RATE_PROCESS != "none" ]]
+then
+    sed -i "s^#thinktime=FIO_THINKTIME^thinktime=${FIO_THINKTIME}s^g" ~/*.fiojob
+    sed -i "s^#thinktime_blocks=FIO_NUM_BLOCKS^thinktime_blocks=${FIO_NUM_BLOCKS}^g" ~/*.fiojob
+    sed -i "s^#rate_process=FIO_RATE_PROCESS^rate_process=${FIO_RATE_PROCESS}^g" ~/*.fiojob
+    sed -i "s^#bssplit=FIO_BLKSPLIT^bssplit=${FIO_BLKSPLIT}^g" ~/*.fiojob
+    sed -i "s^bs=$FIO_BS^#bs=$FIO_BS^g" ~/*.fiojob
+fi
 
 if [[ $(echo $FIO_DATA_DIR | tr '[:upper:]' '[:lower:]') != "none" ]]
 then

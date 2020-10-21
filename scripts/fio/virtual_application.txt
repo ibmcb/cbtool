@@ -33,6 +33,10 @@ FIO_START1 = cb_run_fio.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 FIO_ENGINE = sync
+FIO_THINKTIME = none
+FIO_NUM_BLOCKS = 1000
+FIO_RATE_PROCESS = poisson
+FIO_BLKSPLIT = 4k/25:16k/25:64k/25:128k/25,4k/25:16k/25:64k/25:128k/25
 FIO_BS = 64k
 FIO_DIRECT= 1
 FIO_CREATE_ON_OPEN = 1

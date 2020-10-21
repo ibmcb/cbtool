@@ -21,5 +21,9 @@ rw=LOAD_PROFILE
 sync=FIO_SYNC
 numjobs=LOAD_LEVEL
 group_reporting
+#thinktime=FIO_THINKTIME
+#thinktime_blocks=FIO_NUM_BLOCKS
+#rate_process=FIO_RATE_PROCESS
+#bssplit=FIO_BLKSPLIT
 #verify=FIO_VERIFY
 #verify_fatal=FIO_VERIFY_FATAL
