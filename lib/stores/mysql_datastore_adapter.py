@@ -28,7 +28,18 @@ import threading
 import mysql.connector
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.stores.common_datastore_adapter import MetricStoreMgdConn, MetricStoreMgdConnException
+from lib.stores.common_datastore_adapter import MetricStoreMgdConn
+
+class MetricStoreMgdConnException(Exception) :
+    '''
+    TBD
+    '''
+    def __init__(self, msg, status):
+        Exception.__init__(self)
+        self.msg = msg
+        self.status = status
+    def __str__(self):
+        return self.msg
 
 class MysqlMgdConn(MetricStoreMgdConn) :
     @trace
