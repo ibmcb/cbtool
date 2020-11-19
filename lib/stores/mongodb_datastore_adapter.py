@@ -299,7 +299,11 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             if int(self.version) < 3 :
                 _collection_handle.insert(document)
             else :
-                _collection_handle.insert_one(document)
+                if "_id" in document :
+                    _collection_handle.replace_one({'_id': document["_id"]}, document, upsert = True)
+                else :
+                    _collection_handle.insert_one(document)
+
             if disconnect_finish :
                 self.disconnect()
             return True

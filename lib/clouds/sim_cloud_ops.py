@@ -802,7 +802,8 @@ class SimCmds(CommonCloudFunctions) :
             _status = 23
             _fmsg = str(e)
 
-        finally :                
+        finally :
+            self.post_vmboot_process(obj_attr_list)
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 

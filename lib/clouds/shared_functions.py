@@ -1707,6 +1707,41 @@ packages:"""
             obj_attr_list["key_name"] = None
     
         return True
+    
+    @trace
+    def post_vmboot_process(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        if "meta_tags" in obj_attr_list :
+            if obj_attr_list["meta_tags"] != "empty" :
+                obj_attr_list["meta_tags"] = dic2str(obj_attr_list["meta_tags"])
+
+        if "libcloud_image_inst" in obj_attr_list :
+            del obj_attr_list["libcloud_image_inst"]
+
+        if "libcloud_size_inst" in obj_attr_list :
+            del obj_attr_list["libcloud_size_inst"]
+
+        if "libcloud_location_inst" in obj_attr_list :
+            del obj_attr_list["libcloud_location_inst"]
+
+        if "libcloud_public_ip_inst" in obj_attr_list :
+            del obj_attr_list["libcloud_public_ip_inst"]
+
+        if "libcloud_vnic_inst" in obj_attr_list :
+            del obj_attr_list["libcloud_vnic_inst"]
+
+        if "instance_obj" in obj_attr_list :
+            del obj_attr_list["instance_obj"]
+        
+        if "cloud_vv_instance" in obj_attr_list :
+            del obj_attr_list["cloud_vv_instance"]
+
+        if "k8s_instance" in obj_attr_list :
+            del obj_attr_list["k8s_instance"]
+
+        return True
 
     @trace
     def vmdestroy_repeat_and_check(self, obj_attr_list) :

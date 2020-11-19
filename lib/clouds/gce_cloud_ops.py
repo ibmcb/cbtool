@@ -37,7 +37,7 @@ from lib.remote.ssh_ops import get_ssh_key
 from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 from oauth2client.client import GoogleCredentials
-from googleapiclient.discovery import build 
+from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError as GCEExceptionHttpError
 
 class GceCmds(CommonCloudFunctions) :
@@ -1086,9 +1086,7 @@ class GceCmds(CommonCloudFunctions) :
                 cbdebug("Error after VM creation. Cleanup...", True)
                 self.vmdestroy_repeat(obj_attr_list)
 
-            if "instance_obj" in obj_attr_list :
-                del obj_attr_list["instance_obj"]
-
+            self.post_vmboot_process(obj_attr_list)
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
         

@@ -59,14 +59,14 @@ CB_MULTI_ARCH_LIST="amd64 ppc64le arm64"
 CB_MY_DOCKER_ARCH=$(dpkg --print-architecture | sed s'/ppc64el/ppc64le/g')
 if [[ $CB_ORCH -eq 1 ]]
 then
-    curr_docker_img_list=$(ls $CB_DOCKER_BASE_DIR/orchestrator/* | grep -v processed | grep -v Dockerfile$ | grep Dockerfile | sed "s^$CB_DOCKER_BASE_DIR/orchestrator/^^g" | sed "s^Dockerfile-^$CB_REPO^g" | sed ":a;N;\$!ba;s/\n/-$CB_MY_DOCKER_ARCH\n/g")"-"$CB_MY_DOCKER_ARCH
+    curr_docker_img_list=$(ls $CB_DOCKER_BASE_DIR/orchestrator/* | grep -v _processed_ | grep -v Dockerfile$ | grep Dockerfile | sed "s^$CB_DOCKER_BASE_DIR/orchestrator/^^g" | sed "s^Dockerfile-^$CB_REPO^g" | sed ":a;N;\$!ba;s/\n/-$CB_MY_DOCKER_ARCH\n/g")"-"$CB_MY_DOCKER_ARCH
 else 
     if [[ $CB_WKS == "ALL" || $CB_WKS == "all" ]]
     then
         curr_docker_img_list=""
-        dockerfile_list=$(ls $CB_DOCKER_BASE_DIR/workload/*)
+        dockerfile_list=$(ls $CB_DOCKER_BASE_DIR/workload/* | grep -v _processed_)
     else
-        dockerfile_list=$(ls $CB_DOCKER_BASE_DIR/workload/* | grep $CB_WKS)
+        dockerfile_list=$(ls $CB_DOCKER_BASE_DIR/workload/* | grep -v _processed_ | grep $CB_WKS)
     fi
     for dimg in $dockerfile_list
     do

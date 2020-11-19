@@ -2053,6 +2053,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     if _obj_type == "VMC" :
                         _status, _fmsg = _cld_conn.vmcregister(obj_attr_list)
+                        if "initial_hosts" in obj_attr_list :
+                            if not isinstance(obj_attr_list, str) :
+                                obj_attr_list["initial_hosts"] = ','.join(obj_attr_list["initial_hosts"])
+
                         _vmcregister = True
     
                     elif _obj_type == "VM" :

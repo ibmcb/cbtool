@@ -1,10 +1,9 @@
 FROM REPLACE_BASE_VANILLA_CENTOS
 
-ENV DEBIAN_FRONTEND=noninteractive
 ENV CB_SSH_PUB_KEY=NA
 ENV CB_LOGIN=NA
 
-RUN yum -y update; yum clean all
+RUN rm -rf /var/cache/dnf; yum -y update; yum clean all;
 RUN yum -y install openssh-server 
 RUN yum -y install passwd sudo rsync; yum clean all
 

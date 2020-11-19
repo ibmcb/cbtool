@@ -142,7 +142,7 @@ class KubCmds(CommonCloudFunctions) :
                             authenticated = True
                             break
                         except Exception as e :
-                            cbwarn(vmc_name + " not ready yet...", True)
+                            cbwarn(vmc_name + " not ready yet (" + str(e) + ")...", True)
                             # If we are in cleanup mode (force_all == True), then
                             # don't attempt to cleanup the cluster forever. The cluster
                             # may be in an invalid state and be unreachable. Let
@@ -1346,12 +1346,10 @@ class KubCmds(CommonCloudFunctions) :
         finally :
             self.get_extended_info(obj_attr_list)
 
-            if "k8s_instance" in obj_attr_list :
-                del obj_attr_list["k8s_instance"]
-
             if "mgt_004_network_acessible" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
-                   
+
+            self.post_vmboot_process(obj_attr_list)
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 
