@@ -50,6 +50,10 @@ LINPACK_START1 = cb_run_linpack.sh
 LOAD_FACTOR = 5000
 LINPACK=~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack
 
+# By default, use Linpack version 2.3
+# Switch this linpack version to older one by setting this to none
+LINPACK_VERSION = 2.3
+
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2
