@@ -59,7 +59,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             #    MysqlMgdConn.conn.set_connection_timeout(tout)
 
             if not MysqlMgdConn.catalogs.cbtool["conn"] :
-                cbdebug("Opening to: " + self.database)
+                cbdebug("Opening to: " + self.database, True)
                 MysqlMgdConn.catalogs.cbtool["conn"] = mysql.connector.connect(host = self.host, port = self.port, user = self.username, password = self.password)
                 cursor = MysqlMgdConn.catalogs.cbtool["conn"].cursor()
                 try :
@@ -67,23 +67,23 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                     MysqlMgdConn.catalogs.cbtool["database"] = True 
                 except mysql.connector.Error as err :
                     if err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
-                        cbwarn("Database not found. Will create later.")
+                        cbwarn("Database not found. Will create later.", True)
                 cursor.close()
 
             _msg = "A connection to MySQL running on host "
             _msg += self.host + ", port " + str(self.port) + ", database"
             _msg += ' ' + str(MysqlMgdConn.catalogs.cbtool["database"]) + ", with a timeout of "
             _msg += str(tout) + "s was established."
-            cbdebug(_msg)
+            cbdebug(_msg, True)
 
         except mysql.connector.Error as err :
             if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
                 _msg = "Something is wrong with your MySQL user name or password."
-                cberr(_msg)
+                cberr(_msg, True)
                 raise MetricStoreMgdConnException(str(_msg), 1)
             else:
                 _msg = "Unknown MySQL error: " + str(err)
-                cberr(_msg)
+                cberr(_msg, True)
                 raise MetricStoreMgdConnException(str(_msg), 2)
 
     @trace
@@ -96,14 +96,14 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 _msg = "A connection to MySQL running on host "
                 _msg += self.host + ", port " + str(self.port) + ", database"
                 _msg += ' ' + str(MysqlMgdConn.catalogs.cbtool["database"]) + ", was terminated."
-                cbdebug(_msg)
+                cbdebug(_msg, True)
 
         except mysql.connector.Error as err :
             _msg = "Unable to terminate a connection with MySQL "
             _msg += "server on host " + self.host + " port "
             _msg += str(self.port) + "database " + str(MysqlMgdConn.catalogs.cbtool["database"]) + ": "
             _msg += str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 3)
 
     @trace
@@ -112,7 +112,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         try :
             getattr(MysqlMgdConn.catalogs, "cbtool")
         except AttributeError as e :
-            cbdebug("Initializing thread local connection: ")
+            cbdebug("Initializing thread local connection: ", True)
             MysqlMgdConn.catalogs.cbtool = {}
 
         if "database" not in MysqlMgdConn.catalogs.cbtool :
@@ -211,7 +211,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             self.disconnect()
             _msg = "Unable to complete database initialization: "
             _msg += str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 4)
 
     def make_restrictions(self, criteria, join = "and", level = 0) :
@@ -221,14 +221,14 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _value = criteria[_key]
             if isinstance(_value, set) :
                 _msg = "1) We cannot yet handle this criteria: " + str(criteria)
-                cberr(_msg)
+                cberr(_msg, True)
                 raise MetricStoreMgdConnException(_msg, 41)
             elif isinstance(_value, dict) :
                 for subkey in _value.keys() :
                     if subkey.lower() == "$exists" :
                         if not isinstance(_value[subkey], bool) :
                             _msg = "2) We cannot yet handle this criteria: " + str(_value)
-                            cberr(_msg)
+                            cberr(_msg, True)
                             raise MetricStoreMgdConnException(_msg, 41)
 
                         if _value[subkey] :
@@ -237,7 +237,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                             restrictions.append("document->>'$." + _key + "' IS NULL")
                     else :
                         _msg = "3) We cannot yet handle this criteria: " + str(subkey)
-                        cberr(_msg)
+                        cberr(_msg, True)
                         raise MetricStoreMgdConnException(_msg, 41)
             elif isinstance(_value, list) :
                 # Handle this group below 
@@ -259,7 +259,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                     for subitem in _value :
                         if not isinstance(subitem, dict) :
                             _msg = "4) We cannot yet handle this criteria: " + str(subitem)
-                            cberr(_msg)
+                            cberr(_msg, True)
                             raise MetricStoreMgdConnException(_msg, 41)
                         subdict.update(subitem)
                     sub_restrictions = self.make_restrictions(subdict, join = _key[1:], level = level + 1)
@@ -267,7 +267,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                         full_list += " and (" + sub_restrictions + ")"
                 else :
                     _msg = "5) We cannot yet handle this criteria: " + str(_value)
-                    cberr(_msg)
+                    cberr(_msg, True)
                     raise MetricStoreMgdConnException(_msg, 41)
 
         if full_list.strip() != "" :
@@ -313,7 +313,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             self.disconnect()
             _msg = "Unable to flush metric store: " + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 5)
 
     @trace
@@ -342,7 +342,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             self.lastrow_mutex.release()
             _msg = "Unable to insert document into table \"" + table + "\": " 
             _msg += str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 6)
         except Exception as e :
             self.lastrow_mutex.release()
@@ -428,7 +428,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             _msg = "Unable to retrieve documents from the table \""
             _msg += table + ": "  + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 7)       
 
     @trace
@@ -456,7 +456,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
 
                 if "original_mysql_id" not in document :
                     cursor.close()
-                    cbwarn("This document does not have a pre-existing identifier. Cannot update. Will insert first")
+                    cbwarn("This document does not have a pre-existing identifier. Cannot update. Will insert first", True)
                     document["original_mysql_id"] = self.add_document(table, document, disconnect_finish = disconnect_finish)
                     self.update_mutex.release()
                     return
@@ -473,11 +473,11 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             self.update_mutex.release()
             _msg = "Unable to update documents from the table \""
             _msg += table + ": " + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 8)
         except Exception as e :
             self.update_mutex.release()
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 67)
 
         self.update_mutex.release()
@@ -499,7 +499,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             _msg = "Unable to remove document from the table \""
             _msg += table + ": " + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 9)
 
     # FIXME: I am unable to find any callers of this function
@@ -520,7 +520,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             _msg = "Unable to drop all documents from the table \""
             _msg += table + ": " + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 10)
 
     @trace
@@ -539,7 +539,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             _msg = "Unable to count documents on the table \""
             _msg += table + ": " + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 11)
 
     def get_reported_objects(self, table, disconnect_finish = False) :
@@ -577,7 +577,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             _msg = "Unable to get reported attributes on the table \""
             _msg += table + ": " + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 12)
 
     # I could not find any code that uses this function
@@ -609,7 +609,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             _msg = "Unable to get time experiment list for table \""
             _msg += table + ": " + str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 14)
 
     @trace
@@ -640,7 +640,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         except mysql.connector.Error as err :
             _msg = "Unable to get info for database " + self.database + ": " 
             _msg += str(err)
-            cberr(_msg)
+            cberr(_msg, True)
             raise MetricStoreMgdConnException(str(_msg), 15)
         except Exception as e :
-            cbdebug("No workey: " + str(e))
+            cbdebug("No workey: " + str(e), True)
