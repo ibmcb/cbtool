@@ -945,11 +945,8 @@ class Ec2Cmds(CommonCloudFunctions) :
             if _status and _reservation is not False :
                 cbdebug("Error after VM creation. Cleanup...", True)
                 self.vmdestroy_repeat(obj_attr_list)
-            
-            if "instance_obj" in obj_attr_list : 
-                del obj_attr_list["instance_obj"]
-            del obj_attr_list["cloud_vv_instance"]
-                                
+
+            self.post_vmboot_process(obj_attr_list)
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 

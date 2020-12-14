@@ -1921,7 +1921,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _obj_type = _obj_attr_list["type"].lower()
     
                     _metric_type = _obj_attr_list["metric_type"].lower()
-                    _msci = self.get_msci(obj_attr_list["cloud_name"])
+                    _msci = self.get_msci(_obj_attr_list["cloud_name"])
 
                     if _obj_attr_list["unchanged_string"] == "None" :
                         _obj_attr_list["unchanged_string"] = ''
@@ -1973,7 +1973,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fn = _obj_attr_list["data_file_location"] + '/' 
                     _fn += _obj_type.upper() + '_' + _metric_type + '_'
                     _fn += _criteria["expid"] + ".csv"
-                    _fd = open(_fn, 'w', 0)
+                    _fd = open(_fn, 'w')
 
                     _fd.write("#field:column #\n")
                     for _index, _item in enumerate(_csv_contents_header.split(',')) :
@@ -2057,7 +2057,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _trace_fn = _obj_attr_list["data_file_location"] + '/' 
                         _trace_fn += "trace_" 
                         _trace_fn += _criteria["expid"] + ".csv"
-                        _trace_fd = open(_trace_fn, 'w', 0)
+                        _trace_fd = open(_trace_fn, 'w')
     
                         _trace_fd.write("#field:column #\n")
                         for _index, _item in enumerate(_trace_csv_contents_header.split(',')) :
@@ -2154,7 +2154,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _plot_fn = _obj_attr_list["data_file_location"] + '/' 
                     _plot_fn += "plot.sh" 
-                    _plot_fd = open(_plot_fn, 'w', 0)
+                    _plot_fd = open(_plot_fn, 'w')
                                 
                     _plot_fd.write("#!/bin/bash\n")
                     _plot_fd.write("if [ $0 != \"-bash\" ] ; then\n")

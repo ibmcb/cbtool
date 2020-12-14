@@ -1289,6 +1289,8 @@ class BaseObjectOperations :
                             if obj_attr_list["imageid1"].count("default") :
                                 obj_attr_list["imageid1"] = str2dic(_vm_templates["nest_containers_base_image"])["imageid1"]
 
+                            obj_attr_list["imageid1"] = obj_attr_list["imageid1"].replace("colon",':')
+
                         _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
             
                         if obj_attr_list["size"] == "load_balanced_default" :

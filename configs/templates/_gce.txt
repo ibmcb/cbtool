@@ -106,7 +106,7 @@ LOGIN = $GCE_LOGIN
 SSH_KEY_NAME = $GCE_SSH_KEY_NAME
 
 [VM_TEMPLATES : GCE_CLOUDCONFIG ]
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:ubuntu-1804-bionic-v20190320, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:ubuntu-minimal-1804-bionic-v20200806, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
 [SIZE_TEMPLATES : GCE_CLOUDCONFIG]
 # Sizes extracted from https://cloud.google.com/compute/docs/machine-types

@@ -583,13 +583,6 @@ class LibcloudCmds(CommonCloudFunctions) :
         return True
 
     @trace
-    def post_vmcreate_process(self, obj_attr_list, connection) :
-        '''
-        TBD
-        '''
-        return True
-
-    @trace
     def pre_vmdelete_process(self, obj_attr_list, connection) :
         '''
         TBD
@@ -1305,11 +1298,6 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            # What is this for? There's a duplicate call below. Calling twice into
-            # other adapters is causing difficulty. Please re-work so this not
-            # called twice.
-            #self.pre_vmcreate_process(obj_attr_list, _local_conn, {})
-
             _mark_a = time()
             obj_attr_list["libcloud_image_inst"] = self.get_images(obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
@@ -1353,6 +1341,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
             else :
                 _keys = []
+
             self.pre_vmcreate_process(obj_attr_list, _local_conn, _keys)
 
             if self.use_sizes :
@@ -1417,7 +1406,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     else :
                         self.annotate_time_breakdown(obj_attr_list, "attach_volume_time", _mark_a)
  
-                self.sanitize_for_redis(obj_attr_list)
+                self.post_vmcreate_process(obj_attr_list, _local_conn)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
@@ -1455,7 +1444,6 @@ class LibcloudCmds(CommonCloudFunctions) :
             cbwarn("Error reaching " + self.get_description() + ":" + _fmsg)
 
         finally :
-            self.sanitize_for_redis(obj_attr_list)
             if "mgt_003_provisioning_request_completed" in obj_attr_list :
                 self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)
 
@@ -1469,6 +1457,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     cbdebug("Error after VM creation. Cleanup...", True)
                     self.vmdestroy_repeat(obj_attr_list)
 
+            self.post_vmboot_process(obj_attr_list)
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 
@@ -1963,29 +1952,3 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.unlock(cloud_name, "VMC", "shared_access_token_counter", lock)
 
         return _credentials_lists[current_token]
-   
-    @trace
-    def sanitize_for_redis(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        if "libcloud_image_inst" in obj_attr_list :
-            del obj_attr_list["libcloud_image_inst"]
-
-        if "libcloud_size_inst" in obj_attr_list :
-            del obj_attr_list["libcloud_size_inst"]
-
-        if "libcloud_location_inst" in obj_attr_list :
-            del obj_attr_list["libcloud_location_inst"]
-
-        if "libcloud_public_ip_inst" in obj_attr_list :
-            del obj_attr_list["libcloud_public_ip_inst"]
-
-        if "libcloud_vnic_inst" in obj_attr_list :
-            del obj_attr_list["libcloud_vnic_inst"]
-
-        if "instance_obj" in obj_attr_list :
-            del obj_attr_list["instance_obj"]
-        
-        if "cloud_vv_instance" in obj_attr_list :
-            del obj_attr_list["cloud_vv_instance"]

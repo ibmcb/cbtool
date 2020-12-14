@@ -510,7 +510,7 @@ class PdmCmds(CommonCloudFunctions) :
 
 
                 for _endpoint in self.dockconn :
-                    _container_list = self.dockconn[_endpoint].containers(all=True)
+                    _container_list = self.dockconn[_endpoint].containers.list(all=True)
                     for _container in _container_list :
                         _name = _container.name
                         if _name[0] == "/" :

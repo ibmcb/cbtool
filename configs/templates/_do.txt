@@ -84,7 +84,7 @@ SECURITY_GROUPS = not_yet_applicable
 GLOBAL_IMAGES = $True
 
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
-NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:53893572, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
+NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:72061309, cloudinit_packages:openvpn;bc;jq;docker.io;python;redis-server
 
 [SIZE_TEMPLATES : DO_CLOUDCONFIG]
 # Sizes extracted from https://www.digitalocean.com/pricing/

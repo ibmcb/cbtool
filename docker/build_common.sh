@@ -441,7 +441,7 @@ function cb_push_images {
         if [[ $CB_IS_NOT_PRIVATE_IMG -eq 1 || $CB_PUSHALL -eq 1 ]]
         then
             CMD="docker push ${IMG}${CB_BRANCH}"
-            echo "########## Pushing image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
+            echo "########## Pushing image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."
 	        $CMD > /dev/null 2>&1
 	        if [[ $? -eq 0 ]]
 	        then

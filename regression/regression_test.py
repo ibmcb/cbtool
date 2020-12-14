@@ -205,7 +205,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     '''
     TBD
     '''
-    reg_tst_val_fh = open(path[0] + '/' + reg_tst_val_fn, 'w', 0)
+    reg_tst_val_fh = open(path[0] + '/' + reg_tst_val_fn, 'w')
 
     _outputs_directory = "output_samples"
     _inputs_directory = "input_samples"
@@ -228,7 +228,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
             _regression_test_commands[str(_current_test)] = ""
 
         elif _line_contents.count("[TEST]") and _line_contents.count("END") and not _line_contents.count("exit") :
-            _test_input_fh = open(path[0] + '/' + _inputs_directory + '/test' + str(_current_test) + ".txt", 'w', 0)
+            _test_input_fh = open(path[0] + '/' + _inputs_directory + '/test' + str(_current_test) + ".txt", 'w')
             _test_input_fh.write(_regression_test_commands[str(_current_test)])
             _test_input_fh.close()
             _current_test = False
@@ -254,7 +254,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
                 print("Failed, current is false on test idx " + str(test_idx) + ": " + str(e) + " test: " + _line_contents)
                 exit(1)
 
-            _golden_output_fh = open(path[0] + '/' + _outputs_directory + '/golden/test' + str(_current_test) + ".txt", 'w', 0)
+            _golden_output_fh = open(path[0] + '/' + _outputs_directory + '/golden/test' + str(_current_test) + ".txt", 'w')
             _golden_output_fh.write(_golden_output_results[str(_current_test)]["contents"])
             _golden_output_fh.close()
             _current_test = False
@@ -276,7 +276,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
 
         elif _line_contents.count("[TEST]") and _line_contents.count("END") and not _line_contents.count("exit") :
             _received_output_results[str(_current_test)]["size"] = str(len(_received_output_results[str(_current_test)]["contents"].split('\n')))
-            _test_output_fh = open(path[0] + '/' + _outputs_directory + '/received/test' + str(_current_test) + ".txt", 'w', 0)
+            _test_output_fh = open(path[0] + '/' + _outputs_directory + '/received/test' + str(_current_test) + ".txt", 'w')
             _test_output_fh.write(_received_output_results[str(_current_test)]["contents"])
             _test_output_fh.close()
             _current_test = False
@@ -341,7 +341,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
             _diff_sizes_list[str(_test)] = _diff_size
             _actual_diff_size_list[str(_test)] = len(_gold_contents) - len(_test_contents)
 
-        _diff_output_fh = open(path[0] + '/' + _outputs_directory + '/diffs/test' + str(_test) + ".txt", 'w', 0)
+        _diff_output_fh = open(path[0] + '/' + _outputs_directory + '/diffs/test' + str(_test) + ".txt", 'w')
 
         if len(_diff) :
             _diff_output_fh.write(''.join(_diff))
