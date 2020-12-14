@@ -47,7 +47,6 @@ from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.data_ops import str2dic, dic2str, makeTimestamp
 from lib.operations.base_operations import BaseObjectOperations
-from lib.stores.common_datastore_adapter import MetricStoreMgdConnException
 from scripts.common.cb_common import report_app_metrics
 
 qemu_supported = False
@@ -78,6 +77,17 @@ slope_int2str = {0: 'zero',
                  2: 'negative',
                  3: 'both',
                  4: 'unspecified'}
+
+class MetricStoreMgdConnException(Exception) :
+    '''
+    TBD
+    '''
+    def __init__(self, msg, status):
+        Exception.__init__(self)
+        self.msg = msg
+        self.status = status
+    def __str__(self):
+        return self.msg
 
 class Gmetric:
     """
@@ -1872,7 +1882,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     if _expid.count('*') :
                         _expid = {'$regex':_expid}
                                             
-                    self.get_msci(obj_attr_list["cloud_name"]).flush_metric_store(_username, True, {"expid" : _expid })
+                    self.get_msci(_obj_attr_list["cloud_name"]).flush_metric_store(_username, True, {"expid" : _expid })
 
                     _status = 0
             
