@@ -51,6 +51,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         self.lastrow_mutex = threading.Lock()
         self.conn_mutex = threading.Lock()
         self.update_mutex = threading.Lock()
+        self.mysql_conn = False
 
     @trace
     def connect(self, tout) :
@@ -58,21 +59,20 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             #if tout and tout > 0:            
             #    MysqlMgdConn.conn.set_connection_timeout(tout)
 
-            if not MysqlMgdConn.catalogs.cbtool["conn"] :
+            if not self.mysql_conn :
                 cbdebug("Opening to: " + self.database)
-                MysqlMgdConn.catalogs.cbtool["conn"] = mysql.connector.connect(host = self.host, port = self.port, user = self.username, password = self.password)
-                cursor = MysqlMgdConn.catalogs.cbtool["conn"].cursor()
+                self.mysql_conn = mysql.connector.connect(host = self.host, port = self.port, user = self.username, password = self.password)
+                cursor = self.mysql_conn.cursor()
                 try :
                     cursor.execute("use " + self.database)
-                    MysqlMgdConn.catalogs.cbtool["database"] = True 
                 except mysql.connector.Error as err :
                     if err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
                         cbwarn("Database not found. Will create later.")
                 cursor.close()
 
             _msg = "A connection to MySQL running on host "
-            _msg += self.host + ", port " + str(self.port) + ", database"
-            _msg += ' ' + str(MysqlMgdConn.catalogs.cbtool["database"]) + ", with a timeout of "
+            _msg += self.host + ", port " + str(self.port)
+            _msg += ", with a timeout of "
             _msg += str(tout) + "s was established."
             cbdebug(_msg)
 
@@ -89,19 +89,18 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     @trace
     def disconnect(self) :
         try:
-
-            if "disconnect" in dir(MysqlMgdConn.catalogs.cbtool["conn"]) :
-                MysqlMgdConn.catalogs.cbtool["conn"].disconnect()
-                MysqlMgdConn.catalogs.cbtool["conn"] = False
+            if "disconnect" in dir(self.mysql_conn) :
+                self.mysql_conn.disconnect()
+                self.mysql_conn = False
                 _msg = "A connection to MySQL running on host "
-                _msg += self.host + ", port " + str(self.port) + ", database"
-                _msg += ' ' + str(MysqlMgdConn.catalogs.cbtool["database"]) + ", was terminated."
+                _msg += self.host + ", port " + str(self.port)
+                _msg += " was terminated."
                 cbdebug(_msg)
 
         except mysql.connector.Error as err :
             _msg = "Unable to terminate a connection with MySQL "
             _msg += "server on host " + self.host + " port "
-            _msg += str(self.port) + "database " + str(MysqlMgdConn.catalogs.cbtool["database"]) + ": "
+            _msg += str(self.port) + ": "
             _msg += str(err)
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 3)
@@ -109,24 +108,12 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     @trace
     def conn_check(self, hostov = False, dbov = False, tout = False) :
         self.conn_mutex.acquire()
-        try :
-            getattr(MysqlMgdConn.catalogs, "cbtool")
-        except AttributeError as e :
-            cbdebug("Initializing thread local connection: ")
-            MysqlMgdConn.catalogs.cbtool = {}
-
-        if "database" not in MysqlMgdConn.catalogs.cbtool :
-            MysqlMgdConn.catalogs.cbtool["database"] = False
-        if "conn" not in MysqlMgdConn.catalogs.cbtool :
-            MysqlMgdConn.catalogs.cbtool["conn"] = False
-        if not MysqlMgdConn.catalogs.cbtool["conn"] or not MysqlMgdConn.catalogs.cbtool["conn"].is_connected() :
-            MysqlMgdConn.catalogs.cbtool["conn"] = False
-
+        if not self.mysql_conn:
             if hostov :
                 self.host = hostov
 
             if dbov :
-                MysqlMgdConn.catalogs.cbtool["database"] = dbov
+                self.database = dbov
 
             if tout :
                 self.timeout = tout
@@ -140,9 +127,8 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 self.conn_mutex.release()
                 raise(e)
 
-        assert(MysqlMgdConn.catalogs.cbtool["conn"])
-        assert(MysqlMgdConn.catalogs.cbtool["conn"].is_connected())
-        cursor = MysqlMgdConn.catalogs.cbtool["conn"].cursor()
+        assert(self.mysql_conn)
+        cursor = self.mysql_conn.cursor()
         self.conn_mutex.release()
         return cursor
             
@@ -153,10 +139,9 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         try :
             cursor = self.conn_check()        
 
-            if not MysqlMgdConn.catalogs.cbtool["database"] :
+            if not self.database :
                 cursor.execute("create database " + self.database)
                 cursor.execute("use " + self.database)
-                MysqlMgdConn.catalogs.cbtool["database"] = True 
 
             _latest_tables = [ \
                             "latest_management_VM_" + username, \
@@ -203,7 +188,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                         cursor.execute("CREATE INDEX `uuid_idx` ON `" + _table + "`(`uuid`)")
                         cursor.execute("CREATE INDEX `dashboard_polled_idx` ON `" + _table + "`(`dashboard_polled`)")
             cursor.close()
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
+            self.mysql_conn.commit()
             self.disconnect()
             return True
 
@@ -307,7 +292,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                     cursor.execute("delete from " + _table)
 
             cursor.close()
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
+            self.mysql_conn.commit()
             self.disconnect()
             return True
         except mysql.connector.Error as err :
@@ -330,10 +315,10 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             statement = "insert into " + table + " (document) values ('" + json.dumps(document) + "')"
             result = cursor.execute(statement)
             if cursor.rowcount != 1 :
-                MysqlMgdConn.catalogs.cbtool["conn"].rollback()
+                self.mysql_conn.rollback()
                 raise MetricStoreMgdConnException("Add failed w/ statement: " + statement, 65)
             cursor.close()
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
+            self.mysql_conn.commit()
             lastrowid = cursor.lastrowid
             if disconnect_finish :
                 self.disconnect()
@@ -464,7 +449,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             statement = "update " + table + " set document = '" + json.dumps(document) + "' where id = " + str(document["original_mysql_id"])
             result = cursor.execute(statement)
             cursor.close()
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
+            self.mysql_conn.commit()
 
             if disconnect_finish :
                 self.disconnect()
@@ -492,7 +477,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             statement = "delete from " + table + self.make_restrictions(criteria)
             cursor.execute(statement) 
             cursor.close()
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
+            self.mysql_conn.commit()
             if disconnect_finish :
                 self.disconnect()
 
@@ -512,7 +497,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             statement = "delete from " + table
             cursor.execute(statement) 
             cursor.close()
-            MysqlMgdConn.catalogs.cbtool["conn"].commit()
+            self.mysql_conn.commit()
             if disconnect_finish :
                 self.disconnect()
             return True

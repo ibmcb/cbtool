@@ -30,8 +30,6 @@ in particular the table naming scheme.
 '''
 
 class MetricStoreMgdConn :
-    catalogs = threading.local()
-
     @trace
     def __init__(self, parameters) :
         set_my_parameters(self, parameters)
