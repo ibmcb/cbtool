@@ -32,6 +32,7 @@ CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSIM = cldattach sim, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
 CLOUDOPTION_MYVCD = cldattach vcd, vmcattach all
+CLOUDOPTION_MYZSTACK = cldattach zsk, vmcattach all
 
 # START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
@@ -185,6 +186,16 @@ VCD_SNMP_VERSION = 1
 VCD_SNMP_PASSWORD = dummy
 VCD_SNMP_COMMUNITY = cbtest
 VCD_SNMP_VARIABLE = SNMPv2-MIB::sysLocation
+#-------------------------------------------------------------------------------
+# ZStack (ZSK) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYZSTACK]
+ZSK_ACCESS = http://<ip_address>:8080/zstack/v1/          # Address of controlled node where ZStack RESTfullapi runs, ip_address is the ip of controlled node
+ZSK_INITIAL_VMCS = ZONE-1                                 # Change "RegionOne" accordingly
+ZSK_LOGIN = cbuser                                        # The username that logins on the VMs
+ZSK_KEY_NAME = cbtool_rsa                                 # Either upload credentials/cbtool_rsa.pub to ZSTACK or tell us where your private key is
+ZSK_SSH_KEY_NAME = cbtool_rsa                             # Name of the private key present in the cloud to be injected on VMs
+ZSK_NETNAME = spec-private                                # The name of the already existing L3 network on ZSTACK cloud
+ZSK_DISK_SIZE = spec-disk                                 # The name of the already existing disk offering on ZSTACK cloud
 #-------------------------------------------------------------------------------
 # END: Specify the individual parameters for each cloud
 
