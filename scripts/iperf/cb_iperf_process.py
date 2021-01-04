@@ -22,7 +22,7 @@ for _line in _fc :
     if _line.count(" local ") :
         _flows += 1
 
-    if _line.count("SUM") :
+    if _line.count("SUM") and not _line.count("datagrams"):
         _bw = _line.split()[5]
     else :
         if _line.count("ms") :

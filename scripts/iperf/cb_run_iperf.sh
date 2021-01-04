@@ -28,6 +28,7 @@ TRAFFIC_MSS=$(get_my_ai_attribute_with_default traffic_mss auto)
 RATE_LIMIT=$(get_my_ai_attribute_with_default rate_limit auto)
 BUFFER_LENGTH=$(get_my_ai_attribute_with_default buffer_length auto)
 EXTERNAL_TARGET=$(get_my_ai_attribute_with_default external_target none)
+INTERVAL_TIME=$(get_my_ai_attribute_with_default interval_time none)
 
 iperf=$(which iperf)
 
@@ -59,7 +60,7 @@ then
     LOAD_GENERATOR_TARGET_IP=${EXTERNAL_TARGET} 
 fi
 
-CMDLINE="$iperf -c ${LOAD_GENERATOR_TARGET_IP} -t ${LOAD_DURATION} -P ${LOAD_LEVEL} -f m ${ADDITIONAL_CLI_OPT}"
+CMDLINE="$iperf -c ${LOAD_GENERATOR_TARGET_IP} -t ${LOAD_DURATION} -P ${LOAD_LEVEL} -f m ${ADDITIONAL_CLI_OPT} -i ${INTERVAL_TIME}"
 
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 

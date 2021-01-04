@@ -40,6 +40,7 @@ RATE_LIMIT=auto
 IF_MTU=auto
 BUFFER_LENGTH=auto
 EXTERNAL_TARGET=none
+INTERVAL_TIME=5
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
