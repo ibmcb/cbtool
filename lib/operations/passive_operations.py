@@ -2627,7 +2627,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                        cloud_name = _vm_attr_list["cloud_name"], \
                                                        priv_key = _vm_attr_list["identity"])
                         
-#                        _ssh_cmd = "ssh -i " + _vm_attr_list["identity"]
+#                        _ssh_cmd = "ssh -o IdentitiesOnly=yes -i " + _vm_attr_list["identity"]
 
 #                        if "ssh_config_file" in _vm_attr_list :
 #                            _ssh_cmd += " -F " + _vm_attr_list["ssh_config_file"]
