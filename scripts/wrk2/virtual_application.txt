@@ -35,7 +35,7 @@ DESCRIPTION +=instances, an additional load balancer instance running HAProxy\n
 DESCRIPTION +=is also deployed).\n
 DESCRIPTION +=wrk2 supports controlling the RPS (requests/s).
 DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ \n
-DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on wrk2 (parameter -t).\n 
+DESCRIPTION +=  - LOAD_LEVEL meaning: request rate on wrk2 (parameter -R).\n 
 DESCRIPTION +=  - LOAD_DURATION meaning: for how long should wrk2 run.\n
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"
 LB_SETUP1 = cb_restart_loadbalancer.sh
