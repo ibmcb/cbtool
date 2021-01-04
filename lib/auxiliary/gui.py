@@ -74,7 +74,7 @@ class Dashboard () :
         self.msci = msci
         assert(msci is not None)
         self.manage_collection = {"VM": "latest_management_VM_" + self.username, \
-                                  "HOST" : "latest_management_HOST_" + self.username }
+                                  "HOST" : "management_HOST_" + self.username }
         self.latest_os_collection = {"VM" : "latest_runtime_os_VM_" + self.username, \
                                      "HOST" : "latest_runtime_os_HOST_" + self.username } 
         self.latest_app_collection = {"VM" : "latest_runtime_app_VM_" + self.username}
@@ -253,7 +253,7 @@ class Dashboard () :
             elif _obj_type == "HOST" :
                 attrs['vms'] = self.msci.count_document(self.manage_collection["VM"], \
                             {
-                                'last_known_state' : {"$regex": "with ip assigned"}, \
+                                'last_known_state' : {"$regex": ".*with ip assigned.*"}, \
                                 'mgt_999_provisioning_request_failed' : { "$exists" : False}, \
                                 'vmc_name' : attrs['cloud_hostname'] })
                 
@@ -698,6 +698,7 @@ class GUI(object):
 #            exc_type, exc_value, exc_traceback = sys.exc_info()
             resp = "<h4>Exception:</h4>"
             for line in traceback.format_exc().splitlines() :
+                cberr(line)
                 resp += "<br>" + line
 
         if isinstance(resp, str) or isinstance(resp, str):
