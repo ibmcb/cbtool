@@ -374,6 +374,7 @@ function get_vm_attribute {
 function get_vm_attribute_with_default {
     vmuuid=$1
     attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
+    DEFAULT=$3
     TEST="`get_vm_attribute ${vmuuid} ${attribute}`"
 
     if [ x"$TEST" != x ] ; then
@@ -1548,7 +1549,7 @@ function replicate_to_container_if_nested {
     # the correct priveleges, then run the entrypoint script already provided
     # which then starts SSH on its own. Because we're using host networking, everything
     # works as-is without any changes.
-    CMD='sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -f ${NEST_POST_BOOT_FLAG}; sudo mkdir ${userpath}/$username; sudo rsync -arz ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chmod 755 ${userpath}/${username}; sudo chown -R ${username}:${username} ${userpath}/${username}; (sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh &); cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat \"Running post_boot inside container...\"; ~/cbtool/scripts/common/cb_post_boot_container.sh; code=\$?; if [ \$code -gt 0 ] ; then echo post boot failed; exit \$code; fi; touch ${NEST_POST_BOOT_FLAG}; sleep infinity"'
+    CMD='sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -f ${NEST_POST_BOOT_FLAG}; sudo mkdir ${userpath}/$username; sudo rsync --chown=${username}:${username} --chmod=755 --update -rl ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chown -R ${username}:${username} ${userpath}/${username}/.ssh; (sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh &); cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat \"Running post_boot inside container...\"; ~/cbtool/scripts/common/cb_post_boot_container.sh; code=\$?; if [ \$code -gt 0 ] ; then echo post boot failed; exit \$code; fi; touch ${NEST_POST_BOOT_FLAG}; sleep infinity"'
     eval $CMD
 	rc=$?
 
@@ -1672,6 +1673,10 @@ function fix_ulimit {
                 sudo bash -c "echo \"*         -       noproc      1048576\" >> /etc/security/limits.conf"
                 sudo bash -c "echo \"root      -       noproc      1048576\" >> /etc/security/limits.conf"
             fi
+	    sudo bash -c "echo \"*       soft    memlock         unlimited\" >> /etc/security/limits.conf"
+	    sudo bash -c "echo \"root    soft    memlock         unlimited\" >> /etc/security/limits.conf"
+	    sudo bash -c "echo \"*       hard    memlock         unlimited\" >> /etc/security/limits.conf"
+	    sudo bash -c "echo \"root    hard    memlock         unlimited\" >> /etc/security/limits.conf"
         fi
 
         sudo cat /etc/sysctl.conf | grep "fs.file-max = 1048576" > /dev/null 2>&1

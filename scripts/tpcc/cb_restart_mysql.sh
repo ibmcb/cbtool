@@ -63,6 +63,7 @@ ${SUDO_CMD} sed -i '/tmp_table_size/d' ${MYSQL_CONF_FILE}
 ${SUDO_CMD} sed -i '/table_open_cache/d' ${MYSQL_CONF_FILE}
 ${SUDO_CMD} sed -i '/innodb_buffer_pool_dump_at_shutdown/d' ${MYSQL_CONF_FILE}
 ${SUDO_CMD} sed -i '/innodb_buffer_pool_load_at_startup/d' ${MYSQL_CONF_FILE}
+${SUDO_CMD} sed -i '/max_connections/d' ${MYSQL_CONF_FILE}
 
 # Set mysql's memory cache size to be a percentage of main memory
 check_container
@@ -86,6 +87,8 @@ ${SUDO_CMD} su -c "echo 'innodb_log_file_size = ${MYSQL_INNODB_LOG_FILE_SIZE}' >
 ${SUDO_CMD} su -c "echo 'query_cache_size = ${MYSQL_QUERY_CACHE_SIZE}' >> ${MYSQL_CONF_FILE}"
 ${SUDO_CMD} su -c "echo 'tmp_table_size = ${MYSQL_TMP_TABLE_SIZE}' >> ${MYSQL_CONF_FILE}"
 ${SUDO_CMD} su -c "echo 'table_open_cache = ${MYSQL_TABLE_OPEN_CACHE}' >> ${MYSQL_CONF_FILE}"
+${SUDO_CMD} su -c "echo 'max_connections = 2000' >> ${MYSQL_CONF_FILE}"
+${SUDO_CMD} su -c "echo 'large-pages' >> ${MYSQL_CONF_FILE}"
 
 if [[ $(${SUDO_CMD} ls /etc/apparmor.d/tunables/ | grep -c alias) -ne 0 ]]
 then
