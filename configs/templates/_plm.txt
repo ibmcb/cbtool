@@ -8,8 +8,7 @@ PLM_NETNAME = need_to_be_configured_by_user
 PLM_POOLNAME = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
-PLM_ACCESS_DOC = Please enter the comma-separated list of URLs that should be use to remotely interact with multiple Libvirt(d) hosts\nThis is usually in the form of qem+tcp://<address1>,qemu+tcp://<address2>
-PLM_ACCESS_DEFAULT = qemu+tcp://<address1>
+PLM_ACCESS_DOC = Please enter the comma-separated list of URLs that should be use to remotely interact with multiple Libvirt(d) hosts\nThis is usually in the form of qem+tcp://<address1>,qemu+tcp://<address2> PLM_ACCESS_DEFAULT = qemu+tcp://<address1>
 PLM_LOGIN_DOC = $LOGIN_DOC
 PLM_LOGIN_DEFAULT = klabuser
 PLM_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
@@ -114,9 +113,11 @@ NEST_CONTAINERS_BASE_IMAGE = size:NA, imageids:1, imageid1:bionic-server-cloudim
 01-2560=bronze32
 02-2048=iron32
 04-2048=silver32
-08-4096=gold32
+04-8192=silver64
 02-4096=copper64
+04-4096=gold32
 02-5120=copper64
-04-16384=silver64
+06-16384=steel64
 08-16384=gold64
 16-16384=platinum64
+16-32768=mercury64
