@@ -58,7 +58,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             #if tout and tout > 0:            
             #    MysqlMgdConn.conn.set_connection_timeout(tout)
 
-            if not self.mysql_conn :
+            if not self.mysql_conn or not self.mysql_conn.is_connected() :
                 cbdebug("Opening to: " + self.database)
                 self.mysql_conn = mysql.connector.connect(host = self.host, port = self.port, user = self.username, password = self.password)
                 cursor = self.mysql_conn.cursor()
@@ -107,7 +107,13 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     @trace
     def conn_check(self, hostov = False, dbov = False, tout = False) :
         self.conn_mutex.acquire()
-        if not self.mysql_conn:
+        if not self.mysql_conn or not self.mysql_conn.is_connected() :
+
+            # If connection exists, but it is not healthy cleanup the
+            # existing connection
+            if self.mysql_conn and not self.mysql_conn.is_connected() :
+                self.disconnect()
+
             if hostov :
                 self.host = hostov
 
@@ -127,6 +133,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 raise(e)
 
         assert(self.mysql_conn)
+        assert(self.mysql_conn.is_connected())
         cursor = self.mysql_conn.cursor()
         self.conn_mutex.release()
         return cursor
