@@ -77,6 +77,7 @@ class PlmCmds(CommonCloudFunctions) :
         self.vhw_config["gold64"] = { "vcpus" : "8", "vmem" : "16384", "vstorage" : "104800", "vnics" : "1" }
         self.vhw_config["platinum64"] = { "vcpus" : "16", "vmem" : "16384", "vstorage" : "209700", "vnics" : "1" }
         self.vhw_config["mercury64"] = { "vcpus" : "16", "vmem" : "32764", "vstorage" : "209700", "vnics" : "1" }
+        self.vhw_config["latinum64"] = { "vcpus" : "32", "vmem" : "65536", "vstorage" : "209700", "vnics" : "1" }
 
     @trace
     def get_description(self) :
