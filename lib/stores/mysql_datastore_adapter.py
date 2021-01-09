@@ -48,9 +48,8 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         self.username = self.mysql_username
         self.port = self.mysql_port
         self.version = mysql.connector.__version__.split('.')[0]
-        self.lastrow_mutex = threading.Lock()
         self.conn_mutex = threading.Lock()
-        self.update_mutex = threading.Lock()
+        self.operation_mutex = threading.Lock()
         self.mysql_conn = False
 
     @trace
@@ -59,7 +58,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             #if tout and tout > 0:            
             #    MysqlMgdConn.conn.set_connection_timeout(tout)
 
-            if not self.mysql_conn :
+            if not self.mysql_conn or not self.mysql_conn.is_connected() :
                 cbdebug("Opening to: " + self.database)
                 self.mysql_conn = mysql.connector.connect(host = self.host, port = self.port, user = self.username, password = self.password)
                 cursor = self.mysql_conn.cursor()
@@ -108,7 +107,13 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     @trace
     def conn_check(self, hostov = False, dbov = False, tout = False) :
         self.conn_mutex.acquire()
-        if not self.mysql_conn:
+        if not self.mysql_conn or not self.mysql_conn.is_connected() :
+
+            # If connection exists, but it is not healthy cleanup the
+            # existing connection
+            if self.mysql_conn and not self.mysql_conn.is_connected() :
+                self.disconnect()
+
             if hostov :
                 self.host = hostov
 
@@ -128,6 +133,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 raise(e)
 
         assert(self.mysql_conn)
+        assert(self.mysql_conn.is_connected())
         cursor = self.mysql_conn.cursor()
         self.conn_mutex.release()
         return cursor
@@ -304,7 +310,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     @trace
     def add_document(self, table, document, disconnect_finish = False) :
         table = table.replace('-',"dash")
-        self.lastrow_mutex.acquire()
+        self.operation_mutex.acquire()
         lastrowid = -1
 
         try :
@@ -324,16 +330,16 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 self.disconnect()
 
         except mysql.connector.Error as err :
-            self.lastrow_mutex.release()
+            self.operation_mutex.release()
             _msg = "Unable to insert document into table \"" + table + "\": " 
             _msg += str(err)
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 6)
         except Exception as e :
-            self.lastrow_mutex.release()
+            self.operation_mutex.release()
             raise MetricStoreMgdConnException(str(e), 64)
 
-        self.lastrow_mutex.release()
+        self.operation_mutex.release()
         return lastrowid 
  
     @trace
@@ -343,6 +349,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
 
         table = table.replace('-',"dash")
 
+        self.operation_mutex.acquire()
         try :
             cursor = self.conn_check()
 
@@ -401,6 +408,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                     _results.append(document)
 
             cursor.close()
+            self.operation_mutex.release()
 
             if allmatches :
                 return _results
@@ -411,6 +419,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             return None 
 
         except mysql.connector.Error as err :
+            self.operation_mutex.release()
             _msg = "Unable to retrieve documents from the table \""
             _msg += table + ": "  + str(err)
             cberr(_msg)
@@ -420,7 +429,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     def update_document(self, table, document, disconnect_finish = False) :
         table = table.replace('-',"dash")
 
-        self.update_mutex.acquire()
+        self.operation_mutex.acquire()
         try :
             cursor = self.conn_check()
 
@@ -441,9 +450,9 @@ class MysqlMgdConn(MetricStoreMgdConn) :
 
                 if "original_mysql_id" not in document :
                     cursor.close()
+                    self.operation_mutex.release()
                     cbwarn("This document does not have a pre-existing identifier. Cannot update. Will insert first")
                     document["original_mysql_id"] = self.add_document(table, document, disconnect_finish = disconnect_finish)
-                    self.update_mutex.release()
                     return
 
             statement = "update " + table + " set document = '" + json.dumps(document) + "' where id = " + str(document["original_mysql_id"])
@@ -455,22 +464,23 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 self.disconnect()
 
         except mysql.connector.Error as err :
-            self.update_mutex.release()
+            self.operation_mutex.release()
             _msg = "Unable to update documents from the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 8)
         except Exception as e :
-            self.update_mutex.release()
+            self.operation_mutex.release()
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 67)
 
-        self.update_mutex.release()
+        self.operation_mutex.release()
 
     @trace
     def delete_document(self, table, criteria, disconnect_finish = False) :
         table = table.replace('-',"dash")
 
+        self.operation_mutex.acquire()
         try :
             
             cursor = self.conn_check()
@@ -482,16 +492,20 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 self.disconnect()
 
         except mysql.connector.Error as err :
+            self.operation_mutex.release()
             _msg = "Unable to remove document from the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 9)
+
+        self.operation_mutex.release()
 
     # FIXME: I am unable to find any callers of this function
     @trace
     def cleanup_collection(self, table, disconnect_finish = False) :
         table = table.replace('-',"dash")
 
+        self.operation_mutex.acquire()
         try :
             cursor = self.conn_check()
             statement = "delete from " + table
@@ -500,9 +514,11 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             self.mysql_conn.commit()
             if disconnect_finish :
                 self.disconnect()
+            self.operation_mutex.release()
             return True
 
         except mysql.connector.Error as err :
+            self.operation_mutex.release()
             _msg = "Unable to drop all documents from the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
@@ -512,6 +528,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     def count_document(self, table, criteria, disconnect_finish = False) :
         table = table.replace('-',"dash")
 
+        self.operation_mutex.acquire()
         try :
             cursor = self.conn_check()
             statement = "select * from " + table + self.make_restrictions(criteria)
@@ -519,9 +536,11 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             cursor.close()
             if disconnect_finish :
                 self.disconnect()
+            self.operation_mutex.release()
             return count
 
         except mysql.connector.Error as err :
+            self.operation_mutex.release()
             _msg = "Unable to count documents on the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
@@ -530,6 +549,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
     def get_reported_objects(self, table, disconnect_finish = False) :
         table = table.replace('-',"dash")
 
+        self.operation_mutex.acquire()
         try :
             cursor = self.conn_check()
             _result = {}
@@ -557,9 +577,11 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             cursor.close()
             if disconnect_finish :
                 self.disconnect()
+            self.operation_mutex.release()
             return _result
 
         except mysql.connector.Error as err :
+            self.operation_mutex.release()
             _msg = "Unable to get reported attributes on the table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
@@ -572,6 +594,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         table = table.replace('-',"dash")
         _experiment_list = [] 
 
+        self.operation_mutex.acquire()
         try :
             cursor = self.conn_check()
             
@@ -589,9 +612,11 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             if disconnect_finish :
                 self.disconnect()
 
+            self.operation_mutex.release()
             return _experiment_list
 
         except mysql.connector.Error as err :
+            self.operation_mutex.release()
             _msg = "Unable to get time experiment list for table \""
             _msg += table + ": " + str(err)
             cberr(_msg)
@@ -599,6 +624,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
 
     @trace
     def get_info(self) :
+        self.operation_mutex.acquire()
         try :
             _output = []
             cursor = self.conn_check()
@@ -620,12 +646,15 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                     _output.append(["Data Size (MB)", str(float(row[0]))])
 
             cursor.close()
+            self.operation_mutex.release()
             return _output
 
         except mysql.connector.Error as err :
+            self.operation_mutex.release()
             _msg = "Unable to get info for database " + self.database + ": " 
             _msg += str(err)
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 15)
         except Exception as e :
+            self.operation_mutex.release()
             cbdebug("No workey: " + str(e))
