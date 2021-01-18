@@ -26,6 +26,8 @@ fi
 
 source ${dir}/cb_common.sh
 
+fix_ulimit
+
 post_boot_steps True
 
 exit 0
