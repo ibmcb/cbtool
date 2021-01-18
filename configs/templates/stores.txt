@@ -67,7 +67,7 @@ TIMEOUT = $MAIN_TIMEOUT
 USAGE = private
 CONFIG_STRING = $False
 MONGODB_CONFIG_STRING = logpath--REPLSTORESWORKINGDIR/logs/mongod.log; logappend--true; fork--true; port--REPLPORT; bind**ip=0.0.0.0; dbpath--REPLSTORESWORKINGDIR
-MYSQL_CONFIG_STRING = [mysqld]; user--REPLUSER; log_error--REPLSTORESWORKINGDIR/logs/mysql.err; general_log_file--REPLSTORESWORKINGDIR/logs/mysql.log; skip_grant_tables; bind**address--0.0.0.0; socket--REPLSTORESWORKINGDIR/mysql.sock; pid**file--REPLSTORESWORKINGDIR/mysql.pid; datadir--REPLSTORESWORKINGDIR/; port--REPLPORT; daemonize--TRUE; performance-schema--TRUE; show_compatibility_56--ON;
+MYSQL_CONFIG_STRING = [mysqld]; user--REPLUSER; log_error--REPLSTORESWORKINGDIR/logs/mysql.err; general_log_file--REPLSTORESWORKINGDIR/logs/mysql.log; skip_grant_tables; bind**address--0.0.0.0; socket--REPLSTORESWORKINGDIR/mysql/mysql.sock; pid**file--REPLSTORESWORKINGDIR/mysql/mysql.pid; datadir--REPLSTORESWORKINGDIR/mysql/; port--REPLPORT; daemonize--TRUE; performance-schema--TRUE; show_compatibility_56--ON;
 
 [FILESTORE]
 KIND = rsync

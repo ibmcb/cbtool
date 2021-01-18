@@ -29,6 +29,9 @@ configs/cloud_ports.sh
 configs/mrhines
 stores/*.rdb
 stores/metrics.*
+stores/metrics
+stores/mysql
+stores/mysql/*
 stores/*.conf
 stores/logs/*
 stores/*.pid

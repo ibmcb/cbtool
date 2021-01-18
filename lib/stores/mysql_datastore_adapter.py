@@ -26,6 +26,7 @@
 import json
 import threading
 import mysql.connector
+import traceback
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.stores.common_datastore_adapter import MetricStoreMgdConn
@@ -216,7 +217,10 @@ class MysqlMgdConn(MetricStoreMgdConn) :
                 raise MetricStoreMgdConnException(_msg, 41)
             elif isinstance(_value, dict) :
                 for subkey in _value.keys() :
-                    if subkey.lower() == "$exists" :
+                    if subkey.lower() == "$regex" :
+                        if _value[subkey] :
+                            restrictions.append("document->>'$." + _key + "' REGEXP '" + str(_value[subkey]) + "'")
+                    elif subkey.lower() == "$exists" :
                         if not isinstance(_value[subkey], bool) :
                             _msg = "2) We cannot yet handle this criteria: " + str(_value)
                             cberr(_msg)
@@ -424,6 +428,10 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg += table + ": "  + str(err)
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 7)       
+        except Exception as e:
+            for line in traceback.format_exc().splitlines() :
+                cbdebug(line)
+            raise e
 
     @trace
     def update_document(self, table, document, disconnect_finish = False) :
@@ -532,7 +540,14 @@ class MysqlMgdConn(MetricStoreMgdConn) :
         try :
             cursor = self.conn_check()
             statement = "select * from " + table + self.make_restrictions(criteria)
-            count = cursor.execute(statement).rowcount
+            result = cursor.execute(statement)
+            count = 0
+            if result is not None :
+                count = result.rowcount
+            else :
+                rows = cursor.fetchmany(4)
+                for resultset in rows :
+                    count += 1 
             cursor.close()
             if disconnect_finish :
                 self.disconnect()
@@ -545,6 +560,10 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _msg += table + ": " + str(err)
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 11)
+        except Exception as e:
+            for line in traceback.format_exc().splitlines() :
+                cbdebug(line)
+            raise e
 
     def get_reported_objects(self, table, disconnect_finish = False) :
         table = table.replace('-',"dash")
