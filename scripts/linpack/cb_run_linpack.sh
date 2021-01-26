@@ -96,6 +96,9 @@ if [[ $LINPACK_VERSION == "2.3" ]]; then
                 LINPACK=$(sudo find ~/linpack_${LINPACK_VERSION} | grep xhpl)
         fi
 
+	LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor 5000`
+	PROBLEM_SIZES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+
 	# Run Linpack
 	LINPACK_DAT='./HPL.dat'
 	echo "HPLinpack benchmark input file
@@ -103,7 +106,7 @@ if [[ $LINPACK_VERSION == "2.3" ]]; then
 	HPL.out      output file name (if any)
 	6            device out (6=stdout,7=stderr,file)
 	1            # of problems sizes (N)
-	10240        Ns
+	${PROBLEM_SIZES}        Ns
 	1            # of NBs
 	240           NBs
 	0            PMAP process mapping (0=Row-,1=Column-major)
