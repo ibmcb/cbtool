@@ -1,0 +1,175 @@
+[USER-DEFINED]
+ZSK_ACCESS = need_to_be_configured_by_user
+ZSK_KEY_NAME = cbtool_rsa
+ZSK_INITIAL_VMCS = need_to_be_configured_by_user
+ZSK_SSH_KEY_NAME = cbtool_rsa
+ZSK_LOGIN = need_to_be_configured_by_user
+ZSK_NETNAME = need_to_be_configured_by_user
+ZSK_DISK_SIZE = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+ZSK_ACCESS_DOC = Please enter the HTTP address of ZStack controller node  for access through ZSTACK to interact with the cloud
+ZSK_ACCESS_DEFAULT = <address>
+ZSK_KEY_NAME_DOC = Please enter the ZStack key used to login\nto your VMs as root. This key needs to be generated  ZSTACK user interface before starting the tool.
+ZSK_KEY_NAME_DEFAULT = some_key_name
+ZSK_LOGIN_DOC = $LOGIN_DOC
+ZSK_LOGIN_DEFAULT = some_login_name
+ZSK_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+ZSK_SSH_KEY_NAME_DEFAULT = id_rsa.private
+ZSK_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC
+ZSK_INITIAL_VMCS_DEFAULT = RegionOne
+ZSK_NETNAME_DOC = "Please enter the name of the network that will connect all created VMs"
+ZSK_NETNAME_DEFAULT = private
+
+[SPACE : ZSK_CLOUDCONFIG ]
+SSH_KEY_NAME = $ZSK_SSH_KEY_NAME
+
+[MON_DEFAULTS : ZSK_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor
+COLLECT_FROM_GUEST = $False
+
+[VMC_DEFAULTS : ZSK_CLOUDCONFIG]
+ACCESS = $ZSK_ACCESS
+SECURITY_GROUPS = $Empty
+KEY_NAME = $ZSK_KEY_NAME
+INITIAL_VMCS = $ZSK_INITIAL_VMCS
+ADDITIONAL_DISCOVERY = $Empty
+MODIFY_HOST_NAMES = $False
+MIGRATE_SUPPORTED = $True
+PROTECT_SUPPORTED = $True
+USE_CINDERCLIENT = $True
+USE_GLANCECLIENT = $False
+HOST_USER_ROOT = $False
+
+[VM_DEFAULTS : ZSK_CLOUDCONFIG]
+ACCESS = $ZSK_ACCESS
+KEY_NAME = $ZSK_KEY_NAME
+SECURITY_GROUPS = $Empty
+CLOUD_MAC = $True
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+LOGIN = $ZSK_LOGIN
+SSH_KEY_NAME = $ZSK_SSH_KEY_NAME
+CHECK_BOOT_STARTED = poll_cloud
+# Other methods could be used to check if a VM *STARTED* booting
+#CHECK_BOOT_STARTED = subscribe_on_starting
+CHECK_BOOT_COMPLETE = tcp_on_22
+# Other methods could be used to check if a VM *FINISHED* booting
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = wait_for_NETNAME = $ZSK_NETNAME
+NETNAME = $ZSK_NETNAME
+PROJECT = default
+JUMPHOST_ROLE = tinyvm
+JUMPHOST_SIZE = m1.tiny
+SIZE = from_vm_template
+DISK_SIZE = $ZSK_DISK_SIZE
+IMAGENAME= from_vm_template
+CREATE_LB = $false
+CGROUPS_BASE_DIR = /sys/fs/cgroup/
+HOSTNAME_KEY = cloud_vm_name
+FLOATING_POOL = $Empty
+ALWAYS_CREATE_FLOATING_IP = $True
+USE_CINDERCLIENT = $True
+USE_GLANCECLIENT = $False
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
+AVAILABILITY_ZONE = $Empty
+BOOT_VOLUME_IMAGEID1_INSTANCE = None
+FLAVOR_INSTANCE = None
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
+
+[AI_DEFAULTS : ZSK_CLOUDCONFIG]
+ATTACH_PARALLELISM = 10
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+LOGIN = $ZSK_LOGIN
+SSH_KEY_NAME = $ZSK_SSH_KEY_NAME
+KEY_NAME = $ZSK_KEY_NAME
+NETNAME = $ZSK_NETNAME
+TENANT = default
+PROJECT = default
+FLOATING_POOL = $Empty
+CREATE_LB = $false
+ALWAYS_CREATE_FLOATING_IP = $True
+DONT_START_QEMU_SCRAPER = $True
+
+[AIDRS_DEFAULTS : ZSK_CLOUDCONFIG]
+LOGIN = $ZSK_LOGIN
+SSH_KEY_NAME = $ZSK_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : ZSK_CLOUDCONFIG]
+LOGIN = $ZSK_LOGIN
+SSH_KEY_NAME = $ZSK_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : ZSK_CLOUDCONFIG]
+LOGIN = $ZSK_LOGIN
+SSH_KEY_NAME = $ZSK_SSH_KEY_NAME
+
+[VM_TEMPLATES : ZSK_CLOUDCONFIG]
+ACMEAIR = size:m1.medium, imageid1:cb_acmeair
+APACHE = size:m1.medium, imageid1:cb_wrk
+BONNIE = size:m1.medium, imageid1:cb_bonnie
+BTEST = size:m1.medium, imageid1:cb_btest
+CASSANDRA = size:m1.medium, imageid1:cb_ycsb
+CHECK = size:m1.tiny, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:m1.medium, imageid1:cb_open_daytrader
+CLIENT_TRADELITE = size:m1.medium, imageid1:cb_tradelite
+CLIENT_WINDOWS = size:m1.medium, imageid1:cb_windows
+CN_HPC = size:m1.medium, imageid1:cb_hpcc
+COREMARK = size:m1.tiny, imageid1:cb_coremark
+DB2 = size:m1.medium, lb_size:m1.large, imageid1:cb_daytrader
+DDGEN = size:m1.medium, imageid1:cb_ddgen
+DRIVER_COREMARK = size:m1.tiny, imageid1:cb_coremark
+DRIVER_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
+DRIVER_FILEBENCH = size:m1.medium, imageid1:cb_filebench
+DRIVER_FIO = size:m1.medium, imageid1:cb_fio
+DRIVER_HADOOP = size:m1.tiny, imageid1:cb_hadoop
+DRIVER_NETPERF = size:m1.tiny, imageid1:cb_hadoop
+DRIVER_TRADELITE = size:m1.medium, imageid1:cb_tradelite
+FEN_HPC = size:m1.medium, imageid1:cb_hpcc
+FILEBENCH = size:m1.small, imageid1:cb_filebench
+FIO = size:m1.medium, imageid1:cb_fio
+GERONIMO = size:m1.medium, imageid1:cb_open_daytrader
+GIRAPHMASTER = size:m1.small, imageid1:cb_giraph
+GIRAPHSLAVE = size:m1.medium, imageid1:cb_giraph
+HADOOPMASTER = size:m1.small, imageid1:cb_hadoop
+HADOOPSLAVE = size:m1.medium, imageid1:cb_hadoop
+IPERFCLIENT = size:m1.small, imageid1:cb_iperf
+IPERFSERVER = size:m1.small, imageid1:cb_iperf
+LB = size:m1.medium, imageid1:cb_nullworkload
+LIBERTY = size:m1.medium, imageid1:cb_acmeair
+LINPACK = size:m1.medium, imageid1:cb_linpack
+MEMTIER = size:m1.medium, imageid1:cb_memtier
+MONGO_CFG_SERVER = size:m1.small, imageid1:cb_ycsb
+MONGODB = size:m1.medium, imageid1:cb_ycsb
+MONGOS = size:m1.large, imageid1:cb_ycsb
+MULTICHASE = size:m1.small, imageid1:cb_multichase
+MYSQL = size:m1.medium, lb_size:m1.large, imageid1:cb_open_daytrader
+NETCLIENT = size:m1.small, imageid1:cb_netperf
+NETSERVER = size:m1.small, imageid1:cb_netperf
+NUTTCPCLIENT = size:m1.small, imageid1:cb_nuttcp
+NUTTCPSERVER = size:m1.small, imageid1:cb_nuttcp
+OLDISIMDRIVER = size:m1.small, imageid1:cb_oldisim
+OLDISIMLB = size:m1.small, imageid1:cb_oldisim
+OLDISIMLEAF = size:m1.small, imageid1:cb_oldisim
+OLDISIMROOT = size:m1.small, imageid1:cb_oldisim
+POSTMARK = size:m1.medium, imageid1:cb_postmark
+REDIS = size:m1.medium, imageid1:cb_ycsb
+SCIMARK = size:m1.small, imageid1:cb_scimark
+SEED = size:m1.medium, imageid1:cb_ycsb
+SPECJBB = size:m1.medium, imageid1:cb_specjbb
+SYSBENCH = size:m1.medium, imageid1:cb_sysbench
+TINYVM = size:m1.tiny, imageid1:cb_nullworkload
+UNIXBENCH = size:m1.medium, imageid1:cb_unixbench
+WAS = size:m1.medium, imageid1:cb_daytrader
+WINDOWS = size:m1.medium, imageid1:cb_windows
+WRK = size:m1.medium, imageid1:cb_wrk
+XPINGRECEIVER = size:m1.small, imageid1:cb_xping
+XPINGSENDER = size:m1.small, imageid1:cb_xping
+YATINYVM = size:m1.tiny, imageid1:cb_nullworkload
+YCSB = size:m1.medium, imageid1:cb_ycsb
