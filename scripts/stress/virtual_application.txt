@@ -32,6 +32,8 @@ DESCRIPTION +=  - LOAD_DURATION meaning: maximum length of time to run.\n
 STRESS_SETUP1 = cb_check_stress.sh
 STRESS_START1 = cb_run_stress.sh
 
+STRESS_RAM_PERCENTAGE = 0
+
 # VApp-specific modifier parameters.
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
