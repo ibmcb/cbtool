@@ -199,6 +199,11 @@ function lazy_collection {
     LOAD_GENERATOR_START=$(date +%s)    
     while read line
     do
+        log_output_command=$(get_my_ai_attribute log_output_command)
+        log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
+        if [[ x"${log_output_command}" == x"true" ]] ; then
+	    syslog_netcat "$line"
+	fi
         echo $line >> $OUTPUT_FILE
         IFS=',' read -a array <<< "$line"
         if [[ ${array[0]} == *OVERALL* ]]
@@ -465,6 +470,11 @@ function eager_collection {
     LOAD_GENERATOR_START=$(date +%s)      
     while read line
     do
+        log_output_command=$(get_my_ai_attribute log_output_command)
+        log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
+        if [[ x"${log_output_command}" == x"true" ]] ; then
+	    syslog_netcat "$line"
+	fi
         echo $line >> $OUTPUT_FILE
     #-------------------------------------------------------------------------------
     # Need to track each YCSB Clients current operation count.
@@ -594,6 +604,11 @@ function eager_collection {
         # ${var+isset} returns nothing if $var is not set
         if [[ ${latency_avg_units[$index]+isset} ]]
         then
+            # Let's report something as latency. We'll pick insert operations to report latency.
+	    # The other metrics will still be reported as normal.
+	    if [ "${oper}" == "insert" ] ; then
+		    latency_result_text="$latency_result_text latency:${latency_avg[$index]}:${latency_avg_units[$index]}"
+	    fi
             latency_result_text="$latency_result_text ${oper}_avg_latency:${latency_avg[$index]}:${latency_avg_units[$index]}"
             latency_result_text="$latency_result_text ${oper}_min_latency:${latency_min[$index]}:${latency_min_units[$index]}"
             latency_result_text="$latency_result_text ${oper}_max_latency:${latency_max[$index]}:${latency_max_units[$index]}"
