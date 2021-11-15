@@ -24,7 +24,7 @@ Usage: vmcattach <cloud name> <vmc name> [pool] [mode]
 		 
 	[mode] indicates the execution mode. The default execution mode is synchronous,
 		which blocks the command line execution until the operation is completed.
-		By adding the keyword "async" to the command, a new daemon is spawned, and
+		By adding the keyword "nosync" to the command, a new daemon is spawned, and
 		the attachment process occurs in the background.
 
 Examples :	
@@ -41,7 +41,7 @@ Examples :
 	All VMCs successfully attached to this cloudbench experiment.
 	(Cloudbench) 
 	
-	(Cloudbench) vmattach TESTCLOUD tinyvm async
+	(Cloudbench) vmattach TESTCLOUD tinyvm nosync
 	Background operation execution success.Operation "vmc-attach" will be processed asynchronously, through the command "/home/cbrtuser/cloudbench/cloudbench_actuator.py --procid=TEST_cbrtuser --osp=port:49014,timeout:70,hostname:9.2.208.60,database:0,protocol:TCP,kind:redis --oop=TESTCLOUD,test_host2 --operation=vmc-attach --cn=TESTCLOUD --uuid=49E616FB-0431-5C36-9326-462EA5FE0678 --daemon". The process id is 24615.
 
 	(Cloudbench) 

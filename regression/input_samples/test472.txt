@@ -1,4 +1,4 @@
-vmcattach all async
+vmcattach all nosync
 waitfor 8s
 vmclist
 vmcshow simzone_c update_attempts,update_frequency

@@ -787,13 +787,13 @@ echo ######################################################### [TEST] 196: START
 vmccleanup MYSIM simzone_a
 echo ########################################################## [TEST] 196: END vmccleanup MYSIM simzone_a ##########################################################
 echo 
-echo ###################################################### [TEST] 197: START vmcattach MYSIM simzone_b async #######################################################
-vmcattach MYSIM simzone_b async
+echo ###################################################### [TEST] 197: START vmcattach MYSIM simzone_b nosync #######################################################
+vmcattach MYSIM simzone_b nosync
 waitfor MYSIM 16s
 vmclist MYSIM
 vmcshow MYSIM simzone_b update_attempts,update_frequency
 stats MYSIM
-echo ####################################################### [TEST] 197: END vmcattach MYSIM simzone_b async ########################################################
+echo ####################################################### [TEST] 197: END vmcattach MYSIM simzone_b nosync ########################################################
 echo 
 echo ###################################### [TEST] 198: START vmcattach MYSIM simzone_c update_attempts=78,update_frequency=3 #######################################
 vmcattach MYSIM simzone_c update_attempts=78,update_frequency=3
@@ -802,13 +802,13 @@ vmcshow MYSIM simzone_c update_attempts,update_frequency
 stats MYSIM
 echo ####################################### [TEST] 198: END vmcattach MYSIM simzone_c update_attempts=78,update_frequency=3 ########################################
 echo 
-echo ################################### [TEST] 199: START vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 async ###################################
-vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 async
+echo ################################### [TEST] 199: START vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 nosync ###################################
+vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 nosync
 waitfor MYSIM 16s
 vmclist MYSIM
 vmcshow MYSIM simzone_d update_attempts,update_frequency
 stats MYSIM
-echo #################################### [TEST] 199: END vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 async ####################################
+echo #################################### [TEST] 199: END vmcattach MYSIM simzone_d update_attempts=156,update_frequency=6 nosync ####################################
 echo 
 echo ######################################################### [TEST] 200: START vmcdetach MYSIM simzone_d ##########################################################
 vmcdetach MYSIM simzone_d
@@ -818,12 +818,12 @@ vmclist MYSIM
 stats MYSIM
 echo ########################################################## [TEST] 200: END vmcdetach MYSIM simzone_d ###########################################################
 echo 
-echo ###################################################### [TEST] 201: START vmcdetach MYSIM simzone_a async #######################################################
-vmcdetach MYSIM simzone_a async
+echo ###################################################### [TEST] 201: START vmcdetach MYSIM simzone_a nosync #######################################################
+vmcdetach MYSIM simzone_a nosync
 waitfor MYSIM 16s
 vmclist MYSIM
 stats MYSIM
-echo ####################################################### [TEST] 201: END vmcdetach MYSIM simzone_a async ########################################################
+echo ####################################################### [TEST] 201: END vmcdetach MYSIM simzone_a nosync ########################################################
 echo 
 echo ############################################################ [TEST] 202: START vmcattach MYSIM all #############################################################
 vmcattach MYSIM all
@@ -856,20 +856,20 @@ vmcshow MYSIM simzone_c update_attempts,update_frequency
 stats MYSIM
 echo ######################################### [TEST] 206: END vmcattach MYSIM update_attempts=312,update_frequency=12 all ##########################################
 echo 
-echo ######################################################### [TEST] 207: START vmcdetach MYSIM all async ##########################################################
-vmcdetach MYSIM all async
+echo ######################################################### [TEST] 207: START vmcdetach MYSIM all nosync ##########################################################
+vmcdetach MYSIM all nosync
 waitfor MYSIM 20s
 vmclist MYSIM
 stats MYSIM
-echo ########################################################## [TEST] 207: END vmcdetach MYSIM all async ###########################################################
+echo ########################################################## [TEST] 207: END vmcdetach MYSIM all nosync ###########################################################
 echo 
-echo ######################################################### [TEST] 208: START vmcattach MYSIM all async ##########################################################
-vmcattach MYSIM all async
+echo ######################################################### [TEST] 208: START vmcattach MYSIM all nosync ##########################################################
+vmcattach MYSIM all nosync
 waitfor MYSIM 30s
 vmclist MYSIM
 vmcshow MYSIM simzone_c update_attempts,update_frequency
 stats MYSIM
-echo ########################################################## [TEST] 208: END vmcattach MYSIM all async ###########################################################
+echo ########################################################## [TEST] 208: END vmcattach MYSIM all nosync ###########################################################
 echo 
 echo ############################################## [TEST] 209: START vmcalter MYSIM simzone_a replication_vmcs=TESTE ###############################################
 vmcalter MYSIM simzone_a replication_vmcs=TESTE
@@ -949,83 +949,83 @@ vmlist MYSIM
 stats MYSIM
 echo ############################################################# [TEST] 223: END vmcapture MYSIM vm_2 #############################################################
 echo 
-echo ######################################################## [TEST] 224: START vmattach MYSIM tinyvm async #########################################################
-vmattach MYSIM tinyvm async
+echo ######################################################## [TEST] 224: START vmattach MYSIM tinyvm nosync #########################################################
+vmattach MYSIM tinyvm nosync
 waitfor MYSIM 1s
 vmlist MYSIM pending
 waitfor MYSIM 16s
 vmlist MYSIM
 stats MYSIM
-echo ######################################################### [TEST] 224: END vmattach MYSIM tinyvm async ##########################################################
+echo ######################################################### [TEST] 224: END vmattach MYSIM tinyvm nosync ##########################################################
 echo 
-echo ####################################################### [TEST] 225: START vmattach MYSIM tinyvm async=2 ########################################################
-vmattach MYSIM tinyvm async=2
+echo ####################################################### [TEST] 225: START vmattach MYSIM tinyvm nosync=2 ########################################################
+vmattach MYSIM tinyvm nosync=2
 waitfor MYSIM 1s
 vmlist MYSIM pending
 waituntil MYSIM VM ARRIVED=8 increasing 1
 vmlist MYSIM
 stats MYSIM
-echo ######################################################## [TEST] 225: END vmattach MYSIM tinyvm async=2 #########################################################
+echo ######################################################## [TEST] 225: END vmattach MYSIM tinyvm nosync=2 #########################################################
 echo 
 echo #################################################### [TEST] 226: START rolealter MYSIM db2 size=platinum64 #####################################################
 rolealter MYSIM db2 size=platinum64
 echo ##################################################### [TEST] 226: END rolealter MYSIM db2 size=platinum64 ######################################################
 echo 
-echo ################################################## [TEST] 227: START vmattach MYSIM db2 SUT A:B,X:Y,R:2 async ##################################################
-vmattach MYSIM db2 SUT A:B,X:Y,R:2 async
+echo ################################################## [TEST] 227: START vmattach MYSIM db2 SUT A:B,X:Y,R:2 nosync ##################################################
+vmattach MYSIM db2 SUT A:B,X:Y,R:2 nosync
 waitfor MYSIM 1s
 vmlist MYSIM pending
 waitfor MYSIM 16s
 vmlist MYSIM
 vmshow MYSIM vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size
 stats MYSIM
-echo ################################################### [TEST] 227: END vmattach MYSIM db2 SUT A:B,X:Y,R:2 async ###################################################
+echo ################################################### [TEST] 227: END vmattach MYSIM db2 SUT A:B,X:Y,R:2 nosync ###################################################
 echo 
-echo ############################################ [TEST] 228: START vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 async ############################################
-vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 async
+echo ############################################ [TEST] 228: START vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 nosync ############################################
+vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 nosync
 waitfor MYSIM 1s
 vmlist MYSIM pending
 waitfor MYSIM 16s
 vmlist MYSIM
 vmshow MYSIM vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size
 stats MYSIM
-echo ############################################# [TEST] 228: END vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 async #############################################
+echo ############################################# [TEST] 228: END vmattach MYSIM netclient simhosta2 A:B,X:Y,R:2 nosync #############################################
 echo 
-echo #################################### [TEST] 229: START vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG async #####################################
-vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG async
+echo #################################### [TEST] 229: START vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG nosync #####################################
+vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG nosync
 waitfor MYSIM 16s
 vmlist MYSIM
 vmshow MYSIM vm_11 vmc_name,vmc_pool,host_name,meta_tags,size
 stats MYSIM
-echo ##################################### [TEST] 229: END vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG async ######################################
+echo ##################################### [TEST] 229: END vmattach MYSIM fen_hpc auto empty size=platinum64,vmc_pool=LG nosync ######################################
 echo 
-echo ################################### [TEST] 230: START vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete async ###################################
-vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete async
+echo ################################### [TEST] 230: START vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete nosync ###################################
+vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete nosync
 waitfor MYSIM 16s
 msgpub MYSIM VM staging vm_12;continue;something
 waituntil MYSIM VM ARRIVING=0 decreasing 1
 vmlist MYSIM
 stats MYSIM
-echo #################################### [TEST] 230: END vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete async ####################################
+echo #################################### [TEST] 230: END vmattach MYSIM tinyvm auto empty iron32 pause_provision_complete nosync ####################################
 echo 
 echo ############################################# [TEST] 231: START shell MYSIM rm -rf /tmp/cb*_was_used_on_execution ##############################################
 shell MYSIM rm -rf /tmp/cb*_was_used_on_execution
 cldalter MYSIM vm_defaults execute_script_name=~/repos/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
-vmattach MYSIM tinyvm auto empty iron32 execute_provision_complete async
+vmattach MYSIM tinyvm auto empty iron32 execute_provision_complete nosync
 waituntil MYSIM VM ARRIVING=0 decreasing 1
 shell MYSIM ls /tmp/cb*_was_used_on_execution
 vmlist MYSIM
 stats MYSIM
 echo ############################################## [TEST] 231: END shell MYSIM rm -rf /tmp/cb*_was_used_on_execution ###############################################
 echo 
-echo ########################### [TEST] 232: START vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting async ###########################
-vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting async
+echo ########################### [TEST] 232: START vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting nosync ###########################
+vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting nosync
 waitfor MYSIM 16s
 msgpub MYSIM VM starting 11111111-1111-1111-1111-111111111111 has started
 waitfor MYSIM 16s
 vmlist MYSIM
 stats MYSIM
-echo ############################ [TEST] 232: END vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting async ############################
+echo ############################ [TEST] 232: END vmattach MYSIM predictablevm auto empty check_boot_started=subscribe_on_starting nosync ############################
 echo 
 echo ########################################################### [TEST] 233: START vmattach MYSIM tinyvm ############################################################
 vmattach MYSIM tinyvm
@@ -1129,12 +1129,12 @@ vmlist MYSIM
 stats MYSIM
 echo ############################################################# [TEST] 250: END vmdetach MYSIM vm_4 ##############################################################
 echo 
-echo ######################################################### [TEST] 251: START vmdetach MYSIM vm_5 async ##########################################################
-vmdetach MYSIM vm_5 async
+echo ######################################################### [TEST] 251: START vmdetach MYSIM vm_5 nosync ##########################################################
+vmdetach MYSIM vm_5 nosync
 waitfor MYSIM 10s
 vmlist MYSIM
 stats MYSIM
-echo ########################################################## [TEST] 251: END vmdetach MYSIM vm_5 async ###########################################################
+echo ########################################################## [TEST] 251: END vmdetach MYSIM vm_5 nosync ###########################################################
 echo 
 echo ########################################################### [TEST] 252: START vmdetach MYSIM oldest ############################################################
 vmdetach MYSIM oldest
@@ -1172,12 +1172,12 @@ vmlist MYSIM
 stats MYSIM
 echo ########################################################### [TEST] 257: END vmattach MYSIM willfail ############################################################
 echo 
-echo ####################################################### [TEST] 258: START vmattach MYSIM willfail async ########################################################
-vmattach MYSIM willfail async
+echo ####################################################### [TEST] 258: START vmattach MYSIM willfail nosync ########################################################
+vmattach MYSIM willfail nosync
 waituntil MYSIM VM ARRIVING=0 decreasing 1
 vmlist MYSIM
 stats MYSIM
-echo ######################################################## [TEST] 258: END vmattach MYSIM willfail async #########################################################
+echo ######################################################## [TEST] 258: END vmattach MYSIM willfail nosync #########################################################
 echo 
 echo ########################################################### [TEST] 259: START vmlist MYSIM finished ############################################################
 vmlist MYSIM finished
@@ -1208,14 +1208,14 @@ aialter MYSIM ai_1 mode=scalable
 aishow MYSIM ai_1 mode
 echo ####################################################### [TEST] 264: END aialter MYSIM ai_1 mode=scalable #######################################################
 echo 
-echo ######################################################## [TEST] 265: START aiattach MYSIM hadoop async #########################################################
-aiattach MYSIM hadoop async
+echo ######################################################## [TEST] 265: START aiattach MYSIM hadoop nosync #########################################################
+aiattach MYSIM hadoop nosync
 waitfor MYSIM 30s
 ailist MYSIM
 vmlist MYSIM
 aishow MYSIM ai_2 detach_parallelism,ssh_key_name,sut
 stats MYSIM
-echo ######################################################### [TEST] 265: END aiattach MYSIM hadoop async ##########################################################
+echo ######################################################### [TEST] 265: END aiattach MYSIM hadoop nosync ##########################################################
 echo 
 echo ############################ [TEST] 266: START aiattach MYSIM ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE #############################
 aiattach MYSIM ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
@@ -1261,14 +1261,14 @@ stateshow MYSIM
 stats MYSIM
 echo ############################################################# [TEST] 272: END airestore MYSIM ai_3 #############################################################
 echo 
-echo ######################## [TEST] 273: START aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  #########################
-aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
+echo ######################## [TEST] 273: START aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee nosync  #########################
+aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee nosync 
 waitfor MYSIM 18s
 ailist MYSIM
 vmlist MYSIM
 aishow MYSIM ai_4 detach_parallelism,ssh_key_name,sut
 stats MYSIM
-echo ######################### [TEST] 273: END aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ##########################
+echo ######################### [TEST] 273: END aiattach MYSIM ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee nosync  ##########################
 echo 
 echo ################################## [TEST] 274: START aiattach MYSIM netperf netclient_pref_pool=SUT,netclient_size=platinum64 ##################################
 aiattach MYSIM netperf netclient_pref_pool=SUT,netclient_size=platinum64
@@ -1278,14 +1278,14 @@ aishow MYSIM ai_5 detach_parallelism,ssh_key_name,sut
 stats MYSIM
 echo ################################### [TEST] 274: END aiattach MYSIM netperf netclient_pref_pool=SUT,netclient_size=platinum64 ###################################
 echo 
-echo ######################### [TEST] 275: START aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async ##########################
-aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
+echo ######################### [TEST] 275: START aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave nosync ##########################
+aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave nosync
 waitfor MYSIM 18s
 ailist MYSIM
 vmlist MYSIM
 aishow MYSIM ai_6 detach_parallelism,ssh_key_name,sut
 stats MYSIM
-echo ########################## [TEST] 275: END aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async ###########################
+echo ########################## [TEST] 275: END aiattach MYSIM hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave nosync ###########################
 echo 
 echo ######################################################### [TEST] 276: START airesize MYSIM ai_1 was +1 #########################################################
 airesize MYSIM ai_1 was +1
@@ -1326,21 +1326,21 @@ vmlist MYSIM
 stats MYSIM
 echo ########################################################### [TEST] 280: END vmcapture MYSIM youngest ###########################################################
 echo 
-echo ######################################################## [TEST] 281: START vmcapture MYSIM vm_41 async #########################################################
-vmcapture MYSIM vm_41 async
+echo ######################################################## [TEST] 281: START vmcapture MYSIM vm_41 nosync #########################################################
+vmcapture MYSIM vm_41 nosync
 waitfor MYSIM 25s
 ailist MYSIM
 vmlist MYSIM
 stats MYSIM
-echo ######################################################### [TEST] 281: END vmcapture MYSIM vm_41 async ##########################################################
+echo ######################################################### [TEST] 281: END vmcapture MYSIM vm_41 nosync ##########################################################
 echo 
-echo ######################################################## [TEST] 282: START vmcapture MYSIM oldest async ########################################################
-vmcapture MYSIM oldest async
+echo ######################################################## [TEST] 282: START vmcapture MYSIM oldest nosync ########################################################
+vmcapture MYSIM oldest nosync
 waitfor MYSIM 25s
 ailist MYSIM
 vmlist MYSIM
 stats MYSIM
-echo ######################################################### [TEST] 282: END vmcapture MYSIM oldest async #########################################################
+echo ######################################################### [TEST] 282: END vmcapture MYSIM oldest nosync #########################################################
 echo 
 echo ############################################## [TEST] 283: START aiattach MYSIM ibm_daytrader load_balancer=true ###############################################
 aiattach MYSIM ibm_daytrader load_balancer=true
@@ -1399,9 +1399,9 @@ aishow MYSIM ai_13 load_balancer,sut
 stats MYSIM
 echo ######################################################### [TEST] 290: END aiattach MYSIM ibm_daytrader #########################################################
 echo 
-echo ###################################################### [TEST] 291: START aiattach MYSIM netperf async=4:2 ######################################################
-aiattach MYSIM netperf async=4:2
-echo ####################################################### [TEST] 291: END aiattach MYSIM netperf async=4:2 #######################################################
+echo ###################################################### [TEST] 291: START aiattach MYSIM netperf nosync=4:2 ######################################################
+aiattach MYSIM netperf nosync=4:2
+echo ####################################################### [TEST] 291: END aiattach MYSIM netperf nosync=4:2 #######################################################
 echo 
 echo ################################################# [TEST] 292: START waituntil MYSIM AI ARRIVED=17 increasing 2 #################################################
 waituntil MYSIM AI ARRIVED=17 increasing 2
@@ -1452,13 +1452,13 @@ vmlist MYSIM
 stats MYSIM
 echo ############################################################# [TEST] 298: END aidetach MYSIM ai_12 #############################################################
 echo 
-echo ######################################################### [TEST] 299: START aidetach MYSIM ai_13 async #########################################################
-aidetach MYSIM ai_13 async
+echo ######################################################### [TEST] 299: START aidetach MYSIM ai_13 nosync #########################################################
+aidetach MYSIM ai_13 nosync
 waituntil MYSIM AI RESERVATIONS=16 decreasing 5
 ailist MYSIM
 vmlist MYSIM
 stats MYSIM
-echo ########################################################## [TEST] 299: END aidetach MYSIM ai_13 async ##########################################################
+echo ########################################################## [TEST] 299: END aidetach MYSIM ai_13 nosync ##########################################################
 echo 
 echo ########################################################### [TEST] 300: START aidetach MYSIM oldest ############################################################
 aidetach MYSIM oldest
@@ -1497,13 +1497,13 @@ vmlist MYSIM
 stats MYSIM
 echo ############################################################ [TEST] 304: END aicapture MYSIM oldest ############################################################
 echo 
-echo ####################################################### [TEST] 305: START aicapture MYSIM youngest async #######################################################
-aicapture MYSIM youngest async
+echo ####################################################### [TEST] 305: START aicapture MYSIM youngest nosync #######################################################
+aicapture MYSIM youngest nosync
 waituntil MYSIM AI CAPTURING=0
 ailist MYSIM
 vmlist MYSIM
 stats MYSIM
-echo ######################################################## [TEST] 305: END aicapture MYSIM youngest async ########################################################
+echo ######################################################## [TEST] 305: END aicapture MYSIM youngest nosync ########################################################
 echo 
 echo ########################################################### [TEST] 306: START aidetach MYSIM random ############################################################
 aidetach MYSIM random
@@ -1512,15 +1512,15 @@ vmlist MYSIM
 stats MYSIM
 echo ############################################################ [TEST] 306: END aidetach MYSIM random #############################################################
 echo 
-echo ############################# [TEST] 307: START aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted async ##############################
-aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted async
+echo ############################# [TEST] 307: START aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted nosync ##############################
+aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted nosync
 waitfor MYSIM 40s
 msgpub MYSIM VM staging ai_26;continue;something
 waituntil MYSIM AI ARRIVING=0 decreasing 1
 ailist MYSIM
 vmlist MYSIM
 stats MYSIM
-echo ############################## [TEST] 307: END aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted async ###############################
+echo ############################## [TEST] 307: END aiattach MYSIM ibm_daytrader default default none none pause_all_vms_booted nosync ###############################
 echo 
 echo ############################################# [TEST] 308: START shell MYSIM rm -rf /tmp/cb*_was_used_on_execution ##############################################
 shell MYSIM rm -rf /tmp/cb*_was_used_on_execution
@@ -1678,12 +1678,12 @@ stats MYSIM
 vmlist MYSIM
 echo ######################################################## [TEST] 330: END vmmigrate MYSIM youngest dest #########################################################
 echo 
-echo ################################################### [TEST] 331: START vmmigrate MYSIM youngest source async ####################################################
-vmmigrate MYSIM youngest source async
+echo ################################################### [TEST] 331: START vmmigrate MYSIM youngest source nosync ####################################################
+vmmigrate MYSIM youngest source nosync
 waitfor MYSIM 10s
 stats MYSIM
 vmlist MYSIM
-echo #################################################### [TEST] 331: END vmmigrate MYSIM youngest source async #####################################################
+echo #################################################### [TEST] 331: END vmmigrate MYSIM youngest source nosync #####################################################
 echo 
 echo ####################################################### [TEST] 332: START vmprotect MYSIM youngest dest ########################################################
 vmprotect MYSIM youngest dest
@@ -1691,12 +1691,12 @@ stats MYSIM
 vmlist MYSIM
 echo ######################################################## [TEST] 332: END vmprotect MYSIM youngest dest #########################################################
 echo 
-echo ################################################### [TEST] 333: START vmprotect MYSIM youngest source async ####################################################
-vmprotect MYSIM youngest source async
+echo ################################################### [TEST] 333: START vmprotect MYSIM youngest source nosync ####################################################
+vmprotect MYSIM youngest source nosync
 waitfor MYSIM 10s
 stats MYSIM
 vmlist MYSIM
-echo #################################################### [TEST] 333: END vmprotect MYSIM youngest source async #####################################################
+echo #################################################### [TEST] 333: END vmprotect MYSIM youngest source nosync #####################################################
 echo 
 echo ############################################################# [TEST] 334: START reserved for vmcrs #############################################################
 reserved for vmcrs
@@ -2271,13 +2271,13 @@ echo ############################################################ [TEST] 473: ST
 vmccleanup simzone_a
 echo ############################################################# [TEST] 473: END vmccleanup simzone_a #############################################################
 echo 
-echo ######################################################### [TEST] 474: START vmcattach simzone_b async ##########################################################
-vmcattach simzone_b async
+echo ######################################################### [TEST] 474: START vmcattach simzone_b nosync ##########################################################
+vmcattach simzone_b nosync
 waitfor 16s
 vmclist
 vmcshow simzone_b update_attempts,update_frequency
 stats
-echo ########################################################## [TEST] 474: END vmcattach simzone_b async ###########################################################
+echo ########################################################## [TEST] 474: END vmcattach simzone_b nosync ###########################################################
 echo 
 echo ######################################### [TEST] 475: START vmcattach simzone_c update_attempts=78,update_frequency=3 ##########################################
 vmcattach simzone_c update_attempts=78,update_frequency=3
@@ -2286,13 +2286,13 @@ vmcshow simzone_c update_attempts,update_frequency
 stats
 echo ########################################## [TEST] 475: END vmcattach simzone_c update_attempts=78,update_frequency=3 ###########################################
 echo 
-echo ###################################### [TEST] 476: START vmcattach simzone_d update_attempts=156,update_frequency=6 async ######################################
-vmcattach simzone_d update_attempts=156,update_frequency=6 async
+echo ###################################### [TEST] 476: START vmcattach simzone_d update_attempts=156,update_frequency=6 nosync ######################################
+vmcattach simzone_d update_attempts=156,update_frequency=6 nosync
 waitfor 16s
 vmclist
 vmcshow simzone_d update_attempts,update_frequency
 stats
-echo ####################################### [TEST] 476: END vmcattach simzone_d update_attempts=156,update_frequency=6 async #######################################
+echo ####################################### [TEST] 476: END vmcattach simzone_d update_attempts=156,update_frequency=6 nosync #######################################
 echo 
 echo ############################################################ [TEST] 477: START vmcdetach simzone_d #############################################################
 vmcdetach simzone_d
@@ -2302,12 +2302,12 @@ vmclist
 stats
 echo ############################################################# [TEST] 477: END vmcdetach simzone_d ##############################################################
 echo 
-echo ######################################################### [TEST] 478: START vmcdetach simzone_a async ##########################################################
-vmcdetach simzone_a async
+echo ######################################################### [TEST] 478: START vmcdetach simzone_a nosync ##########################################################
+vmcdetach simzone_a nosync
 waitfor 16s
 vmclist
 stats
-echo ########################################################## [TEST] 478: END vmcdetach simzone_a async ###########################################################
+echo ########################################################## [TEST] 478: END vmcdetach simzone_a nosync ###########################################################
 echo 
 echo ############################################################### [TEST] 479: START vmcattach all ################################################################
 vmcattach all
@@ -2340,20 +2340,20 @@ vmcshow simzone_c update_attempts,update_frequency
 stats
 echo ############################################ [TEST] 483: END vmcattach update_attempts=312,update_frequency=12 all #############################################
 echo 
-echo ############################################################ [TEST] 484: START vmcdetach all async #############################################################
-vmcdetach all async
+echo ############################################################ [TEST] 484: START vmcdetach all nosync #############################################################
+vmcdetach all nosync
 waitfor 20s
 vmclist
 stats
-echo ############################################################# [TEST] 484: END vmcdetach all async ##############################################################
+echo ############################################################# [TEST] 484: END vmcdetach all nosync ##############################################################
 echo 
-echo ############################################################ [TEST] 485: START vmcattach all async #############################################################
-vmcattach all async
+echo ############################################################ [TEST] 485: START vmcattach all nosync #############################################################
+vmcattach all nosync
 waitfor 30s
 vmclist
 vmcshow simzone_c update_attempts,update_frequency
 stats
-echo ############################################################# [TEST] 485: END vmcattach all async ##############################################################
+echo ############################################################# [TEST] 485: END vmcattach all nosync ##############################################################
 echo 
 echo ################################################# [TEST] 486: START vmcalter simzone_a replication_vmcs=TESTE ##################################################
 vmcalter simzone_a replication_vmcs=TESTE
@@ -2433,83 +2433,83 @@ vmlist
 stats
 echo ################################################################ [TEST] 500: END vmcapture vm_2 ################################################################
 echo 
-echo ########################################################### [TEST] 501: START vmattach tinyvm async ############################################################
-vmattach tinyvm async
+echo ########################################################### [TEST] 501: START vmattach tinyvm nosync ############################################################
+vmattach tinyvm nosync
 waitfor 1s
 vmlist pending
 waitfor 16s
 vmlist
 stats
-echo ############################################################ [TEST] 501: END vmattach tinyvm async #############################################################
+echo ############################################################ [TEST] 501: END vmattach tinyvm nosync #############################################################
 echo 
-echo ########################################################## [TEST] 502: START vmattach tinyvm async=2 ###########################################################
-vmattach tinyvm async=2
+echo ########################################################## [TEST] 502: START vmattach tinyvm nosync=2 ###########################################################
+vmattach tinyvm nosync=2
 waitfor 1s
 vmlist pending
 waituntil VM ARRIVED=8 increasing 1
 vmlist
 stats
-echo ########################################################### [TEST] 502: END vmattach tinyvm async=2 ############################################################
+echo ########################################################### [TEST] 502: END vmattach tinyvm nosync=2 ############################################################
 echo 
 echo ####################################################### [TEST] 503: START rolealter db2 size=platinum64 ########################################################
 rolealter db2 size=platinum64
 echo ######################################################## [TEST] 503: END rolealter db2 size=platinum64 #########################################################
 echo 
-echo ##################################################### [TEST] 504: START vmattach db2 SUT A:B,X:Y,R:2 async #####################################################
-vmattach db2 SUT A:B,X:Y,R:2 async
+echo ##################################################### [TEST] 504: START vmattach db2 SUT A:B,X:Y,R:2 nosync #####################################################
+vmattach db2 SUT A:B,X:Y,R:2 nosync
 waitfor 1s
 vmlist pending
 waitfor 16s
 vmlist
 vmshow vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size
 stats
-echo ###################################################### [TEST] 504: END vmattach db2 SUT A:B,X:Y,R:2 async ######################################################
+echo ###################################################### [TEST] 504: END vmattach db2 SUT A:B,X:Y,R:2 nosync ######################################################
 echo 
-echo ############################################### [TEST] 505: START vmattach netclient simhosta2 A:B,X:Y,R:2 async ###############################################
-vmattach netclient simhosta2 A:B,X:Y,R:2 async
+echo ############################################### [TEST] 505: START vmattach netclient simhosta2 A:B,X:Y,R:2 nosync ###############################################
+vmattach netclient simhosta2 A:B,X:Y,R:2 nosync
 waitfor 1s
 vmlist pending
 waitfor 16s
 vmlist
 vmshow vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size
 stats
-echo ################################################ [TEST] 505: END vmattach netclient simhosta2 A:B,X:Y,R:2 async ################################################
+echo ################################################ [TEST] 505: END vmattach netclient simhosta2 A:B,X:Y,R:2 nosync ################################################
 echo 
-echo ####################################### [TEST] 506: START vmattach fen_hpc auto empty size=platinum64,vmc_pool=LG async ########################################
-vmattach fen_hpc auto empty size=platinum64,vmc_pool=LG async
+echo ####################################### [TEST] 506: START vmattach fen_hpc auto empty size=platinum64,vmc_pool=LG nosync ########################################
+vmattach fen_hpc auto empty size=platinum64,vmc_pool=LG nosync
 waitfor 16s
 vmlist
 vmshow vm_11 vmc_name,vmc_pool,host_name,meta_tags,size
 stats
-echo ######################################## [TEST] 506: END vmattach fen_hpc auto empty size=platinum64,vmc_pool=LG async #########################################
+echo ######################################## [TEST] 506: END vmattach fen_hpc auto empty size=platinum64,vmc_pool=LG nosync #########################################
 echo 
-echo ###################################### [TEST] 507: START vmattach tinyvm auto empty iron32 pause_provision_complete async ######################################
-vmattach tinyvm auto empty iron32 pause_provision_complete async
+echo ###################################### [TEST] 507: START vmattach tinyvm auto empty iron32 pause_provision_complete nosync ######################################
+vmattach tinyvm auto empty iron32 pause_provision_complete nosync
 waitfor 16s
 msgpub VM staging vm_12;continue;something
 waituntil VM ARRIVING=0 decreasing 1
 vmlist
 stats
-echo ####################################### [TEST] 507: END vmattach tinyvm auto empty iron32 pause_provision_complete async #######################################
+echo ####################################### [TEST] 507: END vmattach tinyvm auto empty iron32 pause_provision_complete nosync #######################################
 echo 
 echo ################################################ [TEST] 508: START shell rm -rf /tmp/cb*_was_used_on_execution #################################################
 shell rm -rf /tmp/cb*_was_used_on_execution
 cldalter vm_defaults execute_script_name=~/repos/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
-vmattach tinyvm auto empty iron32 execute_provision_complete async
+vmattach tinyvm auto empty iron32 execute_provision_complete nosync
 waituntil VM ARRIVING=0 decreasing 1
 shell ls /tmp/cb*_was_used_on_execution
 vmlist
 stats
 echo ################################################# [TEST] 508: END shell rm -rf /tmp/cb*_was_used_on_execution ##################################################
 echo 
-echo ############################## [TEST] 509: START vmattach predictablevm auto empty check_boot_started=subscribe_on_starting async ##############################
-vmattach predictablevm auto empty check_boot_started=subscribe_on_starting async
+echo ############################## [TEST] 509: START vmattach predictablevm auto empty check_boot_started=subscribe_on_starting nosync ##############################
+vmattach predictablevm auto empty check_boot_started=subscribe_on_starting nosync
 waitfor 16s
 msgpub VM starting 11111111-1111-1111-1111-111111111111 has started
 waitfor 16s
 vmlist
 stats
-echo ############################### [TEST] 509: END vmattach predictablevm auto empty check_boot_started=subscribe_on_starting async ###############################
+echo ############################### [TEST] 509: END vmattach predictablevm auto empty check_boot_started=subscribe_on_starting nosync ###############################
 echo 
 echo ############################################################## [TEST] 510: START vmattach tinyvm ###############################################################
 vmattach tinyvm
@@ -2613,12 +2613,12 @@ vmlist
 stats
 echo ################################################################ [TEST] 527: END vmdetach vm_4 #################################################################
 echo 
-echo ############################################################ [TEST] 528: START vmdetach vm_5 async #############################################################
-vmdetach vm_5 async
+echo ############################################################ [TEST] 528: START vmdetach vm_5 nosync #############################################################
+vmdetach vm_5 nosync
 waitfor 10s
 vmlist
 stats
-echo ############################################################# [TEST] 528: END vmdetach vm_5 async ##############################################################
+echo ############################################################# [TEST] 528: END vmdetach vm_5 nosync ##############################################################
 echo 
 echo ############################################################## [TEST] 529: START vmdetach oldest ###############################################################
 vmdetach oldest
@@ -2656,12 +2656,12 @@ vmlist
 stats
 echo ############################################################## [TEST] 534: END vmattach willfail ###############################################################
 echo 
-echo ########################################################## [TEST] 535: START vmattach willfail async ###########################################################
-vmattach willfail async
+echo ########################################################## [TEST] 535: START vmattach willfail nosync ###########################################################
+vmattach willfail nosync
 waituntil VM ARRIVING=0 decreasing 1
 vmlist
 stats
-echo ########################################################### [TEST] 535: END vmattach willfail async ############################################################
+echo ########################################################### [TEST] 535: END vmattach willfail nosync ############################################################
 echo 
 echo ############################################################## [TEST] 536: START vmlist finished ###############################################################
 vmlist finished
@@ -2692,14 +2692,14 @@ aialter ai_1 mode=scalable
 aishow ai_1 mode
 echo ########################################################## [TEST] 541: END aialter ai_1 mode=scalable ##########################################################
 echo 
-echo ########################################################### [TEST] 542: START aiattach hadoop async ############################################################
-aiattach hadoop async
+echo ########################################################### [TEST] 542: START aiattach hadoop nosync ############################################################
+aiattach hadoop nosync
 waitfor 30s
 ailist
 vmlist
 aishow ai_2 detach_parallelism,ssh_key_name,sut
 stats
-echo ############################################################ [TEST] 542: END aiattach hadoop async #############################################################
+echo ############################################################ [TEST] 542: END aiattach hadoop nosync #############################################################
 echo 
 echo ############################### [TEST] 543: START aiattach ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ################################
 aiattach ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
@@ -2745,14 +2745,14 @@ stateshow
 stats
 echo ################################################################ [TEST] 549: END airestore ai_3 ################################################################
 echo 
-echo ########################### [TEST] 550: START aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ############################
-aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
+echo ########################### [TEST] 550: START aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee nosync  ############################
+aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee nosync 
 waitfor 18s
 ailist
 vmlist
 aishow ai_4 detach_parallelism,ssh_key_name,sut
 stats
-echo ############################ [TEST] 550: END aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  #############################
+echo ############################ [TEST] 550: END aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee nosync  #############################
 echo 
 echo ##################################### [TEST] 551: START aiattach netperf netclient_pref_pool=SUT,netclient_size=platinum64 #####################################
 aiattach netperf netclient_pref_pool=SUT,netclient_size=platinum64
@@ -2762,14 +2762,14 @@ aishow ai_5 detach_parallelism,ssh_key_name,sut
 stats
 echo ###################################### [TEST] 551: END aiattach netperf netclient_pref_pool=SUT,netclient_size=platinum64 ######################################
 echo 
-echo ############################ [TEST] 552: START aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async #############################
-aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
+echo ############################ [TEST] 552: START aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave nosync #############################
+aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave nosync
 waitfor 18s
 ailist
 vmlist
 aishow ai_6 detach_parallelism,ssh_key_name,sut
 stats
-echo ############################# [TEST] 552: END aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async ##############################
+echo ############################# [TEST] 552: END aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave nosync ##############################
 echo 
 echo ############################################################ [TEST] 553: START airesize ai_1 was +1 ############################################################
 airesize ai_1 was +1
@@ -2810,21 +2810,21 @@ vmlist
 stats
 echo ############################################################## [TEST] 557: END vmcapture youngest ##############################################################
 echo 
-echo ########################################################### [TEST] 558: START vmcapture vm_41 async ############################################################
-vmcapture vm_41 async
+echo ########################################################### [TEST] 558: START vmcapture vm_41 nosync ############################################################
+vmcapture vm_41 nosync
 waitfor 25s
 ailist
 vmlist
 stats
-echo ############################################################ [TEST] 558: END vmcapture vm_41 async #############################################################
+echo ############################################################ [TEST] 558: END vmcapture vm_41 nosync #############################################################
 echo 
-echo ########################################################### [TEST] 559: START vmcapture oldest async ###########################################################
-vmcapture oldest async
+echo ########################################################### [TEST] 559: START vmcapture oldest nosync ###########################################################
+vmcapture oldest nosync
 waitfor 25s
 ailist
 vmlist
 stats
-echo ############################################################ [TEST] 559: END vmcapture oldest async ############################################################
+echo ############################################################ [TEST] 559: END vmcapture oldest nosync ############################################################
 echo 
 echo ################################################# [TEST] 560: START aiattach ibm_daytrader load_balancer=true ##################################################
 aiattach ibm_daytrader load_balancer=true
@@ -2883,9 +2883,9 @@ aishow ai_13 load_balancer,sut
 stats
 echo ############################################################ [TEST] 567: END aiattach ibm_daytrader ############################################################
 echo 
-echo ######################################################### [TEST] 568: START aiattach netperf async=4:2 #########################################################
-aiattach netperf async=4:2
-echo ########################################################## [TEST] 568: END aiattach netperf async=4:2 ##########################################################
+echo ######################################################### [TEST] 568: START aiattach netperf nosync=4:2 #########################################################
+aiattach netperf nosync=4:2
+echo ########################################################## [TEST] 568: END aiattach netperf nosync=4:2 ##########################################################
 echo 
 echo #################################################### [TEST] 569: START waituntil AI ARRIVED=17 increasing 2 ####################################################
 waituntil AI ARRIVED=17 increasing 2
@@ -2936,13 +2936,13 @@ vmlist
 stats
 echo ################################################################ [TEST] 575: END aidetach ai_12 ################################################################
 echo 
-echo ############################################################ [TEST] 576: START aidetach ai_13 async ############################################################
-aidetach ai_13 async
+echo ############################################################ [TEST] 576: START aidetach ai_13 nosync ############################################################
+aidetach ai_13 nosync
 waituntil AI RESERVATIONS=16 decreasing 5
 ailist
 vmlist
 stats
-echo ############################################################# [TEST] 576: END aidetach ai_13 async #############################################################
+echo ############################################################# [TEST] 576: END aidetach ai_13 nosync #############################################################
 echo 
 echo ############################################################## [TEST] 577: START aidetach oldest ###############################################################
 aidetach oldest
@@ -2981,13 +2981,13 @@ vmlist
 stats
 echo ############################################################### [TEST] 581: END aicapture oldest ###############################################################
 echo 
-echo ########################################################## [TEST] 582: START aicapture youngest async ##########################################################
-aicapture youngest async
+echo ########################################################## [TEST] 582: START aicapture youngest nosync ##########################################################
+aicapture youngest nosync
 waituntil AI CAPTURING=0
 ailist
 vmlist
 stats
-echo ########################################################### [TEST] 582: END aicapture youngest async ###########################################################
+echo ########################################################### [TEST] 582: END aicapture youngest nosync ###########################################################
 echo 
 echo ############################################################## [TEST] 583: START aidetach random ###############################################################
 aidetach random
@@ -2996,15 +2996,15 @@ vmlist
 stats
 echo ############################################################### [TEST] 583: END aidetach random ################################################################
 echo 
-echo ################################ [TEST] 584: START aiattach ibm_daytrader default default none none pause_all_vms_booted async #################################
-aiattach ibm_daytrader default default none none pause_all_vms_booted async
+echo ################################ [TEST] 584: START aiattach ibm_daytrader default default none none pause_all_vms_booted nosync #################################
+aiattach ibm_daytrader default default none none pause_all_vms_booted nosync
 waitfor 40s
 msgpub VM staging ai_26;continue;something
 waituntil AI ARRIVING=0 decreasing 1
 ailist
 vmlist
 stats
-echo ################################# [TEST] 584: END aiattach ibm_daytrader default default none none pause_all_vms_booted async ##################################
+echo ################################# [TEST] 584: END aiattach ibm_daytrader default default none none pause_all_vms_booted nosync ##################################
 echo 
 echo ################################################ [TEST] 585: START shell rm -rf /tmp/cb*_was_used_on_execution #################################################
 shell rm -rf /tmp/cb*_was_used_on_execution
@@ -3162,12 +3162,12 @@ stats
 vmlist
 echo ########################################################### [TEST] 607: END vmmigrate youngest dest ############################################################
 echo 
-echo ###################################################### [TEST] 608: START vmmigrate youngest source async #######################################################
-vmmigrate youngest source async
+echo ###################################################### [TEST] 608: START vmmigrate youngest source nosync #######################################################
+vmmigrate youngest source nosync
 waitfor 10s
 stats
 vmlist
-echo ####################################################### [TEST] 608: END vmmigrate youngest source async ########################################################
+echo ####################################################### [TEST] 608: END vmmigrate youngest source nosync ########################################################
 echo 
 echo ########################################################## [TEST] 609: START vmprotect youngest dest ###########################################################
 vmprotect youngest dest
@@ -3175,12 +3175,12 @@ stats
 vmlist
 echo ########################################################### [TEST] 609: END vmprotect youngest dest ############################################################
 echo 
-echo ###################################################### [TEST] 610: START vmprotect youngest source async #######################################################
-vmprotect youngest source async
+echo ###################################################### [TEST] 610: START vmprotect youngest source nosync #######################################################
+vmprotect youngest source nosync
 waitfor 10s
 stats
 vmlist
-echo ####################################################### [TEST] 610: END vmprotect youngest source async ########################################################
+echo ####################################################### [TEST] 610: END vmprotect youngest source nosync ########################################################
 echo 
 echo ############################################################# [TEST] 611: START reserved for vmcrs #############################################################
 reserved for vmcrs

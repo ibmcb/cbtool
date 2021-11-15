@@ -1,4 +1,4 @@
-vmcapture vm_41 async
+vmcapture vm_41 nosync
 waitfor 25s
 ailist
 vmlist

@@ -1,4 +1,4 @@
-aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
+aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee nosync 
 waitfor TESTCLOUD 18s
 ailist TESTCLOUD
 vmlist TESTCLOUD

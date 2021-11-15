@@ -1,4 +1,4 @@
-vmcdetach simzone_a async
+vmcdetach simzone_a nosync
 waitfor 8s
 vmclist
 stats

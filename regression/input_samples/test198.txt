@@ -1,4 +1,4 @@
-vmcdetach TESTCLOUD simzone_a async
+vmcdetach TESTCLOUD simzone_a nosync
 waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
 stats TESTCLOUD

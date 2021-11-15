@@ -1,4 +1,4 @@
-aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
+aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave nosync
 waitfor 18s
 ailist
 vmlist

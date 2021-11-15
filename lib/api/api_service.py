@@ -267,134 +267,134 @@ class API():
     def vmresize(self, cloud_name, identifier, resource, value):
         return self.active.vmresize({}, cloud_name + ' ' + identifier + ' ' + resource + "=" + str(value), "vm-resize")[2]
     
-    def appresume(self, cloud_name, identifier, firs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " attached resume" + ' ' + firs + (' ' + async), "ai-runstate")[2]
+    def appresume(self, cloud_name, identifier, firs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached resume" + ' ' + firs + (' ' + nosync), "ai-runstate")[2]
         else :
             return self.active.airunstate({}, cloud_name + ' ' + identifier + " attached resume" + ' ' + firs, "ai-runstate")[2]
 
-    def apprestore(self, cloud_name, identifier, async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " attached restore" + (' ' + async), "ai-runstate")[2]
+    def apprestore(self, cloud_name, identifier, nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached restore" + (' ' + nosync), "ai-runstate")[2]
         else :
             return self.active.airunstate({}, cloud_name + ' ' + identifier + " attached restore", "ai-runstate")[2]
         
-    def appcapture(self, cloud_name, identifier, vmcrs = "none",  async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + vmcrs + (' ' + async), "ai-capture")[2]
+    def appcapture(self, cloud_name, identifier, vmcrs = "none",  nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + vmcrs + (' ' + nosync), "ai-capture")[2]
         else :
             return self.active.aicapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "ai-capture")[2]
         
-    def vmcapture(self, cloud_name, identifier, captured_image_name = "auto", vmcrs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + captured_image_name + ' ' + vmcrs + (' ' + async), "vm-capture")[2]
+    def vmcapture(self, cloud_name, identifier, captured_image_name = "auto", vmcrs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + captured_image_name + ' ' + vmcrs + (' ' + nosync), "vm-capture")[2]
         else :
             return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + captured_image_name + ' ' + vmcrs, "vm-capture")[2]
         
-    def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-migrate")[2]
+    def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + nosync), "vm-migrate")[2]
         else :
             return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-migrate")[2]
     
-    def vmprotect(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-protect")[2]
+    def vmprotect(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + nosync), "vm-protect")[2]
         else :
             return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-protect")[2]
         
-    def vmlogin(self, cloud_name, identifier, async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "vm-login")[2]
+    def vmlogin(self, cloud_name, identifier, nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + nosync), "vm-login")[2]
         else :
             return self.active.gtk({}, cloud_name + ' ' + identifier, "vm-login")[2]
         
-    def vmdisplay(self, cloud_name, identifier, async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "vm-display")[2]
+    def vmdisplay(self, cloud_name, identifier, nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + nosync), "vm-display")[2]
         else :
             return self.active.gtk({}, cloud_name + ' ' + identifier, "vm-display")[2]
         
-    def hostfail(self, cloud_name, identifier, fault, firs = "none", async = False):
+    def hostfail(self, cloud_name, identifier, fault, firs = "none", nosync = False):
         parameters = cloud_name + ' ' + identifier + ' ' + fault + ' ' + firs
-        if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (' ' + async), "host-fail")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(parameters + (' ' + nosync), "host-fail")[2]
         else :
             return self.active.hostfail_repair({}, parameters, "host-fail")[2]
         
-    def hostrepair(self, cloud_name, identifier, fault = "auto", firs = "none", async = False):
+    def hostrepair(self, cloud_name, identifier, fault = "auto", firs = "none", nosync = False):
         parameters = cloud_name + ' ' + identifier + ' ' + fault + ' ' + firs
-        if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (' ' + async), "host-repair")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(parameters + (' ' + nosync), "host-repair")[2]
         else :
             return self.active.hostfail_repair({}, parameters, "host-repair")[2]
         
-    def appresize(self, cloud_name, identifier, role, delta, async = False):
+    def appresize(self, cloud_name, identifier, role, delta, nosync = False):
         parameters = cloud_name + ' ' + identifier + ' ' + role + ' ' + delta
-        if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (' ' + async), "ai-resize")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(parameters + (' ' + nosync), "ai-resize")[2]
         else :
             return self.active.airesize({}, parameters, "ai-resize")[2]
     
-    def appsave(self, cloud_name, identifier, firs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " save" + ' ' + firs + (' ' + async), "ai-runstate")[2]
+    def appsave(self, cloud_name, identifier, firs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " save" + ' ' + firs + (' ' + nosync), "ai-runstate")[2]
         else :
             return self.active.airunstate({}, cloud_name + ' ' + identifier + " save" + ' ' + firs, "ai-runstate")[2]
         
-    def vmrunstate(self, cloud_name, identifier, runstate, command = "unknown", firs = "none", async = False):
+    def vmrunstate(self, cloud_name, identifier, runstate, command = "unknown", firs = "none", nosync = False):
         parameters = cloud_name + ' ' + identifier + ' ' + runstate + ' ' + command + ' ' + firs
-        if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (' ' + async), "vm-runstate")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(parameters + (' ' + nosync), "vm-runstate")[2]
         else :
             return self.active.vmrunstate({}, parameters, "vm-runstate")[2]
 
-    def apprunstate(self, cloud_name, identifier, runstate, command = "unknown", firs = "none", async = False):
+    def apprunstate(self, cloud_name, identifier, runstate, command = "unknown", firs = "none", nosync = False):
         parameters = cloud_name + ' ' + identifier + ' ' + runstate + ' ' + command + ' ' + firs
-        if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (' ' + async), "ai-runstate")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(parameters + (' ' + nosync), "ai-runstate")[2]
         else :
             return self.active.airunstate({}, parameters, "ai-runstate")[2]
         
-    def appfail(self, cloud_name, identifier, firs = "none", async = False):
-        return self.appsuspend(cloud_name, identifier, firs, async)
+    def appfail(self, cloud_name, identifier, firs = "none", nosync = False):
+        return self.appsuspend(cloud_name, identifier, firs, nosync)
     
-    def apprepair(self, cloud_name, identifier, firs = "none", async = False):
-        return self.appresume(cloud_name, identifier, firs, async)
+    def apprepair(self, cloud_name, identifier, firs = "none", nosync = False):
+        return self.appresume(cloud_name, identifier, firs, nosync)
     
-    def appsuspend(self, cloud_name, identifier, firs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + ' ' + firs + (' ' + async), "ai-runstate")[2]
+    def appsuspend(self, cloud_name, identifier, firs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + ' ' + firs + (' ' + nosync), "ai-runstate")[2]
         else :
             return self.active.airunstate({}, cloud_name + ' ' + identifier + " fail" + ' ' + firs, "ai-runstate")[2]
     
-    def vmrestore(self, cloud_name, identifier, firs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " attached restore" + ' ' + firs (' ' + async), "vm-runstate")[2]
+    def vmrestore(self, cloud_name, identifier, firs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached restore" + ' ' + firs (' ' + nosync), "vm-runstate")[2]
         else :
             return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " attached restore" + ' ' + firs, "vm-runstate")[2]
     
-    def vmsave(self, cloud_name, identifier, firs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " save" + ' ' + firs + (' ' + async), "vm-runstate")[2]
+    def vmsave(self, cloud_name, identifier, firs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " save" + ' ' + firs + (' ' + nosync), "vm-runstate")[2]
         else :
             return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " save" + ' ' + firs, "vm-runstate")[2]
     
-    def vmresume(self, cloud_name, identifier, firs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " attached resume" + ' ' + firs +(' ' + async), "vm-runstate")[2]
+    def vmresume(self, cloud_name, identifier, firs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached resume" + ' ' + firs +(' ' + nosync), "vm-runstate")[2]
         else :
             return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " attached resume" + ' ' + firs, "vm-runstate")[2]
         
-    def vmfail(self, cloud_name, identifier, firs = "none", async = False):
-        return self.vmsuspend(cloud_name, identifier, firs, async)
+    def vmfail(self, cloud_name, identifier, firs = "none", nosync = False):
+        return self.vmsuspend(cloud_name, identifier, firs, nosync)
     
-    def vmrepair(self, cloud_name, identifier, firs = "none", async = False):
-        return self.vmresume(cloud_name, identifier, firs, async)
+    def vmrepair(self, cloud_name, identifier, firs = "none", nosync = False):
+        return self.vmresume(cloud_name, identifier, firs, nosync)
     
-    def vmsuspend(self, cloud_name, identifier, firs = "none", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + ' ' + firs + (' ' + async), "vm-runstate")[2]
+    def vmsuspend(self, cloud_name, identifier, firs = "none", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + ' ' + firs + (' ' + nosync), "vm-runstate")[2]
         else :
             return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " fail" + ' ' + firs, "vm-runstate")[2]
         
@@ -440,42 +440,42 @@ class API():
     def firsalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "firs-alter")[2]
     
-    def vmcattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", async = False) :
-        if async and str(async).count("async") :
+    def vmcattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", nosync = False) :
+        if nosync and str(nosync).count("nosync") :
             if identifier == "all" :
-                return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "vmc-attachall")[2]
+                return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + nosync), "vmc-attachall")[2]
             else :
-                return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "vmc-attach")[2]
+                return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + nosync), "vmc-attach")[2]
         else :
             if identifier == "all" :
                 return self.active.vmcattachall({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "vmc-attachall")[2]
             else :
                 return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "vmc-attach")[2]
     
-    def vmcrsattach(self, cloud_name, identifier, scope = '', max_simultaneous_cap_reqs = '', max_total_cap_reqs = '', ivmcat = '', min_cap_age = '', temp_attr_list = "empty=empty", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaneous_cap_reqs + ' ' +  max_total_cap_reqs + ' ' + ivmcat + ' ' + min_cap_age + ' ' + temp_attr_list + (' ' + async), "vmcrs-attach")[2]
+    def vmcrsattach(self, cloud_name, identifier, scope = '', max_simultaneous_cap_reqs = '', max_total_cap_reqs = '', ivmcat = '', min_cap_age = '', temp_attr_list = "empty=empty", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaneous_cap_reqs + ' ' +  max_total_cap_reqs + ' ' + ivmcat + ' ' + min_cap_age + ' ' + temp_attr_list + (' ' + nosync), "vmcrs-attach")[2]
         else :
             return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaneous_cap_reqs + ' ' + max_total_cap_reqs + ' ' + ivmcat + ' ' + min_cap_age + ' ' + temp_attr_list, "vmcrs-attach")[2]
 
-    def firsattach(self, cloud_name, identifier, scope = '', max_simultaenous_faults = '', max_total_faults = '', ifat = '', min_fault_age = '', ftl = '', temp_attr_list = "empty=empty", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaenous_faults + ' ' + max_total_faults + ' ' + ifat + ' ' + min_fault_age + ' ' + ftl + ' ' + temp_attr_list + (' ' + async), "firs-attach")[2]
+    def firsattach(self, cloud_name, identifier, scope = '', max_simultaenous_faults = '', max_total_faults = '', ifat = '', min_fault_age = '', ftl = '', temp_attr_list = "empty=empty", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaenous_faults + ' ' + max_total_faults + ' ' + ifat + ' ' + min_fault_age + ' ' + ftl + ' ' + temp_attr_list + (' ' + nosync), "firs-attach")[2]
         else :
             return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaenous_faults + ' ' + max_total_faults + ' ' + ifat + ' ' + min_fault_age + ' ' + ftl + ' ' + temp_attr_list, "firs-attach")[2]
     
-    def appattach(self, cloud_name, gtype, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
+    def appattach(self, cloud_name, gtype, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", nosync = False):
         parameters = cloud_name + ' ' + gtype + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
 
-        if async :
-            async=str(async)            
-            async=async.replace("async",'')
-            async=async.replace('=','')            
+        if nosync :
+            nosync=str(nosync)            
+            nosync=nosync.replace("nosync",'')
+            nosync=nosync.replace('=','')            
 
-            if str(async.split(':')[0]).isdigit() :
-                _res = self.active.background_execute(parameters + (" async=" + str(async)), "ai-attach")[2]
+            if str(nosync.split(':')[0]).isdigit() :
+                _res = self.active.background_execute(parameters + (" nosync=" + str(nosync)), "ai-attach")[2]
             else :
-                _res = self.active.background_execute(parameters + (" async"), "ai-attach")[2]
+                _res = self.active.background_execute(parameters + (" nosync"), "ai-attach")[2]
             # This is hacky, but in order for an asynchronous attach to appear, introduce a delay between when the attach starts
             # and when a user can safely issue `applist pending`, in order for the pending object to actually show up.
             # We need a better fix for this later to ensure that the pending object is registered before the API command returns.
@@ -490,24 +490,24 @@ class API():
     def apprun(self, cloud_name, uuid) :
         return self.apprunstate(cloud_name, uuid, "attached", "run")
     
-    def appdrsattach(self, cloud_name, pattern, temp_attr_list = "empty=empty", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + pattern + ' ' + temp_attr_list + (' ' + async), "aidrs-attach")[2]
+    def appdrsattach(self, cloud_name, pattern, temp_attr_list = "empty=empty", nosync = False):
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + pattern + ' ' + temp_attr_list + (' ' + nosync), "aidrs-attach")[2]
         else :
             return self.active.objattach({}, cloud_name + ' ' + pattern + ' ' + temp_attr_list, "aidrs-attach")[2]
 
-    def vmattach(self, cloud_name, role, vm_location = "auto", meta_tags = "empty", size = "default", pause_step = "none", temp_attr_list = "empty=empty", async = False):
+    def vmattach(self, cloud_name, role, vm_location = "auto", meta_tags = "empty", size = "default", pause_step = "none", temp_attr_list = "empty=empty", nosync = False):
         parameters = cloud_name + ' ' + role + ' ' + vm_location + ' ' + meta_tags + ' ' + size + ' ' + pause_step + ' ' + temp_attr_list
 
-        if async :
-            async=str(async)
-            async=async.replace("async",'')
-            async=async.replace('=','')            
+        if nosync :
+            nosync=str(nosync)
+            nosync=nosync.replace("nosync",'')
+            nosync=nosync.replace('=','')            
 
-            if str(async.split(':')[0]).isdigit() :
-                return self.active.background_execute(parameters + (" async=" + str(async)), "vm-attach")[2]
+            if str(nosync.split(':')[0]).isdigit() :
+                return self.active.background_execute(parameters + (" nosync=" + str(nosync)), "vm-attach")[2]
             else :
-                return self.active.background_execute(parameters + (" async"), "vm-attach")[2]
+                return self.active.background_execute(parameters + (" nosync"), "vm-attach")[2]
         else :
             return self.active.objattach({}, parameters, "vm-attach")[2]
         
@@ -517,17 +517,17 @@ class API():
     def vmrun(self, cloud_name, uuid):
         return self.vmrunstate(cloud_name, uuid, "attached", "run")
     
-    def vmdetach(self, cloud_name, identifier, force = False, async = False):
+    def vmdetach(self, cloud_name, identifier, force = False, nosync = False):
         force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vm-detach")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + nosync), "vm-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vm-detach")[2]
     
-    def vmcdetach(self, cloud_name, identifier, force = False, async = False):
+    def vmcdetach(self, cloud_name, identifier, force = False, nosync = False):
         force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vmc-detach")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + nosync), "vmc-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vmc-detach")[2]
         
@@ -538,31 +538,31 @@ class API():
         force = str(force).lower() if force else "false"
         return self.active.imgdelete({}, cloud_name + ' ' + identifier + ' ' + vmc + ' ' + force, "img-delete")[2]
     
-    def vmcrsdetach(self, cloud_name, identifier, force = False, async = False):
+    def vmcrsdetach(self, cloud_name, identifier, force = False, nosync = False):
         force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vmcrs-detach")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + nosync), "vmcrs-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vmcrs-detach")[2]
 
-    def firsdetach(self, cloud_name, identifier, force = False, async = False):
+    def firsdetach(self, cloud_name, identifier, force = False, nosync = False):
         force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "firs-detach")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + nosync), "firs-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vmcrs-detach")[2]
     
-    def appdetach(self, cloud_name, identifier, force = False, async = False):
+    def appdetach(self, cloud_name, identifier, force = False, nosync = False):
         force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "ai-detach")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + nosync), "ai-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "ai-detach")[2]
     
-    def appdrsdetach(self, cloud_name, identifier, force = False, async = False):
+    def appdrsdetach(self, cloud_name, identifier, force = False, nosync = False):
         force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "aidrs-detach")[2]
+        if nosync and str(nosync).count("nosync") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + nosync), "aidrs-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "aidrs-detach")[2]
     

@@ -1,4 +1,4 @@
-aicapture youngest async
+aicapture youngest nosync
 waituntil AI CAPTURING=0
 ailist
 vmlist

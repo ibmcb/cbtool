@@ -1,4 +1,4 @@
-vmattach TESTCLOUD tinyvm async=2
+vmattach TESTCLOUD tinyvm nosync=2
 waitfor TESTCLOUD 1s
 vmlist TESTCLOUD pending
 waituntil TESTCLOUD VM ARRIVED=8 increasing 1

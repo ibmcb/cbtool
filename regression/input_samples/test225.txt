@@ -1,4 +1,4 @@
-vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async
+vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 nosync
 waitfor TESTCLOUD 1s
 vmlist TESTCLOUD pending
 waitfor TESTCLOUD 8s

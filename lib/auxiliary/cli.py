@@ -232,7 +232,7 @@ class CBCLI(Cmd) :
                 for x in range(1, diff) :
                     doc += "<" + spec[x] + "> "
                 for x in range(diff, num_spec) :
-                    if spec[x].lower() == "async" :
+                    if spec[x].lower() == "nosync" :
                         doc += "[mode] "
                         continue
                     doc += "[" + spec[x] + " = " + str(defaults[x - diff]) + "] "
@@ -306,18 +306,18 @@ class CBCLI(Cmd) :
                 temp_parameters = temp_parameters + list(args)[1:]
                 
             '''
-            The 'async' and other '=' keywords/options are special, because we 
+            The 'nosync' and other '=' keywords/options are special, because we 
             are allowing them to liberally float around the command line without
             being properly positioned by the user.
             
-            The API requires that 'async' and tkv be a keyword arguments,
+            The API requires that 'nosync' and tkv be a keyword arguments,
             and requires the components of the '=' sign to be splitup.
             '''
 
             parameters = []
             for param in temp_parameters :
-                if param.count("async") :
-                    kwargs["async"] = param
+                if param.count("nosync") or param.count("async") :
+                    kwargs["nosync"] = param
                     continue
 
                 if name.count("attach") :

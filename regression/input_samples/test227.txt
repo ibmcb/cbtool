@@ -1,4 +1,4 @@
-vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async
+vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete nosync
 waitfor TESTCLOUD 8s
 msgpub TESTCLOUD VM staging vm_12;continue;something
 waituntil TESTCLOUD VM ARRIVING=0 decreasing 1

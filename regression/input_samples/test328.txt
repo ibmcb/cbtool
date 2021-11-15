@@ -1,4 +1,4 @@
-vmmigrate TESTCLOUD youngest source async
+vmmigrate TESTCLOUD youngest source nosync
 waitfor TESTCLOUD 10s
 stats TESTCLOUD
 vmlist TESTCLOUD

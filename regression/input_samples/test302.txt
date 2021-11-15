@@ -1,4 +1,4 @@
-aicapture TESTCLOUD youngest async
+aicapture TESTCLOUD youngest nosync
 waituntil TESTCLOUD AI CAPTURING=0
 ailist TESTCLOUD
 vmlist TESTCLOUD

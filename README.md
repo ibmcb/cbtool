@@ -129,4 +129,4 @@ To get the most current list, start CBTOOL and type ```typelist``` on the CLI. T
 Contacts:
 
 Marcio Silva marcios@us.ibm.com
-Michael Galaxy mrhines@digitalocean.com
+Michael Galaxy mgalaxy@akamai.com

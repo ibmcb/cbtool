@@ -1,4 +1,4 @@
-vmattach tinyvm async=2
+vmattach tinyvm nosync=2
 waitfor 1s
 vmlist pending
 waituntil VM ARRIVED=8 increasing 1

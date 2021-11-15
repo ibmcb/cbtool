@@ -1,4 +1,4 @@
-vmcdetach TESTCLOUD all async
+vmcdetach TESTCLOUD all nosync
 waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
 stats TESTCLOUD
