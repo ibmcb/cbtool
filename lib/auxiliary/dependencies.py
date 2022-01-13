@@ -24,6 +24,7 @@
     @author: Marcio A. Silva, Michael R. Galaxy
 '''
 from sys import path
+import sys
 import os
 import re
 import platform
@@ -37,6 +38,18 @@ from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.data_ops import cmp
 from lib.auxiliary.code_instrumentation import  VerbosityFilter, MsgFilter, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import check_url
+
+try:
+    import distro
+except ModuleNotFoundError as e:
+    if sys.version_info.major > 2 and sys.version_info.minor >= 7:
+        _msg = (
+            "Python version 3.7 and higher require `distro` package to be installed. "
+            "Version: %s" % platform.python_version()
+        )
+        cberr(_msg)
+        raise Exception(e)
+    pass
 
 def deps_file_parser(depsdict, username, options, hostname, process_manager = False) :
     '''
@@ -274,7 +287,13 @@ def get_linux_distro() :
     '''
     TBD
     '''
-    _linux_distro_kind, _linux_distro_ver, _linux_distro_name = platform.linux_distribution()
+    try:
+        _linux_distro_kind, _linux_distro_ver, _linux_distro_name = platform.linux_distribution()
+    except AttributeError:
+        _linux_distro_kind = distro.name()
+        _linux_distro_ver = distro.version()
+        _linux_distro_name = distro.id()
+
     if _linux_distro_kind.count("Red Hat") :
         _linux_distro_kind = "rhel"
     elif _linux_distro_kind.count("Scientific Linux") :
