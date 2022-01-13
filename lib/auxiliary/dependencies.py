@@ -48,7 +48,7 @@ except ModuleNotFoundError as e:
             "Version: %s" % platform.python_version()
         )
         cberr(_msg)
-        raise Exception(e)
+        raise e
     pass
 
 def deps_file_parser(depsdict, username, options, hostname, process_manager = False) :
