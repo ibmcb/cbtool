@@ -68,6 +68,7 @@ setuptools.setup(
           'python-dateutil',
           'pillow',
           'jsonschema',
-          'mysql-connector'
+          'mysql-connector',
+          'distro'
       ],
 )
