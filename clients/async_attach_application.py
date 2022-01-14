@@ -83,7 +83,7 @@ try :
 
     api.cldalter(cloud_name, "time", "experiment_id", expid)
 
-    _tmp_app = api.appattach(cloud_name, "fio", "default", "default", "none", "none", "none", "empty=empty", "async")
+    _tmp_app = api.appattach(cloud_name, "fio", "default", "default", "none", "none", "none", "empty=empty", "nosync")
     print(str(_tmp_app))
     uuid = _tmp_app["uuid"]
 

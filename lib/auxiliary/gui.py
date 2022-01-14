@@ -748,7 +748,7 @@ class GUI(object):
     
                 if not link  :
                     if init_pending :
-                        output += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + active + "&operation=runstate&keywords=4&keyword1=" + obj["uuid"] + "&keyword2=attached&keyword3=run&keyword4=async'><i class='icon-play icon-white'></i>&nbsp;" + obj["name"] + "</a>&nbsp;&nbsp;"
+                        output += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + active + "&operation=runstate&keywords=4&keyword1=" + obj["uuid"] + "&keyword2=attached&keyword3=run&keyword4=nosync'><i class='icon-play icon-white'></i>&nbsp;" + obj["name"] + "</a>&nbsp;&nbsp;"
                     if "order" in obj :
                         order = datetime.utcfromtimestamp(int(obj["order"].split(".")[0])).strftime('%m/%d %H:%M')
                     act = ((("[" + order + "] ")) if "order" in obj else "") + obj["tracking"] if "tracking" in obj else None
@@ -846,7 +846,7 @@ class GUI(object):
                                                                                  ["execute_all_vms_booted", "Execute script at the beginning of step 5 (Application Start)"]
                                                                                  ] } ,
                               "keyword6" : { "label" : "Temporary Attributes", "values" : "" } ,
-                              "keyword7" : { "label" : "Mode", "values" : "async" }
+                              "keyword7" : { "label" : "Mode", "values" : "nosync" }
                            },
                     "app" : { 
                               "keyword1" : { "label" : "Type", "values" : [x.strip() for x in self.api.typelist(session['cloud_name'])] } ,
@@ -863,12 +863,12 @@ class GUI(object):
                                                                                  ["execute_all_vms_booted", "Execute script at the beginning of step 5 (Application Start)"],
                                                                                  ] } ,
                               "keyword7" : { "label" : "Temporary Attributes", "values" : "" } ,
-                              "keyword8" : { "label" : "Mode", "values" : "async" } ,
+                              "keyword8" : { "label" : "Mode", "values" : "nosync" } ,
                             },
                     "vmc" : { 
                              "keyword1" : { "label" : "Name", "values" : "" } ,
                              "keyword2" : { "label" : "Temporary Attributes", "values" : "" },
-                             "keyword3" : { "label" : "Mode", "values" : "async" },
+                             "keyword3" : { "label" : "Mode", "values" : "nosync" },
                              }, 
                     "appdrs" : { "keyword1" : { "label" : "Pattern", "values" : [x.strip() for x in self.api.patternlist(session['cloud_name'])] },
                                 "keyword2" : { "label" : "Temporary Attributes", "values" : "" }
@@ -911,9 +911,9 @@ class GUI(object):
                         if cloud_name == requested_cloud_name :
                             for command in available_clouds[cloud_name] :
                                 kwargs = {}
-                                if command.count("async") :
-                                    kwargs["async"] = True
-                                    command.replace("async", "")
+                                if command.count("nosync") :
+                                    kwargs["nosync"] = True
+                                    command.replace("nosync", "")
                                     
                                 parts = command.split()
                                 
@@ -936,8 +936,8 @@ class GUI(object):
                                 if fixed[0] == "vmcattach" and fixed[2] == "all" :
                                     if len(fixed) < 2 :
                                         return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
-                                    if not command.count("async") :
-                                        kwargs["async"] = "async"
+                                    if not command.count("nosync") :
+                                        kwargs["nosync"] = "nosync"
                                 if fixed[0] == "cldattach" :
                                     if len(fixed) < 3 :
                                         return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
@@ -1416,7 +1416,7 @@ class GUI(object):
                     <p/>
                 """
                 output += "<a class='btn btn-danger' style='padding: 3px' href='BOOTDEST/provision?object=" + req.active \
-                    + "&operation=detach&keywords=3&keyword1=all&keyword2=true&keyword3=async'><i class='icon-trash icon-white'></i>&nbsp;Detach All</a>"
+                    + "&operation=detach&keywords=3&keyword1=all&keyword2=true&keyword3=nosync'><i class='icon-trash icon-white'></i>&nbsp;Detach All</a>"
                 
             output += """
                 <p/>
@@ -1546,7 +1546,7 @@ class GUI(object):
                 if required != "any" and attrs["state"] != required  :
                     continue
                     
-                keywords["keyword" + str(len(keywords) + 1)] = "async" 
+                keywords["keyword" + str(len(keywords) + 1)] = "nosync" 
                 
                 output += "&nbsp;&nbsp;<a Class='btn btn-danger btn-small' href='BOOTDEST/provision?object=" + req.active
                 output += "&operation=" + operation

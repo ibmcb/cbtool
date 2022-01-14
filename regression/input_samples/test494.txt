@@ -1,4 +1,4 @@
-vmattach tinyvm auto empty iron32 pause_provision_complete async
+vmattach tinyvm auto empty iron32 pause_provision_complete nosync
 waitfor 8s
 msgpub VM staging vm_12;continue;something
 waituntil VM ARRIVING=0 decreasing 1

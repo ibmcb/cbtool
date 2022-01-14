@@ -144,7 +144,7 @@ try :
         else :
            _launch = _launch_rate
         logger.info("Launching : %s guests" % _launch)
-        api.appattach(_cloud_name,_workload,async=_launch)
+        api.appattach(_cloud_name,_workload, nosync=_launch)
 #----------------------- Wait for the AIs to be launched -----------------------
         while True :
             _ai_list = []

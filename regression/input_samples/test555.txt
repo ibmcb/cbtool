@@ -1,1 +1,1 @@
-aiattach netperf async=4:2
+aiattach netperf nosync=4:2

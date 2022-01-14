@@ -1,4 +1,4 @@
-vmprotect TESTCLOUD youngest source async
+vmprotect TESTCLOUD youngest source nosync
 waitfor TESTCLOUD 10s
 stats TESTCLOUD
 vmlist TESTCLOUD

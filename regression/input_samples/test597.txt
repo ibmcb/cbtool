@@ -1,4 +1,4 @@
-vmprotect youngest source async
+vmprotect youngest source nosync
 waitfor 10s
 stats
 vmlist

@@ -1,4 +1,4 @@
-vmattach TESTCLOUD tinyvm async
+vmattach TESTCLOUD tinyvm nosync
 waitfor TESTCLOUD 1s
 vmlist TESTCLOUD pending
 waitfor TESTCLOUD 8s

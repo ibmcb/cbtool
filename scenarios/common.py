@@ -533,18 +533,18 @@ def deploy_vapp(options, api, workload, hostpair = None, nr_ais = "1", \
     _temp_attr_list_str = _temp_attr_list_str[0:-1]
     
     if int(inter_vm_wait) :
-        _async = nr_ais + ':' + inter_vm_wait
+        _nosync = nr_ais + ':' + inter_vm_wait
     else :
-        _async = nr_ais
+        _nosync = nr_ais
 
     if nr_ais == "1" :
         _max_check = False
-        _async = False
+        _nosync = False
     else :
         _max_check = max_check
-        _async = nr_ais
+        _nosync = nr_ais
         
-    _app_attr = api.appattach(options.cloud_name, workload, pause_step = script_execution, temp_attr_list = _temp_attr_list_str, async = _async)
+    _app_attr = api.appattach(options.cloud_name, workload, pause_step = script_execution, temp_attr_list = _temp_attr_list_str, nosync = _nosync)
 
     if max_check :
 

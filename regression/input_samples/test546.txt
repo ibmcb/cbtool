@@ -1,4 +1,4 @@
-vmcapture oldest async
+vmcapture oldest nosync
 waitfor 25s
 ailist
 vmlist

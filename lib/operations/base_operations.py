@@ -180,7 +180,7 @@ class BaseObjectOperations :
             if not command.count("cloud-attach") and len(parameters.split()) > 0:
                 object_attribute_list["cloud_name"] = parameters.split()[0]
         else :
-            if not command.count("cloud-attach") and not parameters.count(" async"):
+            if not command.count("cloud-attach") and not parameters.count(" nosync"):
                 if len(parameters) > 0 :
                     _possible_cloud_name = parameters.split()[0]
                     if _possible_cloud_name == BaseObjectOperations.default_cloud :
@@ -4274,13 +4274,13 @@ class BaseObjectOperations :
             _obj_type = _obj_type.upper()
 
             # Some small pre-processing is in order. We just need to remove the
-            # word "async" from the parameter list
+            # word "nosync" from the parameter list
             _p_parameters = parameters.split()
             _parameters = ''
             _parallel_operations = 1
             _inter_spawn_time = False
             for _parameter in _p_parameters :
-                if not _parameter.count("async") :
+                if not _parameter.count("nosync") :
                     _parameters += _parameter + ' '
                 else :
                     if _parameter.count('=') :

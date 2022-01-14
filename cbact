@@ -472,7 +472,7 @@ def main(options) :
             _local_process = True
             _obj_attr_list = {}
 
-            _obj_attr_list["async"] = "true"
+            _obj_attr_list["nosync"] = "true"
 
             if options.ouuid :
                 _obj_attr_list["uuid"] = options.ouuid
@@ -588,7 +588,7 @@ def main(options) :
 
             _obj_attr_list = {}
 
-            _obj_attr_list["async"] = "true"
+            _obj_attr_list["nosync"] = "true"
 
             if _obj_type.upper() == "VM" :
                 _obj_type = "VM"
@@ -602,7 +602,7 @@ def main(options) :
 
             _obj_attr_list = {}
 
-            _obj_attr_list["async"] = "true"
+            _obj_attr_list["nosync"] = "true"
 
             if _obj_type.upper() == "VM" :
                 _obj_type = "VM"
@@ -615,7 +615,7 @@ def main(options) :
 
             _obj_attr_list = {}
 
-            _obj_attr_list["async"] = "true"
+            _obj_attr_list["nosync"] = "true"
 
             if _obj_type.upper() == "VM" :
                 _obj_type = "VM"

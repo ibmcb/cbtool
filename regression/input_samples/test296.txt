@@ -1,4 +1,4 @@
-aidetach TESTCLOUD ai_13 async
+aidetach TESTCLOUD ai_13 nosync
 waituntil TESTCLOUD AI RESERVATIONS=16 decreasing 5
 ailist TESTCLOUD
 vmlist TESTCLOUD

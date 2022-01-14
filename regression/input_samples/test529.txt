@@ -1,4 +1,4 @@
-aiattach hadoop async
+aiattach hadoop nosync
 waitfor 12s
 ailist
 vmlist

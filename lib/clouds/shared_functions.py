@@ -194,7 +194,7 @@ class CommonCloudFunctions:
 
             _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list, "instance creation")
 
-            if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
+            if "nosync" not in obj_attr_list or str(obj_attr_list["nosync"]).lower() == "false" :
                 if threading.current_thread().abort :
                     _msg = obj_attr_list["log_string"] + " Create Aborting..."
                     _status = 123
@@ -387,7 +387,7 @@ class CommonCloudFunctions:
 
                 _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list, "instance boot")
 
-                if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
+                if "nosync" not in obj_attr_list or str(obj_attr_list["nosync"]).lower() == "false" :
                     if threading.current_thread().abort :
                         _msg = "VM Create Aborting..."
                         _status = 123

@@ -185,7 +185,7 @@
 		
 		var cld_attr_list = (function () { 
 			var json  = null;
-			$.ajax({ 'global': false, 'async' : false, 'url': bootdest + "/wizard_options", 'dataType': "json", 'success': function (cld_attr_list) { 
+			$.ajax({ 'global': false, 'nosync' : false, 'url': bootdest + "/wizard_options", 'dataType': "json", 'success': function (cld_attr_list) { 
 			   repopulate_options(cld_attr_list);
 			   json = cld_attr_list;
 			} });

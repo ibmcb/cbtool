@@ -1,4 +1,4 @@
-aidetach ai_13 async
+aidetach ai_13 nosync
 waituntil AI RESERVATIONS=16 decreasing 5
 ailist
 vmlist

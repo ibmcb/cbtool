@@ -816,7 +816,7 @@ def capacity_phase(api, options, performance_data, directory) :
             api.vmattach(options.cloud_name, options.role, \
                          size = options.instance_size, \
                          temp_attr_list = _temp_attr_list_str, \
-                         async = _selected_batch_size, \
+                         nosync = _selected_batch_size, \
                          pause_step = options.pause_step)
                         
         else :

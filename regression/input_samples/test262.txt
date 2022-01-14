@@ -1,4 +1,4 @@
-aiattach TESTCLOUD hadoop async
+aiattach TESTCLOUD hadoop nosync
 waitfor TESTCLOUD 12s
 ailist TESTCLOUD
 vmlist TESTCLOUD

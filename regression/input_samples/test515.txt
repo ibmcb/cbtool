@@ -1,4 +1,4 @@
-vmdetach vm_5 async
+vmdetach vm_5 nosync
 waitfor 10s
 vmlist
 stats

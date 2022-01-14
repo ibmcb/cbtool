@@ -1976,7 +1976,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _staging_parameters += obj_attr_list["size"] + ' '
                         _staging_parameters += str(_staging) + ' ' 
                         _staging_parameters += obj_attr_list["temp_attr_list"] 
-                        _staging_parameters += " async"
+                        _staging_parameters += " nosync"
                                               
                         _tmp_result = self.pause_vm(obj_attr_list, \
                                                     _sub_channel, \
@@ -1991,7 +1991,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _staging_parameters += obj_attr_list["aidrs"] + ' '
                         _staging_parameters += str(_staging) + ' ' 
                         _staging_parameters += obj_attr_list["temp_attr_list"] 
-                        _staging_parameters += " async"
+                        _staging_parameters += " nosync"
                                                       
                         _tmp_result = self.pause_app(obj_attr_list, \
                                                      _sub_channel, \
@@ -2435,7 +2435,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         try :
             
-            if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
+            if "nosync" not in obj_attr_list or obj_attr_list["nosync"].lower() == "false" :
                 if threading.current_thread().abort :
                     _msg = "VM creation aborted during transfer file step..."
                     _status = 12345
@@ -5013,7 +5013,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _capture_vm_attr_list = {}
                         _msg = "About to call vmcapture method, from aicapture method"
                         cbdebug(_msg)
-                        if "async" in obj_attr_list and obj_attr_list["async"] == "true" :
+                        if "nosync" in obj_attr_list and obj_attr_list["nosync"] == "true" :
                             _status, _fmsg, _object = self.vmcapture(_capture_vm_attr_list, obj_attr_list["cloud_name"] + ' ' + _vm_name, "vm-capture")
                         elif not BaseObjectOperations.default_cloud :
                             _cloud_name = parameters.split()[0]

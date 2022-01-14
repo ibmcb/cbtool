@@ -1,4 +1,4 @@
-vmattach tinyvm async
+vmattach tinyvm nosync
 waitfor 1s
 vmlist pending
 waitfor 8s
