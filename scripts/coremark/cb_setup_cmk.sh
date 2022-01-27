@@ -48,9 +48,9 @@ then
     sudo sed -i 's/CFLAGS +=/CFLAGS += -lpthread/g' Makefile
 fi
 
-COMMON_PARMS="PORT_DIR=linux64 ITERATIONS=100 REBUILD=1"
+COMMON_PARMS="PORT_DIR=linux ITERATIONS=100 REBUILD=1"
 
-make LDFLAGS="-L /lib64 -l pthread" XCFLAGS="-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" $COMMON_PARMS
+make LDFLAGS="-L /lib64 -l pthread" XCFLAGS="-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD -pthread" $COMMON_PARMS
 
 if [[ $? -ne 0 ]]
 then
