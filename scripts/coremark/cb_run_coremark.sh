@@ -23,6 +23,7 @@ set_load_gen $@
 
 LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
 LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor 10000`
+MALLOC_OVERRIDE=`get_my_ai_attribute_with_default malloc_override 4000`
 coremark=`which coremark`
 
 declare -A CMDLINE_START
@@ -30,7 +31,7 @@ declare -A CMDLINE_START
 CMDLINE_PARAMS_SEEDS="0x3415 0x3415 0x66"
 
 CMDLINE_PARAMS_ITERATIONS=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-CMDLINE_PARAMS_INTERNAL="7 1 4000"
+CMDLINE_PARAMS_INTERNAL="7 1 ${MALLOC_OVERRIDE}"
 
 CMDLINE="$coremark ${CMDLINE_PARAMS_SEEDS} ${CMDLINE_PARAMS_ITERATIONS} ${CMDLINE_PARAMS_INTERNAL}"
 

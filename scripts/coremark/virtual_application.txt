@@ -42,6 +42,7 @@ COREMARK_START1 = cb_run_coremark.sh
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 LOAD_FACTOR = 10000
 THREADS_PER_CPU = 2
+MALLOC_OVERRIDE = 4000
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
