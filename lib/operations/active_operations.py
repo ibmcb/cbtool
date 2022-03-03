@@ -294,6 +294,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _command += " -o StrictHostKeyChecking=no"
                         _command += " -o UserKnownHostsFile=/dev/null"
                         _command += " -o BatchMode=yes "                                                  
+                        _command += " -o IdentitiesOnly=yes "
                         _command += ' ' + cld_attr_lst["vm_defaults"]["jumphost_login"] 
                         _command += '@' + cld_attr_lst["vm_defaults"]["jumphost_ip"]
                         _command += " \"which nc\""
@@ -2448,7 +2449,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _actual_tries = int(obj_attr_list["update_attempts"])
 
-            _ssh_cmd_log = "ssh -p " + str(obj_attr_list["prov_cloud_port"]) + " -i " + obj_attr_list["identity"]
+            _ssh_cmd_log = "ssh -o IdentitiesOnly=yes -p " + str(obj_attr_list["prov_cloud_port"]) + " -i " + obj_attr_list["identity"]
             _ssh_cmd_log += ' ' + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"]
             
             if obj_attr_list["role"] == "check" :
@@ -3716,7 +3717,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " remote-viewer " + uri
                     elif operation == "login" :
                         cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " gnome-terminal --maximize -e \\\"bash -c 'ssh " + \
-                                "-o StrictHostKeyChecking=no -i " + obj_attr_list["identity"] + " " + \
+                                "-o IdentitiesOnly=yes -o StrictHostKeyChecking=no -i " + obj_attr_list["identity"] + " " + \
                                 obj_attr_list["login"] + "@" + obj_attr_list["cloud_ip"] + "; echo connection closed; sleep 120d'\\\""
                                 
                     cmd = "screen -d -m -S gtkCBUI_" + obj_attr_list["cloud_name"] + str(port) + " bash -c \"" + cmd + "\""
