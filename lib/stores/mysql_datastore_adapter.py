@@ -29,18 +29,7 @@ import mysql.connector
 import traceback
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.stores.common_datastore_adapter import MetricStoreMgdConn
-
-class MetricStoreMgdConnException(Exception) :
-    '''
-    TBD
-    '''
-    def __init__(self, msg, status):
-        Exception.__init__(self)
-        self.msg = msg
-        self.status = status
-    def __str__(self):
-        return self.msg
+from lib.stores.common_datastore_adapter import MetricStoreMgdConn, MetricStoreMgdConnException
 
 class MysqlMgdConn(MetricStoreMgdConn) :
     @trace

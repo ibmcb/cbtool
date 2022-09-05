@@ -16,9 +16,9 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from pwd import getpwuid
 
 @trace
-class MetricStoreMgdConnException(BaseException):
+class MetricStoreMgdConnException(Exception):
     def __init__(self, msg, status):
-        BaseException.__init__(self)
+        Exception.__init__(self)
         self.msg = msg
         self.status = status
     def __str__(self):

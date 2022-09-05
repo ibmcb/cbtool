@@ -43,17 +43,7 @@ from lib.remote.network_functions import Nethashget
 from lib.remote.ssh_ops import repeated_ssh
 from lib.remote.process_management import ProcessManagement
 from lib.stores.stores_initial_setup import syslog_logstore_setup, load_metricstore_adapter
-
-class MetricStoreMgdConnException(Exception) :
-    '''
-    TBD
-    '''
-    def __init__(self, msg, status):
-        Exception.__init__(self)
-        self.msg = msg
-        self.status = status
-    def __str__(self):
-        return self.msg
+from lib.stores.common_datastore_adapter import MetricStoreMgdConnException
 
 class BaseObjectOperations :
     '''
