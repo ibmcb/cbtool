@@ -1081,7 +1081,7 @@ class SimCmds(CommonCloudFunctions) :
                     _cmd += " --uuid=" + obj_attr_list["uuid"]
                     _cmd += " --daemon"
                     cbdebug(_cmd)
-    
+                    
                     _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
     
                     if _proc_h.pid :

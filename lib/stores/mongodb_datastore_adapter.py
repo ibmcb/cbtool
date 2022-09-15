@@ -89,13 +89,9 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             cbdebug(_msg)            
             return self.mongodb_conn
 
-        except PymongoException as msg :
+        except Exception as e :
             True
 
-        except :
-            True
-        # This was added here just because some MongoDBs don't accept the 
-        # "max_pool_size" parameter
         try:
 
             if tout > 0:
@@ -112,11 +108,11 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             cbdebug(_msg)            
             return self.mongodb_conn
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to establish a connection with the MongoDB "
             _msg += "server on host " + self.host + " port "
             _msg += str(self.port) + "database " + str(self.database) + ": "
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -136,11 +132,11 @@ class MongodbMgdConn(MetricStoreMgdConn) :
                 cbdebug(_msg)
                 return self.mongodb_conn
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to terminate a connection with the MongoDB "
             _msg += "server on host " + self.host + " port "
             _msg += str(self.port) + "database " + str(self.database) + ": "
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -175,13 +171,6 @@ class MongodbMgdConn(MetricStoreMgdConn) :
                     _auth_cmd += self.host + ":" + str(self.port) + '/' + self.database
 
                     self.mongodb_conn[self.database].authenticate(self.username, self.password, mechanism='MONGODB-CR')
-
-                except PymongoException as errmsg :
-                    _msg = "Unable to authenticate against the database \"" + self.database
-                    _msg += "\":" + str(errmsg) + ". \nPlease create the user there (i.e., directly on "
-                    _msg += self.host + ") using the following command:\n"                    
-                    _msg += _auth_cmd
-                    raise MetricStoreMgdConnException(_msg, 2)
     
                 except Exception as e:
                     _msg = "Unable to authenticate against the database \"" + self.database
@@ -235,10 +224,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             self.disconnect()
             return True
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to initialize all documents on "
             _msg += "\" on collection \"" + _collection + "\": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -277,10 +266,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             self.disconnect()
             return True
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to initialize all documents on "
             _msg += "\" on collection \"" + _collection + "\": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -308,10 +297,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
                 self.disconnect()
             return True
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to insert document \"" + document
             _msg += "\" on collection \"" + collection + "\": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
  
@@ -322,7 +311,6 @@ class MongodbMgdConn(MetricStoreMgdConn) :
         '''
         TBD
         '''
-
         self.conn_check()
 
         collection = collection.replace('-',"dash")
@@ -348,10 +336,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
 
             return _results
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to retrieve documents from the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)       
 
@@ -380,10 +368,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             if disconnect_finish :
                 self.disconnect()
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to update documents from the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -407,10 +395,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             if disconnect_finish :
                 self.disconnect()
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to remove document from the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -430,10 +418,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
                 self.disconnect()
             return True
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to drop all documents from the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -451,12 +439,14 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             _matches = _collection_handle.find(criteria)
             if disconnect_finish :
                 self.disconnect()
-            return _matches.count()
 
-        except PymongoException as msg :
+#            return _matches.count()
+            return len(list(_matches.clone()))
+
+        except Exception as e :
             _msg = "Unable to count documents on the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -491,10 +481,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
                 self.disconnect()
             return _result
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to get reported attributes on the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -516,10 +506,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
 
             return _start_time, _end_time
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to get time boundaries on the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -547,10 +537,10 @@ class MongodbMgdConn(MetricStoreMgdConn) :
 
             return _experiment_list
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to get time boundaries on the collection \""
             _msg += collection + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
 
@@ -576,8 +566,8 @@ class MongodbMgdConn(MetricStoreMgdConn) :
             
             return _output
 
-        except PymongoException as msg :
+        except Exception as e :
             _msg = "Unable to get info database " + self.database + ": " 
-            _msg += str(msg) + '.'
+            _msg += str(e) + '.'
             cberr(_msg)
             raise MetricStoreMgdConnException(str(_msg), 1)
