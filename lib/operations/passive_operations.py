@@ -2426,14 +2426,24 @@ class PassiveObjectOperations(BaseObjectOperations) :
         _prev_load_level = 0
         _prev_load_duration = 0
         _prev_load_id =  0
-        _msci = False        
-        _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
-        _msci = self.get_msci(cloud_name)
+        _msci = False
 
+
+        while not self.osci.object_exists(cloud_name, "AI", object_uuid, False) :
+            _msg = "AI object " + object_uuid + " still not created. Waiting..."
+            cbdebug(_msg)
+            # Performance-emitters are employed only on Simulated Clouds
+            # a fixed 5-second interval here is perfectly acceptable.
+            sleep(5)
+
+        _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
+
+        _msci = self.get_msci(cloud_name)
         _mode = _initial_ai_attr_list["mode"]
-        
         _check_frequency = float(_initial_ai_attr_list["update_frequency"])
-                        
+
+        sleep(_check_frequency)
+
         while _ai_state and not _error :        
 
             try :

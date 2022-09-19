@@ -24,12 +24,13 @@
 '''
 from time import time, sleep
 from random import choice, shuffle
-from subprocess import Popen, PIPE
+#from subprocess import Popen, PIPE
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException, create_restart_script, weighted_choice
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.network_functions import Nethashget
+from lib.remote.process_management import ProcessManagement
 from .shared_functions import CldOpsException, CommonCloudFunctions 
 
 import traceback
@@ -1073,21 +1074,26 @@ class SimCmds(CommonCloudFunctions) :
                     _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["log_string"]
                     cbdebug(_msg, True)
     
-                    _cmd = "\"" + obj_attr_list["base_dir"] + "/cbact\""
+                    _cmd = "screen -d -m bash -c '"
+                    _cmd += obj_attr_list["base_dir"] + "/cbact"
                     _cmd += " --procid=" + self.pid
                     _cmd += " --osp=" + obj_attr_list["osp"]
                     _cmd += " --operation=performance-emit"
                     _cmd += " --cn=" + obj_attr_list["cloud_name"]
                     _cmd += " --uuid=" + obj_attr_list["uuid"]
-                    _cmd += " --daemon"
+                    _cmd += "'"  
+#                    _cmd += " --daemon"
                     cbdebug(_cmd)
-                    
-                    _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    
-                    if _proc_h.pid :
+
+                    _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                                  cloud_name = obj_attr_list["cloud_name"])
+
+                    _perf_emit_pid = _proc_man.start_daemon(_cmd, conditional = True)
+
+                    if _perf_emit_pid :
                         _msg = "Performance emitter command \"" + _cmd + "\" "
                         _msg += " successfully started a new daemon."
-                        _msg += "The process id is " + str(_proc_h.pid) + "."
+                        _msg += "The process id is " + str(_perf_emit_pid) + "."
                         cbdebug(_msg)
     
                         _obj_id = obj_attr_list["uuid"] + '-' + "performance-emit"
@@ -1098,13 +1104,17 @@ class SimCmds(CommonCloudFunctions) :
                                               "GLOBAL", \
                                               "running_processes", \
                                               _process_identifier)
-    
-                        create_restart_script("restart_cb_perf-emitter", \
-                                              _cmd, \
-                                              obj_attr_list["username"], \
-                                              "performance-emit", \
-                                              obj_attr_list["name"], \
-                                              obj_attr_list["uuid"])
+                    else :
+                        _fmsg = "Performance emitter command \"" + _cmd + "\" "
+                        _fmsg += " failed while starting a new daemon."
+                        _status = 199
+
+                    create_restart_script("restart_cb_perf-emitter", \
+                                            _cmd, \
+                                            obj_attr_list["username"], \
+                                            "performance-emit", \
+                                            obj_attr_list["name"], \
+                                            obj_attr_list["uuid"])
     
     
                 if _fmsg == "Forced failure during AI definition" :

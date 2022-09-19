@@ -154,7 +154,7 @@ RUN pip3 install --upgrade prettytable docutils
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
-RUN pip3 install --upgrade python-daemon-3K
+RUN pip3 install --upgrade python-daemon
 # python-daemon-install-pip
 
 # python-twisted-install-pip
