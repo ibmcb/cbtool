@@ -5431,7 +5431,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _msg += "could not be successfully started by " + _aidrs_attr_list["log_string"] + '.'
                         cberr(_msg)
                 else :
-                    _msg = "Unable to get state, or state is \"stopped\"."
+                    _msg = "Unable to get state, or state is \"stopped\". "
                     _msg += "Will stop creating new AIs until the state of "
                     _msg += _aidrs_attr_list["log_string"] + " changes."
                     cbdebug(_msg)
