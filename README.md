@@ -65,6 +65,7 @@ Each individual application can have a specific load profile using probability d
 2. OpenStack (and RackSpace)
 3. Google Compute Engine 
 4. DigitalOcean
+5. Linode (Akamai Connected Cloud)
 5. Docker/Swarm
 6. LXD/LXC
 7. Kubernetes

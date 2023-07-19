@@ -109,7 +109,7 @@ cat server.key >> $path/$server
 echo "</key>" >> $path/$server
 
 echo "<dh>" >> $path/$server
-cat dh1024.pem >> $path/$server
+cat dh2048.pem >> $path/$server
 echo "</dh>" >> $path/$server
 
 for filenam in $server $client $mongo

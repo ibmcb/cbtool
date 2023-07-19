@@ -55,7 +55,7 @@ DO_NETNAME = private                                                            
 DO_LOGIN = cbuser                                                                                                     # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # DigitalOcean (DO) requires the following parameters (via LibCloud)
-[USER-DEFINED : CLOUDOPTION_MYDO ]
+[USER-DEFINED : CLOUDOPTION_MYDOK8S ]
 DOK8S_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1;another_token:arbitrarytag2                    # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
 DOK8S_SSH_KEY_NAME = cbtool_rsa                                                                                       # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
 DOK8S_KEY_NAME = cbtool_rsa                                                                                           # Comma-separated list of IDs (or names) of your DO ssh keys
@@ -198,6 +198,14 @@ ZSK_NETNAME = spec-private                                # The name of the alre
 ZSK_DISK_SIZE = spec-disk                                 # The name of the already existing disk offering on ZSTACK cloud
 #-------------------------------------------------------------------------------
 # END: Specify the individual parameters for each cloud
+# Linode (LIN) requires the following parameters (via LibCloud)
+[USER-DEFINED : CLOUDOPTION_MYLIN ]
+LIN_INITIAL_VMCS = us-central:sut                                                                # VMC == Linode region
+LIN_CREDENTIALS = arbitrarytag1:long_hex_token_from_linode.com;arbitrarytag2:another_token       # This is your Linode access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
+LIN_SSH_KEY_NAME = cbtool_rsa                                                                    # Either upload credentials/cbtool_rsa.pub to Linode or tell us where your private key is
+LIN_KEY_NAME = cbtool_rsa                                                                        # Comma-separated list of IDs (or names) of your Linode ssh keys
+LIN_NETNAME = default                                                                            # If your Orchestrator is running inside the cloud, use "private". If external to the cloud, use "public".For more complex networks, refer to the documentation
+LIN_LOGIN = cbuser                                                                               # The username that logins on the VMs
 
 [OBJECTSTORE]
 USAGE = shared

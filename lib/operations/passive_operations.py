@@ -500,11 +500,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     else :
                                         _result[_obj_id][prefix] = _value
                                         
+                            prefix_del = []
+                            prefix_extra = {}
                             for prefix in _result[_obj_id] :
                                 liste = _result[_obj_id][prefix]
                                 if isinstance(liste, list) and len(liste) == 1 :
-                                    _result[_obj_id][prefix + "_" + liste[0][0]] = liste[0][1]
-                                    del _result[_obj_id][prefix]
+                                    prefix_extra[prefix + "_" + liste[0][0]] = liste[0][1]
+                                    prefix_del.append(prefix)
+
+                            for prefix in prefix_del :
+                                del _result[_obj_id][prefix]
+
+                            for (prefix_key, prefix_value) in prefix_extra.items() :
+                                _result[_obj_id][prefix_key] = prefix_value
                                 
                             if _obj_select_attribs[0] != "all" :
                                 _result = copy.deepcopy(_obj_attribs)

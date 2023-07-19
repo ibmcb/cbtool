@@ -944,9 +944,9 @@ class CommonCloudFunctions:
                             cbdebug(_msg)
                             _keyfp, _keyid = _registered_key_pairs[_key_pair].split('-')
     
-                            if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
+                            if len(_key_fingerprint) > 1 and len(_keyfp) > 1:
     
-                                if _key_fingerprint == _keyfp :
+                                if _key_fingerprint == _keyfp or _keyfp in [None, "None"]:
                                     _msg = "The contents of the key \"" + key_name
                                     _msg += "\" on the VMC " + vmc_name + " and the"
                                     _msg += " one present on directory \""

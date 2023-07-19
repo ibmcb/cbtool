@@ -497,6 +497,6 @@ fedora-chef-server-install-man = sudo rpm -Uvh URL
 ubuntu-chef-server-preinstall-man =  wget -N -P 3RPARTYDIR URL
 ubuntu-chef-server-install-man = sudo dpkg -i chef-server_11.0.10-1.ubuntu.12.04_amd64.deb
 
-common-sshkey-install-man = mkdir -p CREDENTIALSDIR; ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
+common-sshkey-install-man = mkdir -p CREDENTIALSDIR; ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N '' -C 'cbuser@localhost'
 
 ### END -  Dependency and method-specific command lines ###
