@@ -333,10 +333,12 @@ function retriable_execution {
             done
         fi
 
-    if [[ x"${OUTPUT}" != x && ${can_cache} -eq 1 && ${non_cacheable} -eq 0 ]]; then
-       if [ x"${EXPRESSION}" != x ] ; then
-            echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
-       fi
+    if [[ x"${OUTPUT}" != x ]] ; then
+	if [[ ${can_cache} -eq 1 || ${non_cacheable} -eq 0 ]]; then
+	       if [ x"${EXPRESSION}" != x ] ; then
+		    echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
+	       fi
+        fi
     fi
 
     echo $OUTPUT
@@ -1549,7 +1551,7 @@ function replicate_to_container_if_nested {
     # the correct priveleges, then run the entrypoint script already provided
     # which then starts SSH on its own. Because we're using host networking, everything
     # works as-is without any changes.
-    CMD='sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -f ${NEST_POST_BOOT_FLAG}; sudo mkdir ${userpath}/$username; sudo rsync --chown=${username}:${username} --chmod=755 --update -rl ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/; sudo chown -R ${username}:${username} ${userpath}/${username}/.ssh; (sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh &); cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat \"Running post_boot inside container...\"; ~/cbtool/scripts/common/cb_post_boot_container.sh; code=\$?; if [ \$code -gt 0 ] ; then echo post boot failed; exit \$code; fi; touch ${NEST_POST_BOOT_FLAG}; sleep infinity"'
+    CMD='sudo docker run -u ${username} -it -d --name cbnested --privileged --net host --env CB_SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" -v ~/:${NEST_EXPORTED_HOME} ${image} bash -c "sudo rm -f ${NEST_POST_BOOT_FLAG}; sudo mkdir ${userpath}/$username; sudo bash -c \"rsync --chown=${username}:${username} --chmod=755 --update -rl ${NEST_EXPORTED_HOME}/* ${NEST_EXPORTED_HOME}/.* ${userpath}/${username}/\"; sudo chown -R ${username}:${username} ${userpath}/${username}/.ssh; (sudo bash /etc/my_init.d/inject_pubkey_and_start_ssh.sh &); cd; source ~/cbtool/scripts/common/cb_common.sh; syslog_netcat \"Running post_boot inside container...\"; ~/cbtool/scripts/common/cb_post_boot_container.sh; code=\$?; if [ \$code -gt 0 ] ; then echo post boot failed; exit \$code; fi; touch ${NEST_POST_BOOT_FLAG}; sleep infinity"'
     eval $CMD
 	rc=$?
 
@@ -2496,6 +2498,8 @@ function common_metrics {
 }
 export -f common_metrics
 
+NICFILTERLIST="virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|dummy|teql|gre|gretap|erspan|ip_vti|sit|ip6gre|inet6|[[:space:]]lo[[:space:]]"
+
 function run_dhcp_additional_nics {
     if [[ -z ${LINUX_DISTRO} ]]
     then
@@ -2504,9 +2508,9 @@ function run_dhcp_additional_nics {
 
     if [[ $IS_CONTAINER -eq 0 ]]
     then
-        NICS_WITH_IP=$(sudo ip -o addr list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo[[:space:]]')
+        NICS_WITH_IP=$(sudo ip -o addr list | grep -Ev "${NICFILTERLIST}")
         syslog_netcat "Making sure all NICs on this instance have IPs configured ..."
-        for NIC in $(sudo ip -o link list | grep -Ev 'virbr|docker|tun|xenbr|lxbr|lxdbr|cni|flannel|inet6|[[:space:]]lo:[[:space:]]' | awk '{ print $2 }' | sed 's/://g')
+        for NIC in $(sudo ip -o link list | grep -Ev "${NICFILTERLIST}" | awk '{ print $2 }' | sed 's/://g')
         do
             echo "$NICS_WITH_IP" | grep $NIC[[:space:]] > /dev/null 2>&1
             if [[ $? -ne 0 ]]

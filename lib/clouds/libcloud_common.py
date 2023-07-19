@@ -1378,7 +1378,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             if obj_attr_list["libcloud_call_type"] == "create_node_with_keyword_arguments_only" :
                 _reservation = self.get_adapter(_credentials_list).create_node(
-                    **self.vmcreate_kwargs
+                    **_args_clone
                     )
 
             obj_attr_list["last_known_state"] = "sent create request"

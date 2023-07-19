@@ -28,6 +28,8 @@ configs/*.txt
 configs/cloud_ports.sh
 configs/mrhines
 stores/*.rdb
+stores/diagnostics.data
+stores/diagnostics.data/*
 stores/metrics.*
 stores/metrics
 stores/mysql
