@@ -605,6 +605,15 @@ class LibcloudCmds(CommonCloudFunctions) :
         return [ ]
 
     @trace
+    def power_on_node(self, credentials_list, instance) :
+        adapter = self.get_adapter(credentials_list)
+        if hasattr(adapter, "ex_power_on_node") :
+            try :
+                adapter.ex_power_on_node(instance)
+            except :
+                adapter.start_node(instance)
+
+    @trace
     def vmccleanup(self, obj_attr_list) :
         '''
         TBD
@@ -639,7 +648,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                                 cbdebug("Instance " + _reservation.name + " still has a pending event. waiting to destroy...")
                                 if _reservation.state == NodeState.STOPPED :
                                     cbdebug("Instance is stopped: " + _reservation.name + " . CB will not destroy stopped instances, but we have sent a start request to the cloud. If it does not resume, please investigate why it is stopped.", True)
-                                    self.get_adapter(credentials_list).ex_power_on_node(_reservation)
+                                    self.power_on_node(credentials_list, _reservation)
 
                                 _existing_instances = True
                                 continue
@@ -1265,10 +1274,10 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
-            if obj_attr_list["ai"] != "none" :
-                _credentials_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "credentials_list")
-            else :
-                _credentials_list = self.rotate_token(obj_attr_list["cloud_name"])
+            #if obj_attr_list["ai"] != "none" :
+            #    _credentials_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "credentials_list")
+            #else :
+            _credentials_list = self.rotate_token(obj_attr_list["cloud_name"])
 
             if "tenant_from_rc" in obj_attr_list :
                 obj_attr_list["tenant"] = obj_attr_list["tenant_from_rc"]
@@ -1525,7 +1534,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     if _instance.state in [ NodeState.PENDING, NodeState.STOPPED ] :
                         if _instance.state == NodeState.STOPPED :
                             cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") is stopped. CB will not destroy stopped instances, but we have sent a power on request. If it is still not online, please investigate why it is stopped.", True)
-                            self.get_adapter(_credentials_list).ex_power_on_node(_instance)
+                            self.power_on_node(_credentials_list, _instance)
                         else :
                             cbdebug("Instance " + obj_attr_list["name"] + " (" + _instance.name + ") still has a pending event. Waiting to destroy...", True)
                         _wait = self.backoff(obj_attr_list, _wait)
@@ -1688,9 +1697,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             elif _ts == "save" :
                 self.get_adapter(credentials_list).ex_shutdown_node(instance)
             elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
-                self.get_adapter(credentials_list).ex_power_on_node(instance)
+                self.power_on_node(credentials_list, instance)
             elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-                self.get_adapter(credentials_list).ex_power_on_node(instance)
+                self.power_on_node(credentials_list, instance)
 
     def vmrunstate(self, obj_attr_list) :
         '''

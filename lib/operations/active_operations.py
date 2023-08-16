@@ -2540,7 +2540,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
                 _rcmd += " --exclude-from "
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
-                _rcmd += "--delete --no-o --no-g --inplace --rsync-path='sudo rsync' -O " 
+                _rcmd += "--delete --no-o --no-g --inplace -O "
                 _rcmd += obj_attr_list["base_dir"] + "/* " 
                 _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" 
                 _rcmd += obj_attr_list["remote_dir_name"] + '/'
