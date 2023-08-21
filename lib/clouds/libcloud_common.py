@@ -1274,10 +1274,10 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
-            #if obj_attr_list["ai"] != "none" :
-            #    _credentials_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "credentials_list")
-            #else :
-            _credentials_list = self.rotate_token(obj_attr_list["cloud_name"])
+            if obj_attr_list["ai"] != "none" :
+                _credentials_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "credentials_list")
+            else :
+                _credentials_list = self.rotate_token(obj_attr_list["cloud_name"])
 
             if "tenant_from_rc" in obj_attr_list :
                 obj_attr_list["tenant"] = obj_attr_list["tenant_from_rc"]
