@@ -107,7 +107,8 @@ class LinCmds(LibcloudCmds) :
 
         # The linode API really, really wants a root password,
         # so just give them a random one.
-        random_password = ''.join(random.choice(string.ascii_lowercase) for i in range(12))
+        random_password = ''.join(random.choice(string.ascii_lowercase) for i in range(6))
+        random_password += ''.join(random.choice(string.ascii_uppercase) for i in range(6))
         cbdebug("Random Linode password: " + random_password, True)
         self.vmcreate_kwargs["root_pass"] = random_password
 
