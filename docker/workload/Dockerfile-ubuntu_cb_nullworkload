@@ -82,7 +82,8 @@ RUN apt-get install -y lftp iputils-ping
 
 # haproxy-install-pm
 RUN apt-get install -y software-properties-common
-RUN add-apt-repository -y ppa:vbernat/haproxy-2.0
+# haproxy 2.4 is now in ubuntu 22.04. PPA no longer available.
+# RUN add-apt-repository -y ppa:vbernat/haproxy-2.0
 RUN apt-get update
 RUN apt-get install -y haproxy
 # service_stop_disable haproxy

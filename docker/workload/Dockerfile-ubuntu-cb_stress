@@ -1,0 +1,8 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+# stress-install-pm
+RUN apt-get update
+RUN apt-get install -y stress-ng
+# stress-install-pm
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

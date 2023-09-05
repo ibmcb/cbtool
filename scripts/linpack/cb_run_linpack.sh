@@ -141,7 +141,7 @@ if [[ $LINPACK_VERSION == "2.3" ]]; then
         $(common_metrics)
 else
 	# Older Linpack
-	LINPACK=`get_my_ai_attribute_with_default linpack ~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack/xlinpack_xeon64`
+	LINPACK=`get_my_ai_attribute_with_default linpack ~/linpack/xlinpack_xeon64`
 	eval LINPACK=${LINPACK}
 
 	sudo ls ${LINPACK} 2>&1 > /dev/null

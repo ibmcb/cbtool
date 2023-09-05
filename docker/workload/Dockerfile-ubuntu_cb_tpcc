@@ -15,6 +15,9 @@ RUN apt-get install -y lsb-release
 RUN lsb_release -sc
 RUN wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
 RUN sudo dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
+# Percona has stopped building this package after 20.04. It is not available in 22.04 yet:
+# https://github.com/Percona-Lab/sysbench-tpcc/issues/50
+# Do we build it ourselves?
 RUN apt-get update; apt-get install -y sysbench sysbench-tpcc
 # sysbench-ARCHx86_64-install-pm
 

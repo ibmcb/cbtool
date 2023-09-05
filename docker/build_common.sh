@@ -61,7 +61,7 @@ else
     echo "##### rsync server was found on ${CB_RSYNC}"  
 fi
 
-CB_UBUNTU_BASE=ubuntu:18.04
+CB_UBUNTU_BASE=ubuntu:22.04
 CB_CENTOS_BASE=centos:7
 CB_VERB="-q"
 CB_PUSH="nopush"
