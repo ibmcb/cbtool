@@ -2,9 +2,8 @@ FROM REPLACE_NULLWORKLOAD_UBUNTU
 
 # linpack-install-man
 RUN mkdir -p /home/REPLACE_USERNAME/linpack/benchmarks/linpack; sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/linpack/
-RUN wget -N -v -P /home/REPLACE_USERNAME/linpack http://registrationcenter.intel.com/irc_nas/7615/l_lpk_p_11.3.0.004.tgz
-#RUN REPLACE_RSYNC/l_lpk_p_11.3.0.004.tgz /home/REPLACE_USERNAME/linpack/
-RUN cd /home/REPLACE_USERNAME/linpack/; sudo tar -xzvf l_lpk_p_11.3.0.004.tgz
+RUN wget -N -v -P /home/REPLACE_USERNAME/linpack https://downloadmirror.intel.com/781888/l_onemklbench_p_2023.2.0_49340.tgz
+RUN cd /home/REPLACE_USERNAME/linpack/; sudo tar -xzvf l_onemklbench_p_2023.2.0_49340.tgz; mv benchmarks_2023.2.0//linux/mkl/benchmarks/linpack linpack
 # linpack-install-man
 
 # Newer linpack

@@ -7,19 +7,19 @@ RUN sudo apt --fix-broken -y install
 
 # cassandra-install-man
 RUN wget -N -v -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb; sudo apt --fix-broken -y install
-RUN wget -N -v -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.1.20_all.deb 
+RUN wget -N -v -P /home/REPLACE_USERNAME https://mirrors.ibiblio.org/apache/cassandra/2.1.22/debian/cassandra_2.1.22_all.deb
 RUN dpkg -i /home/REPLACE_USERNAME/cassandra*.deb; sudo apt --fix-broken -y install
 # cassandra-install-man
 
 # cassandra-tools-install-man
-RUN wget -N -v -P /home/REPLACE_USERNAME http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra-tools_2.1.20_all.deb 
+RUN wget -N -v -P /home/REPLACE_USERNAME https://mirrors.ibiblio.org/apache/cassandra/2.1.22/debian/cassandra-tools_2.1.22_all.deb 
 RUN dpkg -i /home/REPLACE_USERNAME/cassandra-tools*.deb; sudo apt --fix-broken -y install
 # service_stop_disable cassandra
 # cassandra-tools-install-man
 
 # mongo-install-pm
-RUN apt-get install -y mongodb
-RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
+RUN wget -nc https://www.mongodb.org/static/pgp/server-6.0.asc; cat server-6.0.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/mongodb.gpg >/dev/null; sudo sh -c 'echo "deb [ arch=amd64,arm64 signed-by=/etc/apt/keyrings/mongodb.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" >> /etc/apt/sources.list.d/mongo.list'; sudo apt update; sudo apt install -y mongodb-org
+RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf
 # service_stop_disable mongodb
 # mongo-install-pm
 

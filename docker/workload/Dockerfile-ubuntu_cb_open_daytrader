@@ -32,7 +32,7 @@ RUN apt-get install -y apache2
 
 # mysql-install-pm
 RUN apt-get update; echo "mysql-server-5.7 mysql-server/root_password password temp4now" | sudo debconf-set-selections; echo "mysql-server-5.7 mysql-server/root_password_again password temp4now" | sudo debconf-set-selections
-RUN apt-get install -y ant unzip mysql-server python-mysqldb python-pip python-dev libmysqlclient-dev
+RUN apt-get install -y ant unzip mysql-server python3-mysqldb python3-pip python3-dev libmysqlclient-dev
 # mysql-install-pm
 
 # daytrader-install-man
