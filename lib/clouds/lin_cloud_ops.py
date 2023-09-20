@@ -102,8 +102,7 @@ class LinCmds(LibcloudCmds) :
             self.vmcreate_kwargs["ex_authorized_keys"] = public_keys
 
             if obj_attr_list["userdata"] not in (False, None) :
-                userdata = base64.b64encode(bytes(obj_attr_list["userdata"], 'utf-8'))
-                self.vmcreate_kwargs["ex_userdata"] = userdata.decode('utf-8')
+                self.vmcreate_kwargs["ex_userdata"] = obj_attr_list["userdata"]
 
         # The linode API really, really wants a root password,
         # so just give them a random one.
