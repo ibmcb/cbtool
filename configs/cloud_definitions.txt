@@ -24,6 +24,7 @@ CLOUDOPTION_MYEC2 = cldattach ec2, vmcattach all
 CLOUDOPTION_MYGCE = cldattach gce, vmcattach all
 CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
 CLOUDOPTION_MYNOP = cldattach nop, vmcattach all
+CLOUDOPTION_MYNTNX = cldattach ntnx, vmcattach all
 CLOUDOPTION_MYOS = cldattach os, vmcattach all
 CLOUDOPTION_MYOSK = cldattach osk, vmcattach all
 CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
@@ -32,7 +33,6 @@ CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSIM = cldattach sim, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
 CLOUDOPTION_MYVCD = cldattach vcd, vmcattach all
-CLOUDOPTION_MYZSTACK = cldattach zsk, vmcattach all
 
 # START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
@@ -206,6 +206,22 @@ LIN_SSH_KEY_NAME = cbtool_rsa                                                   
 LIN_KEY_NAME = cbtool_rsa                                                                        # Comma-separated list of IDs (or names) of your Linode ssh keys
 LIN_NETNAME = default                                                                            # If your Orchestrator is running inside the cloud, use "private". If external to the cloud, use "public".For more complex networks, refer to the documentation
 LIN_LOGIN = cbuser                                                                               # The username that logins on the VMs
+
+#-------------------------------------------------------------------------------
+# Nunanix (ntnx) requires the following parameters 
+[USER-DEFINED : CLOUDOPTION_MYNTNX]
+NTNX_ACCESS = 10.80.30.20
+NTNX_CREDENTIALS =  username-password-default			# username-password-tenant
+NTNX_INITIAL_VMCS = RegionOne
+NTNX_SECURITY_GROUPS = default	   # Make sure that this group exists first
+NTNX_NETNAME = ss1111                                                                                                 # Make sure that this network exists first
+NTNX_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+NTNX_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+NTNX_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
+#-------------------------------------------------------------------------------
+
+
+
 
 [OBJECTSTORE]
 USAGE = shared
