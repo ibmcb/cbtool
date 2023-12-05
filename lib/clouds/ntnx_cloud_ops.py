@@ -43,6 +43,8 @@ from .shared_functions import CldOpsException, CommonCloudFunctions
 
 from ntnx_api import prism
 from ntnx_api.client import PrismApi
+import requests
+import base64
 
 import traceback
 
@@ -62,6 +64,7 @@ class NtnxCmds(CommonCloudFunctions) :
         self.ntnxconnvm = {} # prism.VMs
         self.ntnxconnimage = {} # prism.Images
         self.ntnxconnnetwork = {} # prism.Networks
+        self.base64 = '' # base64(usename:password)
         self.expid = expid
         self.ft_supported = False
         self.lvirt_conn = {}
@@ -101,7 +104,10 @@ class NtnxCmds(CommonCloudFunctions) :
                 _msg += " are present."
                 _status = -1
             else :
-                _username, _password, _tenant = authentication_data.split(_separator)
+                _username, _password, tenant = authentication_data.split(_separator)
+                _str = str(_username) + ":" + str(_password)
+                _str_bytes = _str.encode('ascii')
+                self.base64 = (base64.b64encode(_str_bytes)).decode('ascii')
  
             if not _username :
                 _fmsg = _password
@@ -114,7 +120,7 @@ class NtnxCmds(CommonCloudFunctions) :
                 # connect to Nutanix Cluster 
                 self.ntnxclusters = prism.Cluster(api_client=_ntnx_api)
                 _msg = self.get_description() + " connection parameters: username=" + str(_username)
-                _msg += ", password=<omitted>, tenant=" + str(_tenant) + ", "
+                _msg += ", password=<omitted>, base64=" + str(self.base64) + ", tenant=" + _tenant 
                 _msg += ", region_name=" + str(region) + ", access_url=" + str(access_url)
                 cbdebug(_msg, True)
     
@@ -129,10 +135,8 @@ class NtnxCmds(CommonCloudFunctions) :
                 # connect to Nutanix VM manager
                 self.ntnxconnvm = prism.Vms(api_client=_ntnx_api)
 
-                
                 _region = region
                 _msg = "Selected region is " + str(region)
-                #cbdebug(_msg)
                 cbdebug(_msg)
                 _status = 0
 
@@ -509,22 +513,32 @@ class NtnxCmds(CommonCloudFunctions) :
         try :
             _call = "NA"
             
-        #    self.connect(obj_attr_list["access"], \
-        #                obj_attr_list["credentials"], \
-        #                obj_attr_list["vmc_name"])
+            #self.connect(obj_attr_list["access"], \
+            #            obj_attr_list["credentials"], \
+            #            obj_attr_list["vmc_name"])
+
             if obj_type == "vm" :
                                 
                 if "cloud_vm_uuid" in obj_attr_list and len(obj_attr_list["cloud_vm_uuid"]) >= 36 and not force_list :
                     _call = "get"
-                    _instance = self.ntnxconnvm.search_name(identifier, \
-                            clusteruuid = self.ntnxclusters.get_all_uuids()[0])
-                    return _instance
+                    #_instance = self.ntnxconnvm.search_name(identifier, \
+                          #  clusteruuid = self.ntnxclusters.get_all_uuids()[0])
+
+                    _url = "https://" + str(obj_attr_list['access']) + ":9440/PrismGateway/services/rest/v2.0/vms/?filter=vm_name==" + identifier + "&include_vm_nic_config=true"
+                    _base64 = "Basic " + str(self.base64)
+                    _header = {"Content-Type": "application/json", "Authorization": _base64} # dictionary
+
+                    _response = requests.get(_url, headers=_header, verify=False)
+                    _instance = _response.json() # dictionary
+                    if len(_instance['entities']) > 0:
+                        return _instance['entities'][0] # dictionary
+                    else:
+                        return False
 
                 else :
                     _call = "list"
                     _instances = self.ntnxconnvm.get(self.ntnxclusters.get_all_uuids()[0])
-                    if len(_instances) > 0 :
-
+                    if _instances :
                         if identifier == "all" :   
                             return _instances
                     else :
@@ -802,30 +816,51 @@ class NtnxCmds(CommonCloudFunctions) :
 
             _mark_a = time()
             _flag = False
+            #_retry = 0
+            #while not _flag and _retry < 5:
             _flag = self.ntnxconnvm.create( name = obj_attr_list["cloud_vm_name"], \
                                                             cores = 4,\
                                                             memory_gb = 4, \
-                                                            storage_container_uuid = "443ef86d-48ac-487d-95bb-1df952995efd", \
+                                                            storage_container_uuid = "1ff33f4c-e09f-4188-84e8-2217e51c6b93", \
                                                             disks = [ \
                                                                 {'bus': 'scsi', 'size_gb': 40, 'image_name' : obj_attr_list["imageid1"],},], \
-                                                           # timezone="KST", \
+                                                            timezone="UTC", \
                                                             nics = [{'network_name': _netnames, 'ipam': True,},],  \
                                                             clusteruuid = self.ntnxclusters.get_all_uuids()[0], \
                                                             )  
+            #    if not _flag:
+            #        _retry += 1
+            #        sleep(1)
+
             if _flag:
 
                 self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
-                                
+
+                _instance = False
+                _retry = 0
+
                 sleep(int(obj_attr_list["update_frequency"]))
 
-                _instance_list = self.ntnxconnvm.get(self.ntnxclusters.get_all_uuids()[0])
-                _instance = False
-                for _c_instance in _instance_list :
-                    if _c_instance['name'] == obj_attr_list["cloud_vm_name"] :
-                        _instance = _c_instance
+                #_instance_list = self.ntnxconnvm.get(self.ntnxclusters.get_all_uuids()[0])
+                #_instance = False
+                #for _c_instance in _instance_list :
+                #    if _c_instance['name'] == obj_attr_list["cloud_vm_name"] :
+                #        _instance = _c_instance
 
-                if _instance : 
-                    obj_attr_list["cloud_vm_uuid"] = _instance['uuid']
+                while not _instance and _retry < 5:
+
+                    sleep(1)
+
+                    _url = "https://" + str(obj_attr_list['access']) + ":9440/PrismGateway/services/rest/v2.0/vms/?filter=vm_name==" + str(obj_attr_list['cloud_vm_name'])
+                    _base64 = "Basic " + str(self.base64)
+                    _header = {"Content-Type": "application/json", "Authorization": _base64} # dictionary
+
+                    _response = requests.get(_url, headers=_header, verify=False)
+                    _instance = _response.json() # dictionary
+                    _retry += 1
+
+                if _instance: 
+                    obj_attr_list["cloud_vm_uuid"] = _instance["entities"][0]['uuid'] # _instance["entities"] is a list
                     
                     self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
@@ -855,9 +890,11 @@ class NtnxCmds(CommonCloudFunctions) :
                     if str(obj_attr_list["force_failure"]).lower() == "true" :
                         _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
                         _status = 916
+
                 else :
-                    _fmsg = "there is no such instance!"
+                    _fmsg += "there is no such instance! " + str(obj_attr_list["cloud_vm_name"]) + str(_instance)
                     _status = 1024
+                    cberr(_fmsg)
 
             else :
                 _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
@@ -965,26 +1002,28 @@ class NtnxCmds(CommonCloudFunctions) :
                 _curr_tries = 0
 
                 _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"]) 
-    
-                if _instance :
-    
-                    self.common_messages("VM", obj_attr_list, "destroying", 0, '')
+                if not _instance:
+                    return True
 
-                    self.retriable_instance_delete(obj_attr_list, _instance)
-                    sleep(_wait)
-    
-                    while _instance and _curr_tries < _max_tries :
-                        _instance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"])
-                        if _instance :                            
-                            if _instance['power_state'] != "on" :
-                                break
+                while _instance and _curr_tries < _max_tries :
+                    if  _instance['power_state'] == "on" :
+                        _msg = "Terminating instance: " 
+                        _msg += _instance['uuid'] + " (" + _instance['name'] + ")"
+                        cbdebug(_msg, True)
                             
-                        sleep(_wait)
-                        _curr_tries += 1
-                                                                    
-                else :
-                    True
+                        self.common_messages("VM", obj_attr_list, "destroying", 0, '')
+                        self.retriable_instance_delete(obj_attr_list, _instance) 
+
+                    else :
+                        _msg = "Will wait for instance "
+                        _msg += _instance['uuid'] + "\"" 
+                        _msg += " (" + _instance['name'] + ") to "
+                        _msg += "start and then destroy it."
+                        cbdebug(_msg, True)
+                
+                    sleep(_wait)
+                    _curr_tries += 1
+                    _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"]) 
 
                 _status = 0
     
@@ -1013,20 +1052,28 @@ class NtnxCmds(CommonCloudFunctions) :
         TBD
         '''
         _identifier = ""
-        _flag = False
+        #_flag = False
         try :
-            if "cloud_vm_name" in obj_attr_list :
-                _identifier = obj_attr_list["cloud_vm_name"]
+            if "cloud_vm_uuid" in obj_attr_list :
+                _identifier = obj_attr_list["cloud_vm_uuid"]
             else :
-                _identifier = instance['name']
+                _identifier = instance['uuid']
 
-            _flag = self.ntnxconnvm.delete_name(name=_identifier, \
-                    clusteruuid=self.ntnxclusters.get_all_uuids()[0])
-            return _flag
+            #_flag = self.ntnxconnvm.delete_name(name=_identifier, \
+            #        clusteruuid=self.ntnxclusters.get_all_uuids()[0])
+
+            _url = "https://" + str(obj_attr_list['access']) + ":9440/PrismGateway/services/rest/v2.0/vms/" + _identifier
+            _base64 = "Basic " + str(self.base64)
+            _header = {"Content-Type": "application/json", "Authorization": _base64} # dictionary
+
+            _response = requests.delete(_url, headers=_header, verify=False)
+            #cberr(str(obj_attr_list["name"]) +  + str(obj_attr_list["cloud_vm_uuid"]) + str(_response))
+
+            return _response
 
         except Exception as e :
             _status = 23
-            _fmsg = "(While removing instance(s) through API call \"delete\") "  + str(_identifier) + " in " + str(obj_attr_list["name"])  + str(_flag)
+            _fmsg = "(While removing instance(s) through API call \"delete\") "  + str(_identifier) + " in " + str(obj_attr_list["name"])  + str(_status)
             if _identifier not in self.api_error_counter :
                 self.api_error_counter[_identifier] = 0
             
@@ -1189,7 +1236,15 @@ class NtnxCmds(CommonCloudFunctions) :
                 obj_attr_list["instance_creation_failure_message"] += " (Host \"" + obj_attr_list["host_name"] + "\")"
 
             #_vminstance.delete()
-            self.ntnxconnvm.delete_name(name=_vminstance["name"], clusteruuid=self.ntnxclusters.get_all_uuids()[0])
+            # self.ntnxconnvm.delete_name(name=_vminstance["name"], clusteruuid=self.ntnxclusters.get_all_uuids()[0])
+
+            _url = "https://" + str(obj_attr_list['access']) + ":9440/PrismGateway/services/rest/v2.0/vms/" + _vminstance['uuid'] 
+            _base64 = "Basic " + str(self.base64)
+            _header = {"Content-Type": "application/json", "Authorization": _base64} # dictionary
+
+            _response = requests.delete(_url, headers=_header, verify=False)
+
+
             #del self.ntnxconnvm[obj_attr_list["name"]]
             sleep(20)
 

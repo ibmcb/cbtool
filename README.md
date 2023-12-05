@@ -66,13 +66,14 @@ Each individual application can have a specific load profile using probability d
 3. Google Compute Engine 
 4. DigitalOcean
 5. Linode (Akamai Connected Cloud), NOTE: libcloud version 3.9.0 only: https://github.com/apache/libcloud/pull/1946
-5. Docker/Swarm
-6. LXD/LXC
-7. Kubernetes
-8. Libvirt+KVM
-9. VMWare vCloud (NOT actively maintained)
-10. CloudStack (NOT actively maintained)
-11. SoftLayer
+6. Docker/Swarm
+7. LXD/LXC
+8. Kubernetes
+9. Libvirt+KVM
+10. VMWare vCloud (NOT actively maintained)
+11. CloudStack (NOT actively maintained)
+12. SoftLayer
+13. Nutanix
 
 Want to add support for a new Cloud? Take a look at our [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ#development-)
 
