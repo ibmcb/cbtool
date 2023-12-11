@@ -163,7 +163,7 @@ class MysqlMgdConn(MetricStoreMgdConn) :
             _tables_found = [] 
 
             for x in cursor:
-              _tables_found.append(x[0])
+              _tables_found.append(x[0].decode('utf-8'))
 
             for _table in (_latest_tables + _indexed_tables) :
                 if _table not in _tables_found :
