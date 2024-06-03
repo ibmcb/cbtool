@@ -83,6 +83,7 @@ RUN apt-get install -y lftp iputils-ping
 # lftp-install-pm
 
 # haproxy-install-pm
+# haproxy 2.4 is now in ubuntu 22.04. PPA no longer available.
 RUN apt-get install -y haproxy
 # service_stop_disable haproxy
 # haproxy-install-pm
@@ -125,9 +126,10 @@ RUN apt-get install -y redis-server; sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /
 RUN sed -i "s/.*port.*/port $OBJECTSTORE_PORT/" /etc/redis/redis.conf
 
 # mongodb-install-pm
-RUN apt-get install -y mongodb; sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
+RUN wget -nc https://www.mongodb.org/static/pgp/server-6.0.asc; cat server-6.0.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/mongodb.gpg >/dev/null; sudo sh -c 'echo "deb [ arch=amd64,arm64 signed-by=/etc/apt/keyrings/mongodb.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" >> /etc/apt/sources.list.d/mongo.list'; sudo apt update; sudo apt install -y mongodb-org
+RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf
 # mongodb-install-pm
-RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/mongodb.conf
+RUN sed -i "s/.*port\:*/port\: $METRICSTORE_PORT/" /etc/mongod.conf
 
 # mysql-server-install-pm
 RUN apt-get install -y mysql-server

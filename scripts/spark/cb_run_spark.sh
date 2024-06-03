@@ -32,15 +32,13 @@ export LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor "1000"`
 
 export GENERATE_DATA=$(echo $GENERATE_DATA | tr '[:upper:]' '[:lower:]')
 
-export SPARK_EXECUTOR_MEMORY=`get_my_ai_attribute_with_default spark_executor_memory 8192m`    
-export SPARK_EXECUTOR_CORES=`get_my_ai_attribute_with_default spark_executor_cores 8`
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_config_spark_common.sh
 
-export SPARK_GATK4_HOME=`get_my_ai_attribute_with_default spark_gatk4_home ~/gatk-4.0.12.0`
+export SPARK_GATK4_HOME=`get_my_ai_attribute_with_default spark_gatk4_home ~/gatk-4.5.0.0`
 eval SPARK_GATK4_HOME=${SPARK_GATK4_HOME}
 
 export SPARK_GATK4_HDFS_TARGET=`get_my_ai_attribute_with_default spark_gatk4_hdfs_target q4_spark_eval`
 
-export SPARK_DRIVER_MEMORY=`get_my_ai_attribute_with_default spark_driver_memory 4096m`    
 export SPARK_GATK4_DIRECT_MEMORY=`get_my_ai_attribute_with_default spark_gatk4_direct_memory 4294967296`    
 export SPARK_GATK4_PAIRHMM=`get_my_ai_attribute_with_default spark_gatk4_pairmm LOGLESS_CACHING`    
 
@@ -70,6 +68,9 @@ then
     elif [[ ${LOAD_PROFILE} == "gatk4f" ]]
     then
         _SPARK_GATK4_SOURCE_SDIR=full
+    elif [[ ${LOAD_PROFILE} == "gatk4m" ]]
+    then
+        _SPARK_GATK4_SOURCE_SDIR=medium
     fi        
 
 	_SPARK_GATK4_SOURCE_CDIRS=$HOME
@@ -116,6 +117,11 @@ then
     COUT=$?
     let ERROR+=$COUT    
 
+    sudo chmod -R 755 $SPARK_GATK4_SOURCE_DIR
+    if [[ ${LOAD_PROFILE} == "gatk4s" ]] && [[ ! -e /user/$USER/$SPARK_GATK4_HDFS_TARGET ]] ; then
+            sudo mkdir -p /user/$USER/
+            sudo cp -r $SPARK_GATK4_SOURCE_DIR /user/$USER/$SPARK_GATK4_HDFS_TARGET
+    fi
     $HADOOP_HOME/bin/hdfs dfs -copyFromLocal $SPARK_GATK4_SOURCE_DIR/* /user/$USER/$SPARK_GATK4_HDFS_TARGET/.            
     COUT=$?
     let ERROR+=$COUT
@@ -130,6 +136,8 @@ then
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the spark load profile \"${LOAD_PROFILE}\""
 fi
+
+MULTIPLE=0
 
 if [[ ${LOAD_PROFILE} == "pi" ]]
 then
@@ -146,35 +154,58 @@ then
     export NUM_COLS=$((${LOAD_LEVEL}*24))
     sed -i "s^spark-home =.*^spark-home = \"$SPARK_HOME\"^g"  $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE
     sed -i "s^master =.*^master = \"$SPARK_MASTER_HOST\"^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE
-    sed -i "s^executor-memory =.*^executor-memory = \"$SPARK_EXECUTOR_MEMORY\"^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE    
-    sed -i "s^executor-memory =.*^executor-memory = \"$SPARK_EXECUTOR_MEMORY\"^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE
+    sed -i "s^executor-memory =.*^executor-memory = \"${SPARK_EXECUTOR_MEMORY}m\"^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE    
+    sed -i "s^executor-memory =.*^executor-memory = \"${SPARK_EXECUTOR_MEMORY}m\"^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE
     sed -i "s^rows =.*^rows = $NUM_ROWS^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE
     sed -i "s^cols =.*^cols = $NUM_COLS^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE
     sed -i "s^hdfs:///tmp/^$SPARK_HDFS_BASE/user/$(whoami)/^g" $SPARKBENCH_HOME/examples/$SPARKBENCH_CONFIG_FILE
     CMDLINE="${SPARKBENCH_HOME}/bin/spark-bench.sh ${SPARKBENCH_HOME}/examples/$SPARKBENCH_CONFIG_FILE"
 elif [[ ${LOAD_PROFILE} == "gatk4s" ]]
 then
-    #    CMDLINE="$SPARK_GATK4_HOME/gatk ReadsPipelineSpark -I $SPARK_HDFS_INPUT/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam -O $SPARK_HDFS_OUTPUT/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.vcf -R $SPARK_HDFS_INPUT/human_g1k_v37.20.21.2bit --known-sites $SPARK_HDFS_INPUT/dbsnp_138.b37.20.21.vcf -pairHMM $SPARK_GATK4_PAIRHMM --max-reads-per-alignment-start 10 --java-options '-XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:MaxDirectMemorySize=$SPARK_GATK4_DIRECT_MEMORY' -- --spark-runner SPARK --spark-master $SPARK_MASTER_HOST --executor-memory $SPARK_EXECUTOR_MEMORY --driver-memory $SPARK_DRIVER_MEMORY" 
-    CMDLINE="$SPARK_GATK4_HOME/gatk ReadsPipelineSpark -I $SPARK_HDFS_INPUT/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam -O $SPARK_HDFS_OUTPUT/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.vcf -R $SPARK_HDFS_INPUT/human_g1k_v37.20.21.2bit --known-sites $SPARK_HDFS_INPUT/dbsnp_138.b37.20.21.vcf -pairHMM $SPARK_GATK4_PAIRHMM --max-reads-per-alignment-start 10 -- --spark-runner SPARK --spark-master $SPARK_MASTER_HOST --executor-cores $SPARK_EXECUTOR_CORES --executor-memory $SPARK_EXECUTOR_MEMORY --driver-memory $SPARK_DRIVER_MEMORY" 
+    # Source: https://github.com/broadinstitute/gatk/blob/master/scripts/spark_eval/small_reads-pipeline_hdfs.sh
+    CMDLINE="python3 $SPARK_GATK4_HOME/gatk ReadsPipelineSpark -I $SPARK_HDFS_INPUT/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam -O $SPARK_HDFS_OUTPUT/CEUTrio.HiSeq.WGS.b37.NA12878.20.21_LOAD.vcf -R $SPARK_HDFS_INPUT/human_g1k_v37.20.21.fasta --known-sites $SPARK_HDFS_INPUT/dbsnp_138.b37.20.21.vcf -pairHMM $SPARK_GATK4_PAIRHMM --max-reads-per-alignment-start 10 --verbosity ERROR -- --spark-runner SPARK --spark-master $SPARK_MASTER_HOST" 
+    MULTIPLE=1
+elif [[ ${LOAD_PROFILE} == "gatk4m" ]]
+then
+    # SOURCE: https://github.com/broadinstitute/gatk/blob/master/scripts/spark_eval/exome_md-bqsr-hc_hdfs.sh
+    # This is only one stage that is part of a 3-stage job.
+    # We could explore the performance utilization of the other stages, if necessary
+    CMDLINE="python3 $SPARK_GATK4_HOME/gatk MarkDuplicatesSpark -I $SPARK_HDFS_INPUT/NA12878.ga2.exome.maq.raw.bam -O $SPARK_HDFS_OUTPUT/markdups-sharded_LOAD --sharded-output true --verbosity ERROR -- --spark-runner SPARK --spark-master $SPARK_MASTER_HOST"
+    MULTIPLE=1
 elif [[ ${LOAD_PROFILE} == "gatk4f" ]]
 then
-    CMDLINE="$SPARK_GATK4_HOME/gatk ReadsPipelineSpark -I $SPARK_HDFS_INPUT/WGS-G94982-NA12878-no-NC_007605.bam -O $SPARK_HDFS_OUTPUT/WGS-G94982-NA12878.vcf -R $SPARK_HDFS_INPUT/human_g1k_v37.2bit --known-sites $SPARK_HDFS_INPUT/dbsnp_138.b37.vcf -pairHMM $SPARK_GATK4_PAIRHMM --max-reads-per-alignment-start 10 -- --spark-runner SPARK --spark-master $SPARK_MASTER_HOST --driver-memory $SPARK_DRIVER_MEMORY --executor-cores $SPARK_EXECUTOR_CORES --executor-memory $SPARK_EXECUTOR_MEMORY --num-executors 42"
+    CMDLINE="python3 $SPARK_GATK4_HOME/gatk ReadsPipelineSpark -I $SPARK_HDFS_INPUT/WGS-G94982-NA12878-no-NC_007605.bam -O $SPARK_HDFS_OUTPUT/WGS-G94982-NA12878_LOAD.vcf -R $SPARK_HDFS_INPUT/human_g1k_v37.2bit --known-sites $SPARK_HDFS_INPUT/dbsnp_138.b37.vcf -pairHMM $SPARK_GATK4_PAIRHMM --max-reads-per-alignment-start 10 --verbosity ERROR -- --spark-runner SPARK --spark-master $SPARK_MASTER_HOST"
+    MULTIPLE=1
 fi
 
-execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
+cores=$(wget http://localhost:8080/json -O - -o /dev/null | jq .cores)
+memory=$(wget http://localhost:8080/json -O - -o /dev/null | jq .memory)
+workers=$(wget http://localhost:8080/json -O - -o /dev/null | jq .aliveworkers)
+
+if [ $MULTIPLE -eq 1 ] ; then
+	((cores=cores/LOAD_LEVEL))
+	((memory=memory/LOAD_LEVEL/workers))
+
+	for num in $(seq 1 ${LOAD_LEVEL}) ; do
+		COMMAND=$(echo "$CMDLINE" | sed "s/LOAD/${num}/g")
+		COMMAND="$COMMAND --total-executor-cores ${cores} --executor-memory ${memory}m --driver-memory ${SPARK_DRIVER_MEMORY}m"
+		execute_load_generator "${COMMAND}" ${RUN_OUTPUT_FILE}.${num} ${LOAD_DURATION} &
+	done
+	wait
+else
+	execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE}.1 ${LOAD_DURATION}
+fi
 
 #Parse and report the performace
 
 echo $LOAD_PROFILE | grep gatk4 > /dev/null 2>&1
 if [[ $? -ne 0 ]]
 then
-    lat=`cat ${RUN_OUTPUT_FILE} | grep "${LOAD_PROFILE}|" | awk '{ print $2 }' | cut -d '|' -f 1`
+    lat=`cat ${RUN_OUTPUT_FILE}.1 | grep "${LOAD_PROFILE}|" | awk '{ print $2 }' | cut -d '|' -f 1`
 else
-    lat=`cat ${RUN_OUTPUT_FILE} | grep "Elapsed time" | awk '{ print $11 }'`
+    lat=`cat ${RUN_OUTPUT_FILE}.1 | grep "Elapsed time" | awk '{ print $11 }'`
     lat=`echo "${lat} * 60" | bc`
 fi
-#tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
-#iterations=`grep iteration ${OUTPUT_FILE} | cut -d ' ' -f 5 | tail -1`
 
 check_hadoop_cluster_state 1 1
 ERROR=$?

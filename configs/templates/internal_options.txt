@@ -666,5 +666,7 @@ COREMARK = imageids:1, imageid1:ubuntu_cb_coremark
 LB = imageids:1, imageid1:ubuntu_cb_nullworkload
 TPCC = imageids:1, imageid1:ubuntu_cb_tpcc
 STRESS = imageids:1, imageid1:ubuntu_cb_stress
+SPARKMASTER = imageids:1, imageid1:ubuntu_cb_spark
+SPARKSLAVE = imageids:1, imageid1:ubuntu_cb_spark
 
 [SIZE_TEMPLATES]

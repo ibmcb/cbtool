@@ -1,13 +1,12 @@
 ### START - Dependency installation order ###
-#java-order = 82
-ibm-java-order = 82
+java-order = 82
+#ibm-java-order = 82
 scala-order = 83
 hadoop-order = 84
 spark-order = 85
 gradle-order = 86
 numpy-order = 87
 git-lfs-order = 88
-spark-perf-order = 89
 sparkbench-order = 90
 gatk4-order = 91
 gatk4-input-order = 92
@@ -20,46 +19,43 @@ gatk4-input-order = 92
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-#java-install = pm
-ibm-java-install = man
+java-install = pm
+#ibm-java-install = man
 scala-install = pm
 hadoop-install = man
 spark-install = man
 gradle-install = pm
 numpy-install = pm
 git-lfs-install = man
-spark-perf-install = man
 sparkbench-install = man
 gatk4-install = man
 gatk4-input-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-#java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 #ibm-java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-ibm-java-configure = /tmp/cb_is_java_installed.sh ibm 8
+#ibm-java-configure = /tmp/cb_is_java_installed.sh ibm 8
 scala-configure = scala -version 2>&1 | awk '{ print $5 }'
 hadoop-configure = /tmp/cb_is_hadoop_installed.sh 2
 spark-configure = ls /home/REPLACE_USERNAME/spark* | head -n 1 | cut -d '/' -f 4 | cut -d '-' -f 2
 gradle-configure = gradle -v | grep Gradle | cut -d ' ' -f 2
 numpy-configure = python -c "import numpy; print str(numpy.__version__).strip()"
 git-lfs-configure = git lfs version | cut -d ' ' -f 1 | sed 's^git-lfs/^^g'
-spark-perf-configure = ls -la /home/REPLACE_USERNAME/spark-perf
 sparkbench-configure = ls -la /home/REPLACE_USERNAME/spark-bench*
 gatk4-configure = ls /home/REPLACE_USERNAME/gatk-* | head -n1 | sed 's/\.zip//g' | cut -d '/' -f 4 | cut -d '-' -f 2
 gatk4-input-configure = ls -la /home/REPLACE_USERNAME/GATK4-small-input
 ### END - Tests ###
 
 ### START - Dependency versions ###
-#java-ver = 1.8
-ibm-java-ver = 1.8
+java-ver = 21.0
+#ibm-java-ver = 1.8
 scala-ver = 2.0
 hadoop-ver = ANY
 spark-ver = 1.0
 numpy-ver = 1.0
 gradle-ver = 2.0
 git-lfs-ver = 2.0
-spark-perf-ver = ANY
 sparkbench-ver = ANY
 gatk4-ver = 3.0
 gatk4-input-ver = ANY
