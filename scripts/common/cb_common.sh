@@ -1468,14 +1468,14 @@ function wait_for_container_ready {
                        syslog_netcat "Recreating container..."
                         # Sometimes ssh doesn't go down or gets restarted. Try again.
                        service_stop_disable sshd
-					   if [ x"$restartcmd" != x ] ; then
-						   syslog_netcat "Restart command: $restartcmd"
-						   sudo docker rm cbnested
-						   eval $restartcmd
+		       if [ x"$restartcmd" != x ] ; then
+			    syslog_netcat "Restart command: $username $image ${NEST_EXPORT_HOME}: $restartcmd"
+			    sudo docker rm cbnested
+			    eval $restartcmd
                        else
-					       sudo docker stop -t 0 cbnested
-                           sudo docker start cbnested
-					   fi
+			    sudo docker stop -t 0 cbnested
+			    sudo docker start cbnested
+		       fi
                        syslog_netcat "Recreated."
                fi
                 sleep 2
@@ -2347,7 +2347,9 @@ function set_java_home {
                 JAVA_HOME=$(sudo find /opt/ibm/ | grep jre/bin/javaws | grep "\-$JAVA_VER" | sed 's^/bin/javaws^^g' | sort -r | head -n 1)
             else
                 syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"
-                JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | grep "\-$JAVA_VER" | sed '/^$/d' | sort -r | head -n 1)/jre
+		# As of newer versions of openjdk, the "jre" directory seems to be gone now.
+                #JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | grep "\-$JAVA_VER" | sed '/^$/d' | sort -r | head -n 1)/jre
+                JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | grep "\-$JAVA_VER" | sed '/^$/d' | sort -r | head -n 1)
             fi
         fi
 

@@ -15,10 +15,10 @@ LOAD_MANAGER_ROLE = sparkmaster
 METRIC_AGGREGATOR_ROLE = sparkmaster
 CAPTURE_ROLE = sparkslave
 LOAD_PROFILE = gatk4s
-LOAD_LEVEL = uniformIXIXI1I3
+LOAD_LEVEL = 1
 LOAD_DURATION = 60
 CATEGORY = data-centric
-PROFILES = pi, gatk4s, gatk4f
+PROFILES = pi, gatk4s, gatk4m, gatk4f
 REFERENCE = https://spark.apache.org, https://github.com/broadinstitute/gatk, https://github.com/SparkTC/spark-bench/
 LICENSE = Apache_v2
 REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,quiescent_time,iterations
@@ -28,11 +28,14 @@ DESCRIPTION =Deploys a Spark (and Hadoop) cluster (1 master instance and N slave
 DESCRIPTION +=The master node also runs the "SparkBench" benchmark, which is used\n
 DESCRIPTION +=to submit spark jobs to the cluster.\n
 DESCRIPTION +=  - LOAD_PROFILE possible values: pi (very basic pi determination), \n
-DESCRIPTION +=    and GATK4 (gatk4s for "Small" and gatk4f for "Full")\n
+DESCRIPTION +=    and GATK4 (gatk4s for "Small", gatk4m for "Medium" and gatk4f for "Full")\n
+DESCRIPTION +=    Small: <100MB. Medium: <20 GB. Large: > 150GB\n
 DESCRIPTION +=    (Genome Analysis Toolkit, with the "small" dataset)\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: although the specifics vary by load profile,\n
 DESCRIPTION +=    it basically represents "amount of data" generated and processed\n
-DESCRIPTION +=    by the job.\n 
+DESCRIPTION +=    by the job. In the case of GATK, this refers to the number of parallel
+DESCRIPTION +=    instance of the workload to run simultaneously on the Spark cluster.\n 
+DESCRIPTION +=    Currently only supported by the "small" and "medium" datasets. Large dataset is over 150GB.\n
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when the spark job\n
 DESCRIPTION +=    is completed.\n
 SPARKMASTER_SETUP1 = cb_config_hadoop_cluster.sh
@@ -53,11 +56,11 @@ SPARKMASTER_START1 = cb_run_spark.sh
 
 # VApp-specific modifier parameters.
 JAVA_HOME = auto
-JAVA_VER = 8
+JAVA_VER = 1.21.0 
 HADOOP_HOME = ~/hadoop-2.7.5
-SPARK_HOME = ~/spark-2.2.3-bin-hadoop2.7
+SPARK_HOME = ~/spark-3.5.1-bin-hadoop3
 HADOOP_EXAMPLES = share/hadoop/mapreduce/hadoop-mapreduce-examples-VERSION.jar
-SPARK_EXAMPLE = examples/jars/spark-examples_2.11-2.2.1.jar
+SPARK_EXAMPLE = examples/jars/spark-examples_2.12-3.5.1.jar
 SPARKMASTER_DATA_DIR=/dfs
 SPARKMASTER_DATA_FSTYP = ext4
 SPARKSLAVE_DATA_DIR=/dfs
@@ -67,20 +70,29 @@ DFS_DATA_DIR = /dfs/cbhadoopdata
 REPLICATION_FACTOR = 3
 LOAD_FACTOR = 1000
 SPARK_LOCAL_DIRS = /dev/shm/spark_tmp
-SPARK_WORKER_CORES = 8
-SPARK_WORKER_MEMORY = 8192m
-SPARK_EXECUTOR_MEMORY = 8192m
-SPARK_DRIVER_MEMORY = 4096m
+
+# Scale spark CPU/MEMORY to match VM size.
+SPARK_RAM_PERCENTAGE = 90
+SPARK_CPU_RESERVED = 1
+
+# Otherwise, if these CPU/RAM settings are chosen,
+# then the above settings will be ignored.
+SPARK_WORKER_CORES = NA 
+SPARK_WORKER_MEMORY = NA 
+
+# These are per-workload settings that can be overridden
+# when the spark job is submitted, but again, if omitted
+# will be initialized to the above settings.
+SPARK_EXECUTOR_CORES = NA
+SPARK_EXECUTOR_MEMORY = NA 
+SPARK_DRIVER_MEMORY = NA 
+
 SPARK_WORKER_DIR = ~/swork
 SPARK_WORKER_OPTS = NA
-SPARK_EXECUTOR_INSTANCES = 1
-SPARK_EXECUTOR_CORES = 8
-SPARK_DAEMON_MEMORY = 1g
 SPARK_HISTORY_OPTS = NA
 SPARK_SHUFFLE_OPTS = NA
 SPARK_DAEMON_JAVA_OPTS = NA
-#SPARK_GATK4_HOME=~/gatk-4.0.10.0
-SPARK_GATK4_HOME=~/gatk-4.0.1.1
+SPARK_GATK4_HOME=~/gatk-4.5.0.0
 SPARK_GATK4_HDFS_TARGET = q4_spark_eval
 SPARK_GATK4_DIRECT_MEMORY = 4294967296
 SPARK_GATK4_PAIRHMM = LOGLESS_CACHING

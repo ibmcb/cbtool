@@ -7,10 +7,9 @@ ENV CB_SSH_PUB_KEY=NA
 ENV CB_LOGIN=NA
 
 RUN apt-get update; \
-apt-get install -y sudo rsync python2.7; \
+apt-get install -y sudo rsync python3; \
 apt-get update; \
 apt-get install -y openssh-server; \
-ln -sf /usr/bin/python2.7 /usr/bin/python; \
 mkdir -p /var/run/sshd; \
 mkdir -p /etc/my_init.d
 

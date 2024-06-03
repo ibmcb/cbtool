@@ -45,16 +45,19 @@ URL: https://developer.ibm.com/wasdev/downloads/download-latest-stable-websphere
 Virtual Application: spark
 Files: broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.*
 URL: gs://broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam
-URL: gs://broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam.bai
-URL: gs://broad-spark-eval-test-data/small/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.vcf
 
 Virtual Application: spark
 Files: human_g1k_v37.*
-URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.2bit
 URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.dict
 URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.fasta
 URL: gs://broad-spark-eval-test-data/genome/human_g1k_v37.fasta.fai
 
 Virtual Application: spark
-File: dbsnp_138.b37.vcf
+File: dbsnp_*
 URL: gs://broad-spark-eval-test-data/genome/dbsnp_138.b37.vcf
+URL: gs://broad-spark-eval-test-data/exome/dbsnp_138.b37.20.21.vcf
+URL: gs://broad-spark-eval-test-data/exome/dbsnp_138.b37.20.21.vcf.idx
+
+Virtual Application: spark
+File: NA12878.ga2.exome.maq.raw.bam
+URL: gs://broad-spark-eval-test-data/exome/NA12878.ga2.exome.maq.raw.bam 

@@ -1112,6 +1112,7 @@ class CommonCloudFunctions:
         cloudconfig = "#cloud-config\n"
         cloudconfig += "ssh_pwauth: true\n"
         cloudconfig += "disable_root: false\n"
+        cloudconfig += "hostname: " + obj_attr_list["cloud_hostname"] + "\n"
         cloudconfig += "\nusers:\n"
         cloudconfig += "- name: " + obj_attr_list["login"] + "\n"
         if str(obj_attr_list["password"]).lower() != "false" :

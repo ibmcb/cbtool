@@ -83,7 +83,6 @@ RUN apt-get install -y lftp iputils-ping
 # haproxy-install-pm
 RUN apt-get install -y software-properties-common
 # haproxy 2.4 is now in ubuntu 22.04. PPA no longer available.
-# RUN add-apt-repository -y ppa:vbernat/haproxy-2.0
 RUN apt-get update
 RUN apt-get install -y haproxy
 # service_stop_disable haproxy
@@ -135,7 +134,7 @@ RUN pip3 install --upgrade docutils prettytable
 # python-prettytable-install-pip
 
 # python-daemon-install-pip
-RUN pip3 install --upgrade python-daemon-3K
+RUN pip3 install --upgrade python-daemon
 # python-daemon-install-pip
 
 # python-twisted-install-pip
